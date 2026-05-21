@@ -574,6 +574,8 @@ namespace ACE.Server.WorldObjects
 
         public LogoutState MaterializedLogoutState = LogoutState.Pending;
 
+        public LogoutState PkLogoutState = LogoutState.Pending;
+
         /// <summary>
         /// Do the player log out work.<para />
         /// If you want to force a player to logout, use Session.LogOffPlayer().
@@ -626,38 +628,9 @@ namespace ACE.Server.WorldObjects
                 }
             }
 
-            if ((PKLogoutActive || isHardcoreLogout) && !forceImmediate)
+            if (((PKLogoutActive || isHardcoreLogout) && !forceImmediate) || PkLogoutState != LogoutState.Pending)
             {
-                var timer = PropertyManager.GetLong("pk_timer").Item;
-                Session.Network.EnqueueSend(new GameMessageSystemChat($"You will logout in {timer} seconds...", ChatMessageType.Broadcast));
-
-                if (!PKLogout)
-                {
-                    PKLogout = true;
-
-                    if (Teleporting && ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.CustomDM)
-                    {
-                        OnTeleportComplete(CurrentTeleportId);
-
-                        var actionChain = new ActionChain();
-                        actionChain.AddDelaySeconds(2);
-                        actionChain.AddAction(this, () =>
-                        {
-                            IsFrozen = true;
-                            EnqueueBroadcastPhysicsState();
-                        });
-                        actionChain.EnqueueChain();
-                    }
-                    else
-                    {
-                        IsFrozen = true;
-                        EnqueueBroadcastPhysicsState();
-                    }
-
-                    LogoffTimestamp = Time.GetFutureUnixTime(timer);
-                    PlayerManager.AddPlayerToLogoffQueue(this);
-                }
-                return false;
+                return HandlePKLogout();
             }
 
             if (ForceLogoutMaterialization || MaterializedLogoutState != LogoutState.Pending)
@@ -668,6 +641,56 @@ namespace ACE.Server.WorldObjects
             LogOut_Inner(clientSessionTerminatedAbruptly);
 
             return true;
+        }
+
+        private bool HandlePKLogout()
+        {
+            log.Debug($"HandlePkLogout -> State -> {PkLogoutState}");
+
+            if (PkLogoutState is LogoutState.Ready)
+            {
+                LogOut_Inner();
+                return true;
+            }
+
+            if (PkLogoutState is LogoutState.InProgress)
+                return false;
+
+            if (!PKLogout && PkLogoutState is LogoutState.Pending)
+                QueuePlayerToLogoff();
+
+            return false;
+        }
+
+        private void QueuePlayerToLogoff()
+        {
+            PkLogoutState = LogoutState.InProgress;
+            PKLogout = true;
+
+            var timer = PropertyManager.GetLong("pk_timer").Item;
+            Session.Network.EnqueueSend(new GameMessageSystemChat($"You will logout in {timer} seconds...", ChatMessageType.Broadcast));
+
+            if (Teleporting && ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.CustomDM)
+            {
+                OnTeleportComplete(CurrentTeleportId);
+
+                var actionChain = new ActionChain();
+                actionChain.AddDelaySeconds(2);
+                actionChain.AddAction(this, () =>
+                {
+                    IsFrozen = true;
+                    EnqueueBroadcastPhysicsState();
+                });
+                actionChain.EnqueueChain();
+            }
+            else
+            {
+                IsFrozen = true;
+                EnqueueBroadcastPhysicsState();
+            }
+
+            LogoffTimestamp = Time.GetFutureUnixTime(timer);
+            PlayerManager.AddPlayerToLogoffQueue(this);
         }
 
         private bool HandleMaterializeLogout()

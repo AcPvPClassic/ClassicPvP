@@ -131,6 +131,9 @@ namespace ACE.Server.Managers
                 {
                     playersPendingLogoff.RemoveFirst();
 
+                    if (first.PkLogoutState is Player.LogoutState.InProgress)
+                        first.PkLogoutState = Player.LogoutState.Ready;
+
                     if (first.MaterializedLogoutState is Player.LogoutState.InProgress)
                         first.MaterializedLogoutState = Player.LogoutState.Ready;
 

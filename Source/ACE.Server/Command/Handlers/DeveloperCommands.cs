@@ -2543,6 +2543,10 @@ namespace ACE.Server.Command.Handlers
                 msg += $"------- FoundOnLandblock: {foundOnLandblock}\n";
                 var playerForcedLogOffRequested = player.ForcedLogOffRequested;
                 msg += $"------- ForcedLogOffRequested: {playerForcedLogOffRequested}\n";
+                var pkState = player.PkLogoutState;
+                msg += $"------- PkLogoutState: {pkState}\n";
+                var matState = player.MaterializedLogoutState;
+                msg += $"------- MaterializedLogoutState: {matState}\n";
 
                 msg += "Log off path taken: ";
                 if (playerForcedLogOffRequested)
@@ -2598,6 +2602,8 @@ namespace ACE.Server.Command.Handlers
                     IsInDeathProcess    = player.IsInDeathProcess,
                     FoundOnLandblock    = foundOnLandblock,
                     ForcedLogOffRequested = playerForcedLogOffRequested,
+                    PkLogoutState       = (uint)pkState,
+                    MaterializedLogoutState = (uint)matState,
                     LogoffPath          = msg,
                     CreatedAtUtc        = DateTime.UtcNow
                 });
