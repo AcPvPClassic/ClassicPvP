@@ -839,6 +839,15 @@ namespace ACE.Server.WorldObjects
             PlayerManager.SwitchPlayerFromOnlineToOffline(this);
 
             log.DebugFormat("[LOGOUT] Account {0} exited the world with character {1} (0x{2}) at {3}.", Account.AccountName, Name, Guid, DateTime.Now.ToCommonString());
+
+            try
+            {
+                DatabaseManager.Log.LogCharacterLogout(this.Character.Id);
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception logging character logout to DB. Ex: {ex}");
+            }
         }
 
         public void SaveDotsAndHots()

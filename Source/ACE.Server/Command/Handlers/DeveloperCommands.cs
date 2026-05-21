@@ -2581,6 +2581,27 @@ namespace ACE.Server.Command.Handlers
                 else
                     msg += "\nPlease send the above report to ACEmulator development team via Discord.";
 
+                DatabaseManager.Log.LogStuckCharacter(new ACE.Database.Models.Log.StuckCharacterLog
+                {
+                    PlayerGuid          = player.Guid.Full,
+                    PlayerName          = player.Name,
+                    AccountName         = player.Account?.AccountName,
+                    AccountId           = (int)(player.Account?.AccountId ?? 0),
+                    SessionInfo         = player.Session != null
+                                            ? $"C2S: {player.Session.EndPointC2S} | S2C: {player.Session.EndPointS2C}"
+                                            : "NULL",
+                    Landblock           = player.CurrentLandblock != null
+                                            ? $"0x{player.CurrentLandblock.Id:X4}"
+                                            : "NULL",
+                    Location            = player.Location?.ToLOCString() ?? "NULL",
+                    IsLoggingOut        = player.IsLoggingOut,
+                    IsInDeathProcess    = player.IsInDeathProcess,
+                    FoundOnLandblock    = foundOnLandblock,
+                    ForcedLogOffRequested = playerForcedLogOffRequested,
+                    LogoffPath          = msg,
+                    CreatedAtUtc        = DateTime.UtcNow
+                });
+
                 CommandHandlerHelper.WriteOutputInfo(session, msg);
 
                 PlayerManager.BroadcastToAuditChannel(session?.Player, $"Forcing Log Off of {player.Name}...");
