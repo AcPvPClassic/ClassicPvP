@@ -258,5 +258,6 @@ namespace ACE.Entity.Enum.Properties
 
         // PvP
         LastChugTimestamp              = 10026,
+        LastPlayerCommandTimestamp     = 10027,
     }
 }

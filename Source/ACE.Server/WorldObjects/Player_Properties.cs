@@ -1683,6 +1683,12 @@ namespace ACE.Server.WorldObjects
             set { if (!value.HasValue) RemoveProperty(PropertyFloat.LastChugTimestamp); else SetProperty(PropertyFloat.LastChugTimestamp, value.Value); }
         }
 
+        public double? LastPlayerCommandTimestamp
+        {
+            get => GetProperty(PropertyFloat.LastPlayerCommandTimestamp);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.LastPlayerCommandTimestamp); else SetProperty(PropertyFloat.LastPlayerCommandTimestamp, value.Value); }
+        }
+
         public Dictionary<uint, uint> ArenaRewardsByOpponent
         {
             get
