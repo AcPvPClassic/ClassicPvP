@@ -963,6 +963,30 @@ namespace ACE.Server.WorldObjects
                 return 1.0f;
 
             var player = this as Player;
+
+            // OOC Shield: shield specialists can block in non-combat stance during PvP
+            // (Infiltration ruleset only; disabled in 1v1 arenas)
+            if (Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.Infiltration && CombatMode == CombatMode.NonCombat)
+            {
+                var mustBeInCombatStance = true;
+
+                var attackerPlayer = attacker as Player;
+                if (player != null && attackerPlayer != null)
+                {
+                    var arenaEvent = ArenaManager.GetArenaEventByLandblock(this.Location.Landblock);
+                    if (arenaEvent == null || !arenaEvent.EventType.Equals("1v1"))
+                    {
+                        bool hasShield = this.Skills?.ContainsKey(Skill.Shield) ?? false;
+                        bool isShieldSpec = hasShield && this.Skills[Skill.Shield]?.AdvancementClass == SkillAdvancementClass.Specialized;
+                        if (isShieldSpec)
+                            mustBeInCombatStance = false;
+                    }
+                }
+
+                if (mustBeInCombatStance)
+                    return 1.0f;
+            }
+
             if (Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.CustomDM)
             {
                 if (player != null && GetCreatureSkill(Skill.Shield).AdvancementClass < SkillAdvancementClass.Trained)
