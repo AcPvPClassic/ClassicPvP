@@ -5438,10 +5438,11 @@ namespace ACE.Server.Command.Handlers
         {
             StringBuilder returnMsg = new StringBuilder();
             returnMsg.Append("******** Arena Debug Info ********\n\n");
+
             returnMsg.Append("Queued Players:\n\n");
 
             var queuedPlayers = ArenaManager.GetQueuedPlayers();
-            if (queuedPlayers != null && queuedPlayers.Count > 0)
+            if (queuedPlayers != null)
             {
                 foreach (var arenaPlayer in queuedPlayers)
                 {
@@ -5453,15 +5454,16 @@ namespace ACE.Server.Command.Handlers
                     returnMsg.Append($"  Level = {arenaPlayer.CharacterLevel}\n");
                     returnMsg.Append($"  MonarchId = {arenaPlayer.MonarchId}\n");
                     returnMsg.Append($"  MonarchName = {arenaPlayer.MonarchName}\n");
-                    returnMsg.Append($"  TeamGuid = {arenaPlayer.TeamGuid}\n");
-                    returnMsg.Append($"  EventID = {arenaPlayer.EventId}\n");
-                    returnMsg.Append($"  FinishPlace = {arenaPlayer.FinishPlace}\n");
-                    returnMsg.Append($"  IsDisqualified = {arenaPlayer.IsDisqualified}\n");
-                    returnMsg.Append($"  IsEliminated = {arenaPlayer.IsEliminated}\n");
-                    returnMsg.Append($"  TotalDeaths = {arenaPlayer.TotalDeaths}\n");
-                    returnMsg.Append($"  TotalKills = {arenaPlayer.TotalKills}\n");
-                    returnMsg.Append($"  TotalDmgDealt = {arenaPlayer.TotalDmgDealt}\n");
-                    returnMsg.Append($"  TotalDmgReceived = {arenaPlayer.TotalDmgReceived}\n\n");
+                    returnMsg.Append($"  * properties that should be empty when queued *\n");
+                    returnMsg.Append($"    TeamGuid = {arenaPlayer.TeamGuid}\n");
+                    returnMsg.Append($"    EventID = {arenaPlayer.EventId}\n");
+                    returnMsg.Append($"    FinishPlace = {arenaPlayer.FinishPlace}\n");
+                    returnMsg.Append($"    IsDisqualified = {arenaPlayer.IsDisqualified}\n");
+                    returnMsg.Append($"    IsEliminated = {arenaPlayer.IsEliminated}\n");
+                    returnMsg.Append($"    TotalDeaths = {arenaPlayer.TotalDeaths}\n");
+                    returnMsg.Append($"    TotalKills = {arenaPlayer.TotalKills}\n");
+                    returnMsg.Append($"    TotalDmgDealt = {arenaPlayer.TotalDmgDealt}\n");
+                    returnMsg.Append($"    TotalDmgReceived = {arenaPlayer.TotalDmgReceived}\n\n");
                 }
             }
             else
@@ -5472,7 +5474,7 @@ namespace ACE.Server.Command.Handlers
             returnMsg.Append($"\nActive Events:\n\n");
 
             var activeEvents = ArenaManager.GetActiveEvents();
-            if (activeEvents != null && activeEvents.Count > 0)
+            if (activeEvents != null)
             {
                 foreach (var arenaEvent in activeEvents)
                 {
@@ -5483,8 +5485,13 @@ namespace ACE.Server.Command.Handlers
                     returnMsg.Append($"  CreatedDateTime = {arenaEvent.CreatedDateTime}\n");
                     returnMsg.Append($"  StartDateTime = {arenaEvent.StartDateTime}\n");
                     returnMsg.Append($"  EndDateTime = {arenaEvent.EndDateTime}\n");
+                    returnMsg.Append($"  PreEventCountdownStartDateTime = {arenaEvent.PreEventCountdownStartDateTime}\n");
+                    returnMsg.Append($"  CountdownStartDateTime = {arenaEvent.CountdownStartDateTime}\n");
                     returnMsg.Append($"  TimeRemaining = {arenaEvent.TimeRemaining}\n");
                     returnMsg.Append($"  WinningTeamGuid = {arenaEvent.WinningTeamGuid}\n");
+                    returnMsg.Append($"  IsOvertime = {arenaEvent.IsOvertime}\n");
+                    returnMsg.Append($"  OvertimeHealingModifier = {arenaEvent.OvertimeHealingModifier}\n");
+                    returnMsg.Append($"  OvertimeRemaining = {arenaEvent.OvertimeRemaining}\n");
                     returnMsg.Append($"  CancelReason = {arenaEvent.CancelReason}\n");
                     returnMsg.Append($"  Players:\n");
                     foreach (var arenaPlayer in arenaEvent.Players)
@@ -5492,8 +5499,13 @@ namespace ACE.Server.Command.Handlers
                         returnMsg.Append($"    CharacterID = {arenaPlayer.CharacterId}\n");
                         returnMsg.Append($"    CharacterName = {arenaPlayer.CharacterName}\n");
                         returnMsg.Append($"    EventType = {arenaPlayer.EventType}\n");
+                        returnMsg.Append($"    CreatedDate = {arenaPlayer.CreateDateTime}\n");
+                        returnMsg.Append($"    IP = {arenaPlayer.PlayerIP}\n");
                         returnMsg.Append($"    Level = {arenaPlayer.CharacterLevel}\n");
+                        returnMsg.Append($"    MonarchId = {arenaPlayer.MonarchId}\n");
+                        returnMsg.Append($"    MonarchName = {arenaPlayer.MonarchName}\n");
                         returnMsg.Append($"    TeamGuid = {arenaPlayer.TeamGuid}\n");
+                        returnMsg.Append($"    EventID = {arenaPlayer.EventId}\n");
                         returnMsg.Append($"    FinishPlace = {arenaPlayer.FinishPlace}\n");
                         returnMsg.Append($"    IsDisqualified = {arenaPlayer.IsDisqualified}\n");
                         returnMsg.Append($"    IsEliminated = {arenaPlayer.IsEliminated}\n");
@@ -5502,6 +5514,7 @@ namespace ACE.Server.Command.Handlers
                         returnMsg.Append($"    TotalDmgDealt = {arenaPlayer.TotalDmgDealt}\n");
                         returnMsg.Append($"    TotalDmgReceived = {arenaPlayer.TotalDmgReceived}\n\n");
                     }
+
                     returnMsg.Append($"\n");
                 }
             }
