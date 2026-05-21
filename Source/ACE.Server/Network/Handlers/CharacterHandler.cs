@@ -284,6 +284,15 @@ namespace ACE.Server.Network.Handlers
             {
 
             }
+
+            try
+            {
+                DatabaseManager.Log.LogCharacterLogin(session.AccountId, session.Account, session.EndPointC2S.Address.ToString(), character.Id, character.Name);
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception logging character login to log database. Ex: {ex}");
+            }
         }
 
 

@@ -28,5 +28,7 @@ namespace ACE.Common
             Username = "root",
             Password = ""
         };
+
+        public MySqlConfiguration Log { get; set; }
     }
 }

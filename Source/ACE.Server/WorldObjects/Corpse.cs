@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 using log4net;
 
+using ACE.Database;
+
 using ACE.Common;
 using ACE.Entity;
 using ACE.Server.Entity.Actions;
@@ -457,6 +459,24 @@ namespace ACE.Server.WorldObjects
                 killerName = killer.Name.TrimStart('+');
                 CorpseGeneratedRare = true;
                 LongDesc += " This corpse generated a rare item!";
+
+                try
+                {
+                    var killerCharacterId = killerPlayer != null ? (uint)killerPlayer.Character.Id : 0;
+                    var killerCharacterName = killerPlayer?.Name ?? killer.Name;
+                    DatabaseManager.Log.LogRare(new ACE.Database.Models.Log.RareLog
+                    {
+                        CharacterId    = killerCharacterId,
+                        CharacterName  = killerCharacterName,
+                        ItemBiotaId    = wo.Biota.Id,
+                        ItemWeenieId   = wo.WeenieClassId,
+                        ItemName       = wo.Name
+                    });
+                }
+                catch (Exception ex)
+                {
+                    log.Error($"Exception logging rare to log database. Ex: {ex}");
+                }
                 TimeToRot = 900;  // guesstimated 15 mins from hells
 
                 if (killerPlayer != null)

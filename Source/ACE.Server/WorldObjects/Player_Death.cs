@@ -266,6 +266,21 @@ namespace ACE.Server.WorldObjects
                 DatabaseManager.Shard.BaseDatabase.LogPlayerDeath(Account.AccountId, Guid.Full, Name, Level ?? 1, killerName, killerLevel, CurrentLandblock.Id.Raw >> 16, (int)GameplayMode, wasPvP, PlayerKillsPkl ?? 0, TotalExperience ?? 0, Age ?? 0, DateTime.Now, MonarchId);
             }
 
+            if (topDamager != null && topDamager.IsPlayer && topDamager.Guid != Guid)
+            {
+                try
+                {
+                    var killerPlayer = topDamager.TryGetAttacker() as Player;
+                    var victimMonarchId = MonarchId.HasValue ? (uint?)MonarchId.Value : null;
+                    var killerMonarchId = killerPlayer?.MonarchId.HasValue == true ? (uint?)killerPlayer.MonarchId.Value : null;
+                    DatabaseManager.Log.LogPkKill((uint)Character.Id, (uint)topDamager.Guid.Full, victimMonarchId, killerMonarchId);
+                }
+                catch (Exception ex)
+                {
+                    log.Error($"Exception logging PK kill to log database. Ex: {ex}");
+                }
+            }
+
             UpdateVital(Health, 0);
             NumDeaths++;
             suicideInProgress = false;

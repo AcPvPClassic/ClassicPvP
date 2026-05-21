@@ -441,6 +441,29 @@ namespace ACE.Server.Managers
             var success = roll < successChance;
             log.Info($"Player = { player.Name}; Tool = { source.Name}; Target = { target.Name}; Chance = {successChance}; Roll = {roll}");
 
+            if (recipe.IsTinkering())
+            {
+                try
+                {
+                    var sourceName = System.Text.RegularExpressions.Regex.Replace(source.Name ?? "", @"\s*\(.*?\)\s*", "").Trim();
+                    DatabaseManager.Log.LogTinkeringEvent(
+                        (uint)player.Character.Id,
+                        player.Name,
+                        target.Biota.Id,
+                        (float)successChance,
+                        (float)roll,
+                        success,
+                        (uint)target.NumTimesTinkered,
+                        (uint)(target.Workmanship ?? 0),
+                        sourceName,
+                        (uint)(source.Workmanship ?? 0));
+                }
+                catch (Exception ex)
+                {
+                    log.Error($"Exception logging tinkering event to log database. Ex: {ex}");
+                }
+            }
+
             if (recipe.IsImbuing())
             {
                 player.ImbueAttempts++;
