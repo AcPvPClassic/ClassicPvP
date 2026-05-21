@@ -458,7 +458,15 @@ namespace ACE.Server.Managers
 
             EventManager.Tick();
 
-            ArenaManager.Tick();
+            //Arena logic
+            try
+            {
+                ArenaManager.Tick();
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception executing ArenaManager Tick. ex: {ex}");
+            }
 
             ServerPerformanceMonitor.RegisterEventEnd(ServerPerformanceMonitor.MonitorType.UpdateGameWorld_Entire);
             ServerPerformanceMonitor.RegisterCumulativeEvents();
