@@ -695,6 +695,8 @@ namespace ACE.Server.WorldObjects
 
         private bool HandleMaterializeLogout()
         {
+            log.Debug($"HandleMaterialize -> State -> {MaterializedLogoutState}");
+
             if (MaterializedLogoutState is LogoutState.Ready)
             {
                 LogOut_Inner();
@@ -710,6 +712,7 @@ namespace ACE.Server.WorldObjects
                 return false;
             }
 
+            LogOut_Inner();
             return true;
         }
 

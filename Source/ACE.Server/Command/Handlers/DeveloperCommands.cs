@@ -2535,8 +2535,10 @@ namespace ACE.Server.Command.Handlers
                 msg += $"------- Session: {(player.Session != null ? $"C2S: {player.Session.EndPointC2S} | S2C: {player.Session.EndPointS2C}" : "NULL")}\n";
                 msg += $"------- CurrentLandblock: {(player.CurrentLandblock != null ? $"0x{player.CurrentLandblock.Id:X4}" : "NULL")}\n";
                 msg += $"------- Location: {(player.Location != null ? $"{player.Location.ToLOCString()}" : "NULL")}\n";
-                msg += $"------- IsLoggingOut: {player.IsLoggingOut}\n";
-                msg += $"------- IsInDeathProcess: {player.IsInDeathProcess}\n";
+                var wasLoggingOut = player.IsLoggingOut;
+                msg += $"------- IsLoggingOut: {wasLoggingOut}\n";
+                var wasInDeathProcess = player.IsInDeathProcess;
+                msg += $"------- IsInDeathProcess: {wasInDeathProcess}\n";
                 var foundOnLandblock = false;
                 if (player.CurrentLandblock != null)
                     foundOnLandblock = LandblockManager.GetLandblock(player.CurrentLandblock.Id, false).GetObject(player.Guid) != null;
@@ -2598,8 +2600,8 @@ namespace ACE.Server.Command.Handlers
                                             ? $"0x{player.CurrentLandblock.Id:X4}"
                                             : "NULL",
                     Location            = player.Location?.ToLOCString() ?? "NULL",
-                    IsLoggingOut        = player.IsLoggingOut,
-                    IsInDeathProcess    = player.IsInDeathProcess,
+                    IsLoggingOut        = wasLoggingOut,
+                    IsInDeathProcess    = wasInDeathProcess,
                     FoundOnLandblock    = foundOnLandblock,
                     ForcedLogOffRequested = playerForcedLogOffRequested,
                     PkLogoutState       = (uint)pkState,
