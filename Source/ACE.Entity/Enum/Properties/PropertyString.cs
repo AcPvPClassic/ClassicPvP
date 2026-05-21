@@ -113,5 +113,8 @@ namespace ACE.Entity.Enum.Properties
 
         DamageOverTimeLog               = 9021,
         HealOverTimeLog                 = 9022,
+
+        // Arena
+        ArenaRewardsByOpponent          = 9023,
     }
 }

@@ -248,5 +248,12 @@ namespace ACE.Entity.Enum.Properties
         EWCoordinates                  = 10018,
         RolledSpellcraftMultiplier     = 10019,
         LastTeleportEndTimestamp       = 10020,
+
+        // Arena
+        ArenaHourlyTimestamp           = 10021,
+        ArenaHourlyCount               = 10022,
+        ArenaDailyRewardTimestamp      = 10023,
+        ArenaDailyRewardCount          = 10024,
+        ArenaSameClanDailyRewardCount  = 10025,
     }
 }

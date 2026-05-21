@@ -204,5 +204,11 @@ namespace ACE.Entity.Enum.Properties
         AiIncapableOfAnyMotion            = 9027,
         IsVendorGeneratedItem             = 9028,
         BlockSpellExtraction              = 9029,
+
+        // Arena
+        IsArenaObserver                  = 9030,
+        IsPendingArenaObserver           = 9031,
+        HasArenaRareDmgBuff              = 9032,
+        HasArenaRareDmgReductionBuff     = 9033,
     }
 }

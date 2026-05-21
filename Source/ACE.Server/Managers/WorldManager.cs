@@ -458,6 +458,8 @@ namespace ACE.Server.Managers
 
             EventManager.Tick();
 
+            ArenaManager.Tick();
+
             ServerPerformanceMonitor.RegisterEventEnd(ServerPerformanceMonitor.MonitorType.UpdateGameWorld_Entire);
             ServerPerformanceMonitor.RegisterCumulativeEvents();
 

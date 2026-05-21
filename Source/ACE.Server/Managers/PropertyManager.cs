@@ -699,7 +699,10 @@ namespace ACE.Server.Managers
                 ("force_logout_materialization", new Property<bool>(true, "forces players to materialize before logging out if they are teleporting")),
                 ("force_teleport_materialization", new Property<bool>(true, "forces players to remain in portal space for a duration after teleporting")),
                 ("force_login_materialization", new Property<bool>(true, "forces players to remain in portal space for a duration after logging in")),
-                ("recent_teleport_prevention", new Property<bool>(true, "prevents players from teleporting again immediately after materializing"))
+                ("recent_teleport_prevention", new Property<bool>(true, "prevents players from teleporting again immediately after materializing")),
+                ("disable_arenas", new Property<bool>(false, "set to true to disable arena events")),
+                ("arena_allow_same_ip_match", new Property<bool>(false, "enable to allow two characters from the same IP to be matched in an arena event")),
+                ("arena_allow_observers", new Property<bool>(true, "enable to allow players to watch arena matches as invisible observers"))
                 );
 
         public static readonly ReadOnlyDictionary<string, Property<long>> DefaultLongProperties =
@@ -725,7 +728,9 @@ namespace ACE.Server.Managers
                 ("bz_whispers_min_pop", new Property<long>(5, "CustomDM: Minimum required online PK players for bz whispers to be sent")),
                 ("bz_whispers_login_delay", new Property<long>(3600, "CustomDM: How long a player must remain online before being able to receive a bz whisper")),
                 ("bz_whispers_interval", new Property<long>(600, "CustomDM: How often a player can receive a bz whisper")),
-                ("minimum_portalspace_seconds", new Property<long>(3, "minimum number of seconds a player must be in portal space before exiting"))
+                ("minimum_portalspace_seconds", new Property<long>(3, "minimum number of seconds a player must be in portal space before exiting")),
+                ("arenas_reward_min_level", new Property<long>(25, "the minimum level required to get arena rewards")),
+                ("arenas_reward_min_age", new Property<long>(864000, "the minimum in-game age in seconds required to get arena rewards"))
                 );
 
         public static readonly ReadOnlyDictionary<string, Property<double>> DefaultDoubleProperties =
@@ -1040,7 +1045,9 @@ namespace ACE.Server.Managers
                 ("force_logout_materialization_duration", new Property<double>(1.0, "seconds a player materializes for before logging out")),
                 ("force_teleport_materialization_duration", new Property<double>(10.0, "seconds after teleporting that a player is held in portal space")),
                 ("force_login_materialization_duration", new Property<double>(10.0, "seconds after logging in that a player is held in portal space")),
-                ("recent_teleport_threshold", new Property<double>(3.0, "seconds after materializing before a player can teleport again"))
+                ("recent_teleport_threshold", new Property<double>(3.0, "seconds after materializing before a player can teleport again")),
+                ("arena_corpse_rot_seconds", new Property<double>(900, "the number of seconds a corpse generated in an arena landblock takes to rot")),
+                ("arena_pk_respite_timer", new Property<double>(120, "the number of seconds a player killer is set to NPK status after dying in an arena match"))
                 );
         
         public static readonly ReadOnlyDictionary<string, Property<string>> DefaultStringProperties =
@@ -1060,7 +1067,8 @@ namespace ACE.Server.Managers
                 ("turbine_chat_webhook_audit", new Property<string>("", "Webhook to be used for ingame audit log.")),
                 ("proxycheck_api_key", new Property<string>("", "API key for proxycheck.io service for VPN detection")),
                 ("vpn_account_whitelist", new Property<string>("", "A comma separated list of account names for which VPN detection is bypassed")),
-                ("discord_login_token", new Property<string>("", "Login Token used for Discord chat integration"))
+                ("discord_login_token", new Property<string>("", "Login Token used for Discord chat integration")),
+                ("arena_globals_webhook", new Property<string>("", "Webhook for sending arena global messages to Discord"))
                 );
     }
 }

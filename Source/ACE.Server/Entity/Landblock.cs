@@ -1808,6 +1808,24 @@ namespace ACE.Server.Entity
         }
 
 
+        private bool? _isArenaLandblock;
+        public bool IsArenaLandblock
+        {
+            get
+            {
+                if (_isArenaLandblock == null)
+                    _isArenaLandblock = ACE.Server.Entity.ArenaLocation.IsArenaLandblock(this.Id.Landblock);
+                return _isArenaLandblock.Value;
+            }
+        }
+
+        public List<Player> GetCurrentLandblockPlayers()
+        {
+            var playerList = new List<Player>();
+            playerList.AddRange(players);
+            return playerList;
+        }
+
         public List<House> Houses = new List<House>();
 
         public void SetFogColor(EnvironChangeType environChangeType)
