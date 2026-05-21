@@ -561,6 +561,19 @@ namespace ACE.Server.WorldObjects
 
         public bool IsLoggingOut;
 
+        public bool ForceLogoutMaterialization => PropertyManager.GetBool("force_logout_materialization").Item;
+
+        public double ForceLogoutMaterializationDuration => PropertyManager.GetDouble("force_logout_materialization_duration").Item;
+
+        public enum LogoutState
+        {
+            Pending,
+            InProgress,
+            Ready
+        }
+
+        public LogoutState MaterializedLogoutState = LogoutState.Pending;
+
         /// <summary>
         /// Do the player log out work.<para />
         /// If you want to force a player to logout, use Session.LogOffPlayer().
@@ -624,7 +637,7 @@ namespace ACE.Server.WorldObjects
 
                     if (Teleporting && ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.CustomDM)
                     {
-                        OnTeleportComplete();
+                        OnTeleportComplete(CurrentTeleportId);
 
                         var actionChain = new ActionChain();
                         actionChain.AddDelaySeconds(2);
@@ -647,9 +660,46 @@ namespace ACE.Server.WorldObjects
                 return false;
             }
 
+            if (ForceLogoutMaterialization || MaterializedLogoutState != LogoutState.Pending)
+            {
+                return HandleMaterializeLogout();
+            }
+
             LogOut_Inner(clientSessionTerminatedAbruptly);
 
             return true;
+        }
+
+        private bool HandleMaterializeLogout()
+        {
+            if (MaterializedLogoutState is LogoutState.Ready)
+            {
+                LogOut_Inner();
+                return true;
+            }
+
+            if (MaterializedLogoutState is LogoutState.InProgress)
+                return false;
+
+            if (Teleporting && !IsInDeathProcess && MaterializedLogoutState is LogoutState.Pending)
+            {
+                ForceMaterializeForLogoff();
+                return false;
+            }
+
+            return true;
+        }
+
+        public void ForceMaterializeForLogoff()
+        {
+            MaterializedLogoutState = LogoutState.InProgress;
+
+            _teleportId++;
+
+            OnTeleportComplete(_teleportId);
+
+            LogoffTimestamp = Time.GetFutureUnixTime(ForceLogoutMaterializationDuration);
+            PlayerManager.AddPlayerToLogoffQueue(this);
         }
 
         public void LogOut_Inner(bool clientSessionTerminatedAbruptly = false)

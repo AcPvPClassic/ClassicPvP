@@ -163,7 +163,26 @@ namespace ACE.Server.WorldObjects
 
             RestoreDotsAndHots();
 
+            ForceMaterializeForLogin();
+
             log.DebugFormat("[LOGIN] Account {0} entered the world with character {1} (0x{2}) at {3}.", Account.AccountName, Name, Guid, DateTime.Now.ToCommonString());
+        }
+
+        public bool ForceLoginMaterialization => PropertyManager.GetBool("force_login_materialization").Item;
+        public double ForceLoginMaterializationDuration => PropertyManager.GetDouble("force_login_materialization_duration").Item;
+
+        public void ForceMaterializeForLogin()
+        {
+            if (!ForceLoginMaterialization)
+                return;
+
+            if (IsInDeathProcess)
+                return;
+
+            var actionChain = new ActionChain();
+            actionChain.AddDelaySeconds(ForceLoginMaterializationDuration);
+            actionChain.AddAction(this, () => OnTeleportComplete(CurrentTeleportId));
+            actionChain.EnqueueChain();
         }
 
         public void SendTurbineChatChannels(bool breakAllegiance = false)

@@ -91,6 +91,14 @@ namespace ACE.Server.Managers
                 playersPendingLogoff.AddLast(player);
         }
 
+        public static bool IsInLogoffQueue(Player player)
+        {
+            if (player == null)
+                return false;
+
+            return playersPendingLogoff.Contains(player);
+        }
+
         private static readonly TimeSpan playerFinalLogoutDuration = TimeSpan.FromMinutes(15);
 
         public static void AddPlayerToFinalLogoffQueue(Player player)
@@ -122,7 +130,11 @@ namespace ACE.Server.Managers
                 if (first.LogoffTimestamp <= currentUnixTime)
                 {
                     playersPendingLogoff.RemoveFirst();
-                    first.LogOut_Inner();
+
+                    if (first.MaterializedLogoutState is Player.LogoutState.InProgress)
+                        first.MaterializedLogoutState = Player.LogoutState.Ready;
+
+                    first.LogOut();
                     first.Session.logOffRequestTime = DateTime.UtcNow;
                 }
                 else

@@ -696,15 +696,78 @@ namespace ACE.Server.WorldObjects
 
         public DateTime LastTeleportTime;
 
+        public bool ForceTeleportMaterialization => PropertyManager.GetBool("force_teleport_materialization").Item;
+        public double ForceTeleportMaterializationDuration => PropertyManager.GetDouble("force_teleport_materialization_duration").Item;
+
+        public bool IsRecentTeleportPreventionEnabled = PropertyManager.GetBool("recent_teleport_prevention").Item;
+
+        public bool BlockRecentTeleport
+        {
+            get
+            {
+                if (!IsRecentTeleportPreventionEnabled)
+                    return false;
+
+                var secondsSinceMaterializing = Time.GetUnixTime() - (LastTeleportEndTimestamp ?? 0);
+                return secondsSinceMaterializing < PropertyManager.GetDouble("recent_teleport_threshold").Item;
+            }
+        }
+
+        public void ForceMaterializeForTeleport(ulong teleportId)
+        {
+            if (!ForceTeleportMaterialization)
+                return;
+
+            if (IsInDeathProcess)
+                return;
+
+            var actionChain = new ActionChain();
+            actionChain.AddDelaySeconds(ForceTeleportMaterializationDuration);
+            actionChain.AddAction(this, () => OnTeleportComplete(teleportId));
+            actionChain.EnqueueChain();
+        }
+
+        private ulong _teleportId = 0;
+        public ulong CurrentTeleportId => _teleportId;
+
+        public Position FallbackPosition => Sanctuary ?? Instantiation ?? new Position(0xA9B00015, 60.108139f, 103.333549f, 64.402885f, 0.000000f, 0.000000f, -0.381155f, -0.924511f);
+
+        private enum TeleportValidationResult
+        {
+            Allowed,
+            BlockedRecentTeleport,
+        }
+
+        private TeleportValidationResult ValidateTeleport(bool force)
+        {
+            if (IsAdmin)
+                return TeleportValidationResult.Allowed;
+
+            if (!IsRecentTeleportPreventionEnabled || force)
+                return TeleportValidationResult.Allowed;
+
+            if (Teleporting || BlockRecentTeleport)
+                return TeleportValidationResult.BlockedRecentTeleport;
+
+            return TeleportValidationResult.Allowed;
+        }
+
         /// <summary>
         /// This is not thread-safe. Consider using WorldManager.ThreadSafeTeleport() instead if you're calling this from a multi-threaded subsection.
         /// </summary>
-        public void Teleport(Position _newPosition, bool fromPortal = false)
+        public void Teleport(Position _newPosition, bool fromPortal = false, bool force = true)
         {
+            var validateResult = ValidateTeleport(force);
+            if (validateResult == TeleportValidationResult.BlockedRecentTeleport)
+            {
+                Session.Network.EnqueueSend(new GameEventWeenieError(Session, WeenieError.YouHaveBeenTeleportedTooRecently));
+                return;
+            }
+
             var newPosition = new Position(_newPosition);
 
             if(newPosition.PositionX == 0 && newPosition.PositionY == 0 && newPosition.Cell == 0) // Trying to catch invalid position.
-                newPosition = new Position(Sanctuary) ?? new Position(Instantiation) ?? new Position(0xA9B00015, 60.108139f, 103.333549f, 64.402885f, 0.000000f, 0.000000f, -0.381155f, -0.924511f);
+                newPosition = new Position(FallbackPosition);
 
             //newPosition.PositionZ += 0.005f;
             newPosition.PositionZ += 0.005f * (ObjScale ?? 1.0f);
@@ -727,6 +790,8 @@ namespace ACE.Server.WorldObjects
 
                 return;
             }
+
+            var currentTeleportId = ++_teleportId;
 
             Teleporting = true;
             LastTeleportTime = DateTime.UtcNow;
@@ -774,11 +839,13 @@ namespace ACE.Server.WorldObjects
             HandlePreTeleportVisibility(newPosition);
 
             UpdatePlayerPosition(new Position(newPosition), true);
+
+            ForceMaterializeForTeleport(currentTeleportId);
         }
 
         public void DoPreTeleportHide()
         {
-            if (Teleporting) return;
+            if (Teleporting || BlockRecentTeleport) return;
             PlayParticleEffect(PlayScript.Hide, Guid);
         }
 
@@ -806,16 +873,32 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public double? LastPortalTeleportTimestampError;
 
-        public void OnTeleportComplete()
+        public void OnTeleportComplete(ulong teleportId)
         {
+            if (teleportId != _teleportId)
+                return;
+
+            if (!Teleporting)
+                return;
+
             if (CurrentLandblock != null && !CurrentLandblock.CreateWorldObjectsCompleted)
             {
                 // If the critical landblock resources haven't been loaded yet, we keep the player in the pink bubble state
                 // We'll check periodically to see when it's safe to let them materialize in
                 var actionChain = new ActionChain();
                 actionChain.AddDelaySeconds(0.1);
-                actionChain.AddAction(this, OnTeleportComplete);
+                actionChain.AddAction(this, () => OnTeleportComplete(teleportId));
                 actionChain.EnqueueChain();
+                return;
+            }
+
+            var minPortalspaceSeconds = PropertyManager.GetLong("minimum_portalspace_seconds").Item;
+            if (LastTeleportStartTimestamp > Time.GetUnixTime(DateTime.UtcNow.AddSeconds(-1 * minPortalspaceSeconds)))
+            {
+                var delayTeleport = new ActionChain();
+                delayTeleport.AddDelaySeconds(1);
+                delayTeleport.AddAction(this, () => OnTeleportComplete(teleportId));
+                delayTeleport.EnqueueChain();
                 return;
             }
 
@@ -836,16 +919,35 @@ namespace ACE.Server.WorldObjects
 
             CheckMonsters();
             CheckHouse();
+            CheckMaterializedLogoutState();
 
             EnqueueBroadcastPhysicsState();
 
             // hijacking this for both start/end on portal teleport
             if (LastTeleportStartTimestamp == LastPortalTeleportTimestamp)
                 LastPortalTeleportTimestamp = Time.GetUnixTime();
+
+            LastTeleportEndTimestamp = Time.GetUnixTime();
+        }
+
+        private void CheckMaterializedLogoutState()
+        {
+            if (MaterializedLogoutState == LogoutState.InProgress)
+            {
+                MaterializedLogoutState = LogoutState.Ready;
+                if (!PlayerManager.IsInLogoffQueue(this))
+                {
+                    LogoffTimestamp = Time.GetUnixTime();
+                    PlayerManager.AddPlayerToLogoffQueue(this);
+                }
+            }
         }
 
         public void SendTeleportedViaMagicMessage(WorldObject itemCaster, Spell spell)
         {
+            if (BlockRecentTeleport)
+                return;
+
             if (itemCaster == null || itemCaster is Gem)
                 Session.Network.EnqueueSend(new GameMessageSystemChat($"You have been teleported.", ChatMessageType.Magic));
             else if (this != itemCaster && !(itemCaster is Gem) && !(itemCaster is Switch) && !(itemCaster.GetProperty(PropertyBool.NpcInteractsSilently) ?? false))

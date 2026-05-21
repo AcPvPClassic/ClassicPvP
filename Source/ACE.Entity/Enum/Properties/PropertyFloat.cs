@@ -247,5 +247,6 @@ namespace ACE.Entity.Enum.Properties
         NSCoordinates                  = 10017,
         EWCoordinates                  = 10018,
         RolledSpellcraftMultiplier     = 10019,
+        LastTeleportEndTimestamp       = 10020,
     }
 }

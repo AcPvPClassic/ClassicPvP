@@ -695,7 +695,11 @@ namespace ACE.Server.Managers
                 ("cmd_pop_show_current", new Property<bool>(true, "Allow the pop command to show current online population count")),
                 ("cmd_pop_show_24_hours", new Property<bool>(true, "Allow the pop command to show the 24 hours unique IPs count")),
                 ("cmd_pop_show_7_days", new Property<bool>(true, "Allow the pop command to show the 7 days unique IPs count")),
-                ("bz_whispers_enabled", new Property<bool>(true, "CustomDM: Enables/Disables whispers from Bael'Zharon revealing the location of other PK players"))
+                ("bz_whispers_enabled", new Property<bool>(true, "CustomDM: Enables/Disables whispers from Bael'Zharon revealing the location of other PK players")),
+                ("force_logout_materialization", new Property<bool>(true, "forces players to materialize before logging out if they are teleporting")),
+                ("force_teleport_materialization", new Property<bool>(true, "forces players to remain in portal space for a duration after teleporting")),
+                ("force_login_materialization", new Property<bool>(true, "forces players to remain in portal space for a duration after logging in")),
+                ("recent_teleport_prevention", new Property<bool>(true, "prevents players from teleporting again immediately after materializing"))
                 );
 
         public static readonly ReadOnlyDictionary<string, Property<long>> DefaultLongProperties =
@@ -720,7 +724,8 @@ namespace ACE.Server.Managers
                 ("quest_mindelta_rate_shortest", new Property<long>(72000, "Quest min deltas below this won't be affected by quest_mindelta_rate, additionally modified min deltas that would fall under this value will be set to this value instead")),
                 ("bz_whispers_min_pop", new Property<long>(5, "CustomDM: Minimum required online PK players for bz whispers to be sent")),
                 ("bz_whispers_login_delay", new Property<long>(3600, "CustomDM: How long a player must remain online before being able to receive a bz whisper")),
-                ("bz_whispers_interval", new Property<long>(600, "CustomDM: How often a player can receive a bz whisper"))
+                ("bz_whispers_interval", new Property<long>(600, "CustomDM: How often a player can receive a bz whisper")),
+                ("minimum_portalspace_seconds", new Property<long>(3, "minimum number of seconds a player must be in portal space before exiting"))
                 );
 
         public static readonly ReadOnlyDictionary<string, Property<double>> DefaultDoubleProperties =
@@ -1031,7 +1036,11 @@ namespace ACE.Server.Managers
                 ("hot_dungeon_bonus_xp", new Property<double>(1.0, "Extra xp earned for kills when inside hot dungeons. 1.0 means 100% more xp.")),
                 ("exploration_bonus_xp", new Property<double>(0.5, "Extra xp earned while completing exploration assignment's objectives. 1.0 means 100% more xp.")),
                 ("relive_bonus_xp", new Property<double>(1.0, "Extra xp earned while reliving levels after a death that resulted in lost levels. 1.0 means 100% more xp.")),
-                ("bz_whispers_chance", new Property<double>(0.2, "CustomDM: The chance a player will receive a bz whisper every bz_whispers_interval"))
+                ("bz_whispers_chance", new Property<double>(0.2, "CustomDM: The chance a player will receive a bz whisper every bz_whispers_interval")),
+                ("force_logout_materialization_duration", new Property<double>(1.0, "seconds a player materializes for before logging out")),
+                ("force_teleport_materialization_duration", new Property<double>(10.0, "seconds after teleporting that a player is held in portal space")),
+                ("force_login_materialization_duration", new Property<double>(10.0, "seconds after logging in that a player is held in portal space")),
+                ("recent_teleport_threshold", new Property<double>(3.0, "seconds after materializing before a player can teleport again"))
                 );
         
         public static readonly ReadOnlyDictionary<string, Property<string>> DefaultStringProperties =

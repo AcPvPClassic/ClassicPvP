@@ -289,6 +289,12 @@ namespace ACE.Server.WorldObjects
             set { if (!value.HasValue) RemoveProperty(PropertyFloat.LastTeleportStartTimestamp); else SetProperty(PropertyFloat.LastTeleportStartTimestamp, value.Value); }
         }
 
+        public double? LastTeleportEndTimestamp
+        {
+            get => GetProperty(PropertyFloat.LastTeleportEndTimestamp);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.LastTeleportEndTimestamp); else SetProperty(PropertyFloat.LastTeleportEndTimestamp, value.Value); }
+        }
+
         public bool SpellComponentsRequired
         {
             get => GetProperty(PropertyBool.SpellComponentsRequired) ?? true;
