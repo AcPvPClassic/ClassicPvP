@@ -730,7 +730,8 @@ namespace ACE.Server.Managers
                 ("bz_whispers_interval", new Property<long>(600, "CustomDM: How often a player can receive a bz whisper")),
                 ("minimum_portalspace_seconds", new Property<long>(3, "minimum number of seconds a player must be in portal space before exiting")),
                 ("arenas_reward_min_level", new Property<long>(25, "the minimum level required to get arena rewards")),
-                ("arenas_reward_min_age", new Property<long>(864000, "the minimum in-game age in seconds required to get arena rewards"))
+                ("arenas_reward_min_age", new Property<long>(864000, "the minimum in-game age in seconds required to get arena rewards")),
+                ("arenas_min_level", new Property<long>(25, "the minimum level required to join an arena queue"))
                 );
 
         public static readonly ReadOnlyDictionary<string, Property<double>> DefaultDoubleProperties =
@@ -1068,7 +1069,8 @@ namespace ACE.Server.Managers
                 ("proxycheck_api_key", new Property<string>("", "API key for proxycheck.io service for VPN detection")),
                 ("vpn_account_whitelist", new Property<string>("", "A comma separated list of account names for which VPN detection is bypassed")),
                 ("discord_login_token", new Property<string>("", "Login Token used for Discord chat integration")),
-                ("arena_globals_webhook", new Property<string>("", "Webhook for sending arena global messages to Discord"))
+                ("arena_globals_webhook", new Property<string>("", "Webhook for sending arena global messages to Discord")),
+                ("arenas_blacklist", new Property<string>("", "Comma-separated list of character/monarch IDs blocked from arena queues"))
                 );
     }
 }

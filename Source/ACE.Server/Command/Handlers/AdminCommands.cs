@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -5428,5 +5429,265 @@ namespace ACE.Server.Command.Handlers
             else
                 CommandHandlerHelper.WriteOutputInfo(session, "Map creation failed.");
         }
+
+        #region Arena Admin Commands
+
+        [CommandHandler("arenadebug", AccessLevel.Sentinel, CommandHandlerFlag.None, 0,
+            "Displays debug info about arenas")]
+        public static void HandleArenaDebug(Session session, params string[] parameters)
+        {
+            StringBuilder returnMsg = new StringBuilder();
+            returnMsg.Append("******** Arena Debug Info ********\n\n");
+            returnMsg.Append("Queued Players:\n\n");
+
+            var queuedPlayers = ArenaManager.GetQueuedPlayers();
+            if (queuedPlayers != null && queuedPlayers.Count > 0)
+            {
+                foreach (var arenaPlayer in queuedPlayers)
+                {
+                    returnMsg.Append($"  CharacterID = {arenaPlayer.CharacterId}\n");
+                    returnMsg.Append($"  CharacterName = {arenaPlayer.CharacterName}\n");
+                    returnMsg.Append($"  EventType = {arenaPlayer.EventType}\n");
+                    returnMsg.Append($"  CreatedDate = {arenaPlayer.CreateDateTime}\n");
+                    returnMsg.Append($"  IP = {arenaPlayer.PlayerIP}\n");
+                    returnMsg.Append($"  Level = {arenaPlayer.CharacterLevel}\n");
+                    returnMsg.Append($"  MonarchId = {arenaPlayer.MonarchId}\n");
+                    returnMsg.Append($"  MonarchName = {arenaPlayer.MonarchName}\n");
+                    returnMsg.Append($"  TeamGuid = {arenaPlayer.TeamGuid}\n");
+                    returnMsg.Append($"  EventID = {arenaPlayer.EventId}\n");
+                    returnMsg.Append($"  FinishPlace = {arenaPlayer.FinishPlace}\n");
+                    returnMsg.Append($"  IsDisqualified = {arenaPlayer.IsDisqualified}\n");
+                    returnMsg.Append($"  IsEliminated = {arenaPlayer.IsEliminated}\n");
+                    returnMsg.Append($"  TotalDeaths = {arenaPlayer.TotalDeaths}\n");
+                    returnMsg.Append($"  TotalKills = {arenaPlayer.TotalKills}\n");
+                    returnMsg.Append($"  TotalDmgDealt = {arenaPlayer.TotalDmgDealt}\n");
+                    returnMsg.Append($"  TotalDmgReceived = {arenaPlayer.TotalDmgReceived}\n\n");
+                }
+            }
+            else
+            {
+                returnMsg.Append("  No Queued Players\n\n");
+            }
+
+            returnMsg.Append($"\nActive Events:\n\n");
+
+            var activeEvents = ArenaManager.GetActiveEvents();
+            if (activeEvents != null && activeEvents.Count > 0)
+            {
+                foreach (var arenaEvent in activeEvents)
+                {
+                    returnMsg.Append($"  EventID = {arenaEvent.Id}\n");
+                    returnMsg.Append($"  EventType = {arenaEvent.EventType}\n");
+                    returnMsg.Append($"  Status = {arenaEvent.Status}\n");
+                    returnMsg.Append($"  Location = {arenaEvent.Location}\n");
+                    returnMsg.Append($"  CreatedDateTime = {arenaEvent.CreatedDateTime}\n");
+                    returnMsg.Append($"  StartDateTime = {arenaEvent.StartDateTime}\n");
+                    returnMsg.Append($"  EndDateTime = {arenaEvent.EndDateTime}\n");
+                    returnMsg.Append($"  TimeRemaining = {arenaEvent.TimeRemaining}\n");
+                    returnMsg.Append($"  WinningTeamGuid = {arenaEvent.WinningTeamGuid}\n");
+                    returnMsg.Append($"  CancelReason = {arenaEvent.CancelReason}\n");
+                    returnMsg.Append($"  Players:\n");
+                    foreach (var arenaPlayer in arenaEvent.Players)
+                    {
+                        returnMsg.Append($"    CharacterID = {arenaPlayer.CharacterId}\n");
+                        returnMsg.Append($"    CharacterName = {arenaPlayer.CharacterName}\n");
+                        returnMsg.Append($"    EventType = {arenaPlayer.EventType}\n");
+                        returnMsg.Append($"    Level = {arenaPlayer.CharacterLevel}\n");
+                        returnMsg.Append($"    TeamGuid = {arenaPlayer.TeamGuid}\n");
+                        returnMsg.Append($"    FinishPlace = {arenaPlayer.FinishPlace}\n");
+                        returnMsg.Append($"    IsDisqualified = {arenaPlayer.IsDisqualified}\n");
+                        returnMsg.Append($"    IsEliminated = {arenaPlayer.IsEliminated}\n");
+                        returnMsg.Append($"    TotalDeaths = {arenaPlayer.TotalDeaths}\n");
+                        returnMsg.Append($"    TotalKills = {arenaPlayer.TotalKills}\n");
+                        returnMsg.Append($"    TotalDmgDealt = {arenaPlayer.TotalDmgDealt}\n");
+                        returnMsg.Append($"    TotalDmgReceived = {arenaPlayer.TotalDmgReceived}\n\n");
+                    }
+                    returnMsg.Append($"\n");
+                }
+            }
+            else
+            {
+                returnMsg.Append("  No Active Events\n\n");
+            }
+
+            CommandHandlerHelper.WriteOutputInfo(session, returnMsg.ToString());
+        }
+
+        [CommandHandler("arenaclearqueue", AccessLevel.Sentinel, CommandHandlerFlag.None, 0,
+            "Removes all players from one or all arena queues")]
+        public static void HandleArenaClearQueue(Session session, params string[] parameters)
+        {
+            string eventType = "";
+
+            if (parameters.Count() == 1)
+            {
+                eventType = parameters[0].ToLower();
+                if (!ArenaManager.IsValidEventType(eventType))
+                {
+                    CommandHandlerHelper.WriteOutputInfo(session, $"Invalid parameters.  EventType {eventType} is not supported.\nUsage:\n  To clear all queues: /ArenaClearQueue\n  To clear a single queue: /ArenaClearQueue 2v2");
+                    return;
+                }
+            }
+
+            if (parameters.Count() > 1)
+            {
+                CommandHandlerHelper.WriteOutputInfo(session, $"Invalid parameters.\nUsage:\n  To clear all queues: /ArenaClearQueue\n  To clear a single queue: /ArenaClearQueue 2v2");
+                return;
+            }
+
+            ArenaManager.ClearQueue(eventType);
+            CommandHandlerHelper.WriteOutputInfo(session, $"You've successfully cleared the queue for {(string.IsNullOrEmpty(eventType) ? "all arena event types" : "the " + eventType + " event type")}");
+        }
+
+        [CommandHandler("arenacancelevent", AccessLevel.Sentinel, CommandHandlerFlag.None, 1,
+            "Cancels an active arena event by EventID")]
+        public static void HandleArenaCancelEvent(Session session, params string[] parameters)
+        {
+            if (parameters.Count() != 1)
+            {
+                CommandHandlerHelper.WriteOutputInfo(session, $"Invalid parameters.  Must provide a single EventID as parameter.\nUsage:\n  /ArenaCancelEvent EventID");
+                return;
+            }
+
+            string eventIdParam = parameters[0].ToLower();
+            int eventId = -1;
+            try
+            {
+                eventId = int.Parse(eventIdParam);
+            }
+            catch (Exception)
+            {
+                CommandHandlerHelper.WriteOutputInfo(session, $"Invalid parameters.  EventID {eventIdParam} is not a valid number.\nUsage:\n  /ArenaCancelEvent EventID");
+                return;
+            }
+
+            var arenaEvent = ArenaManager.GetActiveEvents().FirstOrDefault(x => x.Id == eventId);
+            if (arenaEvent != null)
+            {
+                arenaEvent.CancelReason = "Admin In-Game";
+                ArenaManager.CancelEvent(arenaEvent);
+                CommandHandlerHelper.WriteOutputInfo(session, $"You've successfully cancelled the {arenaEvent.EventType} arena event with EventID = {eventId}.");
+            }
+            else
+            {
+                CommandHandlerHelper.WriteOutputInfo(session, $"There is no active arena event with EventID = {eventId}.");
+            }
+        }
+
+        [CommandHandler("arenarecalcelo", AccessLevel.Sentinel, CommandHandlerFlag.None, 0,
+            "Recalculates all players ELO from match history")]
+        public static void HandleArenaRecalcELO(Session session, params string[] parameters)
+        {
+            var arenaEvents = DatabaseManager.Log.GetAllArenaEvents();
+            Dictionary<uint, uint> characterRankings = new Dictionary<uint, uint>();
+            arenaEvents = arenaEvents.Where(x => x.EventType.ToLower().Equals("1v1"))?.OrderBy(x => x.CreatedDateTime).ToList() ?? new List<ACE.Database.Models.Log.ArenaEvent>();
+            foreach (var arenaEvent in arenaEvents)
+            {
+                if (arenaEvent.WinningTeamGuid.HasValue)
+                {
+                    var winner = arenaEvent.Players?.FirstOrDefault(x => x.TeamGuid == arenaEvent.WinningTeamGuid);
+                    if (winner != null)
+                    {
+                        var loser = arenaEvent.Players?.FirstOrDefault(x => x.CharacterId != winner.CharacterId);
+                        if (loser != null)
+                        {
+                            var winnerCurrentRank = characterRankings.ContainsKey(winner.CharacterId) ? characterRankings[winner.CharacterId] : 1500;
+                            var loserCurrentRank = characterRankings.ContainsKey(loser.CharacterId) ? characterRankings[loser.CharacterId] : 1500;
+
+                            var rankChange = ACE.Server.Entity.ArenaRanking.GetRankChange(winnerCurrentRank, loserCurrentRank, 32);
+
+                            var winnerNewRank = (int)winnerCurrentRank + rankChange > 0 ? (uint)(winnerCurrentRank + rankChange) : default(uint);
+                            var loserNewRank = (int)loserCurrentRank - rankChange > 0 ? (uint)(loserCurrentRank - rankChange) : default(uint);
+
+                            characterRankings[winner.CharacterId] = winnerNewRank;
+                            characterRankings[loser.CharacterId] = loserNewRank;
+
+                            DatabaseManager.Log.AddToArenaStats(winner.CharacterId, winner.CharacterName, "1v1", 0, 0, 0, 0, 0, 0, 0, 0, 0, winnerNewRank);
+                            DatabaseManager.Log.AddToArenaStats(loser.CharacterId, loser.CharacterName, "1v1", 0, 0, 0, 0, 0, 0, 0, 0, 0, loserNewRank);
+                        }
+                    }
+                }
+            }
+
+            CommandHandlerHelper.WriteOutputInfo(session, "ELO recalculation complete.");
+        }
+
+        [CommandHandler("arenablacklist", AccessLevel.Sentinel, CommandHandlerFlag.None, 1,
+            "Adds a player to the arena blacklist preventing them from joining arena events")]
+        public static void HandleArenaBlacklist(Session session, params string[] parameters)
+        {
+            try
+            {
+                if (parameters.Count() < 1)
+                {
+                    CommandHandlerHelper.WriteOutputInfo(session, "Invalid Parameter.  Usage: /ArenaBlacklist {characterName}");
+                    return;
+                }
+
+                var playerName = string.Join(" ", parameters);
+                var player = PlayerManager.FindByName(playerName);
+                if (player == null)
+                {
+                    CommandHandlerHelper.WriteOutputInfo(session, $"No player found with name = {playerName}");
+                    return;
+                }
+
+                var blackList = PropertyManager.GetString("arenas_blacklist").Item;
+                if (blackList.Contains(player.Guid.Full.ToString()))
+                {
+                    CommandHandlerHelper.WriteOutputInfo(session, $"{playerName} is already blacklisted from arenas");
+                    return;
+                }
+
+                blackList += (string.IsNullOrEmpty(blackList) ? "" : ",") + player.Guid.Full.ToString();
+                PropertyManager.ModifyString("arenas_blacklist", blackList);
+                CommandHandlerHelper.WriteOutputInfo(session, $"{playerName} has been blacklisted from arenas");
+                PlayerManager.BroadcastToAuditChannel(session.Player, $"{session.Player.Name} has blacklisted {playerName} from arenas");
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error in AdminCommands.HandleArenaBlacklist. ex: {ex}");
+            }
+        }
+
+        [CommandHandler("removearenablacklist", AccessLevel.Sentinel, CommandHandlerFlag.None, 1,
+            "Removes a player from the arena blacklist")]
+        public static void HandleRemoveArenaBlacklist(Session session, params string[] parameters)
+        {
+            try
+            {
+                if (parameters.Count() < 1)
+                {
+                    CommandHandlerHelper.WriteOutputInfo(session, "Invalid Parameter.  Usage: /RemoveArenaBlacklist {characterName}");
+                    return;
+                }
+
+                var playerName = string.Join(" ", parameters);
+                var player = PlayerManager.FindByName(playerName);
+                if (player == null)
+                {
+                    CommandHandlerHelper.WriteOutputInfo(session, $"No player found with name = {playerName}");
+                    return;
+                }
+
+                var blackList = PropertyManager.GetString("arenas_blacklist").Item;
+                if (!blackList.Contains(player.Guid.Full.ToString()))
+                {
+                    CommandHandlerHelper.WriteOutputInfo(session, $"{playerName} is not currently blacklisted from arenas");
+                    return;
+                }
+
+                var parts = blackList.Split(',').Where(x => !x.Equals(player.Guid.Full.ToString()) && long.TryParse(x, out _));
+                PropertyManager.ModifyString("arenas_blacklist", string.Join(",", parts));
+                CommandHandlerHelper.WriteOutputInfo(session, $"{playerName} has been removed from the arena blacklist");
+                PlayerManager.BroadcastToAuditChannel(session.Player, $"{session.Player.Name} has removed {playerName} from the arena blacklist");
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error in AdminCommands.HandleRemoveArenaBlacklist. ex: {ex}");
+            }
+        }
+
+        #endregion Arena Admin Commands
     }
 }
