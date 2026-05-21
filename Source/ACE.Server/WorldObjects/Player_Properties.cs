@@ -1676,6 +1676,13 @@ namespace ACE.Server.WorldObjects
             set { if (!value.HasValue) RemoveProperty(PropertyFloat.ArenaSameClanDailyRewardCount); else SetProperty(PropertyFloat.ArenaSameClanDailyRewardCount, value.Value); }
         }
 
+        /* Chug Timer */
+        public double? LastChugTimestamp
+        {
+            get => GetProperty(PropertyFloat.LastChugTimestamp) ?? 0;
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.LastChugTimestamp); else SetProperty(PropertyFloat.LastChugTimestamp, value.Value); }
+        }
+
         public Dictionary<uint, uint> ArenaRewardsByOpponent
         {
             get

@@ -255,5 +255,8 @@ namespace ACE.Entity.Enum.Properties
         ArenaDailyRewardTimestamp      = 10023,
         ArenaDailyRewardCount          = 10024,
         ArenaSameClanDailyRewardCount  = 10025,
+
+        // PvP
+        LastChugTimestamp              = 10026,
     }
 }

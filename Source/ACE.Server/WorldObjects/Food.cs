@@ -1,10 +1,12 @@
 using System;
 using log4net;
+using ACE.Common;
 using ACE.Entity;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Entity.Models;
 using ACE.Server.Entity;
+using ACE.Server.Managers;
 using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.Physics;
 using ACE.Server.Factories;
@@ -236,6 +238,19 @@ namespace ACE.Server.WorldObjects
             {
                 var cookingMod = GetCookingMod(player);
                 boostValue = (int)(boostValue * cookingMod);
+            }
+
+            var chugTimerMillis = PropertyManager.GetLong("pvp_chug_timer").Item;
+            if (chugTimerMillis > 0)
+            {
+                if (player.LastChugTimestamp.HasValue && Time.GetDateTimeFromTimestamp(player.LastChugTimestamp.Value) > DateTime.Now.AddMilliseconds(chugTimerMillis * -1))
+                {
+                    boostValue = 0;
+                }
+                else if (boostValue > 0)
+                {
+                    player.LastChugTimestamp = Time.GetUnixTime(DateTime.Now);
+                }
             }
 
             var vitalChange = (uint)Math.Abs(player.UpdateVitalDelta(vital, boostValue));
