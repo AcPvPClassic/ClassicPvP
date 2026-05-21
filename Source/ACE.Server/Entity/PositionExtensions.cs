@@ -395,6 +395,17 @@ namespace ACE.Server.Entity
             return true;
         }
 
+        public static bool IsValidPosition(this Position pos)
+        {
+            if (pos.Landblock == 0)
+                return false;
+            if (float.IsNaN(pos.PositionX) || float.IsNaN(pos.PositionY) || float.IsNaN(pos.PositionZ))
+                return false;
+            if (!pos.Rotation.IsRotationValid())
+                return false;
+            return true;
+        }
+
         public static bool AttemptToFixRotation(this Position pos, WorldObject wo, PositionType positionType)
         {
             log.Warn($"detected bad quaternion x y z w for {wo.Name} (0x{wo.Guid}) | WCID: {wo.WeenieClassId} | WeenieType: {wo.WeenieType} | PositionType: {positionType}");

@@ -796,6 +796,7 @@ namespace ACE.Server.WorldObjects
             Teleporting = true;
             LastTeleportTime = DateTime.UtcNow;
             LastTeleportStartTimestamp = Time.GetUnixTime();
+            OnTeleportCompleteFailureRetry = 0;
 
             EndSneaking();
             RemoveRoadSpeedBuff();
@@ -873,6 +874,8 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public double? LastPortalTeleportTimestampError;
 
+        private uint OnTeleportCompleteFailureRetry = 0;
+
         public void OnTeleportComplete(ulong teleportId)
         {
             if (teleportId != _teleportId)
@@ -902,6 +905,53 @@ namespace ACE.Server.WorldObjects
                 return;
             }
 
+            // Validate physics-derived position before materializing
+            var physicsPos = PhysicsObj.Position;
+            var newPos = physicsPos.ACEPosition();
+
+            if (physicsPos.ObjCellID == 0 || physicsPos.Landblock == 0 || !newPos.IsValidPosition())
+            {
+                log.Warn($"[TELEPORT BLOCKED] Invalid ACE position for {Name}");
+                log.Warn($"  PhysicsObjCellID: {physicsPos.ObjCellID}");
+                log.Warn($"  PhysicsLandblock: {physicsPos.Landblock}");
+                log.Warn($"  PhysicsCell: {newPos.Cell}");
+                log.Warn($"  CurrentPosLandblock: {newPos.Landblock}");
+                log.Warn($"  CurrentPosCell: {Location.Cell}");
+                log.Warn($"  CurrentPos: {Location.Pos}");
+                log.Warn($"  Teleporting: {Teleporting}");
+                log.Warn($"  IsDeath: {IsInDeathProcess}");
+                log.Warn($"  LoggingOut: {IsLoggingOut}");
+
+                if (IsLoggingOut)
+                {
+                    Teleporting = false;
+                    OnTeleportCompleteFailureRetry = 0;
+                    log.Warn($"{Name} is logging out while teleporting and ended up with invalid position data.");
+                    return;
+                }
+
+                if (OnTeleportCompleteFailureRetry >= 3)
+                {
+                    log.Warn("Failed to get valid position after multiple retries, teleporting to sanctuary as fallback.");
+                    var fallbackPosition = new Position(FallbackPosition);
+                    var delayTeleport = new ActionChain();
+                    delayTeleport.AddAction(this, () => Teleport(fallbackPosition));
+                    delayTeleport.EnqueueChain();
+                    OnTeleportCompleteFailureRetry = 0;
+                    return;
+                }
+                else
+                {
+                    OnTeleportCompleteFailureRetry++;
+                    log.Warn($"  Failed to get valid position, retrying after short delay. Retry count: {OnTeleportCompleteFailureRetry}");
+                    var actionChain = new ActionChain();
+                    actionChain.AddDelaySeconds(0.1);
+                    actionChain.AddAction(this, () => OnTeleportComplete(teleportId));
+                    actionChain.EnqueueChain();
+                    return;
+                }
+            }
+
             // set materialize physics state
             // this takes the player from pink bubbles -> fully materialized
             if (CloakStatus != CloakStatus.On)
@@ -911,11 +961,12 @@ namespace ACE.Server.WorldObjects
             Hidden = false;
             Teleporting = false;
 
-            Location = PhysicsObj.Position.ACEPosition(); // Update our location to wherever the physics says we ended up. This takes care of slightly invalid destination locations that both the server and client physics will autocorrect.
+            Location = newPos;
             SnapPos = Location;
             PrevMovementUpdateMaxSpeed = 0.0f;
             LastPlayerMovementCheckTime = Time.GetUnixTime();
             HasPerformedActionsSinceLastMovementUpdate = false;
+            OnTeleportCompleteFailureRetry = 0;
 
             CheckMonsters();
             CheckHouse();
