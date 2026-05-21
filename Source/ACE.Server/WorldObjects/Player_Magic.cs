@@ -834,8 +834,8 @@ namespace ACE.Server.WorldObjects
                 }
 
                 // verify cast radius before every automatic TurnTo after windup
-                if (!VerifyCastRadius())
-                    return;
+                //if (!VerifyCastRadius())
+                //    return;
 
                 var stopCompletely = !MagicState.CastMotionDone;
                 //var stopCompletely = true;
@@ -905,8 +905,7 @@ namespace ACE.Server.WorldObjects
             var dist = StartPos.Distance(PhysicsObj.Position);
 
             // only PKs affected by these caps?
-            //if (dist > Windup_MaxMove && PlayerKillerStatus != PlayerKillerStatus.NPK)
-            if (dist > PropertyManager.GetDouble("pk_cast_radius").Item && PlayerKillerStatus != PlayerKillerStatus.NPK)
+            if (dist > Windup_MaxMove && PlayerKillerStatus != PlayerKillerStatus.NPK)
             {
                 //player.Session.Network.EnqueueSend(new GameEventWeenieError(player.Session, WeenieError.YouHaveMovedTooFar));
                 Session.Network.EnqueueSend(new GameMessageSystemChat("Your movement disrupted spell casting!", ChatMessageType.Magic));
@@ -1522,10 +1521,11 @@ namespace ACE.Server.WorldObjects
 
         public void CheckTurn()
         {
-            // verify cast radius while manually moving after windup
-            if (!VerifyCastRadius())
-                return;
+            // In retail, players could move freely during casting
+            // The position check only happened at spell release
+            // So we'll skip the continuous radius check here
 
+            // Only release the spell when the turn is complete AND we're within the required angle
             if (TurnTarget != null && IsWithinAngle(TurnTarget))
             {
                 if (MagicState.PendingTurnRelease)
