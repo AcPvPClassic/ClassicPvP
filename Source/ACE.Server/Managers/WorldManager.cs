@@ -468,6 +468,16 @@ namespace ACE.Server.Managers
                 log.Error($"Exception executing ArenaManager Tick. ex: {ex}");
             }
 
+            //Rolling Level Cap
+            try
+            {
+                RollingLevelCapManager.Tick();
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception executing RollingLevelCapManager Tick. ex: {ex}");
+            }
+
             ServerPerformanceMonitor.RegisterEventEnd(ServerPerformanceMonitor.MonitorType.UpdateGameWorld_Entire);
             ServerPerformanceMonitor.RegisterCumulativeEvents();
 

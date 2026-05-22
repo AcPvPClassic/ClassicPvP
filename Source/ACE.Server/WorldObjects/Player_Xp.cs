@@ -420,7 +420,20 @@ namespace ACE.Server.WorldObjects
             var maxLevelXp = xpTable.CharacterLevelXPList[(int)maxLevel];
 
             bool allowXpAtMaxLevel = PropertyManager.GetBool("allow_xp_at_max_level").Item;
-            var totalXpCap = Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.Infiltration ? maxLevelXp : long.MaxValue; // At what value the total xp counter will stop counting.
+
+            // Rolling level cap: in Infiltration the entire world has a daily XP cap that increases over time.
+            long rollingCapXp = 0;
+            long rollingLevelCapValue = 0;
+            if (Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.Infiltration)
+            {
+                rollingLevelCapValue = RollingLevelCapManager.GetCurrentLevelCap();
+                if (rollingLevelCapValue > 0 && rollingLevelCapValue < (long)maxLevel)
+                    rollingCapXp = (long)xpTable.CharacterLevelXPList[(int)rollingLevelCapValue];
+            }
+
+            var totalXpCap = Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.Infiltration
+                ? (rollingCapXp > 0 ? rollingCapXp : maxLevelXp)   // At what value the total xp counter will stop counting.
+                : long.MaxValue;
             var availableXpCap = Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.Infiltration ? uint.MaxValue : long.MaxValue; // Max unassigned xp amount.
 
 
@@ -445,8 +458,78 @@ namespace ACE.Server.WorldObjects
                 if (!allowXpAtMaxLevel && amount > amountLeftToEnd)
                     addAmount = amountLeftToEnd;
 
+                // Rolling level cap: per-category hard stop matching Doctide Seasons behavior.
+                // Quest and Monster/Kill XP are each limited to daily_xp_category_ratio of the
+                // player's remaining cap headroom. Admin XP bypasses category limits but is still
+                // bounded by the global remaining. Buckets reset when the cap level advances.
+                if (rollingCapXp > 0)
+                {
+                    // Detect cap advancement and lazily reset per-player buckets.
+                    if (rollingLevelCapValue != CapPreviousLevelCap)
+                    {
+                        CapQuestXp = 0;
+                        CapMonsterXp = 0;
+                        var xpRemainingAtReset = Math.Max(0L, rollingCapXp - (TotalExperience ?? 0));
+                        double ratioAtReset = PropertyManager.GetDouble("daily_xp_category_ratio").Item;
+                        CapDailyMaxPerCat = (long)(xpRemainingAtReset * ratioAtReset);
+                        CapPreviousLevelCap = rollingLevelCapValue;
+                    }
+
+                    var xpRemainingGlobal = rollingCapXp - (TotalExperience ?? 0);
+                    if (xpRemainingGlobal <= 0)
+                    {
+                        addAmount = 0;
+                    }
+                    else
+                    {
+                        double categoryRatio = PropertyManager.GetDouble("daily_xp_category_ratio").Item;
+                        var dailyMaxPerCat = CapDailyMaxPerCat > 0 ? CapDailyMaxPerCat : (long)(rollingCapXp * categoryRatio);
+
+                        long xpToAdd = 0;
+                        switch (xpType)
+                        {
+                            case XpType.Quest:
+                            case XpType.Emote:
+                            case XpType.Exploration:
+                                var questRemaining = Math.Max(0L, dailyMaxPerCat - CapQuestXp);
+                                if (questRemaining > 0)
+                                {
+                                    xpToAdd = Math.Min(addAmount, Math.Min(xpRemainingGlobal, questRemaining));
+                                    CapQuestXp += xpToAdd;
+                                }
+                                break;
+
+                            case XpType.Kill:
+                            case XpType.Fellowship:
+                            case XpType.Allegiance:
+                            case XpType.Proficiency:
+                                var monsterRemaining = Math.Max(0L, dailyMaxPerCat - CapMonsterXp);
+                                if (monsterRemaining > 0)
+                                {
+                                    xpToAdd = Math.Min(addAmount, Math.Min(xpRemainingGlobal, monsterRemaining));
+                                    CapMonsterXp += xpToAdd;
+                                }
+                                break;
+
+                            case XpType.Admin:
+                                // Admin XP bypasses per-category limits; only constrained by global remaining.
+                                xpToAdd = Math.Min(addAmount, xpRemainingGlobal);
+                                break;
+                        }
+
+                        // Notify the player the first time a grant fills the global cap.
+                        if (xpToAdd > 0 && xpToAdd >= xpRemainingGlobal)
+                            Session.Network.EnqueueSend(new GameMessageSystemChat(
+                                $"You have reached the current experience cap (level {rollingLevelCapValue}). The cap increases daily as the season progresses.",
+                                ChatMessageType.Broadcast));
+
+                        addAmount = xpToAdd;
+                    }
+                }
+
                 TotalExperience += addAmount;
-                if (TotalExperience > (long)totalXpCap)
+                // Safety clamp for the non-rolling-cap path (allowXpAtMaxLevel bypasses amountLeftToEnd above)
+                if (rollingCapXp == 0 && TotalExperience > (long)totalXpCap)
                     TotalExperience = (long)totalXpCap;
 
                 AvailableExperience += addAmount;

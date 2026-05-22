@@ -488,6 +488,32 @@ namespace ACE.Server.WorldObjects
             set { if (!value.HasValue) RemoveProperty(PropertyInt64.XpTrackerTotalXp); else SetProperty(PropertyInt64.XpTrackerTotalXp, value.Value); }
         }
 
+        /* Rolling Level Cap — per-category XP buckets */
+
+        public long CapQuestXp
+        {
+            get => GetProperty(PropertyInt64.CapQuestXp) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt64.CapQuestXp); else SetProperty(PropertyInt64.CapQuestXp, value); }
+        }
+
+        public long CapMonsterXp
+        {
+            get => GetProperty(PropertyInt64.CapMonsterXp) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt64.CapMonsterXp); else SetProperty(PropertyInt64.CapMonsterXp, value); }
+        }
+
+        public long CapPreviousLevelCap
+        {
+            get => GetProperty(PropertyInt64.CapPreviousLevelCap) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt64.CapPreviousLevelCap); else SetProperty(PropertyInt64.CapPreviousLevelCap, value); }
+        }
+
+        public long CapDailyMaxPerCat
+        {
+            get => GetProperty(PropertyInt64.CapDailyMaxPerCat) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt64.CapDailyMaxPerCat); else SetProperty(PropertyInt64.CapDailyMaxPerCat, value); }
+        }
+
         // ========================================
         // ===== Player Properties - Titles========
         // ========================================

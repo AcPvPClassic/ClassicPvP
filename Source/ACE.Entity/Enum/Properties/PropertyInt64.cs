@@ -35,5 +35,11 @@ namespace ACE.Entity.Enum.Properties
         XpTrackerStartTimestamp     = 10001,
         GameplayModeExtraIdentifier = 10002,
         TradeNoteValue              = 10003,
+
+        // Rolling Level Cap — per-category XP buckets (Infiltration)
+        CapQuestXp          = 10010,  // XP accumulated in the quest category since last cap advance
+        CapMonsterXp        = 10011,  // XP accumulated in the monster/kill category since last cap advance
+        CapPreviousLevelCap = 10012,  // Last cap level seen; used to detect cap advancement and reset buckets
+        CapDailyMaxPerCat   = 10013,  // Per-category ceiling locked at the most recent cap advance
     }
 }

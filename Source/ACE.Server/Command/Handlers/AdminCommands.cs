@@ -5702,5 +5702,210 @@ namespace ACE.Server.Command.Handlers
         }
 
         #endregion Arena Admin Commands
+
+        #region Allegiance Whitelist Commands
+
+        [CommandHandler("addwhitelist", AccessLevel.Sentinel, CommandHandlerFlag.None, 1,
+            "Adds a monarch's allegiance to the whitelisted allegiances list",
+            "Usage: /addwhitelist {characterName}\nThe named character must be a monarch. Their MonarchID is added to the whitelisted_allegiances config.")]
+        public static void HandleAddWhitelist(Session session, params string[] parameters)
+        {
+            try
+            {
+                if (parameters.Length < 1)
+                {
+                    CommandHandlerHelper.WriteOutputInfo(session, "Invalid parameter.  Usage: /addwhitelist {characterName}");
+                    return;
+                }
+
+                var playerName = string.Join(" ", parameters);
+                var player = PlayerManager.FindByName(playerName);
+                if (player == null)
+                {
+                    CommandHandlerHelper.WriteOutputInfo(session, $"No player found with name '{playerName}'");
+                    return;
+                }
+
+                if (player.Allegiance?.MonarchId != player.Guid.Full)
+                {
+                    CommandHandlerHelper.WriteOutputInfo(session, $"{playerName} is not a monarch");
+                    return;
+                }
+
+                var whiteList = PropertyManager.GetString("whitelisted_allegiances").Item ?? string.Empty;
+                if (whiteList.Contains(player.Guid.Full.ToString()))
+                {
+                    CommandHandlerHelper.WriteOutputInfo(session, $"{playerName}'s allegiance is already whitelisted");
+                    return;
+                }
+
+                whiteList = string.IsNullOrEmpty(whiteList)
+                    ? player.Guid.Full.ToString()
+                    : whiteList + "," + player.Guid.Full.ToString();
+
+                PropertyManager.ModifyString("whitelisted_allegiances", whiteList);
+                CommandHandlerHelper.WriteOutputInfo(session, $"{playerName}'s allegiance has been added to the whitelist");
+                PlayerManager.BroadcastToAuditChannel(session?.Player, $"{session?.Player?.Name ?? "CONSOLE"} whitelisted {playerName}'s allegiance");
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error in AdminCommands.HandleAddWhitelist. ex: {ex}");
+            }
+        }
+
+        [CommandHandler("removewhitelist", AccessLevel.Sentinel, CommandHandlerFlag.None, 1,
+            "Removes a monarch's allegiance from the whitelisted allegiances list",
+            "Usage: /removewhitelist {characterName}")]
+        public static void HandleRemoveWhitelist(Session session, params string[] parameters)
+        {
+            try
+            {
+                if (parameters.Length < 1)
+                {
+                    CommandHandlerHelper.WriteOutputInfo(session, "Invalid parameter.  Usage: /removewhitelist {characterName}");
+                    return;
+                }
+
+                var playerName = string.Join(" ", parameters);
+                var player = PlayerManager.FindByName(playerName);
+                if (player == null)
+                {
+                    CommandHandlerHelper.WriteOutputInfo(session, $"No player found with name '{playerName}'");
+                    return;
+                }
+
+                var whiteList = PropertyManager.GetString("whitelisted_allegiances").Item ?? string.Empty;
+                if (!whiteList.Contains(player.Guid.Full.ToString()))
+                {
+                    CommandHandlerHelper.WriteOutputInfo(session, $"{playerName}'s allegiance is not currently whitelisted");
+                    return;
+                }
+
+                var parts = whiteList.Split(',');
+                var newList = string.Join(",", System.Array.FindAll(parts, e =>
+                    !e.Trim().Equals(player.Guid.Full.ToString()) && long.TryParse(e.Trim(), out _)));
+
+                PropertyManager.ModifyString("whitelisted_allegiances", newList);
+                CommandHandlerHelper.WriteOutputInfo(session, $"{playerName}'s allegiance has been removed from the whitelist");
+                PlayerManager.BroadcastToAuditChannel(session?.Player, $"{session?.Player?.Name ?? "CONSOLE"} removed {playerName}'s allegiance from the whitelist");
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error in AdminCommands.HandleRemoveWhitelist. ex: {ex}");
+            }
+        }
+
+        [CommandHandler("listwhitelist", AccessLevel.Sentinel, CommandHandlerFlag.None, 0,
+            "Lists all whitelisted allegiances by monarch name")]
+        public static void HandleListWhitelist(Session session, params string[] parameters)
+        {
+            try
+            {
+                var whiteList = PropertyManager.GetString("whitelisted_allegiances").Item ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(whiteList))
+                {
+                    CommandHandlerHelper.WriteOutputInfo(session, "The allegiance whitelist is currently empty.");
+                    return;
+                }
+
+                var sb = new System.Text.StringBuilder("Whitelisted allegiances:\n");
+                foreach (var entry in whiteList.Split(','))
+                {
+                    if (!long.TryParse(entry.Trim(), out long id)) continue;
+                    var p = PlayerManager.FindByGuid((uint)id);
+                    sb.AppendLine($"  [{id}] {p?.Name ?? "(unknown)"}");
+                }
+                CommandHandlerHelper.WriteOutputInfo(session, sb.ToString().TrimEnd());
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error in AdminCommands.HandleListWhitelist. ex: {ex}");
+            }
+        }
+
+        #endregion Allegiance Whitelist Commands
+
+        #region Rolling Level Cap Commands
+
+        [CommandHandler("startrollingcap", AccessLevel.Admin, CommandHandlerFlag.None, 0,
+            "Starts the rolling level cap from today (UTC midnight) and enables it",
+            "Usage: /startrollingcap\nSets rolling_level_cap_start_timestamp to today, enables rolling_level_cap_enabled, and forces an immediate recalculation.")]
+        public static void HandleStartRollingCap(Session session, params string[] parameters)
+        {
+            try
+            {
+                var todayMidnightUtc = new DateTimeOffset(DateTime.UtcNow.Date, TimeSpan.Zero).ToUnixTimeSeconds();
+                PropertyManager.ModifyLong("rolling_level_cap_start_timestamp", todayMidnightUtc);
+                PropertyManager.ModifyBool("rolling_level_cap_enabled", true);
+                Managers.RollingLevelCapManager.ForceRecalculate();
+
+                var capLevel = Managers.RollingLevelCapManager.GetCurrentLevelCap();
+                CommandHandlerHelper.WriteOutputInfo(session, $"Rolling level cap started. Start timestamp: {todayMidnightUtc} (today, UTC). Current cap: level {capLevel}.");
+                PlayerManager.BroadcastToAuditChannel(session?.Player, $"{session?.Player?.Name ?? "CONSOLE"} started the rolling level cap (start: {todayMidnightUtc}, cap: {capLevel}).");
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error in AdminCommands.HandleStartRollingCap. ex: {ex}");
+            }
+        }
+
+        [CommandHandler("forcerollingcap", AccessLevel.Admin, CommandHandlerFlag.None, 0,
+            "Forces an immediate recalculation of the rolling level cap",
+            "Usage: /forcerollingcap\nRecalculates rolling_level_cap from rolling_level_cap_start_timestamp. Useful after changing the start timestamp.")]
+        public static void HandleForceRollingCap(Session session, params string[] parameters)
+        {
+            try
+            {
+                var startTimestamp = PropertyManager.GetLong("rolling_level_cap_start_timestamp").Item;
+                if (startTimestamp <= 0)
+                {
+                    CommandHandlerHelper.WriteOutputInfo(session, "rolling_level_cap_start_timestamp is not set. Use /startrollingcap or set it with /modifylong rolling_level_cap_start_timestamp <timestamp>.");
+                    return;
+                }
+
+                Managers.RollingLevelCapManager.ForceRecalculate();
+                var capLevel = Managers.RollingLevelCapManager.GetCurrentLevelCap();
+                CommandHandlerHelper.WriteOutputInfo(session, $"Rolling level cap recalculated. Current cap: level {capLevel}.");
+                PlayerManager.BroadcastToAuditChannel(session?.Player, $"{session?.Player?.Name ?? "CONSOLE"} force-recalculated the rolling level cap (result: {capLevel}).");
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error in AdminCommands.HandleForceRollingCap. ex: {ex}");
+            }
+        }
+
+        [CommandHandler("rollingcapstatus", AccessLevel.Admin, CommandHandlerFlag.None, 0,
+            "Displays the current rolling level cap status")]
+        public static void HandleRollingCapStatus(Session session, params string[] parameters)
+        {
+            try
+            {
+                var enabled = PropertyManager.GetBool("rolling_level_cap_enabled").Item;
+                var startTimestamp = PropertyManager.GetLong("rolling_level_cap_start_timestamp").Item;
+                var capLevel = PropertyManager.GetLong("rolling_level_cap").Item;
+                var lastUpdate = PropertyManager.GetLong("rolling_level_cap_timestamp").Item;
+
+                var sb = new System.Text.StringBuilder("Rolling Level Cap Status:\n");
+                sb.AppendLine($"  Enabled:         {enabled}");
+                sb.AppendLine($"  Start timestamp: {startTimestamp} ({(startTimestamp > 0 ? DateTimeOffset.FromUnixTimeSeconds(startTimestamp).UtcDateTime.ToString("yyyy-MM-dd") : "not set")})");
+                sb.AppendLine($"  Current cap:     level {capLevel}");
+                sb.AppendLine($"  Last updated:    {(lastUpdate > 0 ? DateTimeOffset.FromUnixTimeSeconds(lastUpdate).UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss") + " UTC" : "never")}");
+
+                if (startTimestamp > 0)
+                {
+                    var startDate = DateTimeOffset.FromUnixTimeSeconds(startTimestamp).UtcDateTime.Date;
+                    var daysSinceStart = (DateTime.UtcNow.Date - startDate).Days;
+                    sb.AppendLine($"  Days since start:{daysSinceStart}");
+                }
+
+                CommandHandlerHelper.WriteOutputInfo(session, sb.ToString().TrimEnd());
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error in AdminCommands.HandleRollingCapStatus. ex: {ex}");
+            }
+        }
+
+        #endregion Rolling Level Cap Commands
     }
 }

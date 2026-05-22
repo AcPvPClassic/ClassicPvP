@@ -704,26 +704,27 @@ namespace ACE.Server.Entity
                     log.Error($"Failed applying server configured pvp mods. Ex: {ex}");
                 }
 
-                // apply per-weapon-skill flat PvP effect mods (AR/CB/CS/hollow/phantom) from Doctide
+                // apply per-weapon-skill flat PvP effect mods (base/AR/CB/CS/hollow/phantom)
+                // Each switch handles both EoR consolidated skills and Infiltration individual skills.
                 if (Weapon != null)
                 {
                     try
                     {
                         float config_mod = 1.0f;
 
+                        // ── base per-skill mod ────────────────────────────────────────────────
                         switch (Weapon.WeaponSkill)
                         {
+                            // EoR consolidated skills
                             case Skill.FinesseWeapons:
                                 config_mod = (float)PropertyManager.GetDouble("pvp_dmg_mod_fw").Item;
                                 break;
                             case Skill.LightWeapons:
-                            case Skill.Axe:
                                 config_mod = (float)PropertyManager.GetDouble("pvp_dmg_mod_lw").Item;
                                 if (Weapon.W_AttackType == AttackType.TripleStrike)
                                     config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_lw_triplestrike").Item;
                                 break;
                             case Skill.HeavyWeapons:
-                            case Skill.Sword:
                                 config_mod = (float)PropertyManager.GetDouble("pvp_dmg_mod_hw").Item;
                                 if (AttackType.MultiStrike.HasFlag(Weapon.W_AttackType))
                                     config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_hw_multistrike").Item;
@@ -732,30 +733,50 @@ namespace ACE.Server.Entity
                                 config_mod = (float)PropertyManager.GetDouble("pvp_dmg_mod_2h").Item;
                                 break;
                             case Skill.MissileWeapons:
-                            case Skill.Bow:
-                                if (Weapon.DefaultCombatStyle == CombatStyle.Bow)
-                                    config_mod = (float)PropertyManager.GetDouble("pvp_dmg_mod_bow").Item;
-                                else if (Weapon.DefaultCombatStyle == CombatStyle.Crossbow)
-                                    config_mod = (float)PropertyManager.GetDouble("pvp_dmg_mod_xbow").Item;
-                                else if (Weapon.IsThrownWeapon || Weapon.IsAtlatl)
-                                    config_mod = (float)PropertyManager.GetDouble("pvp_dmg_mod_tw").Item;
+                                if (Weapon.DefaultCombatStyle == CombatStyle.Bow) config_mod = (float)PropertyManager.GetDouble("pvp_dmg_mod_bow").Item;
+                                else if (Weapon.DefaultCombatStyle == CombatStyle.Crossbow) config_mod = (float)PropertyManager.GetDouble("pvp_dmg_mod_xbow").Item;
+                                else if (Weapon.IsThrownWeapon || Weapon.IsAtlatl) config_mod = (float)PropertyManager.GetDouble("pvp_dmg_mod_tw").Item;
                                 break;
+                            // Infiltration individual weapon skills
+                            case Skill.Sword:    config_mod = (float)PropertyManager.GetDouble("pvp_dmg_mod_sword").Item;   break;
+                            case Skill.Mace:     config_mod = (float)PropertyManager.GetDouble("pvp_dmg_mod_mace").Item;    break;
+                            case Skill.Axe:      config_mod = (float)PropertyManager.GetDouble("pvp_dmg_mod_axe").Item;     break;
+                            case Skill.Spear:    config_mod = (float)PropertyManager.GetDouble("pvp_dmg_mod_spear").Item;   break;
+                            case Skill.Staff:    config_mod = (float)PropertyManager.GetDouble("pvp_dmg_mod_staff").Item;   break;
+                            case Skill.Dagger:   config_mod = (float)PropertyManager.GetDouble("pvp_dmg_mod_dagger").Item;  break;
+                            case Skill.UnarmedCombat: config_mod = (float)PropertyManager.GetDouble("pvp_dmg_mod_unarmed").Item; break;
+                            case Skill.Bow:      config_mod = (float)PropertyManager.GetDouble("pvp_dmg_mod_bow").Item;     break;
+                            case Skill.Crossbow: config_mod = (float)PropertyManager.GetDouble("pvp_dmg_mod_xbow").Item;    break;
+                            case Skill.ThrownWeapon: config_mod = (float)PropertyManager.GetDouble("pvp_dmg_mod_tw").Item;  break;
                         }
 
+                        // ── imbued-effect mods ────────────────────────────────────────────────
                         if (Weapon.HasImbuedEffect(ImbuedEffectType.ArmorRending))
                         {
                             config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_ar").Item;
                             switch (Weapon.WeaponSkill)
                             {
-                                case Skill.FinesseWeapons: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_fw_ar").Item; break;
-                                case Skill.LightWeapons: case Skill.Axe: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_lw_ar").Item; break;
-                                case Skill.HeavyWeapons: case Skill.Sword: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_hw_ar").Item; break;
-                                case Skill.TwoHandedCombat: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_2h_ar").Item; break;
-                                case Skill.MissileWeapons: case Skill.Bow:
+                                // EoR
+                                case Skill.FinesseWeapons:   config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_fw_ar").Item;    break;
+                                case Skill.LightWeapons:     config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_lw_ar").Item;    break;
+                                case Skill.HeavyWeapons:     config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_hw_ar").Item;    break;
+                                case Skill.TwoHandedCombat:  config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_2h_ar").Item;    break;
+                                case Skill.MissileWeapons:
                                     if (Weapon.DefaultCombatStyle == CombatStyle.Bow) config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_bow_ar").Item;
                                     else if (Weapon.DefaultCombatStyle == CombatStyle.Crossbow) config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_xbow_ar").Item;
                                     else if (Weapon.IsThrownWeapon || Weapon.IsAtlatl) config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_tw_ar").Item;
                                     break;
+                                // Infiltration
+                                case Skill.Sword:         config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_sword_ar").Item;    break;
+                                case Skill.Mace:          config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_mace_ar").Item;     break;
+                                case Skill.Axe:           config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_axe_ar").Item;      break;
+                                case Skill.Spear:         config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_spear_ar").Item;    break;
+                                case Skill.Staff:         config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_staff_ar").Item;    break;
+                                case Skill.Dagger:        config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_dagger_ar").Item;   break;
+                                case Skill.UnarmedCombat: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_unarmed_ar").Item;  break;
+                                case Skill.Bow:           config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_bow_ar").Item;      break;
+                                case Skill.Crossbow:      config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_xbow_ar").Item;     break;
+                                case Skill.ThrownWeapon:  config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_tw_ar").Item;      break;
                             }
                         }
                         else if (Weapon.HasImbuedEffect(ImbuedEffectType.CripplingBlow))
@@ -763,37 +784,61 @@ namespace ACE.Server.Entity
                             config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_cb").Item;
                             switch (Weapon.WeaponSkill)
                             {
-                                case Skill.FinesseWeapons: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_fw_cb").Item; break;
-                                case Skill.LightWeapons: case Skill.Axe:
+                                // EoR
+                                case Skill.FinesseWeapons:  config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_fw_cb").Item;  break;
+                                case Skill.LightWeapons:
                                     config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_lw_cb").Item;
                                     if (Weapon.W_AttackType == AttackType.TripleStrike && IsCritical)
                                         config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_lw_cb_crit_triplestrike").Item;
                                     break;
-                                case Skill.HeavyWeapons: case Skill.Sword:
+                                case Skill.HeavyWeapons:
                                     config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_hw_cb").Item;
                                     if (AttackType.MultiStrike.HasFlag(Weapon.W_AttackType) && IsCritical)
                                         config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_hw_cb_crit_multistrike").Item;
                                     break;
-                                case Skill.TwoHandedCombat: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_2h_cb").Item; break;
-                                case Skill.MissileWeapons: case Skill.Bow:
+                                case Skill.TwoHandedCombat:  config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_2h_cb").Item;  break;
+                                case Skill.MissileWeapons:
                                     if (Weapon.DefaultCombatStyle == CombatStyle.Bow) config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_bow_cb").Item;
                                     else if (Weapon.DefaultCombatStyle == CombatStyle.Crossbow) config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_xbow_cb").Item;
                                     else if (Weapon.IsThrownWeapon || Weapon.IsAtlatl) config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_tw_cb").Item;
                                     break;
+                                // Infiltration
+                                case Skill.Sword:         config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_sword_cb").Item;    break;
+                                case Skill.Mace:          config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_mace_cb").Item;     break;
+                                case Skill.Axe:           config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_axe_cb").Item;      break;
+                                case Skill.Spear:         config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_spear_cb").Item;    break;
+                                case Skill.Staff:         config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_staff_cb").Item;    break;
+                                case Skill.Dagger:        config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_dagger_cb").Item;   break;
+                                case Skill.UnarmedCombat: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_unarmed_cb").Item;  break;
+                                case Skill.Bow:           config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_bow_cb").Item;      break;
+                                case Skill.Crossbow:      config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_xbow_cb").Item;     break;
+                                case Skill.ThrownWeapon:  config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_tw_cb").Item;      break;
                             }
                             if (IsCritical)
                             {
                                 switch (Weapon.WeaponSkill)
                                 {
-                                    case Skill.FinesseWeapons: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_fw_cb_crit").Item; break;
-                                    case Skill.LightWeapons: case Skill.Axe: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_lw_cb_crit").Item; break;
-                                    case Skill.HeavyWeapons: case Skill.Sword: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_hw_cb_crit").Item; break;
-                                    case Skill.TwoHandedCombat: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_2h_cb_crit").Item; break;
-                                    case Skill.MissileWeapons: case Skill.Bow:
+                                    // EoR
+                                    case Skill.FinesseWeapons:   config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_fw_cb_crit").Item;   break;
+                                    case Skill.LightWeapons:     config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_lw_cb_crit").Item;   break;
+                                    case Skill.HeavyWeapons:     config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_hw_cb_crit").Item;   break;
+                                    case Skill.TwoHandedCombat:  config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_2h_cb_crit").Item;   break;
+                                    case Skill.MissileWeapons:
                                         if (Weapon.DefaultCombatStyle == CombatStyle.Bow) config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_bow_cb_crit").Item;
                                         else if (Weapon.DefaultCombatStyle == CombatStyle.Crossbow) config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_xbow_cb_crit").Item;
                                         else if (Weapon.IsThrownWeapon || Weapon.IsAtlatl) config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_tw_cb_crit").Item;
                                         break;
+                                    // Infiltration
+                                    case Skill.Sword:         config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_sword_cb_crit").Item;    break;
+                                    case Skill.Mace:          config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_mace_cb_crit").Item;     break;
+                                    case Skill.Axe:           config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_axe_cb_crit").Item;      break;
+                                    case Skill.Spear:         config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_spear_cb_crit").Item;    break;
+                                    case Skill.Staff:         config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_staff_cb_crit").Item;    break;
+                                    case Skill.Dagger:        config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_dagger_cb_crit").Item;   break;
+                                    case Skill.UnarmedCombat: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_unarmed_cb_crit").Item;  break;
+                                    case Skill.Bow:           config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_bow_cb_crit").Item;      break;
+                                    case Skill.Crossbow:      config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_xbow_cb_crit").Item;     break;
+                                    case Skill.ThrownWeapon:  config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_tw_cb_crit").Item;      break;
                                 }
                             }
                         }
@@ -802,15 +847,27 @@ namespace ACE.Server.Entity
                             config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_cs").Item;
                             switch (Weapon.WeaponSkill)
                             {
-                                case Skill.FinesseWeapons: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_fw_cs").Item; break;
-                                case Skill.LightWeapons: case Skill.Axe: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_lw_cs").Item; break;
-                                case Skill.HeavyWeapons: case Skill.Sword: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_hw_cs").Item; break;
-                                case Skill.TwoHandedCombat: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_2h_cs").Item; break;
-                                case Skill.MissileWeapons: case Skill.Bow:
+                                // EoR
+                                case Skill.FinesseWeapons:   config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_fw_cs").Item;   break;
+                                case Skill.LightWeapons:     config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_lw_cs").Item;   break;
+                                case Skill.HeavyWeapons:     config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_hw_cs").Item;   break;
+                                case Skill.TwoHandedCombat:  config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_2h_cs").Item;   break;
+                                case Skill.MissileWeapons:
                                     if (Weapon.DefaultCombatStyle == CombatStyle.Bow) config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_bow_cs").Item;
                                     else if (Weapon.DefaultCombatStyle == CombatStyle.Crossbow) config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_xbow_cs").Item;
                                     else if (Weapon.IsThrownWeapon || Weapon.IsAtlatl) config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_tw_cs").Item;
                                     break;
+                                // Infiltration
+                                case Skill.Sword:         config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_sword_cs").Item;    break;
+                                case Skill.Mace:          config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_mace_cs").Item;     break;
+                                case Skill.Axe:           config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_axe_cs").Item;      break;
+                                case Skill.Spear:         config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_spear_cs").Item;    break;
+                                case Skill.Staff:         config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_staff_cs").Item;    break;
+                                case Skill.Dagger:        config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_dagger_cs").Item;   break;
+                                case Skill.UnarmedCombat: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_unarmed_cs").Item;  break;
+                                case Skill.Bow:           config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_bow_cs").Item;      break;
+                                case Skill.Crossbow:      config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_xbow_cs").Item;     break;
+                                case Skill.ThrownWeapon:  config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_tw_cs").Item;      break;
                             }
                         }
                         else if (Weapon.IgnoreMagicArmor && Weapon.IgnoreMagicResist)
@@ -818,15 +875,27 @@ namespace ACE.Server.Entity
                             config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_hollow").Item;
                             switch (Weapon.WeaponSkill)
                             {
-                                case Skill.FinesseWeapons: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_fw_hollow").Item; break;
-                                case Skill.LightWeapons: case Skill.Axe: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_lw_hollow").Item; break;
-                                case Skill.HeavyWeapons: case Skill.Sword: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_hw_hollow").Item; break;
-                                case Skill.TwoHandedCombat: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_2h_hollow").Item; break;
-                                case Skill.MissileWeapons: case Skill.Bow:
+                                // EoR
+                                case Skill.FinesseWeapons:   config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_fw_hollow").Item;   break;
+                                case Skill.LightWeapons:     config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_lw_hollow").Item;   break;
+                                case Skill.HeavyWeapons:     config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_hw_hollow").Item;   break;
+                                case Skill.TwoHandedCombat:  config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_2h_hollow").Item;   break;
+                                case Skill.MissileWeapons:
                                     if (Weapon.DefaultCombatStyle == CombatStyle.Bow) config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_bow_hollow").Item;
                                     else if (Weapon.DefaultCombatStyle == CombatStyle.Crossbow) config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_xbow_hollow").Item;
                                     else if (Weapon.IsThrownWeapon || Weapon.IsAtlatl) config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_tw_hollow").Item;
                                     break;
+                                // Infiltration
+                                case Skill.Sword:         config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_sword_hollow").Item;    break;
+                                case Skill.Mace:          config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_mace_hollow").Item;     break;
+                                case Skill.Axe:           config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_axe_hollow").Item;      break;
+                                case Skill.Spear:         config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_spear_hollow").Item;    break;
+                                case Skill.Staff:         config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_staff_hollow").Item;    break;
+                                case Skill.Dagger:        config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_dagger_hollow").Item;   break;
+                                case Skill.UnarmedCombat: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_unarmed_hollow").Item;  break;
+                                case Skill.Bow:           config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_bow_hollow").Item;      break;
+                                case Skill.Crossbow:      config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_xbow_hollow").Item;     break;
+                                case Skill.ThrownWeapon:  config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_tw_hollow").Item;      break;
                             }
                         }
                         else if (Weapon.HasImbuedEffect(ImbuedEffectType.IgnoreAllArmor))
@@ -834,15 +903,27 @@ namespace ACE.Server.Entity
                             config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_phantom").Item;
                             switch (Weapon.WeaponSkill)
                             {
-                                case Skill.FinesseWeapons: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_fw_phantom").Item; break;
-                                case Skill.LightWeapons: case Skill.Axe: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_lw_phantom").Item; break;
-                                case Skill.HeavyWeapons: case Skill.Sword: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_hw_phantom").Item; break;
-                                case Skill.TwoHandedCombat: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_2h_phantom").Item; break;
-                                case Skill.MissileWeapons: case Skill.Bow:
+                                // EoR
+                                case Skill.FinesseWeapons:   config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_fw_phantom").Item;   break;
+                                case Skill.LightWeapons:     config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_lw_phantom").Item;   break;
+                                case Skill.HeavyWeapons:     config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_hw_phantom").Item;   break;
+                                case Skill.TwoHandedCombat:  config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_2h_phantom").Item;   break;
+                                case Skill.MissileWeapons:
                                     if (Weapon.DefaultCombatStyle == CombatStyle.Bow) config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_bow_phantom").Item;
                                     else if (Weapon.DefaultCombatStyle == CombatStyle.Crossbow) config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_xbow_phantom").Item;
                                     else if (Weapon.IsThrownWeapon || Weapon.IsAtlatl) config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_tw_phantom").Item;
                                     break;
+                                // Infiltration
+                                case Skill.Sword:         config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_sword_phantom").Item;    break;
+                                case Skill.Mace:          config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_mace_phantom").Item;     break;
+                                case Skill.Axe:           config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_axe_phantom").Item;      break;
+                                case Skill.Spear:         config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_spear_phantom").Item;    break;
+                                case Skill.Staff:         config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_staff_phantom").Item;    break;
+                                case Skill.Dagger:        config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_dagger_phantom").Item;   break;
+                                case Skill.UnarmedCombat: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_unarmed_phantom").Item;  break;
+                                case Skill.Bow:           config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_bow_phantom").Item;      break;
+                                case Skill.Crossbow:      config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_xbow_phantom").Item;     break;
+                                case Skill.ThrownWeapon:  config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_tw_phantom").Item;      break;
                             }
                         }
 

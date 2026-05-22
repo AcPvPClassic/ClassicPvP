@@ -703,7 +703,8 @@ namespace ACE.Server.Managers
                 ("recent_teleport_prevention", new Property<bool>(true, "prevents players from teleporting again immediately after materializing")),
                 ("disable_arenas", new Property<bool>(false, "set to true to disable arena events")),
                 ("arena_allow_same_ip_match", new Property<bool>(false, "enable to allow two characters from the same IP to be matched in an arena event")),
-                ("arena_allow_observers", new Property<bool>(true, "enable to allow players to watch arena matches as invisible observers"))
+                ("arena_allow_observers", new Property<bool>(true, "enable to allow players to watch arena matches as invisible observers")),
+                ("rolling_level_cap_enabled", new Property<bool>(false, "Enables the server-wide rolling level cap. When enabled, players cannot exceed the XP threshold for the current cap level. The cap starts at 15 and increases daily based on rolling_level_cap_start_timestamp."))
                 );
 
         public static readonly ReadOnlyDictionary<string, Property<long>> DefaultLongProperties =
@@ -733,7 +734,10 @@ namespace ACE.Server.Managers
                 ("arenas_reward_min_level", new Property<long>(25, "the minimum level required to get arena rewards")),
                 ("arenas_reward_min_age", new Property<long>(864000, "the minimum in-game age in seconds required to get arena rewards")),
                 ("arenas_min_level", new Property<long>(25, "the minimum level required to join an arena queue")),
-                ("pvp_chug_timer", new Property<long>(0, "the minimum time in milliseconds between chugs. if a chug is used within X milliseconds of a previous one, it will heal for 0. if value is set to 0 the feature is disabled."))
+                ("pvp_chug_timer", new Property<long>(0, "the minimum time in milliseconds between chugs. if a chug is used within X milliseconds of a previous one, it will heal for 0. if value is set to 0 the feature is disabled.")),
+                ("rolling_level_cap_start_timestamp", new Property<long>(0, "Unix timestamp of the day the rolling level cap period began (season day 0). Set this to enable the cap schedule. Cap starts at level 15 on this date.")),
+                ("rolling_level_cap", new Property<long>(15, "The currently computed rolling level cap (as a level number). Managed automatically by RollingLevelCapManager — do not set manually.")),
+                ("rolling_level_cap_timestamp", new Property<long>(0, "Unix timestamp of the last time rolling_level_cap was recalculated. Managed automatically by RollingLevelCapManager."))
                 );
 
         public static readonly ReadOnlyDictionary<string, Property<double>> DefaultDoubleProperties =
@@ -1144,11 +1148,82 @@ namespace ACE.Server.Managers
                 ("pvp_dmg_mod_tw_hollow", new Property<double>(1.0, "Scales the amount of damage for TW Hollow")),
                 ("pvp_dmg_mod_tw_phantom", new Property<double>(1.0, "Scales the amount of damage for TW Phantom")),
 
+                // ── Infiltration-era individual weapon skill mods ──────────────────────────
+                // These use the pre-ToD skill names that are the actual WeaponSkill values on
+                // Infiltration-ruleset weapons. The EoR-era entries above (fw/lw/hw/2h/…) are
+                // kept for forward compatibility but will not trigger on a Feb 2005 server.
+
+                // Sword (Skill.Sword)
+                ("pvp_dmg_mod_sword", new Property<double>(1.0, "Scales the amount of damage for Sword in PvP")),
+                ("pvp_dmg_mod_sword_cb", new Property<double>(1.0, "Scales the amount of damage for Sword CB")),
+                ("pvp_dmg_mod_sword_cb_crit", new Property<double>(1.0, "Scales the amount of crit damage for Sword CB")),
+                ("pvp_dmg_mod_sword_cs", new Property<double>(1.0, "Scales the amount of damage for Sword CS")),
+                ("pvp_dmg_mod_sword_ar", new Property<double>(1.0, "Scales the amount of damage for Sword AR")),
+                ("pvp_dmg_mod_sword_hollow", new Property<double>(1.0, "Scales the amount of damage for Sword Hollow")),
+                ("pvp_dmg_mod_sword_phantom", new Property<double>(1.0, "Scales the amount of damage for Sword Phantom")),
+
+                // Mace (Skill.Mace)
+                ("pvp_dmg_mod_mace", new Property<double>(1.0, "Scales the amount of damage for Mace in PvP")),
+                ("pvp_dmg_mod_mace_cb", new Property<double>(1.0, "Scales the amount of damage for Mace CB")),
+                ("pvp_dmg_mod_mace_cb_crit", new Property<double>(1.0, "Scales the amount of crit damage for Mace CB")),
+                ("pvp_dmg_mod_mace_cs", new Property<double>(1.0, "Scales the amount of damage for Mace CS")),
+                ("pvp_dmg_mod_mace_ar", new Property<double>(1.0, "Scales the amount of damage for Mace AR")),
+                ("pvp_dmg_mod_mace_hollow", new Property<double>(1.0, "Scales the amount of damage for Mace Hollow")),
+                ("pvp_dmg_mod_mace_phantom", new Property<double>(1.0, "Scales the amount of damage for Mace Phantom")),
+
+                // Axe (Skill.Axe)
+                ("pvp_dmg_mod_axe", new Property<double>(1.0, "Scales the amount of damage for Axe in PvP")),
+                ("pvp_dmg_mod_axe_cb", new Property<double>(1.0, "Scales the amount of damage for Axe CB")),
+                ("pvp_dmg_mod_axe_cb_crit", new Property<double>(1.0, "Scales the amount of crit damage for Axe CB")),
+                ("pvp_dmg_mod_axe_cs", new Property<double>(1.0, "Scales the amount of damage for Axe CS")),
+                ("pvp_dmg_mod_axe_ar", new Property<double>(1.0, "Scales the amount of damage for Axe AR")),
+                ("pvp_dmg_mod_axe_hollow", new Property<double>(1.0, "Scales the amount of damage for Axe Hollow")),
+                ("pvp_dmg_mod_axe_phantom", new Property<double>(1.0, "Scales the amount of damage for Axe Phantom")),
+
+                // Spear (Skill.Spear)
+                ("pvp_dmg_mod_spear", new Property<double>(1.0, "Scales the amount of damage for Spear in PvP")),
+                ("pvp_dmg_mod_spear_cb", new Property<double>(1.0, "Scales the amount of damage for Spear CB")),
+                ("pvp_dmg_mod_spear_cb_crit", new Property<double>(1.0, "Scales the amount of crit damage for Spear CB")),
+                ("pvp_dmg_mod_spear_cs", new Property<double>(1.0, "Scales the amount of damage for Spear CS")),
+                ("pvp_dmg_mod_spear_ar", new Property<double>(1.0, "Scales the amount of damage for Spear AR")),
+                ("pvp_dmg_mod_spear_hollow", new Property<double>(1.0, "Scales the amount of damage for Spear Hollow")),
+                ("pvp_dmg_mod_spear_phantom", new Property<double>(1.0, "Scales the amount of damage for Spear Phantom")),
+
+                // Staff (Skill.Staff)
+                ("pvp_dmg_mod_staff", new Property<double>(1.0, "Scales the amount of damage for Staff in PvP")),
+                ("pvp_dmg_mod_staff_cb", new Property<double>(1.0, "Scales the amount of damage for Staff CB")),
+                ("pvp_dmg_mod_staff_cb_crit", new Property<double>(1.0, "Scales the amount of crit damage for Staff CB")),
+                ("pvp_dmg_mod_staff_cs", new Property<double>(1.0, "Scales the amount of damage for Staff CS")),
+                ("pvp_dmg_mod_staff_ar", new Property<double>(1.0, "Scales the amount of damage for Staff AR")),
+                ("pvp_dmg_mod_staff_hollow", new Property<double>(1.0, "Scales the amount of damage for Staff Hollow")),
+                ("pvp_dmg_mod_staff_phantom", new Property<double>(1.0, "Scales the amount of damage for Staff Phantom")),
+
+                // Dagger (Skill.Dagger)
+                ("pvp_dmg_mod_dagger", new Property<double>(1.0, "Scales the amount of damage for Dagger in PvP")),
+                ("pvp_dmg_mod_dagger_cb", new Property<double>(1.0, "Scales the amount of damage for Dagger CB")),
+                ("pvp_dmg_mod_dagger_cb_crit", new Property<double>(1.0, "Scales the amount of crit damage for Dagger CB")),
+                ("pvp_dmg_mod_dagger_cs", new Property<double>(1.0, "Scales the amount of damage for Dagger CS")),
+                ("pvp_dmg_mod_dagger_ar", new Property<double>(1.0, "Scales the amount of damage for Dagger AR")),
+                ("pvp_dmg_mod_dagger_hollow", new Property<double>(1.0, "Scales the amount of damage for Dagger Hollow")),
+                ("pvp_dmg_mod_dagger_phantom", new Property<double>(1.0, "Scales the amount of damage for Dagger Phantom")),
+
+                // Unarmed Combat (Skill.UnarmedCombat)
+                ("pvp_dmg_mod_unarmed", new Property<double>(1.0, "Scales the amount of damage for Unarmed Combat in PvP")),
+                ("pvp_dmg_mod_unarmed_cb", new Property<double>(1.0, "Scales the amount of damage for Unarmed CB")),
+                ("pvp_dmg_mod_unarmed_cb_crit", new Property<double>(1.0, "Scales the amount of crit damage for Unarmed CB")),
+                ("pvp_dmg_mod_unarmed_cs", new Property<double>(1.0, "Scales the amount of damage for Unarmed CS")),
+                ("pvp_dmg_mod_unarmed_ar", new Property<double>(1.0, "Scales the amount of damage for Unarmed AR")),
+                ("pvp_dmg_mod_unarmed_hollow", new Property<double>(1.0, "Scales the amount of damage for Unarmed Hollow")),
+                ("pvp_dmg_mod_unarmed_phantom", new Property<double>(1.0, "Scales the amount of damage for Unarmed Phantom")),
+
                 // Misc PvP modifiers
                 ("pvp_cs_critrate_mod", new Property<double>(1.0, "Scales the crit rate for Critical Strike in PvP")),
                 ("pvp_void_hybrid_mod", new Property<double>(1.0, "Scales the amount of void DOT damage when the attacker is a hybrid void (has trained/specialized melee or war magic skills)")),
                 ("pvp_ratings_mod_dmg", new Property<double>(1.0, "Scales the bonus received from damage and damage-resistance ratings during PvP")),
-                ("pvp_ratings_mod_critdmg", new Property<double>(1.0, "Scales the bonus received from crit-damage and crit-damage-resistance ratings during PvP"))
+                ("pvp_ratings_mod_critdmg", new Property<double>(1.0, "Scales the bonus received from crit-damage and crit-damage-resistance ratings during PvP")),
+
+                // Rolling Level Cap
+                ("daily_xp_category_ratio", new Property<double>(0.70, "Rolling cap: maximum fraction of a player's remaining cap XP that a single category (quest or monster/kill) can absorb. Default 0.70 matches Doctide Seasons. Admin XP bypasses this limit."))
                 );
         
         public static readonly ReadOnlyDictionary<string, Property<string>> DefaultStringProperties =
@@ -1170,7 +1245,8 @@ namespace ACE.Server.Managers
                 ("vpn_account_whitelist", new Property<string>("", "A comma separated list of account names for which VPN detection is bypassed")),
                 ("discord_login_token", new Property<string>("", "Login Token used for Discord chat integration")),
                 ("arena_globals_webhook", new Property<string>("", "Webhook for sending arena global messages to Discord")),
-                ("arenas_blacklist", new Property<string>("", "Comma-separated list of character/monarch IDs blocked from arena queues"))
+                ("arenas_blacklist", new Property<string>("", "Comma-separated list of character/monarch IDs blocked from arena queues")),
+                ("whitelisted_allegiances", new Property<string>("", "Comma-separated list of MonarchID values whose allegiances are whitelisted for PK quest kill credit, arena XP, and other whitelist-gated features"))
                 );
     }
 }
