@@ -774,8 +774,9 @@ namespace ACE.Server.Entity
 
                     //Handle PK quests for winners
                     var winnerMonarchId = winner.MonarchId;
-                    var hasDifferentAllegianceOpponent = losers.FirstOrDefault(x => x.MonarchId != winnerMonarchId) != null;
-                    if (hasDifferentAllegianceOpponent || ActiveEvent.EventType.ToLower().Equals("1v1"))
+                    var hasWhitelistedOpponent = losers.FirstOrDefault(x => x.MonarchId != winnerMonarchId && WhitelistedAllegiances.IsAllowedAllegiance((int)x.MonarchId)) != null
+                                                && WhitelistedAllegiances.IsAllowedAllegiance((int)winnerMonarchId);
+                    if (hasWhitelistedOpponent || ActiveEvent.EventType.ToLower().Equals("1v1"))
                     {
                         player.CompletePkQuestTasks(PKQuestDefs.PKQuests_ParticipateAnyArena);
                         player.CompletePkQuestTasks(PKQuestDefs.PKQuests_WinAnyArena);
@@ -1020,8 +1021,9 @@ namespace ACE.Server.Entity
 
                     //Handle PK quests for losers
                     var loserMonarchId = loser.MonarchId;
-                    var hasDifferentAllegianceWinner = winners.FirstOrDefault(x => x.MonarchId != loserMonarchId) != null;
-                    if (hasDifferentAllegianceWinner || ActiveEvent.EventType.ToLower().Equals("1v1"))
+                    var hasWhitelistedWinner = winners.FirstOrDefault(x => x.MonarchId != loserMonarchId && WhitelistedAllegiances.IsAllowedAllegiance((int)x.MonarchId)) != null
+                                              && WhitelistedAllegiances.IsAllowedAllegiance((int)loserMonarchId);
+                    if (hasWhitelistedWinner || ActiveEvent.EventType.ToLower().Equals("1v1"))
                     {
                         player.CompletePkQuestTasks(PKQuestDefs.PKQuests_ParticipateAnyArena);
                         player.CompletePkQuestTask("ARENA_DMG20K", (int)loser.TotalDmgDealt);
@@ -1215,8 +1217,9 @@ namespace ACE.Server.Entity
 
                     //Handle PK quests for draw participants
                     var drawPlayerMonarchId = arenaPlayer.MonarchId;
-                    var hasDifferentAllegianceDrawOpponent = ActiveEvent.Players.FirstOrDefault(x => x.TeamGuid != arenaPlayer.TeamGuid && x.MonarchId != drawPlayerMonarchId) != null;
-                    if (hasDifferentAllegianceDrawOpponent || ActiveEvent.EventType.ToLower().Equals("1v1"))
+                    var hasWhitelistedDrawOpponent = ActiveEvent.Players.FirstOrDefault(x => x.TeamGuid != arenaPlayer.TeamGuid && x.MonarchId != drawPlayerMonarchId && WhitelistedAllegiances.IsAllowedAllegiance((int)x.MonarchId)) != null
+                                                    && WhitelistedAllegiances.IsAllowedAllegiance((int)drawPlayerMonarchId);
+                    if (hasWhitelistedDrawOpponent || ActiveEvent.EventType.ToLower().Equals("1v1"))
                     {
                         player.CompletePkQuestTasks(PKQuestDefs.PKQuests_ParticipateAnyArena);
                         player.CompletePkQuestTask("ARENA_DMG20K", (int)arenaPlayer.TotalDmgDealt);

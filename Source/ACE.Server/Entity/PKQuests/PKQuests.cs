@@ -79,19 +79,19 @@ namespace ACE.Server.Entity.PKQuests
                     arena_any_win_30.TaskCount = 30;
                     _pkQuestList.Add(arena_any_win_30);
 
-                    //- Kill 10 players from an opposing allegiance (open world or arena)
+                    //- Kill 10 players from an opposing whitelisted allegiance (open world or arena)
                     var kill_any_10 = new PKQuest();
                     kill_any_10.QuestCode = "KILL_ANY_10";
-                    kill_any_10.Description = "Kill any 10 players from an opposing allegiance";
+                    kill_any_10.Description = "Kill any 10 players from an opposing whitelisted allegiance";
                     kill_any_10.RewardDescription = "80k luminance, 50% XP to next level, 50 PK Trophies";
                     kill_any_10.Rewards = new List<string>() { "LUM,80000", "XP%,50", "PKTROPHY,50" };
                     kill_any_10.TaskCount = 10;
                     _pkQuestList.Add(kill_any_10);
 
-                    //- Kill 30 players from an opposing allegiance (open world or arena)
+                    //- Kill 30 players from an opposing whitelisted allegiance (open world or arena)
                     var kill_any_30 = new PKQuest();
                     kill_any_30.QuestCode = "KILL_ANY_30";
-                    kill_any_30.Description = "Kill any 30 players from an opposing allegiance";
+                    kill_any_30.Description = "Kill any 30 players from an opposing whitelisted allegiance";
                     kill_any_30.RewardDescription = "200k luminance, 50% XP to next level, 100 PK Trophies";
                     kill_any_30.Rewards = new List<string>() { "LUM,200000", "XP%,50", "PKTROPHY,100" };
                     kill_any_30.TaskCount = 30;
@@ -304,127 +304,127 @@ namespace ACE.Server.Entity.PKQuests
                     arena_recdmg_800.Rewards = new List<string>() { "LUM,20000", "XP%,25", "DBKEY,1" };
                     _pkQuestList.Add(arena_recdmg_800);
 
-                    //- Kill 3 players from an opposing allegiance in Town Network
+                    //- Kill 3 players from an opposing whitelisted allegiance in Town Network
                     var pkkill_tn_3 = new PKQuest();
                     pkkill_tn_3.QuestCode = "PKKILL_TN_3";
-                    pkkill_tn_3.Description = "Kill 3 members of an opposing allegiance in Town Network";
+                    pkkill_tn_3.Description = "Kill 3 members of an opposing whitelisted allegiance in Town Network";
                     pkkill_tn_3.RewardDescription = "30k luminance, 25% XP to next level, 2 Darkbeat Keys, 1 Phial of Bloody Tears, 25 PK Trophies.";
                     pkkill_tn_3.TaskCount = 3;
                     pkkill_tn_3.Rewards = new List<string>() { "LUM,30000", "XP%,25", "DBKEY,2", "PKTROPHY,25", "PHIAL,1" };
                     _pkQuestList.Add(pkkill_tn_3);
 
-                    //- Kill 3 players from an opposing allegiance in Subway
+                    //- Kill 3 players from an opposing whitelisted allegiance in Subway
                     var pkkill_sub_3 = new PKQuest();
                     pkkill_sub_3.QuestCode = "PKKILL_SUB_3";
-                    pkkill_sub_3.Description = "Kill 3 members of an opposing allegiance in Subway";
+                    pkkill_sub_3.Description = "Kill 3 members of an opposing whitelisted allegiance in Subway";
                     pkkill_sub_3.RewardDescription = "30k luminance, 25% XP to next level, 2 Darkbeat Keys, 1 Phial of Bloody Tears, 25 PK Trophies";
                     pkkill_sub_3.TaskCount = 3;
                     pkkill_sub_3.Rewards = new List<string>() { "LUM,30000", "XP%,25", "DBKEY,2", "PKTROPHY,25", "PHIAL,1" };
                     _pkQuestList.Add(pkkill_sub_3);
 
-                    //- Kill 3 players from an opposing allegiance at the Island LS
+                    //- Kill 3 players from an opposing whitelisted allegiance at the Island LS
                     var pkkill_islandls_3 = new PKQuest();
                     pkkill_islandls_3.QuestCode = "PKKILL_ISLANDLS_3";
-                    pkkill_islandls_3.Description = "Kill 3 members of an opposing allegiance at the Peddler's Outpost Lifestone";
+                    pkkill_islandls_3.Description = "Kill 3 members of an opposing whitelisted allegiance at the Peddler's Outpost Lifestone";
                     pkkill_islandls_3.RewardDescription = "30k luminance, 25% XP to next level, 2 Darkbeat Keys, 1 Phial of Bloody Tears, 25 PK Trophies";
                     pkkill_islandls_3.TaskCount = 3;
                     pkkill_islandls_3.Rewards = new List<string>() { "LUM,30000", "XP%,25", "DBKEY,2", "PKTROPHY,25", "PHIAL,1" };
                     _pkQuestList.Add(pkkill_islandls_3);
 
-                    //- Kill 3 players from an opposing allegiance in VR Roots
+                    //- Kill 3 players from an opposing whitelisted allegiance in VR Roots
                     var pkkill_vrroots_3 = new PKQuest();
                     pkkill_vrroots_3.QuestCode = "PKKILL_VRROOTS_3";
-                    pkkill_vrroots_3.Description = "Kill 3 members of an opposing allegiance in the Viridian Rise Roots dungeon";
+                    pkkill_vrroots_3.Description = "Kill 3 members of an opposing whitelisted allegiance in the Viridian Rise Roots dungeon";
                     pkkill_vrroots_3.RewardDescription = "30k luminance, 25% XP to next level, 2 Darkbeat Keys, 1 Phial of Bloody Tears, 25 PK Trophies";
                     pkkill_vrroots_3.TaskCount = 3;
                     pkkill_vrroots_3.Rewards = new List<string>() { "LUM,30000", "XP%,25", "DBKEY,2", "PKTROPHY,25", "PHIAL,1" };
                     _pkQuestList.Add(pkkill_vrroots_3);
 
-                    //- Kill 3 players from an opposing allegiance in Shreths
+                    //- Kill 3 players from an opposing whitelisted allegiance in Shreths
                     var pkkill_islandshreths_3 = new PKQuest();
                     pkkill_islandshreths_3.QuestCode = "PKKILL_ISLANDSHRETHS_3";
-                    pkkill_islandshreths_3.Description = "Kill 3 members of an opposing allegiance in Shreth Caverns.";
+                    pkkill_islandshreths_3.Description = "Kill 3 members of an opposing whitelisted allegiance in Shreth Caverns.";
                     pkkill_islandshreths_3.RewardDescription = "30k luminance, 25% XP to next level, 2 Darkbeat Keys, 1 Phial of Bloody Tears, 25 PK Trophies";
                     pkkill_islandshreths_3.TaskCount = 3;
                     pkkill_islandshreths_3.Rewards = new List<string>() { "LUM,30000", "XP%,25", "DBKEY,2", "PKTROPHY,25", "PHIAL,1" };
                     _pkQuestList.Add(pkkill_islandshreths_3);
 
-                    //- Kill 3 players from an opposing allegiance in Mites
+                    //- Kill 3 players from an opposing whitelisted allegiance in Mites
                     var pkkill_islandmites_3 = new PKQuest();
                     pkkill_islandmites_3.QuestCode = "PKKILL_ISLANDMITES_3";
-                    pkkill_islandmites_3.Description = "Kill 3 members of an opposing allegiance in Mite Hole.";
+                    pkkill_islandmites_3.Description = "Kill 3 members of an opposing whitelisted allegiance in Mite Hole.";
                     pkkill_islandmites_3.RewardDescription = "30k luminance, 25% XP to next level, 2 Darkbeat Keys, 1 Phial of Bloody Tears, 25 PK Trophies";
                     pkkill_islandmites_3.TaskCount = 3;
                     pkkill_islandmites_3.Rewards = new List<string>() { "LUM,30000", "XP%,25", "DBKEY,2", "PKTROPHY,25", "PHIAL,1" };
                     _pkQuestList.Add(pkkill_islandmites_3);
 
-                    //- Kill 3 players from an opposing allegiance in Dragons
+                    //- Kill 3 players from an opposing whitelisted allegiance in Dragons
                     var pkkill_islanddragons_3 = new PKQuest();
                     pkkill_islanddragons_3.QuestCode = "PKKILL_ISLANDDRAGONS_3";
-                    pkkill_islanddragons_3.Description = "Kill 3 members of an opposing allegiance in Dragon's Den.";
+                    pkkill_islanddragons_3.Description = "Kill 3 members of an opposing whitelisted allegiance in Dragon's Den.";
                     pkkill_islanddragons_3.RewardDescription = "30k luminance, 25% XP to next level, 2 Darkbeat Keys, 1 Phial of Bloody Tears, 25 PK Trophies";
                     pkkill_islanddragons_3.TaskCount = 3;
                     pkkill_islanddragons_3.Rewards = new List<string>() { "LUM,30000", "XP%,25", "DBKEY,2", "PKTROPHY,25", "PHIAL,1" };
                     _pkQuestList.Add(pkkill_islanddragons_3);
 
-                    //- Kill 3 players from an opposing allegiance in Golems
+                    //- Kill 3 players from an opposing whitelisted allegiance in Golems
                     var pkkill_islandgolems_3 = new PKQuest();
                     pkkill_islandgolems_3.QuestCode = "PKKILL_ISLANDGOLEMS_3";
-                    pkkill_islandgolems_3.Description = "Kill 3 members of an opposing allegiance in Ancient Temple.";
+                    pkkill_islandgolems_3.Description = "Kill 3 members of an opposing whitelisted allegiance in Ancient Temple.";
                     pkkill_islandgolems_3.RewardDescription = "30k luminance, 25% XP to next level, 2 Darkbeat Keys, 1 Phial of Bloody Tears, 25 PK Trophies";
                     pkkill_islandgolems_3.TaskCount = 3;
                     pkkill_islandgolems_3.Rewards = new List<string>() { "LUM,30000", "XP%,25", "DBKEY,2", "PKTROPHY,25", "PHIAL,1" };
                     _pkQuestList.Add(pkkill_islandgolems_3);
 
-                    //- Kill 3 players from an opposing allegiance in Wasps
+                    //- Kill 3 players from an opposing whitelisted allegiance in Wasps
                     var pkkill_islandwasps_3 = new PKQuest();
                     pkkill_islandwasps_3.QuestCode = "PKKILL_ISLANDWASPS_3";
-                    pkkill_islandwasps_3.Description = "Kill 3 members of an opposing allegiance in Swarm Hive.";
+                    pkkill_islandwasps_3.Description = "Kill 3 members of an opposing whitelisted allegiance in Swarm Hive.";
                     pkkill_islandwasps_3.RewardDescription = "30k luminance, 25% XP to next level, 2 Darkbeat Keys, 1 Phial of Bloody Tears, 25 PK Trophies";
                     pkkill_islandwasps_3.TaskCount = 3;
                     pkkill_islandwasps_3.Rewards = new List<string>() { "LUM,30000", "XP%,25", "DBKEY,2", "PKTROPHY,25", "PHIAL,1" };
                     _pkQuestList.Add(pkkill_islandwasps_3);
 
-                    //- Kill 3 players from an opposing allegiance in Rats
+                    //- Kill 3 players from an opposing whitelisted allegiance in Rats
                     var pkkill_islandrats_3 = new PKQuest();
                     pkkill_islandrats_3.QuestCode = "PKKILL_ISLANDRATS_3";
-                    pkkill_islandrats_3.Description = "Kill 3 members of an opposing allegiance in Rat Nest.";
+                    pkkill_islandrats_3.Description = "Kill 3 members of an opposing whitelisted allegiance in Rat Nest.";
                     pkkill_islandrats_3.RewardDescription = "30k luminance, 25% XP to next level, 2 Darkbeat Keys, 1 Phial of Bloody Tears, 25 PK Trophies";
                     pkkill_islandrats_3.TaskCount = 3;
                     pkkill_islandrats_3.Rewards = new List<string>() { "LUM,30000", "XP%,25", "DBKEY,2", "PKTROPHY,25", "PHIAL,1" };
                     _pkQuestList.Add(pkkill_islandrats_3);
 
-                    //- Kill 3 players from an opposing allegiance in Drudges
+                    //- Kill 3 players from an opposing whitelisted allegiance in Drudges
                     var pkkill_islanddrudges_3 = new PKQuest();
                     pkkill_islanddrudges_3.QuestCode = "PKKILL_ISLANDDRUDGES_3";
-                    pkkill_islanddrudges_3.Description = "Kill 3 members of an opposing allegiance in Drudge Stronghold.";
+                    pkkill_islanddrudges_3.Description = "Kill 3 members of an opposing whitelisted allegiance in Drudge Stronghold.";
                     pkkill_islanddrudges_3.RewardDescription = "30k luminance, 25% XP to next level, 2 Darkbeat Keys, 1 Phial of Bloody Tears, 25 PK Trophies";
                     pkkill_islanddrudges_3.TaskCount = 3;
                     pkkill_islanddrudges_3.Rewards = new List<string>() { "LUM,30000", "XP%,25", "DBKEY,2", "PKTROPHY,25", "PHIAL,1" };
                     _pkQuestList.Add(pkkill_islanddrudges_3);
 
-                    //- Kill 3 players from an opposing allegiance in any of the T9 dungeons
+                    //- Kill 3 players from an opposing whitelisted allegiance in any of the T9 dungeons
                     var pkkill_T9_3 = new PKQuest();
                     pkkill_T9_3.QuestCode = "PKKILL_T9_3";
-                    pkkill_T9_3.Description = "Kill 3 members of an opposing allegiance in any of the Tier 9 Halls of Metos, Black Spawn Den or Mountain Citadel dungeons.";
+                    pkkill_T9_3.Description = "Kill 3 members of an opposing whitelisted allegiance in any of the Tier 9 Halls of Metos, Black Spawn Den or Mountain Citadel dungeons.";
                     pkkill_T9_3.RewardDescription = "50k luminance, 50% XP to next level, 5 Darkbeat Keys, 3 Phials of Bloody Tears, 100 PK Trophies, 2 Hera Keys, 2 Boxes";
                     pkkill_T9_3.TaskCount = 3;
                     pkkill_T9_3.Rewards = new List<string>() { "LUM,50000", "XP%,50", "DBKEY,5", "PKTROPHY,100", "HERA,2", "PHIAL,3", "BOX,2" };
                     _pkQuestList.Add(pkkill_T9_3);
 
-                    //- Kill 15 players from an opposing allegiance in any of the T9 dungeons
+                    //- Kill 15 players from an opposing whitelisted allegiance in any of the T9 dungeons
                     var pkkill_T9_15 = new PKQuest();
                     pkkill_T9_15.QuestCode = "PKKILL_T9_15";
-                    pkkill_T9_15.Description = "Kill 15 members of an opposing allegiance in any of the Tier 9 Halls of Metos, Black Spawn Den or Mountain Citadel dungeons.";
+                    pkkill_T9_15.Description = "Kill 15 members of an opposing whitelisted allegiance in any of the Tier 9 Halls of Metos, Black Spawn Den or Mountain Citadel dungeons.";
                     pkkill_T9_15.RewardDescription = "150k luminance, 75% XP to next level, 5 Darkbeat Keys, 15 Phial of Bloody Tears, 250 PK Trophies, 3 Hera Keys, 5 Boxes";
                     pkkill_T9_15.TaskCount = 15;
                     pkkill_T9_15.Rewards = new List<string>() { "LUM,150000", "XP%,75", "DBKEY,5", "PKTROPHY,250", "PHIAL,15", "HERA,3", "BOX,5" };
                     _pkQuestList.Add(pkkill_T9_15);
 
-                    //- Kill 100 players from an opposing allegiance in any of the T9 dungeons
+                    //- Kill 100 players from an opposing whitelisted allegiance in any of the T9 dungeons
                     var pkkill_T9_100 = new PKQuest();
                     pkkill_T9_100.QuestCode = "PKKILL_T9_100";
-                    pkkill_T9_100.Description = "Kill 100 members of an opposing allegiance in any of the Tier 9 Halls of Metos, Black Spawn Den or Mountain Citadel dungeons.";
+                    pkkill_T9_100.Description = "Kill 100 members of an opposing whitelisted allegiance in any of the Tier 9 Halls of Metos, Black Spawn Den or Mountain Citadel dungeons.";
                     pkkill_T9_100.RewardDescription = "1M luminance, 250% XP to next level, 5 Darkbeat Keys, 50 Phial of Bloody Tears, 500 PK Trophies, 8 Hera Keys, 10 Boxes, 3 Radiant Amber Crystals";
                     pkkill_T9_100.TaskCount = 100;
                     pkkill_T9_100.Rewards = new List<string>() { "LUM,1000000", "XP%,250", "DBKEY,5", "PKTROPHY,500", "PHIAL,50", "HERA,8", "BOX,10", "AMBER,3" };

@@ -138,8 +138,10 @@ namespace ACE.Server.WorldObjects
                     if ((Location.Cell & 0xFFFF) < 0x100)
                         globalPKDe += $" The kill occured at {Location.GetMapCoordStr()}";
 
-                    //Handle PK Quests
+                    //Handle PK Quests — both killer and victim must be in whitelisted allegiances
                     bool isPkQuestEligible =
+                        pkPlayer.IsAllegianceWhitelisted() &&
+                        this.IsAllegianceWhitelisted() &&
                         pkPlayer.Allegiance != null &&
                         pkPlayer.Allegiance.MonarchId.HasValue &&
                         this.Allegiance != null &&
