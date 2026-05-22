@@ -667,6 +667,9 @@ namespace ACE.Entity.Enum.Properties
         MaxReachedLevel                          = 10026,
         TinkerMaxCountOverride                   = 10027,
         TinkerWorkmanshipOverride                = 10028,
+
+        // Split Arrows
+        SplitArrowCount                          = 19006,
     }
 
     public static class PropertyIntExtensions

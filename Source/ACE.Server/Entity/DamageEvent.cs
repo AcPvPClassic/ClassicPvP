@@ -7,6 +7,7 @@ using log4net;
 using ACE.Common;
 using ACE.DatLoader.Entity.AnimationHooks;
 using ACE.Entity.Enum;
+using ACE.Entity.Enum.Properties;
 using ACE.Entity.Models;
 using ACE.Server.Managers;
 using ACE.Server.Network.GameMessages.Messages;
@@ -158,6 +159,8 @@ namespace ACE.Server.Entity
             40300,  // Blessed Moar
             40301,  // Verdant Moar
         };
+
+        private const float DefaultSplitArrowDamageMultiplier = 0.5f;
 
         public static DamageEvent CalculateDamage(Creature attacker, Creature defender, WorldObject damageSource, MotionCommand? attackMotion = null, AttackHook attackHook = null)
         {
@@ -667,6 +670,14 @@ namespace ACE.Server.Entity
                 {
                     log.Error($"Failed applying server configured pvp mods. Ex: {ex}");
                 }
+            }
+
+            //Split Arrows
+            if (DamageSource.GetProperty(PropertyBool.IsSplitArrow) ?? false)
+            {
+                var splitMultiplier = (float)(DamageSource.ProjectileLauncher?.GetProperty(PropertyFloat.SplitArrowDamageMultiplier) ??
+                                             DefaultSplitArrowDamageMultiplier);
+                Damage *= splitMultiplier;
             }
 
             DamageMitigated = DamageBeforeMitigation - Damage;

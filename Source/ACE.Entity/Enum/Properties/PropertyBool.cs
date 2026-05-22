@@ -210,5 +210,9 @@ namespace ACE.Entity.Enum.Properties
         IsPendingArenaObserver           = 9031,
         HasArenaRareDmgBuff              = 9032,
         HasArenaRareDmgReductionBuff     = 9033,
+
+        // Split Arrows
+        SplitArrows                      = 19017,
+        IsSplitArrow                     = 19018,
     }
 }

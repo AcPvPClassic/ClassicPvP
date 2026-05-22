@@ -259,5 +259,8 @@ namespace ACE.Entity.Enum.Properties
         // PvP
         LastChugTimestamp              = 10026,
         LastPlayerCommandTimestamp     = 10027,
+
+        // Split Arrows
+        SplitArrowDamageMultiplier     = 19072,
     }
 }

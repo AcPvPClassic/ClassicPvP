@@ -791,6 +791,14 @@ namespace ACE.Server.Network.Structure
                     hasExtraPropertiesText = true;
                 }
 
+                if (wo.SplitArrows)
+                {
+                    if (hasExtraPropertiesText)
+                        extraPropertiesText += "\n";
+                    extraPropertiesText += $"These arrows will split into a volley of {wo.SplitArrowCount ?? 3} while doing {String.Format("{0:0.##}", (wo.SplitArrowDamageMultiplier ?? 0.5f) * 100)}% of their normal damage to targets.";
+                    hasExtraPropertiesText = true;
+                }
+
                 if ((wo.ExtraHealthRegenPool ?? 0) != 0)
                 {
                     if (hasExtraPropertiesText)
