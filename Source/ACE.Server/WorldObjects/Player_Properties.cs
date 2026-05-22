@@ -1757,5 +1757,12 @@ namespace ACE.Server.WorldObjects
             get => GetProperty(PropertyBool.HasArenaRareDmgReductionBuff) ?? false;
             set { if (!value) RemoveProperty(PropertyBool.HasArenaRareDmgReductionBuff); else SetProperty(PropertyBool.HasArenaRareDmgReductionBuff, value); }
         }
+
+        /* PK Quests */
+        public string PKQuestListSerialized
+        {
+            get => GetProperty(PropertyString.PKQuestInfo);
+            set { if (value == null) RemoveProperty(PropertyString.PKQuestInfo); else SetProperty(PropertyString.PKQuestInfo, value); }
+        }
     }
 }

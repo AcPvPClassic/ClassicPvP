@@ -627,6 +627,7 @@ namespace ACE.Server.Managers
             if (victim != null &&
                 arenaLocation != null &&
                 (arenaLocation.ActiveEvent.EventType.Equals("1v1") ||
+                arenaLocation.ActiveEvent.EventType.Equals("2v2") ||
                 arenaLocation.ActiveEvent.EventType.Equals("ffa") ||
                 arenaLocation.ActiveEvent.EventType.Equals("group")))
             {

@@ -116,5 +116,8 @@ namespace ACE.Entity.Enum.Properties
 
         // Arena
         ArenaRewardsByOpponent          = 9023,
+
+        // PK Quests
+        PKQuestInfo                     = 9024,
     }
 }

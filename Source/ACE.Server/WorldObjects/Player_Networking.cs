@@ -580,5 +580,21 @@ namespace ACE.Server.WorldObjects
 
             return false;
         }
+
+        /// <summary>
+        /// Returns true if this player and the other player are connecting from different IP addresses.
+        /// Returns false if either player has no session (offline), or if they share the same IP.
+        /// Bypassed on local/test servers via the local_server property.
+        /// </summary>
+        public bool IsDifferentIPAddress(Player otherPlayer)
+        {
+            if (PropertyManager.GetBool("local_server").Item)
+                return true;
+
+            if (Session == null || otherPlayer?.Session == null)
+                return false;
+
+            return !Session.EndPointC2S.Address.Equals(otherPlayer.Session.EndPointC2S.Address);
+        }
     }
 }
