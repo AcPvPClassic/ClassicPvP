@@ -3600,6 +3600,13 @@ namespace ACE.Server.WorldObjects
             set { if (!value) RemoveProperty(PropertyBool.BlockSpellExtraction); else SetProperty(PropertyBool.BlockSpellExtraction, value); }
         }
 
+        /* Character Rename */
+        public int CharacterRenameCount
+        {
+            get => GetProperty(PropertyInt.CharacterRenameCount) ?? 0;
+            set { if (value < 1) RemoveProperty(PropertyInt.CharacterRenameCount); else SetProperty(PropertyInt.CharacterRenameCount, value); }
+        }
+
         /* Split Arrows */
         public bool SplitArrows
         {

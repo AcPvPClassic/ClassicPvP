@@ -636,6 +636,7 @@ namespace ACE.Entity.Enum.Properties
         VisualClothingPriority                   = 9013,
         SquelchGlobal                            = 9014,
         InventoryOrder                           = 9015,
+        CharacterRenameCount                     = 9016,
 
         // CustomDM
         TacticAndTechniqueId                     = 10000,
