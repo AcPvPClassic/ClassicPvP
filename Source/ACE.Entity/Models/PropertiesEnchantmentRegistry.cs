@@ -23,6 +23,12 @@ namespace ACE.Entity.Models
         public float StatModValue { get; set; }
         public EquipmentSet SpellSetId { get; set; }
 
+        /// <summary>
+        /// True when this enchantment was cast by a PK on a PK (used for pvp_dmg_mod_void_dot_rating_reduction).
+        /// Not persisted to the database; set at runtime when the enchantment is created.
+        /// </summary>
+        public bool IsPvP { get; set; }
+
         public float? CachedModifiedStatModValue = null;
         public object CachedCasterObject = null;
     }

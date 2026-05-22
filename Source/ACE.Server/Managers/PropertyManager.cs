@@ -1048,7 +1048,107 @@ namespace ACE.Server.Managers
                 ("force_login_materialization_duration", new Property<double>(10.0, "seconds after logging in that a player is held in portal space")),
                 ("recent_teleport_threshold", new Property<double>(3.0, "seconds after materializing before a player can teleport again")),
                 ("arena_corpse_rot_seconds", new Property<double>(900, "the number of seconds a corpse generated in an arena landblock takes to rot")),
-                ("arena_pk_respite_timer", new Property<double>(120, "the number of seconds a player killer is set to NPK status after dying in an arena match"))
+                ("arena_pk_respite_timer", new Property<double>(120, "the number of seconds a player killer is set to NPK status after dying in an arena match")),
+                ("arena_1v1_global_dmg_mod", new Property<double>(1.0, "a damage modifier applied across all melee, missile and war/void projectile damage during arena 1v1 events")),
+
+                // Doctide flat PvP damage modifiers (additive with ClassicPvP's level-interpolated system; all default 1.0)
+                // War magic
+                ("pvp_dmg_mod_war", new Property<double>(1.0, "Scales the amount of damage for war magic")),
+                ("pvp_dmg_mod_war_variance", new Property<double>(1.0, "Scales the low end for war magic bolts and arcs without affecting top end. Values under 1 reduce variance/increase min dmg; values over 1 increase variance/reduce min dmg.")),
+                ("pvp_dmg_mod_war_streak", new Property<double>(1.0, "Scales the amount of damage for war streaks")),
+                ("pvp_dmg_mod_war_blast", new Property<double>(1.0, "Scales the amount of damage for war blasts")),
+                ("pvp_dmg_mod_war_cb_crit", new Property<double>(1.0, "Scales the amount of CB crit damage for war magic")),
+                ("pvp_dmg_mod_war_cs_crit", new Property<double>(1.0, "Scales the amount of CS crit damage for war magic")),
+                ("pvp_dmg_mod_war_cs_dmg", new Property<double>(1.0, "Scales the amount of CS damage for war magic for all hits (both crits and non-crits)")),
+
+                // Void magic
+                ("pvp_dmg_mod_void", new Property<double>(1.0, "Scales the amount of damage players take from Void Magic (not including streaks and DOTs which have their own mods)")),
+                ("pvp_dmg_mod_void_streak", new Property<double>(1.0, "Scales the amount of damage for void streaks")),
+                ("pvp_dmg_mod_void_dot", new Property<double>(1.0, "Scales the amount of damage for void DOTs")),
+                ("pvp_dmg_mod_void_crit", new Property<double>(1.0, "Scales the amount of crit damage for void magic")),
+                ("pvp_dmg_mod_void_cb_crit", new Property<double>(1.0, "Scales the amount of CB crit damage for void magic")),
+                ("pvp_dmg_mod_void_variance", new Property<double>(1.0, "Scales the low end for void magic bolts and arcs without affecting top end. Values under 1 reduce variance/increase min dmg; values over 1 increase variance/reduce min dmg.")),
+                ("pvp_dmg_mod_void_dot_rating_reduction", new Property<double>(1.0, "Scales the base DOT damage used when computing the NetherDotDamageRating for a PvP void dot")),
+
+                // Global PvP effect mods
+                ("pvp_dmg_mod_phantom", new Property<double>(1.0, "Scales the amount of damage for phantom weapons in PvP")),
+                ("pvp_dmg_mod_hollow", new Property<double>(1.0, "Scales the amount of damage for hollow weapons in PvP")),
+                ("pvp_dmg_mod_cb", new Property<double>(1.0, "Scales the amount of damage for crippling blow in PvP")),
+                ("pvp_dmg_mod_ar", new Property<double>(1.0, "Scales the amount of damage for armor rending in PvP")),
+                ("pvp_dmg_mod_cs", new Property<double>(1.0, "Scales the amount of damage for critical strike in PvP")),
+
+                // Finesse Weapons
+                ("pvp_dmg_mod_fw", new Property<double>(1.0, "Scales the amount of damage for Finesse Weapons in PvP")),
+                ("pvp_dmg_mod_fw_cb", new Property<double>(1.0, "Scales the amount of damage for FW CB")),
+                ("pvp_dmg_mod_fw_cb_crit", new Property<double>(1.0, "Scales the amount of crit damage for FW CB")),
+                ("pvp_dmg_mod_fw_cs", new Property<double>(1.0, "Scales the amount of damage for FW CS")),
+                ("pvp_dmg_mod_fw_ar", new Property<double>(1.0, "Scales the amount of damage for FW AR")),
+                ("pvp_dmg_mod_fw_hollow", new Property<double>(1.0, "Scales the amount of damage for FW Hollow")),
+                ("pvp_dmg_mod_fw_phantom", new Property<double>(1.0, "Scales the amount of damage for FW Phantom")),
+
+                // Light Weapons
+                ("pvp_dmg_mod_lw", new Property<double>(1.0, "Scales the amount of damage for Light Weapons in PvP")),
+                ("pvp_dmg_mod_lw_cb", new Property<double>(1.0, "Scales the amount of damage for LW CB")),
+                ("pvp_dmg_mod_lw_cb_crit", new Property<double>(1.0, "Scales the amount of crit damage for LW CB")),
+                ("pvp_dmg_mod_lw_cs", new Property<double>(1.0, "Scales the amount of damage for LW CS")),
+                ("pvp_dmg_mod_lw_ar", new Property<double>(1.0, "Scales the amount of damage for LW AR")),
+                ("pvp_dmg_mod_lw_hollow", new Property<double>(1.0, "Scales the amount of damage for LW Hollow")),
+                ("pvp_dmg_mod_lw_phantom", new Property<double>(1.0, "Scales the amount of damage for LW Phantom")),
+                ("pvp_dmg_mod_lw_triplestrike", new Property<double>(1.0, "Scales the amount of damage for LW Triple Strike weapons")),
+                ("pvp_dmg_mod_lw_cb_crit_triplestrike", new Property<double>(1.0, "Scales the amount of CB crit damage for LW Triple Strike weapons")),
+
+                // Heavy Weapons
+                ("pvp_dmg_mod_hw", new Property<double>(1.0, "Scales the amount of damage for Heavy Weapons in PvP")),
+                ("pvp_dmg_mod_hw_cb", new Property<double>(1.0, "Scales the amount of damage for HW CB")),
+                ("pvp_dmg_mod_hw_cb_crit", new Property<double>(1.0, "Scales the amount of crit damage for HW CB")),
+                ("pvp_dmg_mod_hw_cs", new Property<double>(1.0, "Scales the amount of damage for HW CS")),
+                ("pvp_dmg_mod_hw_ar", new Property<double>(1.0, "Scales the amount of damage for HW AR")),
+                ("pvp_dmg_mod_hw_hollow", new Property<double>(1.0, "Scales the amount of damage for HW Hollow")),
+                ("pvp_dmg_mod_hw_phantom", new Property<double>(1.0, "Scales the amount of damage for HW Phantom")),
+                ("pvp_dmg_mod_hw_multistrike", new Property<double>(1.0, "Scales the amount of damage for HW Multi Strike weapons")),
+                ("pvp_dmg_mod_hw_cb_crit_multistrike", new Property<double>(1.0, "Scales the amount of CB crit damage for HW Multi Strike weapons")),
+
+                // Two Handed Combat
+                ("pvp_dmg_mod_2h", new Property<double>(1.0, "Scales the amount of damage for Two Handed Weapons in PvP")),
+                ("pvp_dmg_mod_2h_cb", new Property<double>(1.0, "Scales the amount of damage for 2H CB")),
+                ("pvp_dmg_mod_2h_cb_crit", new Property<double>(1.0, "Scales the amount of crit damage for 2H CB")),
+                ("pvp_dmg_mod_2h_cs", new Property<double>(1.0, "Scales the amount of damage for 2H CS")),
+                ("pvp_dmg_mod_2h_ar", new Property<double>(1.0, "Scales the amount of damage for 2H AR")),
+                ("pvp_dmg_mod_2h_hollow", new Property<double>(1.0, "Scales the amount of damage for 2H Hollow")),
+                ("pvp_dmg_mod_2h_phantom", new Property<double>(1.0, "Scales the amount of damage for 2H Phantom")),
+
+                // Crossbow
+                ("pvp_dmg_mod_xbow", new Property<double>(1.0, "Scales the amount of damage for Crossbow in PvP")),
+                ("pvp_dmg_mod_xbow_cb", new Property<double>(1.0, "Scales the amount of damage for Xbow CB")),
+                ("pvp_dmg_mod_xbow_cb_crit", new Property<double>(1.0, "Scales the amount of crit damage for Xbow CB")),
+                ("pvp_dmg_mod_xbow_cs", new Property<double>(1.0, "Scales the amount of damage for Xbow CS")),
+                ("pvp_dmg_mod_xbow_ar", new Property<double>(1.0, "Scales the amount of damage for Xbow AR")),
+                ("pvp_dmg_mod_xbow_hollow", new Property<double>(1.0, "Scales the amount of damage for Xbow Hollow")),
+                ("pvp_dmg_mod_xbow_phantom", new Property<double>(1.0, "Scales the amount of damage for Xbow Phantom")),
+
+                // Bow
+                ("pvp_dmg_mod_bow", new Property<double>(1.0, "Scales the amount of damage for Bow in PvP")),
+                ("pvp_dmg_mod_bow_cb", new Property<double>(1.0, "Scales the amount of damage for Bow CB")),
+                ("pvp_dmg_mod_bow_cb_crit", new Property<double>(1.0, "Scales the amount of crit damage for Bow CB")),
+                ("pvp_dmg_mod_bow_cs", new Property<double>(1.0, "Scales the amount of damage for Bow CS")),
+                ("pvp_dmg_mod_bow_ar", new Property<double>(1.0, "Scales the amount of damage for Bow AR")),
+                ("pvp_dmg_mod_bow_hollow", new Property<double>(1.0, "Scales the amount of damage for Bow Hollow")),
+                ("pvp_dmg_mod_bow_phantom", new Property<double>(1.0, "Scales the amount of damage for Bow Phantom")),
+
+                // Thrown Weapons
+                ("pvp_dmg_mod_tw", new Property<double>(1.0, "Scales the amount of damage for Thrown Weapons in PvP")),
+                ("pvp_dmg_mod_tw_cb", new Property<double>(1.0, "Scales the amount of damage for TW CB")),
+                ("pvp_dmg_mod_tw_cb_crit", new Property<double>(1.0, "Scales the amount of crit damage for TW CB")),
+                ("pvp_dmg_mod_tw_cs", new Property<double>(1.0, "Scales the amount of damage for TW CS")),
+                ("pvp_dmg_mod_tw_ar", new Property<double>(1.0, "Scales the amount of damage for TW AR")),
+                ("pvp_dmg_mod_tw_hollow", new Property<double>(1.0, "Scales the amount of damage for TW Hollow")),
+                ("pvp_dmg_mod_tw_phantom", new Property<double>(1.0, "Scales the amount of damage for TW Phantom")),
+
+                // Misc PvP modifiers
+                ("pvp_cs_critrate_mod", new Property<double>(1.0, "Scales the crit rate for Critical Strike in PvP")),
+                ("pvp_void_hybrid_mod", new Property<double>(1.0, "Scales the amount of void DOT damage when the attacker is a hybrid void (has trained/specialized melee or war magic skills)")),
+                ("pvp_ratings_mod_dmg", new Property<double>(1.0, "Scales the bonus received from damage and damage-resistance ratings during PvP")),
+                ("pvp_ratings_mod_critdmg", new Property<double>(1.0, "Scales the bonus received from crit-damage and crit-damage-resistance ratings during PvP"))
                 );
         
         public static readonly ReadOnlyDictionary<string, Property<string>> DefaultStringProperties =

@@ -296,6 +296,17 @@ namespace ACE.Server.WorldObjects.Managers
                 entry.SpellSetId = (EquipmentSet)caster.EquipmentSetId;
             }
 
+            // mark enchantment as PvP when cast by a PK on a PK (used for pvp_dmg_mod_void_dot_rating_reduction)
+            if (caster != null &&
+                caster.PlayerKillerStatus == PlayerKillerStatus.PK &&
+                spell.IsHarmful &&
+                !spell.IsSelfTargeted &&
+                this.Player != null &&
+                this.Player.PlayerKillerStatus == PlayerKillerStatus.PK)
+            {
+                entry.IsPvP = true;
+            }
+
             return entry;
         }
 
@@ -1307,7 +1318,16 @@ namespace ACE.Server.WorldObjects.Managers
                 // normally we could just use netherDot.StatModValue here,
                 // but in case WorldObject has a non-default HeartbeatInterval,
                 // we want this value to still be based on the damage per default heartbeat interval
-                totalBaseDamage += GetDamagePerTick(netherDot, 5.0);
+                var baseDmgForThisDot = GetDamagePerTick(netherDot, 5.0);
+
+                // in PvP, scale the base damage used for rating by pvp_dmg_mod_void_dot_rating_reduction
+                if (netherDot.IsPvP)
+                {
+                    var pvpDotRatingMod = PropertyManager.GetDouble("pvp_dmg_mod_void_dot_rating_reduction").Item;
+                    baseDmgForThisDot = baseDmgForThisDot * (float)pvpDotRatingMod;
+                }
+
+                totalBaseDamage += baseDmgForThisDot;
             }
             var rating = (int)Math.Round(totalBaseDamage / 8.0f);   // thanks to Xenocide for this formula!
             //Console.WriteLine($"{WorldObject.Name}.NetherDotDamageRating: {rating}");
@@ -1632,7 +1652,47 @@ namespace ACE.Server.WorldObjects.Managers
                             pvpMod *= (float)PropertyManager.GetInterpolatedDouble(sourcePlayer.Level ?? 1, "pvp_dmg_mod_low_dot", "pvp_dmg_mod_high_dot", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
                     }
 
-                    tickAmount *= resistanceMod * damageResistRatingMod * dotResistRatingMod * pvpMod;
+                    // flat pvp void dot multiplier (stacks with level-interp mod above)
+                    var pvpFlatDotMod = 1.0f;
+                    if (isPvP && damageType == DamageType.Nether)
+                        pvpFlatDotMod = (float)PropertyManager.GetDouble("pvp_dmg_mod_void_dot").Item;
+
+                    tickAmount *= resistanceMod * damageResistRatingMod * dotResistRatingMod * pvpMod * pvpFlatDotMod;
+
+                    // additional modifier for hybrid void characters in pvp (attacker has trained/specialized melee or war magic skills)
+                    if (isPvP && damageType == DamageType.Nether)
+                    {
+                        try
+                        {
+                            var isHybrid = false;
+                            foreach (var playerSkill in sourcePlayer.Skills)
+                            {
+                                if (playerSkill.Key == Skill.FinesseWeapons ||
+                                    playerSkill.Key == Skill.HeavyWeapons ||
+                                    playerSkill.Key == Skill.LightWeapons ||
+                                    playerSkill.Key == Skill.WarMagic ||
+                                    playerSkill.Key == Skill.MissileWeapons ||
+                                    playerSkill.Key == Skill.TwoHandedCombat)
+                                {
+                                    if (playerSkill.Value.AdvancementClass == SkillAdvancementClass.Trained || playerSkill.Value.AdvancementClass == SkillAdvancementClass.Specialized)
+                                    {
+                                        isHybrid = true;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (isHybrid)
+                            {
+                                var hybridMod = PropertyManager.GetDouble("pvp_void_hybrid_mod").Item;
+                                tickAmount = tickAmount * (float)hybridMod;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Error in EnchantmentManager.ApplyDamageTick while applying pvp_void_hybrid_mod. Ex: {ex}");
+                        }
+                    }
 
                     enchantment.CachedModifiedStatModValue = tickAmount;
                 }

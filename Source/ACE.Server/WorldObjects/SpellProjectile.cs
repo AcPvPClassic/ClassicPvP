@@ -668,9 +668,31 @@ namespace ACE.Server.WorldObjects
                 }
 
                 if (Spell.IsMaximizedSpell)
+                {
                     baseDamage = Spell.MaxDamage;
+                }
                 else
-                    baseDamage = ThreadSafeRandom.Next(Spell.MinDamage, Spell.MaxDamage);
+                {
+                    // apply war/void variance mods in PvP — these shift the minimum of the roll without changing the max
+                    var minDmg = Spell.MinDamage;
+                    if (isPvP)
+                    {
+                        var spellType = GetProjectileSpellType(Spell.Id);
+                        if (Spell.School == MagicSchool.WarMagic && (spellType == ProjectileSpellType.Arc || spellType == ProjectileSpellType.Bolt))
+                        {
+                            var warVarianceMod = PropertyManager.GetDouble("pvp_dmg_mod_war_variance").Item;
+                            var modifiedVariance = Convert.ToInt32(Math.Round(Spell.Variance * warVarianceMod));
+                            minDmg = Spell.MaxDamage - modifiedVariance;
+                        }
+                        else if (Spell.DamageType == DamageType.Nether && (spellType == ProjectileSpellType.Arc || spellType == ProjectileSpellType.Bolt))
+                        {
+                            var voidVarianceMod = PropertyManager.GetDouble("pvp_dmg_mod_void_variance").Item;
+                            var modifiedVariance = Convert.ToInt32(Math.Round(Spell.Variance * voidVarianceMod));
+                            minDmg = Spell.MaxDamage - modifiedVariance;
+                        }
+                    }
+                    baseDamage = ThreadSafeRandom.Next(minDmg, Spell.MaxDamage);
+                }
 
                 if (Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.CustomDM)
                 {
@@ -745,6 +767,60 @@ namespace ACE.Server.WorldObjects
                 }
 
                 finalDamage = finalDamage * pvpMod;
+
+                // flat PvP war/void mods (Doctide-style, stacks with level-interp pvpMod above)
+                if (sourcePlayer != null && targetPlayer != null)
+                {
+                    float dmgMod = 1.0f;
+                    if (Spell.School == MagicSchool.WarMagic)
+                    {
+                        dmgMod = (float)PropertyManager.GetDouble("pvp_dmg_mod_war").Item;
+
+                        if (SpellType == ProjectileSpellType.Streak)
+                            dmgMod = (float)PropertyManager.GetDouble("pvp_dmg_mod_war_streak").Item;
+
+                        if (SpellType == ProjectileSpellType.Blast)
+                            dmgMod = (float)PropertyManager.GetDouble("pvp_dmg_mod_war_blast").Item;
+
+                        if (criticalHit && weapon != null && weapon.HasImbuedEffect(ImbuedEffectType.CripplingBlow))
+                            dmgMod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_war_cb_crit").Item;
+
+                        if (weapon != null && weapon.HasImbuedEffect(ImbuedEffectType.CriticalStrike))
+                        {
+                            dmgMod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_war_cs_dmg").Item;
+                            if (criticalHit)
+                                dmgMod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_war_cs_crit").Item;
+                        }
+
+                        finalDamage = finalDamage * dmgMod;
+                    }
+                    else if (Spell.DamageType == DamageType.Nether)
+                    {
+                        dmgMod = (float)PropertyManager.GetDouble("pvp_dmg_mod_void").Item;
+
+                        if (SpellType == ProjectileSpellType.Streak)
+                            dmgMod = (float)PropertyManager.GetDouble("pvp_dmg_mod_void_streak").Item;
+
+                        if (criticalHit)
+                        {
+                            dmgMod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_void_crit").Item;
+                            if (weapon != null && weapon.HasImbuedEffect(ImbuedEffectType.CripplingBlow))
+                                dmgMod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_void_cb_crit").Item;
+                        }
+
+                        finalDamage = finalDamage * dmgMod;
+                    }
+
+                    // arena 1v1 global damage modifier
+                    if (ArenaLocation.IsArenaLandblock(targetPlayer.Location.Landblock))
+                    {
+                        var arenaEvent = ArenaManager.GetArenaEventByLandblock(targetPlayer.Location.Landblock);
+                        if (arenaEvent != null && arenaEvent.EventType != null && arenaEvent.EventType.Equals("1v1", StringComparison.OrdinalIgnoreCase))
+                        {
+                            finalDamage = finalDamage * (float)PropertyManager.GetDouble("arena_1v1_global_dmg_mod").Item;
+                        }
+                    }
+                }
             }
 
             // show debug info
@@ -971,14 +1047,37 @@ namespace ACE.Server.WorldObjects
                 }
 
                 var damageRating = sourceCreature?.GetDamageRating() ?? 0;
+
+                // scale damage rating by pvp_ratings_mod_dmg in PvP
+                var pvpDmgRatingModifierConfig = PropertyManager.GetDouble("pvp_ratings_mod_dmg").Item;
+                if (pkBattle)
+                    damageRating = (int)Math.Round(damageRating * pvpDmgRatingModifierConfig);
+
                 damageRatingMod = Creature.AdditiveCombine(Creature.GetPositiveRatingMod(damageRating), heritageMod, sneakAttackMod);
 
                 damageResistRatingMod = target.GetDamageResistRatingMod(CombatType.Magic);
+
+                // scale damage resist rating by pvp_ratings_mod_dmg in PvP
+                if (pkBattle)
+                {
+                    int drrRatingBase = Math.Abs(Creature.ModToRating(damageResistRatingMod));
+                    damageResistRatingMod = Creature.GetNegativeRatingMod((int)Math.Round(drrRatingBase * pvpDmgRatingModifierConfig));
+                }
 
                 if (critical)
                 {
                     critDamageRatingMod = Creature.GetPositiveRatingMod(sourceCreature?.GetCritDamageRating() ?? 0);
                     critDamageResistRatingMod = Creature.GetNegativeRatingMod(target.GetCritDamageResistRating());
+
+                    if (pkBattle)
+                    {
+                        var pvpCritRatingModifierConfig = PropertyManager.GetDouble("pvp_ratings_mod_critdmg").Item;
+                        int cdRatingBase = Creature.ModToRating(critDamageRatingMod);
+                        critDamageRatingMod = Creature.GetPositiveRatingMod((int)Math.Round(cdRatingBase * pvpCritRatingModifierConfig));
+
+                        int cdrRatingBase = Math.Abs(Creature.ModToRating(critDamageResistRatingMod));
+                        critDamageResistRatingMod = Creature.GetNegativeRatingMod((int)Math.Round(cdrRatingBase * pvpCritRatingModifierConfig));
+                    }
 
                     damageRatingMod = Creature.AdditiveCombine(damageRatingMod, critDamageRatingMod);
                     damageResistRatingMod = Creature.AdditiveCombine(damageResistRatingMod, critDamageResistRatingMod);
