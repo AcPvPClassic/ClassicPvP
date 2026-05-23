@@ -421,18 +421,21 @@ namespace ACE.Server.WorldObjects
 
             bool allowXpAtMaxLevel = PropertyManager.GetBool("allow_xp_at_max_level").Item;
 
-            // Rolling level cap: in Infiltration the entire world has a daily XP cap that increases over time.
+            // Rolling XP cap: in Infiltration the entire world has a server-wide XP ceiling that
+            // increases daily.  The cap is stored as a raw total-XP value so it can extend past
+            // level 126 into the post-level-cap skill/attribute grind phase.
             long rollingCapXp = 0;
-            long rollingLevelCapValue = 0;
             if (Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.Infiltration)
-            {
-                rollingLevelCapValue = RollingLevelCapManager.GetCurrentLevelCap();
-                if (rollingLevelCapValue > 0 && rollingLevelCapValue < (long)maxLevel)
-                    rollingCapXp = (long)xpTable.CharacterLevelXPList[(int)rollingLevelCapValue];
-            }
+                rollingCapXp = RollingLevelCapManager.GetCurrentXpCap();
+
+            // totalXpCap is only used for the safety clamp on the non-rolling-cap path.
+            // When rollingCapXp > 0 the per-category enforcement below is the real gate.
+            long seasonMaxXp = Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.Infiltration
+                ? Math.Max((long)maxLevelXp, PropertyManager.GetLong("season_max_xp").Item)
+                : long.MaxValue;
 
             var totalXpCap = Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.Infiltration
-                ? (rollingCapXp > 0 ? rollingCapXp : (long)maxLevelXp)   // At what value the total xp counter will stop counting.
+                ? (rollingCapXp > 0 ? rollingCapXp : seasonMaxXp)
                 : long.MaxValue;
             var availableXpCap = Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.Infiltration ? uint.MaxValue : long.MaxValue; // Max unassigned xp amount.
 
@@ -464,15 +467,16 @@ namespace ACE.Server.WorldObjects
                 // bounded by the global remaining. Buckets reset when the cap level advances.
                 if (rollingCapXp > 0)
                 {
-                    // Detect cap advancement and lazily reset per-player buckets.
-                    if (rollingLevelCapValue != CapPreviousLevelCap)
+                    // Detect cap advancement (the stored XP ceiling changed since last award)
+                    // and lazily reset per-player per-category buckets.
+                    if (rollingCapXp != CapPreviousXpCap)
                     {
                         CapQuestXp = 0;
                         CapMonsterXp = 0;
                         var xpRemainingAtReset = Math.Max(0L, rollingCapXp - (TotalExperience ?? 0));
                         double ratioAtReset = PropertyManager.GetDouble("daily_xp_category_ratio").Item;
                         CapDailyMaxPerCat = (long)(xpRemainingAtReset * ratioAtReset);
-                        CapPreviousLevelCap = rollingLevelCapValue;
+                        CapPreviousXpCap = rollingCapXp;
                     }
 
                     var xpRemainingGlobal = rollingCapXp - (TotalExperience ?? 0);
@@ -520,7 +524,7 @@ namespace ACE.Server.WorldObjects
                         // Notify the player the first time a grant fills the global cap.
                         if (xpToAdd > 0 && xpToAdd >= xpRemainingGlobal)
                             Session.Network.EnqueueSend(new GameMessageSystemChat(
-                                $"You have reached the current experience cap (level {rollingLevelCapValue}). The cap increases daily as the season progresses.",
+                                $"You have reached the current experience cap ({RollingLevelCapManager.GetCapDescription(rollingCapXp)}). The cap increases daily as the season progresses.",
                                 ChatMessageType.Broadcast));
 
                         addAmount = xpToAdd;
@@ -528,9 +532,11 @@ namespace ACE.Server.WorldObjects
                 }
 
                 TotalExperience += addAmount;
-                // Safety clamp for the non-rolling-cap path (allowXpAtMaxLevel bypasses amountLeftToEnd above)
-                if (rollingCapXp == 0 && TotalExperience > (long)totalXpCap)
-                    TotalExperience = (long)totalXpCap;
+                // Safety clamp: when the rolling cap is inactive enforce the season ceiling
+                // (season_max_xp) so TotalExperience never exceeds what the server is designed for.
+                // When rollingCapXp > 0 the per-category enforcement above is the real gate.
+                if (rollingCapXp == 0 && TotalExperience > totalXpCap)
+                    TotalExperience = totalXpCap;
 
                 AvailableExperience += addAmount;
                 if (AvailableExperience > availableXpCap)

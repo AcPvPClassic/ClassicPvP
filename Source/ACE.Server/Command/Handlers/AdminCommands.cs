@@ -5825,11 +5825,11 @@ namespace ACE.Server.Command.Handlers
 
         #endregion Allegiance Whitelist Commands
 
-        #region Rolling Level Cap Commands
+        #region Rolling XP Cap Commands
 
         [CommandHandler("startrollingcap", AccessLevel.Admin, CommandHandlerFlag.None, 0,
-            "Starts the rolling level cap from today (UTC midnight) and enables it",
-            "Usage: /startrollingcap\nSets rolling_level_cap_start_timestamp to today, enables rolling_level_cap_enabled, and forces an immediate recalculation.")]
+            "Starts the rolling XP cap from today (UTC midnight) and enables it",
+            "Usage: /startrollingcap\nSets rolling_level_cap_start_timestamp to today, enables rolling_level_cap_enabled, and forces an immediate recalculation.\nSet season_max_xp before starting to configure the end-of-season XP ceiling.")]
         public static void HandleStartRollingCap(Session session, params string[] parameters)
         {
             try
@@ -5839,9 +5839,10 @@ namespace ACE.Server.Command.Handlers
                 PropertyManager.ModifyBool("rolling_level_cap_enabled", true);
                 Managers.RollingLevelCapManager.ForceRecalculate();
 
-                var capLevel = Managers.RollingLevelCapManager.GetCurrentLevelCap();
-                CommandHandlerHelper.WriteOutputInfo(session, $"Rolling level cap started. Start timestamp: {todayMidnightUtc} (today, UTC). Current cap: level {capLevel}.");
-                PlayerManager.BroadcastToAuditChannel(session?.Player, $"{session?.Player?.Name ?? "CONSOLE"} started the rolling level cap (start: {todayMidnightUtc}, cap: {capLevel}).");
+                var xpCap = Managers.RollingLevelCapManager.GetCurrentXpCap();
+                var capDesc = Managers.RollingLevelCapManager.GetCapDescription(xpCap);
+                CommandHandlerHelper.WriteOutputInfo(session, $"Rolling XP cap started. Start timestamp: {todayMidnightUtc} (today, UTC). Current cap: {capDesc}.");
+                PlayerManager.BroadcastToAuditChannel(session?.Player, $"{session?.Player?.Name ?? "CONSOLE"} started the rolling XP cap (start: {todayMidnightUtc}, cap: {capDesc}).");
             }
             catch (Exception ex)
             {
@@ -5850,8 +5851,8 @@ namespace ACE.Server.Command.Handlers
         }
 
         [CommandHandler("forcerollingcap", AccessLevel.Admin, CommandHandlerFlag.None, 0,
-            "Forces an immediate recalculation of the rolling level cap",
-            "Usage: /forcerollingcap\nRecalculates rolling_level_cap from rolling_level_cap_start_timestamp. Useful after changing the start timestamp.")]
+            "Forces an immediate recalculation of the rolling XP cap",
+            "Usage: /forcerollingcap\nRecalculates rolling_xp_cap from rolling_level_cap_start_timestamp. Useful after changing the start timestamp or season_max_xp.")]
         public static void HandleForceRollingCap(Session session, params string[] parameters)
         {
             try
@@ -5864,9 +5865,10 @@ namespace ACE.Server.Command.Handlers
                 }
 
                 Managers.RollingLevelCapManager.ForceRecalculate();
-                var capLevel = Managers.RollingLevelCapManager.GetCurrentLevelCap();
-                CommandHandlerHelper.WriteOutputInfo(session, $"Rolling level cap recalculated. Current cap: level {capLevel}.");
-                PlayerManager.BroadcastToAuditChannel(session?.Player, $"{session?.Player?.Name ?? "CONSOLE"} force-recalculated the rolling level cap (result: {capLevel}).");
+                var xpCap = Managers.RollingLevelCapManager.GetCurrentXpCap();
+                var capDesc = Managers.RollingLevelCapManager.GetCapDescription(xpCap);
+                CommandHandlerHelper.WriteOutputInfo(session, $"Rolling XP cap recalculated. Current cap: {capDesc}.");
+                PlayerManager.BroadcastToAuditChannel(session?.Player, $"{session?.Player?.Name ?? "CONSOLE"} force-recalculated the rolling XP cap (result: {capDesc}).");
             }
             catch (Exception ex)
             {
@@ -5875,27 +5877,35 @@ namespace ACE.Server.Command.Handlers
         }
 
         [CommandHandler("rollingcapstatus", AccessLevel.Admin, CommandHandlerFlag.None, 0,
-            "Displays the current rolling level cap status")]
+            "Displays the current rolling XP cap status")]
         public static void HandleRollingCapStatus(Session session, params string[] parameters)
         {
             try
             {
-                var enabled = PropertyManager.GetBool("rolling_level_cap_enabled").Item;
+                var enabled        = PropertyManager.GetBool("rolling_level_cap_enabled").Item;
                 var startTimestamp = PropertyManager.GetLong("rolling_level_cap_start_timestamp").Item;
-                var capLevel = PropertyManager.GetLong("rolling_level_cap").Item;
-                var lastUpdate = PropertyManager.GetLong("rolling_level_cap_timestamp").Item;
+                var xpCap          = PropertyManager.GetLong("rolling_xp_cap").Item;
+                var lastUpdate     = PropertyManager.GetLong("rolling_xp_cap_timestamp").Item;
+                var seasonMaxXp    = PropertyManager.GetLong("season_max_xp").Item;
 
-                var sb = new System.Text.StringBuilder("Rolling Level Cap Status:\n");
+                var sb = new System.Text.StringBuilder("Rolling XP Cap Status:\n");
                 sb.AppendLine($"  Enabled:         {enabled}");
-                sb.AppendLine($"  Start timestamp: {startTimestamp} ({(startTimestamp > 0 ? DateTimeOffset.FromUnixTimeSeconds(startTimestamp).UtcDateTime.ToString("yyyy-MM-dd") : "not set")})");
-                sb.AppendLine($"  Current cap:     level {capLevel}");
+                sb.AppendLine($"  Start date:      {(startTimestamp > 0 ? DateTimeOffset.FromUnixTimeSeconds(startTimestamp).UtcDateTime.ToString("yyyy-MM-dd") : "not set")}");
+                sb.AppendLine($"  Season max XP:   {seasonMaxXp:N0}  (set via /modifylong season_max_xp <value>)");
+                sb.AppendLine($"  Current XP cap:  {Managers.RollingLevelCapManager.GetCapDescription(xpCap)}");
                 sb.AppendLine($"  Last updated:    {(lastUpdate > 0 ? DateTimeOffset.FromUnixTimeSeconds(lastUpdate).UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss") + " UTC" : "never")}");
 
                 if (startTimestamp > 0)
                 {
-                    var startDate = DateTimeOffset.FromUnixTimeSeconds(startTimestamp).UtcDateTime.Date;
+                    var startDate     = DateTimeOffset.FromUnixTimeSeconds(startTimestamp).UtcDateTime.Date;
                     var daysSinceStart = (DateTime.UtcNow.Date - startDate).Days;
-                    sb.AppendLine($"  Days since start:{daysSinceStart}");
+                    sb.AppendLine($"  Day of season:   {daysSinceStart}  (cap freezes at season_max_xp after day 83)");
+
+                    if (seasonMaxXp > 0 && xpCap > 0)
+                    {
+                        double pct = Math.Min(100.0, xpCap * 100.0 / seasonMaxXp);
+                        sb.AppendLine($"  Progress:        {pct:F1}% of season_max_xp");
+                    }
                 }
 
                 CommandHandlerHelper.WriteOutputInfo(session, sb.ToString().TrimEnd());
@@ -5906,6 +5916,6 @@ namespace ACE.Server.Command.Handlers
             }
         }
 
-        #endregion Rolling Level Cap Commands
+        #endregion Rolling XP Cap Commands
     }
 }

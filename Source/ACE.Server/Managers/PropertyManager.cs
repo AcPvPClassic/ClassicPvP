@@ -736,8 +736,11 @@ namespace ACE.Server.Managers
                 ("arenas_min_level", new Property<long>(25, "the minimum level required to join an arena queue")),
                 ("pvp_chug_timer", new Property<long>(0, "the minimum time in milliseconds between chugs. if a chug is used within X milliseconds of a previous one, it will heal for 0. if value is set to 0 the feature is disabled.")),
                 ("rolling_level_cap_start_timestamp", new Property<long>(0, "Unix timestamp of the day the rolling level cap period began (season day 0). Set this to enable the cap schedule. Cap starts at level 15 on this date.")),
-                ("rolling_level_cap", new Property<long>(15, "The currently computed rolling level cap (as a level number). Managed automatically by RollingLevelCapManager — do not set manually.")),
-                ("rolling_level_cap_timestamp", new Property<long>(0, "Unix timestamp of the last time rolling_level_cap was recalculated. Managed automatically by RollingLevelCapManager."))
+                ("rolling_level_cap", new Property<long>(15, "[Deprecated] Previously stored level number; superseded by rolling_xp_cap. Kept so existing DB rows do not error.")),
+                ("rolling_level_cap_timestamp", new Property<long>(0, "[Deprecated] Superseded by rolling_xp_cap_timestamp. Kept for DB compatibility.")),
+                ("rolling_xp_cap", new Property<long>(354692, "The currently computed total-XP cap. Managed automatically by RollingLevelCapManager — do not set manually.")),
+                ("rolling_xp_cap_timestamp", new Property<long>(0, "Unix timestamp of the last time rolling_xp_cap was recalculated. Managed automatically by RollingLevelCapManager.")),
+                ("season_max_xp", new Property<long>(20_000_000_000, "Total XP ceiling at the end of the season (day 83). Should be high enough that every player template can max all skills and attributes. Adjust per season based on server population and intended pace."))
                 );
 
         public static readonly ReadOnlyDictionary<string, Property<double>> DefaultDoubleProperties =

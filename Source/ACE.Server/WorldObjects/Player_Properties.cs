@@ -502,10 +502,10 @@ namespace ACE.Server.WorldObjects
             set { if (value == 0) RemoveProperty(PropertyInt64.CapMonsterXp); else SetProperty(PropertyInt64.CapMonsterXp, value); }
         }
 
-        public long CapPreviousLevelCap
+        public long CapPreviousXpCap
         {
-            get => GetProperty(PropertyInt64.CapPreviousLevelCap) ?? 0;
-            set { if (value == 0) RemoveProperty(PropertyInt64.CapPreviousLevelCap); else SetProperty(PropertyInt64.CapPreviousLevelCap, value); }
+            get => GetProperty(PropertyInt64.CapPreviousXpCap) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt64.CapPreviousXpCap); else SetProperty(PropertyInt64.CapPreviousXpCap, value); }
         }
 
         public long CapDailyMaxPerCat
