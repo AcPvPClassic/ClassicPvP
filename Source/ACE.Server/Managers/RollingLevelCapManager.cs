@@ -13,11 +13,24 @@ namespace ACE.Server.Managers
     ///
     /// Schedule (relative to rolling_level_cap_start_timestamp):
     ///
-    ///   Phase 1  Days  0–14:  +2.00 levels/day  →  level ~43  at end of week 2
-    ///   Phase 2  Days 15–41:  +2.50 levels/day  →  level ~111 at end of week 6
-    ///   Phase 3  Days 42–55:  +1.10 levels/day  →  level 126  around day 54–55
-    ///   Phase 4  Days 55–83:  linear XP growth from level-126 XP to season_max_xp
-    ///   Day  84+:             cap frozen at season_max_xp
+    ///   Phase 1  Days  0–14:  +3.00 levels/day  →  level  57 at end of week 2
+    ///   Phase 2  Days 15–44:  +1.50 levels/day  →  level 101 at end of week 6
+    ///   Phase 3  Days 45–59:  +1.40 levels/day  →  level 126 exactly at day 60
+    ///   Phase 4  Days 60–120: linear XP growth from level-126 XP to season_max_xp
+    ///   Day 121+:             cap frozen at season_max_xp
+    ///
+    ///   Week-by-week level milestones:
+    ///     Week  1 (day  0): level  15
+    ///     Week  2 (day  7): level  36
+    ///     Week  3 (day 14): level  57
+    ///     Week  4 (day 21): level  69
+    ///     Week  5 (day 28): level  80
+    ///     Week  6 (day 35): level  90
+    ///     Week  7 (day 42): level 101
+    ///     Week  8 (day 49): level 111
+    ///     Week  9 (day 56): level 121
+    ///     Week  9 (day 60): level 126 — post-level-cap XP phase begins
+    ///     Week 18 (day120): season_max_xp reached
     ///
     /// Relevant server configs (PropertyManager):
     ///   rolling_level_cap_enabled         (bool)   — master on/off switch
@@ -37,8 +50,9 @@ namespace ACE.Server.Managers
 
         // Phase 3 ends (and Phase 4 begins) once the level-based computation first
         // reaches or exceeds the dat-file max level.  With the rates above this
-        // consistently occurs around day 54–55; the code computes it dynamically.
-        private const int SEASON_END_DAY = 83;
+        // occurs at exactly day 60; the code computes it dynamically so rate
+        // changes above automatically propagate without touching this constant.
+        private const int SEASON_END_DAY = 120;
 
         private static DateTime LastTickDateTime = DateTime.MinValue;
 
@@ -93,10 +107,10 @@ namespace ACE.Server.Managers
                 double newLevelCap = 15.0;
                 for (int i = 0; i < daysSinceStart; i++)
                 {
-                    if      (i < 15) newLevelCap += 2.00;
-                    else if (i < 42) newLevelCap += 2.50;
-                    else if (i < 56) newLevelCap += 1.10;
-                    // i >= 56: no more level increments; phase 4 handles XP directly
+                    if      (i < 15) newLevelCap += 3.00;  // Phase 1: fast early gains
+                    else if (i < 45) newLevelCap += 1.50;  // Phase 2: steady mid-game
+                    else if (i < 60) newLevelCap += 1.40;  // Phase 3: approach to 126
+                    // i >= 60: level increments exhausted; phase 4 handles XP directly
                 }
 
                 var levelCap = (int)Math.Ceiling(newLevelCap);
@@ -155,9 +169,9 @@ namespace ACE.Server.Managers
             double v = 15.0;
             for (int i = 0; i < 200; i++)   // 200 is a safe upper bound
             {
-                if      (i < 15) v += 2.00;
-                else if (i < 42) v += 2.50;
-                else if (i < 56) v += 1.10;
+                if      (i < 15) v += 3.00;
+                else if (i < 45) v += 1.50;
+                else if (i < 60) v += 1.40;
                 else break;     // phases 1–3 are exhausted; post-cap already active
 
                 if ((int)Math.Ceiling(v) >= maxLevel)
