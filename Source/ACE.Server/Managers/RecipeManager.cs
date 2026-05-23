@@ -1310,6 +1310,16 @@ namespace ACE.Server.Managers
 
             var modified = ModifyItem(player, recipe, source, target, result, success);
 
+            if (recipe.IsTinkering() && success)
+            {
+                var salvageType = Regex.Replace(source.NameWithMaterial, @" \(\d+\)$", "");
+                salvageType = salvageType.Contains(" Salvage") ? salvageType.Remove(salvageType.IndexOf(" Salvage")) : salvageType;
+                salvageType = salvageType.Contains(" Foolproof") ? salvageType.Remove(salvageType.IndexOf(" Foolproof")) : salvageType;
+                var lottoResult = target.TinkeringLotto_Mutate(salvageType, (int)(source.Workmanship ?? 0));
+                if (!string.IsNullOrEmpty(lottoResult))
+                    player.EnqueueBroadcast(new GameMessageSystemChat($"{player.Name} won the tinkering lottery! The following improvements were made to your {target.NameWithMaterial}\n{lottoResult}", ChatMessageType.Craft), WorldObject.LocalBroadcastRange, ChatMessageType.Craft);
+            }
+
             // broadcast different messages based on recipe type
             if (!recipe.IsTinkering())
             {

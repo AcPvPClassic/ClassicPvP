@@ -3625,5 +3625,60 @@ namespace ACE.Server.WorldObjects
             get => GetProperty(PropertyFloat.SplitArrowDamageMultiplier);
             set { if (!value.HasValue) RemoveProperty(PropertyFloat.SplitArrowDamageMultiplier); else SetProperty(PropertyFloat.SplitArrowDamageMultiplier, value.Value); }
         }
+
+        /* MorphGem system */
+        public string TinkerLottoLog
+        {
+            get => GetProperty(PropertyString.TinkerLottoLog);
+            set { if (value == null) RemoveProperty(PropertyString.TinkerLottoLog); else SetProperty(PropertyString.TinkerLottoLog, value); }
+        }
+
+        public string MorphGemLog
+        {
+            get => GetProperty(PropertyString.MorphGemLog);
+            set { if (value == null) RemoveProperty(PropertyString.MorphGemLog); else SetProperty(PropertyString.MorphGemLog, value); }
+        }
+
+        public int? WeenieSwapClassId
+        {
+            get => GetProperty(PropertyInt.WeenieSwapClassId);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.WeenieSwapClassId); else SetProperty(PropertyInt.WeenieSwapClassId, value.Value); }
+        }
+
+        public int? GearCreatureSlayerRating
+        {
+            get => GetProperty(PropertyInt.GearCreatureSlayerRating);
+            set { if (!value.HasValue || value < 1) RemoveProperty(PropertyInt.GearCreatureSlayerRating); else SetProperty(PropertyInt.GearCreatureSlayerRating, value.Value); }
+        }
+
+        public ACE.Entity.Enum.CreatureType GearCreatureSlayerType
+        {
+            get => (ACE.Entity.Enum.CreatureType)(GetProperty(PropertyInt.GearCreatureSlayerType) ?? 0);
+            set { if (value == 0) RemoveProperty(PropertyInt.GearCreatureSlayerType); else SetProperty(PropertyInt.GearCreatureSlayerType, (int)value); }
+        }
+
+        public int? GearCreatureResistRating
+        {
+            get => GetProperty(PropertyInt.GearCreatureResistRating);
+            set { if (!value.HasValue || value < 1) RemoveProperty(PropertyInt.GearCreatureResistRating); else SetProperty(PropertyInt.GearCreatureResistRating, value.Value); }
+        }
+
+        public ACE.Entity.Enum.CreatureType GearCreatureResistType
+        {
+            get => (ACE.Entity.Enum.CreatureType)(GetProperty(PropertyInt.GearCreatureResistType) ?? 0);
+            set { if (value == 0) RemoveProperty(PropertyInt.GearCreatureResistType); else SetProperty(PropertyInt.GearCreatureResistType, (int)value); }
+        }
+
+        public int? Overpower
+        {
+            get => GetProperty(PropertyInt.Overpower);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.Overpower); else SetProperty(PropertyInt.Overpower, value.Value); }
+        }
+
+        public int? OverpowerResist
+        {
+            get => GetProperty(PropertyInt.OverpowerResist);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.OverpowerResist); else SetProperty(PropertyInt.OverpowerResist, value.Value); }
+        }
     }
 }

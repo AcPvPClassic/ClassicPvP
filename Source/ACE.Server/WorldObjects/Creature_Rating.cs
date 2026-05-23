@@ -165,6 +165,20 @@ namespace ACE.Server.WorldObjects
             return GetNegativeRatingMod(pkDamageResistRating);
         }
 
+        public int GetCreatureSlayerRating(CreatureType creatureType)
+        {
+            if (this is Player)
+                return GetEquippedItemsCreatureSlayerRatingSum(creatureType);
+            return 0;
+        }
+
+        public int GetCreatureResistRating(CreatureType creatureType)
+        {
+            if (this is Player)
+                return GetEquippedItemsCreatureResistRatingSum(creatureType);
+            return 0;
+        }
+
         /// <summary>
         /// Converts a 1.xx modifier to a +x rating,
         /// or a 0.xx modifier to a -x rating.

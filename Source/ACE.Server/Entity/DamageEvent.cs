@@ -251,6 +251,11 @@ namespace ACE.Server.Entity
             AttributeMod = attacker.GetAttributeMod(Weapon);
             SlayerMod = WorldObject.GetWeaponCreatureSlayerModifier(Weapon, attacker, defender);
 
+            // gear creature slayer rating
+            var gearSlayerRating = attacker.GetEquippedItemsCreatureSlayerRatingSum(defender.CreatureType ?? CreatureType.Invalid);
+            if (gearSlayerRating > 0)
+                SlayerMod = Creature.AdditiveCombine(SlayerMod, Creature.GetPositiveRatingMod(gearSlayerRating));
+
             // ratings
             DamageRatingBaseMod = Creature.GetPositiveRatingMod(attacker.GetDamageRating());
 
@@ -555,7 +560,11 @@ namespace ACE.Server.Entity
             else
                 ShieldMod = defender.GetShieldMod(attacker, DamageType, Weapon, pkBattle);
 
-            var damageBeforeShieldMod = DamageBeforeMitigation * ArmorMod * ResistanceMod * DamageResistanceRatingMod;
+            // gear creature resist rating
+            var gearCreatureResistRating = defender.GetEquippedItemsCreatureResistRatingSum(attacker.CreatureType ?? CreatureType.Invalid);
+            var gearCreatureResistRatingMod = gearCreatureResistRating > 0 ? Creature.GetNegativeRatingMod(gearCreatureResistRating) : 1.0f;
+
+            var damageBeforeShieldMod = DamageBeforeMitigation * ArmorMod * ResistanceMod * DamageResistanceRatingMod * gearCreatureResistRatingMod;
 
             // calculate final output damage
             Damage = damageBeforeShieldMod * ShieldMod;

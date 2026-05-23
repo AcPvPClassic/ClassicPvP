@@ -799,6 +799,22 @@ namespace ACE.Server.Network.Structure
                     hasExtraPropertiesText = true;
                 }
 
+                if (wo.GearCreatureResistType != CreatureType.Invalid && (wo.GearCreatureResistRating ?? 0) > 0)
+                {
+                    if (hasExtraPropertiesText)
+                        extraPropertiesText += "\n";
+                    extraPropertiesText += $"{wo.GearCreatureResistType} Resist: {wo.GearCreatureResistRating.Value}";
+                    hasExtraPropertiesText = true;
+                }
+
+                if (wo.GearCreatureSlayerType != CreatureType.Invalid && (wo.GearCreatureSlayerRating ?? 0) > 0)
+                {
+                    if (hasExtraPropertiesText)
+                        extraPropertiesText += "\n";
+                    extraPropertiesText += $"{wo.GearCreatureSlayerType} Slayer: {wo.GearCreatureSlayerRating.Value}";
+                    hasExtraPropertiesText = true;
+                }
+
                 if ((wo.ExtraHealthRegenPool ?? 0) != 0)
                 {
                     if (hasExtraPropertiesText)

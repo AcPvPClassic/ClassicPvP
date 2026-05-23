@@ -672,6 +672,13 @@ namespace ACE.Entity.Enum.Properties
         // Split Arrows
         SplitArrowCount                          = 19006,
 
+        // MorphGem system
+        WeenieSwapClassId                        = 19007,
+        GearCreatureSlayerRating                 = 19008,
+        GearCreatureSlayerType                   = 19009,
+        GearCreatureResistRating                 = 19010,
+        GearCreatureResistType                   = 19011,
+
         // Bounty Hunter system
         BountyTargetGuid                         = 20002,  // GUID of the bounty target (on a BountyContract item)
         BountyOwnerGuid                          = 20003,  // GUID of the bounty contract owner (on a BountyContract item)

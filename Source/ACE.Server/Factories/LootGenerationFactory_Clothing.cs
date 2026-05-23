@@ -400,6 +400,24 @@ namespace ACE.Server.Factories
                 return false;
             }
 
+            // Creature Resist Rating (independent roll)
+            var resistRatingRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
+            int resistRatingValue = resistRatingRoll < 0.005f ? 3 : resistRatingRoll < 0.105f ? 2 : resistRatingRoll < 0.455f ? 1 : 0;
+            if (resistRatingValue > 0)
+            {
+                wo.GearCreatureResistRating = resistRatingValue;
+                wo.GearCreatureResistType = wo.GetRandomCreatureType();
+            }
+
+            // Creature Slayer Rating (independent roll)
+            var slayerRatingRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
+            int slayerRatingValue = slayerRatingRoll < 0.005f ? 3 : slayerRatingRoll < 0.105f ? 2 : slayerRatingRoll < 0.455f ? 1 : 0;
+            if (slayerRatingValue > 0)
+            {
+                wo.GearCreatureSlayerRating = slayerRatingValue;
+                wo.GearCreatureSlayerType = wo.GetRandomCreatureType();
+            }
+
             // ensure wield requirement is level 180?
             if (roll.ArmorType != TreasureArmorType.Society)
                 SetWieldLevelReq(wo, 180);

@@ -591,6 +591,15 @@ namespace ACE.Server.WorldObjects
             // Possible 2x + damage bonus for the slayer property
             var slayerMod = GetWeaponCreatureSlayerModifier(weapon, sourceCreature, target);
 
+            // gear creature slayer rating
+            var gearSpellSlayerRating = sourceCreature?.GetEquippedItemsCreatureSlayerRatingSum(target.CreatureType ?? (ACE.Entity.Enum.CreatureType)0) ?? 0;
+            if (gearSpellSlayerRating > 0)
+                slayerMod = Creature.AdditiveCombine(slayerMod, Creature.GetPositiveRatingMod(gearSpellSlayerRating));
+
+            // gear creature resist rating
+            var gearSpellCreatureResistRating = target.GetEquippedItemsCreatureResistRatingSum(sourceCreature?.CreatureType ?? (ACE.Entity.Enum.CreatureType)0);
+            var gearSpellCreatureResistRatingMod = gearSpellCreatureResistRating > 0 ? Creature.GetNegativeRatingMod(gearSpellCreatureResistRating) : 1.0f;
+
             // life magic projectiles: ie., martyr's hecatomb
             if (Spell.MetaSpellType == ACE.Entity.Enum.SpellType.LifeProjectile)
             {
@@ -617,7 +626,7 @@ namespace ACE.Server.WorldObjects
 
                 resistanceMod = (float)Math.Max(0.0f, target.GetResistanceMod(resistanceType, this, null, weaponResistanceMod));
 
-                finalDamage = (lifeMagicDamage + critDamageBonus) * elementalDamageMod * slayerMod * resistanceMod * absorbMod;
+                finalDamage = (lifeMagicDamage + critDamageBonus) * elementalDamageMod * slayerMod * resistanceMod * absorbMod * gearSpellCreatureResistRatingMod;
             }
             // war/void magic projectiles
             else
@@ -732,7 +741,7 @@ namespace ACE.Server.WorldObjects
 
                 finalDamage = baseDamage + critDamageBonus + skillBonus;
 
-                finalDamage *= elementalDamageMod * slayerMod * resistanceMod * absorbMod;
+                finalDamage *= elementalDamageMod * slayerMod * resistanceMod * absorbMod * gearSpellCreatureResistRatingMod;
             }
 
             if (shieldMod != 1.0f && Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.CustomDM)

@@ -120,6 +120,10 @@ namespace ACE.Entity.Enum.Properties
         // PK Quests
         PKQuestInfo                     = 9024,
 
+        // MorphGem system
+        TinkerLottoLog                  = 9025,
+        MorphGemLog                     = 9026,
+
         // Bounty Hunter system
         BountyInformationsSerialized    = 55001,  // JSON-serialized BountyInformation blob (per-player lifetime stats)
         BountyPriorityOwnerName         = 55002,  // Name of the player who purchased the Writ of Pursuit (stored on the target player)

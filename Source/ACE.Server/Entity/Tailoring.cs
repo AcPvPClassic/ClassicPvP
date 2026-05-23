@@ -185,6 +185,12 @@ namespace ACE.Server.Entity
                     return;
             }
 
+            if (MorphGem.IsMorphGem(source.WeenieClassId))
+            {
+                MorphGem.ApplyMorphGem(player, source, target);
+                return;
+            }
+
             player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
             return;
         }
@@ -731,7 +737,7 @@ namespace ACE.Server.Entity
 
                 default:
 
-                    return false;
+                    return MorphGem.IsMorphGem(wcid);
             }
         }
     }

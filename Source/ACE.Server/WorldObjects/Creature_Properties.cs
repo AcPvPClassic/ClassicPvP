@@ -283,18 +283,6 @@ namespace ACE.Server.WorldObjects
         }
 
 
-        public int? Overpower
-        {
-            get => GetProperty(PropertyInt.Overpower);
-            set { if (!value.HasValue) RemoveProperty(PropertyInt.Overpower); else SetProperty(PropertyInt.Overpower, value.Value); }
-        }
-
-        public int? OverpowerResist
-        {
-            get => GetProperty(PropertyInt.OverpowerResist);
-            set { if (!value.HasValue) RemoveProperty(PropertyInt.OverpowerResist); else SetProperty(PropertyInt.OverpowerResist, value.Value); }
-        }
-
         public string KillQuest
         {
             get => GetProperty(PropertyString.KillQuest);

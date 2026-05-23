@@ -38,6 +38,8 @@ namespace ACE.Server.WorldObjects
                 EquippedObjects[worldObject.Guid] = worldObject;
 
                 AddItemToEquippedItemsRatingCache(worldObject);
+                AddToCreatureSlayerRatingCache(worldObject);
+                AddToCreatureResistRatingCache(worldObject);
 
                 if ((worldObject.WeenieType == WeenieType.Ammunition || worldObject.WeenieType == WeenieType.Missile) && Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.CustomDM)
                     EncumbranceVal += (int)Math.Ceiling((worldObject.EncumbranceVal ?? 0) / 2.0f);
@@ -305,6 +307,79 @@ namespace ACE.Server.WorldObjects
             return 0;
         }
 
+        // --- Creature Slayer / Resist Rating caches ---
+
+        private Dictionary<CreatureType, int> _creatureSlayerRatingsCache;
+        private Dictionary<CreatureType, int> _creatureResistRatingsCache;
+
+        private void AddToCreatureSlayerRatingCache(WorldObject wo)
+        {
+            if (!(wo.GearCreatureSlayerRating >= 1) || wo.GearCreatureSlayerType == (ACE.Entity.Enum.CreatureType)0)
+                return;
+
+            if (_creatureSlayerRatingsCache == null)
+                _creatureSlayerRatingsCache = new Dictionary<CreatureType, int>();
+
+            var ct = wo.GearCreatureSlayerType;
+            if (!_creatureSlayerRatingsCache.ContainsKey(ct))
+                _creatureSlayerRatingsCache[ct] = 0;
+            _creatureSlayerRatingsCache[ct] += wo.GearCreatureSlayerRating.Value;
+        }
+
+        private void RemoveFromCreatureSlayerRatingCache(WorldObject wo)
+        {
+            if (_creatureSlayerRatingsCache == null)
+                return;
+            if (!(wo.GearCreatureSlayerRating >= 1) || wo.GearCreatureSlayerType == (ACE.Entity.Enum.CreatureType)0)
+                return;
+
+            var ct = wo.GearCreatureSlayerType;
+            if (_creatureSlayerRatingsCache.ContainsKey(ct))
+                _creatureSlayerRatingsCache[ct] -= wo.GearCreatureSlayerRating.Value;
+        }
+
+        private void AddToCreatureResistRatingCache(WorldObject wo)
+        {
+            if (!(wo.GearCreatureResistRating >= 1) || wo.GearCreatureResistType == (ACE.Entity.Enum.CreatureType)0)
+                return;
+
+            if (_creatureResistRatingsCache == null)
+                _creatureResistRatingsCache = new Dictionary<CreatureType, int>();
+
+            var ct = wo.GearCreatureResistType;
+            if (!_creatureResistRatingsCache.ContainsKey(ct))
+                _creatureResistRatingsCache[ct] = 0;
+            _creatureResistRatingsCache[ct] += wo.GearCreatureResistRating.Value;
+        }
+
+        private void RemoveFromCreatureResistRatingCache(WorldObject wo)
+        {
+            if (_creatureResistRatingsCache == null)
+                return;
+            if (!(wo.GearCreatureResistRating >= 1) || wo.GearCreatureResistType == (ACE.Entity.Enum.CreatureType)0)
+                return;
+
+            var ct = wo.GearCreatureResistType;
+            if (_creatureResistRatingsCache.ContainsKey(ct))
+                _creatureResistRatingsCache[ct] -= wo.GearCreatureResistRating.Value;
+        }
+
+        public int GetEquippedItemsCreatureSlayerRatingSum(CreatureType creatureType)
+        {
+            if (_creatureSlayerRatingsCache == null)
+                return 0;
+            _creatureSlayerRatingsCache.TryGetValue(creatureType, out var value);
+            return value;
+        }
+
+        public int GetEquippedItemsCreatureResistRatingSum(CreatureType creatureType)
+        {
+            if (_creatureResistRatingsCache == null)
+                return 0;
+            _creatureResistRatingsCache.TryGetValue(creatureType, out var value);
+            return value;
+        }
+
         /// <summary>
         /// Try to wield an object for non-player creatures
         /// </summary>
@@ -356,6 +431,8 @@ namespace ACE.Server.WorldObjects
             EquippedObjects[worldObject.Guid] = worldObject;
 
             AddItemToEquippedItemsRatingCache(worldObject);
+            AddToCreatureSlayerRatingCache(worldObject);
+            AddToCreatureResistRatingCache(worldObject);
 
             if ((worldObject.WeenieType == WeenieType.Ammunition || worldObject.WeenieType == WeenieType.Missile) && Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.CustomDM)
                 EncumbranceVal += (int)Math.Ceiling((worldObject.EncumbranceVal ?? 0) / 2.0f);
@@ -432,6 +509,8 @@ namespace ACE.Server.WorldObjects
             }
 
             RemoveItemFromEquippedItemsRatingCache(worldObject);
+            RemoveFromCreatureSlayerRatingCache(worldObject);
+            RemoveFromCreatureResistRatingCache(worldObject);
 
             wieldedLocation = worldObject.CurrentWieldedLocation ?? EquipMask.None;
 
