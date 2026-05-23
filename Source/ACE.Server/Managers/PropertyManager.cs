@@ -1225,9 +1225,11 @@ namespace ACE.Server.Managers
                 ("pvp_ratings_mod_dmg", new Property<double>(1.0, "Scales the bonus received from damage and damage-resistance ratings during PvP")),
                 ("pvp_ratings_mod_critdmg", new Property<double>(1.0, "Scales the bonus received from crit-damage and crit-damage-resistance ratings during PvP")),
 
-                // Rolling Level Cap
-                ("daily_xp_category_ratio", new Property<double>(0.70, "Rolling cap: maximum fraction of a player's remaining cap XP that a single category (quest or monster/kill) can absorb in one cap period. Default 0.70. Admin XP bypasses this limit.")),
-                ("daily_pvp_xp_category_ratio", new Property<double>(0.70, "Rolling cap: maximum fraction of a player's remaining cap XP that the PvP category (player kills, arenas, PvP custom content) can absorb in one cap period. Tuned independently from quest/monster. Default 0.70."))
+                // Rolling Level Cap — per-category XP ratios
+                ("daily_xp_category_ratio", new Property<double>(0.70, "[Deprecated] Superseded by daily_quest_xp_category_ratio and daily_monster_xp_category_ratio. Kept so existing DB rows do not error.")),
+                ("daily_quest_xp_category_ratio",   new Property<double>(0.70, "Rolling cap: maximum fraction of a player's remaining cap XP that the Quest category (quests, emotes, exploration) can absorb in one cap period.")),
+                ("daily_monster_xp_category_ratio",  new Property<double>(0.70, "Rolling cap: maximum fraction of a player's remaining cap XP that the Monster category (kills, fellowship, allegiance, proficiency) can absorb in one cap period.")),
+                ("daily_pvp_xp_category_ratio",      new Property<double>(0.70, "Rolling cap: maximum fraction of a player's remaining cap XP that the PvP category (player kills, arenas, PvP custom content) can absorb in one cap period."))
                 );
         
         public static readonly ReadOnlyDictionary<string, Property<string>> DefaultStringProperties =

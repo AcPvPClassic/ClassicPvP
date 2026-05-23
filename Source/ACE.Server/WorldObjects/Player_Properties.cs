@@ -508,10 +508,23 @@ namespace ACE.Server.WorldObjects
             set { if (value == 0) RemoveProperty(PropertyInt64.CapPreviousXpCap); else SetProperty(PropertyInt64.CapPreviousXpCap, value); }
         }
 
+        // CapDailyMaxPerCat kept for DB compat only — no longer written or read by enforcement code.
         public long CapDailyMaxPerCat
         {
             get => GetProperty(PropertyInt64.CapDailyMaxPerCat) ?? 0;
             set { if (value == 0) RemoveProperty(PropertyInt64.CapDailyMaxPerCat); else SetProperty(PropertyInt64.CapDailyMaxPerCat, value); }
+        }
+
+        public long CapDailyMaxQuestCat
+        {
+            get => GetProperty(PropertyInt64.CapDailyMaxQuestCat) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt64.CapDailyMaxQuestCat); else SetProperty(PropertyInt64.CapDailyMaxQuestCat, value); }
+        }
+
+        public long CapDailyMaxMonsterCat
+        {
+            get => GetProperty(PropertyInt64.CapDailyMaxMonsterCat) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt64.CapDailyMaxMonsterCat); else SetProperty(PropertyInt64.CapDailyMaxMonsterCat, value); }
         }
 
         public long CapPvpXp

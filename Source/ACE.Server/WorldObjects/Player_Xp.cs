@@ -475,9 +475,10 @@ namespace ACE.Server.WorldObjects
                         CapMonsterXp = 0;
                         CapPvpXp     = 0;
                         var xpRemainingAtReset = Math.Max(0L, rollingCapXp - (TotalExperience ?? 0));
-                        CapDailyMaxPerCat = (long)(xpRemainingAtReset * PropertyManager.GetDouble("daily_xp_category_ratio").Item);
-                        CapDailyMaxPvpCat = (long)(xpRemainingAtReset * PropertyManager.GetDouble("daily_pvp_xp_category_ratio").Item);
-                        CapPreviousXpCap  = rollingCapXp;
+                        CapDailyMaxQuestCat   = (long)(xpRemainingAtReset * PropertyManager.GetDouble("daily_quest_xp_category_ratio").Item);
+                        CapDailyMaxMonsterCat = (long)(xpRemainingAtReset * PropertyManager.GetDouble("daily_monster_xp_category_ratio").Item);
+                        CapDailyMaxPvpCat     = (long)(xpRemainingAtReset * PropertyManager.GetDouble("daily_pvp_xp_category_ratio").Item);
+                        CapPreviousXpCap      = rollingCapXp;
                     }
 
                     var xpRemainingGlobal = rollingCapXp - (TotalExperience ?? 0);
@@ -487,12 +488,14 @@ namespace ACE.Server.WorldObjects
                     }
                     else
                     {
-                        double categoryRatio = PropertyManager.GetDouble("daily_xp_category_ratio").Item;
-                        double pvpRatio      = PropertyManager.GetDouble("daily_pvp_xp_category_ratio").Item;
+                        double questRatio   = PropertyManager.GetDouble("daily_quest_xp_category_ratio").Item;
+                        double monsterRatio = PropertyManager.GetDouble("daily_monster_xp_category_ratio").Item;
+                        double pvpRatio     = PropertyManager.GetDouble("daily_pvp_xp_category_ratio").Item;
 
                         // Fallback budgets for first-ever XP award before a reset has fired.
-                        var dailyMaxPerCat = CapDailyMaxPerCat > 0 ? CapDailyMaxPerCat : (long)(rollingCapXp * categoryRatio);
-                        var dailyMaxPvpCat = CapDailyMaxPvpCat > 0 ? CapDailyMaxPvpCat : (long)(rollingCapXp * pvpRatio);
+                        var dailyMaxQuestCat   = CapDailyMaxQuestCat   > 0 ? CapDailyMaxQuestCat   : (long)(rollingCapXp * questRatio);
+                        var dailyMaxMonsterCat = CapDailyMaxMonsterCat > 0 ? CapDailyMaxMonsterCat : (long)(rollingCapXp * monsterRatio);
+                        var dailyMaxPvpCat     = CapDailyMaxPvpCat     > 0 ? CapDailyMaxPvpCat     : (long)(rollingCapXp * pvpRatio);
 
                         long xpToAdd = 0;
                         switch (xpType)
@@ -500,7 +503,7 @@ namespace ACE.Server.WorldObjects
                             case XpType.Quest:
                             case XpType.Emote:
                             case XpType.Exploration:
-                                var questRemaining = Math.Max(0L, dailyMaxPerCat - CapQuestXp);
+                                var questRemaining = Math.Max(0L, dailyMaxQuestCat - CapQuestXp);
                                 if (questRemaining > 0)
                                 {
                                     xpToAdd = Math.Min(addAmount, Math.Min(xpRemainingGlobal, questRemaining));
@@ -512,7 +515,7 @@ namespace ACE.Server.WorldObjects
                             case XpType.Fellowship:
                             case XpType.Allegiance:
                             case XpType.Proficiency:
-                                var monsterRemaining = Math.Max(0L, dailyMaxPerCat - CapMonsterXp);
+                                var monsterRemaining = Math.Max(0L, dailyMaxMonsterCat - CapMonsterXp);
                                 if (monsterRemaining > 0)
                                 {
                                     xpToAdd = Math.Min(addAmount, Math.Min(xpRemainingGlobal, monsterRemaining));
