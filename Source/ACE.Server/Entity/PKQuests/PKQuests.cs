@@ -459,6 +459,12 @@ namespace ACE.Server.Entity.PKQuests
 
         public static string[] PKQuests_KillT9 = { "PKKILL_T9_3", "PKKILL_T9_15", "PKKILL_T9_100" };
 
+        // Bounty Hunter quest code groups
+        public static string[] PKQuests_BountyAny        = { "BOUNTY_ANY_1", "BOUNTY_ANY_5", "BOUNTY_ANY_25" };
+        public static string[] PKQuests_BountyUnique     = { "BOUNTY_UNIQUE_10", "BOUNTY_UNIQUE_25" };
+        public static string[] PKQuests_BountyPriority   = { "BOUNTY_PRIORITY_1", "BOUNTY_PRIORITY_5" };
+        public static string[] PKQuests_BountyKillStreak = { "BOUNTY_KILLSTREAK_1", "BOUNTY_KILLSTREAK_5" };
+
         public static PKQuest GetPkQuestByCode(string questCode)
         {
             return PKQuests.PkQuestList.FirstOrDefault(x => x.QuestCode.Equals(questCode));

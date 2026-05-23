@@ -214,5 +214,17 @@ namespace ACE.Entity.Models
 
             return value;
         }
+
+        /// <summary>
+        /// Returns a human-readable quantity string such as "a Pyreal" or "25 Pyreals".
+        /// Used by the bounty hunter system.
+        /// </summary>
+        public static string BuildAmountString(this Weenie weenie, long amount)
+        {
+            if (amount > 1)
+                return $"{amount} {weenie.GetPluralName()}";
+            else
+                return $"a {weenie.GetName()}";
+        }
     }
 }

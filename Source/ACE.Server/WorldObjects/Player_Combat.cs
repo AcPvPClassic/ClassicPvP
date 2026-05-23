@@ -1117,7 +1117,28 @@ namespace ACE.Server.WorldObjects
             defender.UpdatePKTimer();
         }
 
-        public bool PKTimerActive => IsPKType && Time.GetUnixTime() - LastPkAttackTimestamp < PropertyManager.GetLong("pk_timer").Item;
+        public bool PKTimerActive
+        {
+            get
+            {
+                if (!IsPKType)
+                    return false;
+
+                var elapsed = Time.GetUnixTime() - LastPkAttackTimestamp;
+
+                // If a bounty hunter recently had this player in sight, use the extended bounty PK timer
+                if (BountyContract.IsBountyPkTimerActiveEnabled && LastBountyHunterSeenTimestamp.HasValue)
+                {
+                    var timeSinceHunterSeen = Time.GetUnixTime() - LastBountyHunterSeenTimestamp.Value;
+                    var pkBountyTimer       = PropertyManager.GetLong("pk_bounty_timer").Item;
+
+                    if (timeSinceHunterSeen < pkBountyTimer)
+                        return elapsed < pkBountyTimer;
+                }
+
+                return elapsed < PropertyManager.GetLong("pk_timer").Item;
+            }
+        }
 
         public bool PKLogoutActive => IsPKType && Time.GetUnixTime() - LastPkAttackTimestamp < PKLogoffTimer.TotalSeconds;
 

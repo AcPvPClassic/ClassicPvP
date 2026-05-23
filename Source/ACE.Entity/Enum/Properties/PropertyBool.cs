@@ -214,5 +214,9 @@ namespace ACE.Entity.Enum.Properties
         // Split Arrows
         SplitArrows                      = 19017,
         IsSplitArrow                     = 19018,
+
+        // Bounty Hunter system
+        IsBountyHighPriorityTarget       = 19019,  // Set on a player who has been designated as a high priority bounty target via Writ of Pursuit
+        IsBountyCompleted                = 19020,  // Legacy/unused; reserved for DB compat
     }
 }

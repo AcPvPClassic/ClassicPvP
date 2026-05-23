@@ -64,6 +64,13 @@ namespace ACE.Server.WorldObjects
             if(worldObject is Player player && player.IsSneaking)
                 Session.Network.EnqueueSend(new GameMessageScript(player.Guid, PlayScript.SneakingBegin)); // Show the player as half-translucent
 
+            // Bounty: when two players enter mutual visibility, check if either has a bounty contract on the other
+            if (worldObject is Player trackedPlayer)
+            {
+                TryMarkHunterTarget(this, trackedPlayer);   // I might be hunting trackedPlayer
+                TryMarkHunterTarget(trackedPlayer, this);   // trackedPlayer might be hunting me
+            }
+
             //Console.WriteLine($"Player {Name} - TrackObject({worldObject.Name})");
 
             // add creature equipped objects / wielded items

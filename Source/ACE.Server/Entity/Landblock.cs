@@ -1819,6 +1819,14 @@ namespace ACE.Server.Entity
             }
         }
 
+        /// <summary>
+        /// Returns true when this landblock is a valid location for bounty hunting.
+        /// ClassicPvP has no special bounty-only zones, so this always returns false and
+        /// the system relies on bounty_allow_all_locations = true (default).
+        /// Add specific landblock IDs here if dedicated bounty zones are ever added.
+        /// </summary>
+        public bool IsBountyLocation => false;
+
         public List<Player> GetCurrentLandblockPlayers()
         {
             var playerList = new List<Player>();

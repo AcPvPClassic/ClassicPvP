@@ -671,6 +671,15 @@ namespace ACE.Entity.Enum.Properties
 
         // Split Arrows
         SplitArrowCount                          = 19006,
+
+        // Bounty Hunter system
+        BountyTargetGuid                         = 20002,  // GUID of the bounty target (on a BountyContract item)
+        BountyOwnerGuid                          = 20003,  // GUID of the bounty contract owner (on a BountyContract item)
+        BountyPriorityTargetRewardAmount         = 20007,  // Writ of Pursuit reward amount set on the high-priority target player
+        BountyPriorityCurrency                   = 20008,  // WCID of the reward currency for a high-priority target
+        PlayerKillStreak                         = 20009,  // Current consecutive PK kill count without dying
+        BountyKillStreakCount                    = 20010,  // Kill streak count at time of bounty completion (on a BountyContract item)
+        BountyContractStateRaw                   = 20011,  // BountyContractState enum stored as int (on a BountyContract item)
     }
 
     public static class PropertyIntExtensions

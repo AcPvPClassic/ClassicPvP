@@ -704,7 +704,15 @@ namespace ACE.Server.Managers
                 ("disable_arenas", new Property<bool>(false, "set to true to disable arena events")),
                 ("arena_allow_same_ip_match", new Property<bool>(false, "enable to allow two characters from the same IP to be matched in an arena event")),
                 ("arena_allow_observers", new Property<bool>(true, "enable to allow players to watch arena matches as invisible observers")),
-                ("rolling_level_cap_enabled", new Property<bool>(false, "Enables the server-wide rolling level cap. When enabled, players cannot exceed the XP threshold for the current cap level. The cap starts at 15 and increases daily based on rolling_level_cap_start_timestamp."))
+                ("rolling_level_cap_enabled", new Property<bool>(false, "Enables the server-wide rolling level cap. When enabled, players cannot exceed the XP threshold for the current cap level. The cap starts at 15 and increases daily based on rolling_level_cap_start_timestamp.")),
+
+                // Bounty Hunter system
+                ("bounty_system_enabled",            new Property<bool>(true,  "Enable or disable the bounty hunter system entirely.")),
+                ("writ_of_pursuit_enabled",          new Property<bool>(true,  "Enable or disable Writs of Pursuit (high-priority bounty targets).")),
+                ("bounty_allow_all_locations",       new Property<bool>(true,  "If true, bounty targets are valid at any location (no landblock restriction). Recommended for ClassicPvP.")),
+                ("bounty_allow_logged_out",          new Property<bool>(false, "If true, players who are logged out can still be bounty targets.")),
+                ("bounty_pk_timer_active_enabled",   new Property<bool>(true,  "If true, the PK timer is extended when a hunter is near their bounty target.")),
+                ("bounty_expirations_enabled",       new Property<bool>(true,  "If true, bounty contracts expire after bounty_expiration_time minutes."))
                 );
 
         public static readonly ReadOnlyDictionary<string, Property<long>> DefaultLongProperties =
@@ -740,7 +748,21 @@ namespace ACE.Server.Managers
                 ("rolling_level_cap_timestamp", new Property<long>(0, "[Deprecated] Superseded by rolling_xp_cap_timestamp. Kept for DB compatibility.")),
                 ("rolling_xp_cap", new Property<long>(354692, "The currently computed total-XP cap. Managed automatically by RollingLevelCapManager — do not set manually.")),
                 ("rolling_xp_cap_timestamp", new Property<long>(0, "Unix timestamp of the last time rolling_xp_cap was recalculated. Managed automatically by RollingLevelCapManager.")),
-                ("season_max_xp", new Property<long>(80_000_000_000, "Total XP ceiling at the end of the season (day 120). Should be high enough that every player template can max all skills and attributes. Level 126 is reached at day 60; days 60-120 grow linearly from level-126 XP to this value."))
+                ("season_max_xp", new Property<long>(80_000_000_000, "Total XP ceiling at the end of the season (day 120). Should be high enough that every player template can max all skills and attributes. Level 126 is reached at day 60; days 60-120 grow linearly from level-126 XP to this value.")),
+
+                // Bounty Hunter system
+                ("bounty_expiration_time",                new Property<long>(60,         "Minutes until a bounty contract expires after purchase.")),
+                ("bounty_cooldown_expiration_time",       new Property<long>(0,          "Minutes a hunter must wait after turning in a bounty before purchasing a new one (0 = no cooldown).")),
+                ("bounty_cooldown_target_expiration_time", new Property<long>(30,        "Minutes before a previously-killed target can be purchased as a new bounty by the same hunter.")),
+                ("bounty_minimum_player_level",           new Property<long>(100,        "Minimum character level required to be a bounty target. Set at or below max level (126) for ClassicPvP.")),
+                ("bounty_kill_streak_minimum",            new Property<long>(4,          "Minimum kill streak before a target is flagged as a streak target in bounty logic.")),
+                ("pk_bounty_timer",                       new Property<long>(120,        "Seconds for the PK timer when a bounty hunter has their target in sight (overrides pk_timer).")),
+                ("bounty_currency_wcid",                  new Property<long>(0,          "WCID of the currency used to purchase bounty contracts (from the NPC).")),
+                ("bounty_currency_return_amount",         new Property<long>(1,          "Amount of bounty currency returned when a contract expires.")),
+                ("bounty_wop_currency_wcid",              new Property<long>(0,          "WCID of the currency used for Writs of Pursuit rewards.")),
+                ("bounty_location_currency_wcid",         new Property<long>(0,          "WCID of the currency consumed to use the location finder on a bounty contract.")),
+                ("bounty_location_price_amount",          new Property<long>(25,         "Amount of location currency consumed per location finder use.")),
+                ("bounty_max_contracts",                  new Property<long>(3,          "Maximum number of active bounty contracts a hunter can hold at once."))
                 );
 
         public static readonly ReadOnlyDictionary<string, Property<double>> DefaultDoubleProperties =
@@ -1229,7 +1251,14 @@ namespace ACE.Server.Managers
                 ("daily_xp_category_ratio", new Property<double>(0.70, "[Deprecated] Superseded by daily_quest_xp_category_ratio and daily_monster_xp_category_ratio. Kept so existing DB rows do not error.")),
                 ("daily_quest_xp_category_ratio",   new Property<double>(0.70, "Rolling cap: maximum fraction of a player's remaining cap XP that the Quest category (quests, emotes, exploration) can absorb in one cap period.")),
                 ("daily_monster_xp_category_ratio",  new Property<double>(0.70, "Rolling cap: maximum fraction of a player's remaining cap XP that the Monster category (kills, fellowship, allegiance, proficiency) can absorb in one cap period.")),
-                ("daily_pvp_xp_category_ratio",      new Property<double>(0.70, "Rolling cap: maximum fraction of a player's remaining cap XP that the PvP category (player kills, arenas, PvP custom content) can absorb in one cap period."))
+                ("daily_pvp_xp_category_ratio",      new Property<double>(0.70, "Rolling cap: maximum fraction of a player's remaining cap XP that the PvP category (player kills, arenas, PvP custom content) can absorb in one cap period.")),
+
+                // Bounty Hunter system
+                ("bounty_last_location_duration",    new Property<double>(30.0,  "Seconds a hunter must wait before using the location finder on the same contract again.")),
+                ("bounty_weight_exponent",           new Property<double>(0.75,  "Exponent applied when computing the weighted probability for kill-streak and reward-amount factors (0.25–1.0).")),
+                ("bounty_weight_multiplier",         new Property<double>(50.0,  "Additive weight multiplier for kill-streak and Writ of Pursuit reward bonuses.")),
+                ("bounty_weight_maxstack_scale",     new Property<double>(0.2,   "Fraction of the WoP currency max stack used as the normalisation cap for reward-amount weight (0.01–1.0).")),
+                ("bounty_npc_use_cooldown_seconds",  new Property<double>(3.0,   "Minimum seconds between NPC transactions for a single player (anti-spam)."))
                 );
         
         public static readonly ReadOnlyDictionary<string, Property<string>> DefaultStringProperties =

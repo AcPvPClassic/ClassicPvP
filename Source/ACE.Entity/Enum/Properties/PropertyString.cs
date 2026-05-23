@@ -119,5 +119,11 @@ namespace ACE.Entity.Enum.Properties
 
         // PK Quests
         PKQuestInfo                     = 9024,
+
+        // Bounty Hunter system
+        BountyInformationsSerialized    = 55001,  // JSON-serialized BountyInformation blob (per-player lifetime stats)
+        BountyPriorityOwnerName         = 55002,  // Name of the player who purchased the Writ of Pursuit (stored on the target player)
+        BountyOwnerName                 = 55003,  // Name of the bounty contract owner (stored on a BountyContract item)
+        BountyTargetName                = 55004,  // Name of the bounty target (stored on a BountyContract item)
     }
 }

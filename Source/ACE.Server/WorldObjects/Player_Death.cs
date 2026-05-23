@@ -225,6 +225,25 @@ namespace ACE.Server.WorldObjects
                         globalPKDe += $" The kill occured{locationString}.";
                 }
 
+                // Kill streak tracking and bounty completion
+                if (Common.ConfigManager.Config.Server.WorldRuleset != Common.Ruleset.CustomDM)
+                {
+                    // Increment killer's streak; reset victim's streak
+                    pkPlayer.PlayerKillStreak++;
+                    PlayerKillStreak = 0;
+
+                    // Notify all online hunters who have an active contract on this player
+                    var victimGuid  = Guid.Full;
+                    var victimMaxHp = Health?.MaxValue ?? 0;
+                    var victimCurHp = 0.0;
+                    var dmgDealt    = topDamager.TotalDamage;
+
+                    foreach (var hunter in PlayerManager.GetAllOnline())
+                    {
+                        hunter.MarkBountyComplete(this, dmgDealt, victimMaxHp, victimCurHp);
+                    }
+                }
+
                 string webhookMsg = new String(globalPKDe);
 
                 globalPKDe += "\n[PKDe]";

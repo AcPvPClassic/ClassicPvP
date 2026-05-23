@@ -29,5 +29,23 @@ namespace ACE.Common
         {
             return unixEpoch.AddSeconds(timestamp);
         }
+
+        /// <summary>
+        /// Returns a human-readable string describing how much time remains from <paramref name="startTime"/> + <paramref name="duration"/>.
+        /// Example: "4 hours 32 minutes" or the <paramref name="expiredText"/> if already elapsed.
+        /// </summary>
+        public static string GetTimeRemainingString(DateTime startTime, TimeSpan duration, string expiredText = "expired")
+        {
+            var remaining = (startTime + duration) - DateTime.UtcNow;
+
+            if (remaining <= TimeSpan.Zero)
+                return expiredText;
+
+            if (remaining.TotalHours >= 1)
+                return $"{(int)remaining.TotalHours}h {remaining.Minutes}m";
+            if (remaining.TotalMinutes >= 1)
+                return $"{(int)remaining.TotalMinutes}m {remaining.Seconds}s";
+            return $"{(int)remaining.TotalSeconds}s";
+        }
     }
 }

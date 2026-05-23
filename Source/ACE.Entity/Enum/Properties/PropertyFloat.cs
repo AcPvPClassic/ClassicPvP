@@ -262,5 +262,15 @@ namespace ACE.Entity.Enum.Properties
 
         // Split Arrows
         SplitArrowDamageMultiplier     = 19072,
+
+        // Bounty Hunter system
+        BountyCreationTimestamp              = 53003,  // Unix timestamp when a BountyContract was created
+        BountyEndTimestamp                   = 53004,  // Unix timestamp when the last bounty turn-in completed (hunter cooldown anchor)
+        BountyContractLastLocationTimestamp  = 53005,  // Unix timestamp of last location-finder use on a BountyContract
+        BountyOwnerRemainingHealthPercentage = 53006,  // Hunter HP % at time of kill (stored on contract, for future stats)
+        BountyOwnerDamageDealt               = 53007,  // Damage dealt by the hunter in the kill (stored on contract)
+        BountyOwnerDamageReceived            = 53008,  // Damage received by the hunter in the kill (stored on contract)
+        BountyTargetDamageDealt              = 53009,  // Damage dealt by the target before dying (stored on contract)
+        BountyLastUsedNpcTimestamp           = 53010,  // Unix timestamp of last NPC use for cooldown enforcement (on player)
     }
 }

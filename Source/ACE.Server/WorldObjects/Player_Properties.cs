@@ -1815,5 +1815,56 @@ namespace ACE.Server.WorldObjects
             get => GetProperty(PropertyString.PKQuestInfo);
             set { if (value == null) RemoveProperty(PropertyString.PKQuestInfo); else SetProperty(PropertyString.PKQuestInfo, value); }
         }
+
+        /* Bounty Hunter system */
+
+        /// <summary>Current consecutive PK kill count without dying.</summary>
+        public int PlayerKillStreak
+        {
+            get => GetProperty(PropertyInt.PlayerKillStreak) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt.PlayerKillStreak); else SetProperty(PropertyInt.PlayerKillStreak, value); }
+        }
+
+        /// <summary>Set on a player who is a Writ of Pursuit high-priority bounty target.</summary>
+        public bool IsBountyHighPriorityTarget
+        {
+            get => GetProperty(PropertyBool.IsBountyHighPriorityTarget) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.IsBountyHighPriorityTarget); else SetProperty(PropertyBool.IsBountyHighPriorityTarget, value); }
+        }
+
+        /// <summary>Writ of Pursuit reward amount placed on this player (stored on the target).</summary>
+        public int? BountyPriorityTargetRewardAmount
+        {
+            get => GetProperty(PropertyInt.BountyPriorityTargetRewardAmount);
+            set { if (value == null) RemoveProperty(PropertyInt.BountyPriorityTargetRewardAmount); else SetProperty(PropertyInt.BountyPriorityTargetRewardAmount, value.Value); }
+        }
+
+        /// <summary>WCID of the Writ of Pursuit reward currency (stored on the target).</summary>
+        public int? BountyPriorityCurrency
+        {
+            get => GetProperty(PropertyInt.BountyPriorityCurrency);
+            set { if (value == null) RemoveProperty(PropertyInt.BountyPriorityCurrency); else SetProperty(PropertyInt.BountyPriorityCurrency, value.Value); }
+        }
+
+        /// <summary>Name of the player who submitted the Writ of Pursuit (stored on the target).</summary>
+        public string BountyPriorityOwnerName
+        {
+            get => GetProperty(PropertyString.BountyPriorityOwnerName) ?? string.Empty;
+            set { if (string.IsNullOrEmpty(value)) RemoveProperty(PropertyString.BountyPriorityOwnerName); else SetProperty(PropertyString.BountyPriorityOwnerName, value); }
+        }
+
+        /// <summary>Unix timestamp when the player last completed a bounty turn-in (hunter cooldown anchor).</summary>
+        public double? BountyEndTimestamp
+        {
+            get => GetProperty(PropertyFloat.BountyEndTimestamp);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.BountyEndTimestamp); else SetProperty(PropertyFloat.BountyEndTimestamp, value.Value); }
+        }
+
+        /// <summary>Unix timestamp of the last time this player interacted with the Bounty NPC.</summary>
+        public double? BountyLastUsedNpcTimestamp
+        {
+            get => GetProperty(PropertyFloat.BountyLastUsedNpcTimestamp);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.BountyLastUsedNpcTimestamp); else SetProperty(PropertyFloat.BountyLastUsedNpcTimestamp, value.Value); }
+        }
     }
 }

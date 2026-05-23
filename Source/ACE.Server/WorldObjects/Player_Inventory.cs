@@ -3924,7 +3924,12 @@ namespace ACE.Server.WorldObjects
 
                         target.EmoteManager.ExecuteEmoteSet(emoteResult, this, false, campBonus);
 
-                        itemToGive.Destroy();
+                        // Bounty NPC transaction hook — may override the default Destroy
+                        var npcResult = NpcTransactionResult.Ignore;
+                        if (target.WeenieClassId == BountyContract.BountyNPCWcid)
+                            npcResult = CheckBountyTransactions(target, itemToGive);
+
+                        HandleNpcTransactionResult(npcResult, target, itemToGive);
                     }
                 }
                 else if (emoteResult.Category == EmoteCategory.Refuse)
@@ -4475,6 +4480,36 @@ namespace ACE.Server.WorldObjects
         public int GetNumEquippedObjectsOfWCID(uint weenieClassId)
         {
             return GetEquippedObjectsOfWCID(weenieClassId).Select(i => i.StackSize ?? 1).Sum();
+        }
+
+        // -------------------------------------------------------------------------
+        // NPC transaction result helpers (used by the Bounty Hunter system)
+        // -------------------------------------------------------------------------
+
+        private enum NpcTransactionResult
+        {
+            Consume,  // destroy the item (transaction accepted)
+            Return,   // give item back to the player (transaction rejected but item survives)
+            Ignore    // not handled by any custom logic; fall through to default destroy
+        }
+
+        private void HandleNpcTransactionResult(NpcTransactionResult result, WorldObject npc, WorldObject itemToGive)
+        {
+            switch (result)
+            {
+                case NpcTransactionResult.Return:
+                    TryCreateForGive(npc, itemToGive);
+                    break;
+
+                case NpcTransactionResult.Consume:
+                    itemToGive.Destroy();
+                    break;
+
+                case NpcTransactionResult.Ignore:
+                default:
+                    itemToGive.Destroy();
+                    break;
+            }
         }
     }
 }

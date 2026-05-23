@@ -120,6 +120,18 @@ namespace ACE.Database
             return GetCachedWeenie(value); // This will add the result into the caches
         }
 
+        /// <summary>
+        /// Like GetCachedWeenie but throws an InvalidOperationException if the weenie is not found.
+        /// Used by the bounty hunter system when a configured WCID is expected to exist.
+        /// </summary>
+        public ACE.Entity.Models.Weenie GetOrThrowCachedWeenie(uint weenieClassId)
+        {
+            var weenie = GetCachedWeenie(weenieClassId);
+            if (weenie == null)
+                throw new InvalidOperationException($"Weenie with WCID {weenieClassId} not found in cache. Ensure the weenie exists in the world database.");
+            return weenie;
+        }
+
         public bool ClearCachedWeenie(uint weenieClassId)
         {
             return weenieCache.TryRemove(weenieClassId, out _);

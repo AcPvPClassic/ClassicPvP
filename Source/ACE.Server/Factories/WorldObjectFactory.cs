@@ -146,6 +146,8 @@ namespace ACE.Server.Factories
                     return new SpellTransferScroll(weenie, guid);
                 case WeenieType.TreasureMap:
                     return new TreasureMap(weenie, guid);
+                case WeenieType.BountyContract:
+                    return new BountyContract(weenie, guid);
                 default:
                     return new GenericObject(weenie, guid);
             }
@@ -269,6 +271,8 @@ namespace ACE.Server.Factories
                     return new SpellTransferScroll(biota);
                 case WeenieType.TreasureMap:
                     return new TreasureMap(biota);
+                case WeenieType.BountyContract:
+                    return new BountyContract(biota);
                 default:
                     return new GenericObject(biota);
             }

@@ -66,6 +66,7 @@ namespace ACE.Server.WorldObjects
 
         public void HandlePKQuestInquiry()
         {
+            ResetDailyBountyQuestsIfNeeded();
             BroadcastCurrentPkQuests();
             AwardPkQuestRewards();
             AssignPkQuests();

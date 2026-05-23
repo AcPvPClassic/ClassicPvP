@@ -78,5 +78,6 @@ namespace ACE.Entity.Enum
         SpellConduit,
         SpellTransferScroll,
         TreasureMap,
+        BountyContract = 77,
     }
 }

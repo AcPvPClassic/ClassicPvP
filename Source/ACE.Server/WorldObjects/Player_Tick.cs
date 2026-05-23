@@ -149,6 +149,8 @@ namespace ACE.Server.WorldObjects
 
                 DoTHotTick(currentUnixTime);
 
+                BountyTick();
+
                 if (PvPInciteTickTimestamp == 0)
                     PvPInciteTickTimestamp = Time.GetFutureUnixTime(PropertyManager.GetLong("bz_whispers_login_delay").Item);
                 else if (currentUnixTime > PvPInciteTickTimestamp)
