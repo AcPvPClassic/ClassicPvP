@@ -471,12 +471,13 @@ namespace ACE.Server.WorldObjects
                     // and lazily reset per-player per-category buckets.
                     if (rollingCapXp != CapPreviousXpCap)
                     {
-                        CapQuestXp = 0;
+                        CapQuestXp   = 0;
                         CapMonsterXp = 0;
+                        CapPvpXp     = 0;
                         var xpRemainingAtReset = Math.Max(0L, rollingCapXp - (TotalExperience ?? 0));
-                        double ratioAtReset = PropertyManager.GetDouble("daily_xp_category_ratio").Item;
-                        CapDailyMaxPerCat = (long)(xpRemainingAtReset * ratioAtReset);
-                        CapPreviousXpCap = rollingCapXp;
+                        CapDailyMaxPerCat = (long)(xpRemainingAtReset * PropertyManager.GetDouble("daily_xp_category_ratio").Item);
+                        CapDailyMaxPvpCat = (long)(xpRemainingAtReset * PropertyManager.GetDouble("daily_pvp_xp_category_ratio").Item);
+                        CapPreviousXpCap  = rollingCapXp;
                     }
 
                     var xpRemainingGlobal = rollingCapXp - (TotalExperience ?? 0);
@@ -487,7 +488,11 @@ namespace ACE.Server.WorldObjects
                     else
                     {
                         double categoryRatio = PropertyManager.GetDouble("daily_xp_category_ratio").Item;
+                        double pvpRatio      = PropertyManager.GetDouble("daily_pvp_xp_category_ratio").Item;
+
+                        // Fallback budgets for first-ever XP award before a reset has fired.
                         var dailyMaxPerCat = CapDailyMaxPerCat > 0 ? CapDailyMaxPerCat : (long)(rollingCapXp * categoryRatio);
+                        var dailyMaxPvpCat = CapDailyMaxPvpCat > 0 ? CapDailyMaxPvpCat : (long)(rollingCapXp * pvpRatio);
 
                         long xpToAdd = 0;
                         switch (xpType)
@@ -512,6 +517,17 @@ namespace ACE.Server.WorldObjects
                                 {
                                     xpToAdd = Math.Min(addAmount, Math.Min(xpRemainingGlobal, monsterRemaining));
                                     CapMonsterXp += xpToAdd;
+                                }
+                                break;
+
+                            case XpType.PvP:
+                                // Player kills, arena rewards, and PvP-custom content.
+                                // Uses its own independently tunable budget (daily_pvp_xp_category_ratio).
+                                var pvpRemaining = Math.Max(0L, dailyMaxPvpCat - CapPvpXp);
+                                if (pvpRemaining > 0)
+                                {
+                                    xpToAdd = Math.Min(addAmount, Math.Min(xpRemainingGlobal, pvpRemaining));
+                                    CapPvpXp += xpToAdd;
                                 }
                                 break;
 

@@ -37,9 +37,11 @@ namespace ACE.Entity.Enum.Properties
         TradeNoteValue              = 10003,
 
         // Rolling XP Cap — per-category XP buckets (Infiltration)
-        CapQuestXp        = 10010,  // XP accumulated in the quest category since last cap advance
-        CapMonsterXp      = 10011,  // XP accumulated in the monster/kill category since last cap advance
-        CapPreviousXpCap  = 10012,  // Last rolling_xp_cap value seen; used to detect cap advancement and reset buckets
-        CapDailyMaxPerCat = 10013,  // Per-category ceiling locked at the most recent cap advance
+        CapQuestXp           = 10010,  // XP accumulated in the quest category since last cap advance
+        CapMonsterXp         = 10011,  // XP accumulated in the monster/kill category since last cap advance
+        CapPreviousXpCap     = 10012,  // Last rolling_xp_cap value seen; used to detect cap advancement and reset buckets
+        CapDailyMaxPerCat    = 10013,  // Quest+Monster per-category ceiling locked at the most recent cap advance
+        CapPvpXp             = 10014,  // XP accumulated in the PvP category since last cap advance
+        CapDailyMaxPvpCat    = 10015,  // PvP per-category ceiling locked at the most recent cap advance (uses daily_pvp_xp_category_ratio)
     }
 }

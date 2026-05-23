@@ -13,6 +13,14 @@ namespace ACE.Entity.Enum
         Allegiance,
         Admin,
         Emote,
-        Exploration
+        Exploration,
+        /// <summary>
+        /// XP earned through PvP activity: player kills, arena matches, and any
+        /// other PvP-centered custom content.  Tracked in its own category bucket
+        /// (CapPvpXp) with an independently tunable ratio (daily_pvp_xp_category_ratio).
+        /// Award this type anywhere a player earns XP from defeating another player
+        /// or completing PvP-specific objectives.
+        /// </summary>
+        PvP
     }
 }

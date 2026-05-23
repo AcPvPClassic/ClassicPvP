@@ -1226,7 +1226,8 @@ namespace ACE.Server.Managers
                 ("pvp_ratings_mod_critdmg", new Property<double>(1.0, "Scales the bonus received from crit-damage and crit-damage-resistance ratings during PvP")),
 
                 // Rolling Level Cap
-                ("daily_xp_category_ratio", new Property<double>(0.70, "Rolling cap: maximum fraction of a player's remaining cap XP that a single category (quest or monster/kill) can absorb. Default 0.70 matches Doctide Seasons. Admin XP bypasses this limit."))
+                ("daily_xp_category_ratio", new Property<double>(0.70, "Rolling cap: maximum fraction of a player's remaining cap XP that a single category (quest or monster/kill) can absorb in one cap period. Default 0.70. Admin XP bypasses this limit.")),
+                ("daily_pvp_xp_category_ratio", new Property<double>(0.70, "Rolling cap: maximum fraction of a player's remaining cap XP that the PvP category (player kills, arenas, PvP custom content) can absorb in one cap period. Tuned independently from quest/monster. Default 0.70."))
                 );
         
         public static readonly ReadOnlyDictionary<string, Property<string>> DefaultStringProperties =

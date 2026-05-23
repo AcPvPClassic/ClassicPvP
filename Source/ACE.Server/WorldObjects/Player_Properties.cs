@@ -514,6 +514,18 @@ namespace ACE.Server.WorldObjects
             set { if (value == 0) RemoveProperty(PropertyInt64.CapDailyMaxPerCat); else SetProperty(PropertyInt64.CapDailyMaxPerCat, value); }
         }
 
+        public long CapPvpXp
+        {
+            get => GetProperty(PropertyInt64.CapPvpXp) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt64.CapPvpXp); else SetProperty(PropertyInt64.CapPvpXp, value); }
+        }
+
+        public long CapDailyMaxPvpCat
+        {
+            get => GetProperty(PropertyInt64.CapDailyMaxPvpCat) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt64.CapDailyMaxPvpCat); else SetProperty(PropertyInt64.CapDailyMaxPvpCat, value); }
+        }
+
         // ========================================
         // ===== Player Properties - Titles========
         // ========================================
