@@ -432,7 +432,7 @@ namespace ACE.Server.WorldObjects
             }
 
             var totalXpCap = Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.Infiltration
-                ? (rollingCapXp > 0 ? rollingCapXp : maxLevelXp)   // At what value the total xp counter will stop counting.
+                ? (rollingCapXp > 0 ? rollingCapXp : (long)maxLevelXp)   // At what value the total xp counter will stop counting.
                 : long.MaxValue;
             var availableXpCap = Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.Infiltration ? uint.MaxValue : long.MaxValue; // Max unassigned xp amount.
 
