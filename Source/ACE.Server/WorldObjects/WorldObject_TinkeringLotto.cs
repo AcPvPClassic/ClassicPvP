@@ -29,9 +29,9 @@ namespace ACE.Server.WorldObjects
                     resultMessage = TinkeringLotto_PlayGraniteLottery(salvageWorkmanship, chanceMod);
                     break;
 
-                case "Green Garnet":
-                    resultMessage = TinkeringLotto_PlayGreenGarnetLottery(salvageWorkmanship, chanceMod);
-                    break;
+                //case "Green Garnet":
+                //    resultMessage = TinkeringLotto_PlayGreenGarnetLottery(salvageWorkmanship, chanceMod);
+                //    break;
 
                 case "Mahogany":
                     resultMessage = TinkeringLotto_PlayMahoganyLottery(salvageWorkmanship, chanceMod);
@@ -83,12 +83,12 @@ namespace ACE.Server.WorldObjects
 
             var currentLottoAlBonus = GetCumulativeArmorLevelLottoBonus();
 
-            if (currentLottoAlBonus < 40)
+            if (currentLottoAlBonus < 20)
             {
                 if (roll < 0.025)
                 {
-                    //Add 20 AL
-                    var alBonus = currentLottoAlBonus <= 20 ? 20 : 40 - currentLottoAlBonus;
+                    //Add 10 AL
+                    var alBonus = currentLottoAlBonus <= 10 ? 10 : 20 - currentLottoAlBonus;
                     this.ArmorLevel += alBonus;
                     resultMsg = $"Jackpot! Improved Armor Level by {alBonus}";
                     HandleTinkerLottoLog($"AL+{alBonus}");
@@ -97,7 +97,8 @@ namespace ACE.Server.WorldObjects
                 {
                     //Add between 1 - 5 AL
                     var alBonus = rand.Next(1, 6);
-                    this.ArmorLevel += alBonus;
+                    if(currentLottoAlBonus + alBonus > 20) alBonus = 20 - currentLottoAlBonus;
+                    this.ArmorLevel += alBonus;                    
                     resultMsg = $"Improved Armor Level by {alBonus}";
                     HandleTinkerLottoLog($"AL+{alBonus}");
                 }
@@ -113,9 +114,9 @@ namespace ACE.Server.WorldObjects
             Random rand = new Random();
             var dmgBonusRoll = rand.NextDouble();
 
-            //Capped at 2 dmg bonuses for any given item
+            //Capped at 1 dmg bonus for any given item
             var lottoDmgBonusCount = GetCountDmgLottoBonus();
-            if (dmgBonusRoll < 0.05 && lottoDmgBonusCount < 2)
+            if (dmgBonusRoll < 0.05 && lottoDmgBonusCount < 1)
             {
                 //Add +1 dmg
                 this.Damage += 1;
@@ -134,13 +135,13 @@ namespace ACE.Server.WorldObjects
                 }
             }
 
-            var rendRoll = rand.NextDouble();
-            if (rendRoll < 0.025)
-            {
-                var rendResult = TinkeringLotto_ApplyResistanceCleaveMutation();
-                if (!string.IsNullOrEmpty(rendResult))
-                    resultMsg = string.IsNullOrEmpty(resultMsg) ? rendResult : $"{resultMsg}\n{rendResult}";
-            }
+            //var rendRoll = rand.NextDouble();
+            //if (rendRoll < 0.025)
+            //{
+            //    var rendResult = TinkeringLotto_ApplyResistanceCleaveMutation();
+            //    if (!string.IsNullOrEmpty(rendResult))
+            //        resultMsg = string.IsNullOrEmpty(resultMsg) ? rendResult : $"{resultMsg}\n{rendResult}";
+            //}
 
             return resultMsg;
         }
@@ -152,9 +153,9 @@ namespace ACE.Server.WorldObjects
             Random rand = new Random();
             var varianceBonusroll = rand.NextDouble();
 
-            //Capped at 2 dmg bonuses for any given item
+            //Capped at 1 dmg bonuses for any given item
             var lottoDmgBonusCount = GetCountDmgLottoBonus();
-            if (varianceBonusroll < 0.05 && lottoDmgBonusCount < 2)
+            if (varianceBonusroll < 0.05 && lottoDmgBonusCount < 1)
             {
                 //Add +1 variance
                 this.DamageVariance *= 0.8f;
@@ -173,13 +174,13 @@ namespace ACE.Server.WorldObjects
                 }
             }
 
-            var rendRoll = rand.NextDouble();
-            if (rendRoll < 0.025)
-            {
-                var rendResult = TinkeringLotto_ApplyResistanceCleaveMutation();
-                if (!string.IsNullOrEmpty(rendResult))
-                    resultMsg = string.IsNullOrEmpty(resultMsg) ? rendResult : $"{resultMsg}\n{rendResult}";
-            }
+            //var rendRoll = rand.NextDouble();
+            //if (rendRoll < 0.025)
+            //{
+            //    var rendResult = TinkeringLotto_ApplyResistanceCleaveMutation();
+            //    if (!string.IsNullOrEmpty(rendResult))
+            //        resultMsg = string.IsNullOrEmpty(resultMsg) ? rendResult : $"{resultMsg}\n{rendResult}";
+            //}
 
             return resultMsg;
         }
@@ -230,9 +231,9 @@ namespace ACE.Server.WorldObjects
             Random rand = new Random();
             var dmgBonusroll = rand.NextDouble();
 
-            //Capped at 2 dmg bonuses for any given item
+            //Capped at 1 dmg bonuses for any given item
             var lottoDmgBonusCount = GetCountDmgLottoBonus();
-            if (dmgBonusroll < 0.05 && lottoDmgBonusCount < 2)
+            if (dmgBonusroll < 0.05 && lottoDmgBonusCount < 1)
             {
                 //Add +4% dmg mod
                 this.DamageMod += 0.04f;
@@ -251,13 +252,13 @@ namespace ACE.Server.WorldObjects
                 }
             }
 
-            var rendRoll = rand.NextDouble();
-            if (rendRoll < 0.025)
-            {
-                var rendResult = TinkeringLotto_ApplyResistanceCleaveMutation();
-                if (!string.IsNullOrEmpty(rendResult))
-                    resultMsg = string.IsNullOrEmpty(resultMsg) ? rendResult : $"{resultMsg}\n{rendResult}";
-            }
+            //var rendRoll = rand.NextDouble();
+            //if (rendRoll < 0.025)
+            //{
+            //    var rendResult = TinkeringLotto_ApplyResistanceCleaveMutation();
+            //    if (!string.IsNullOrEmpty(rendResult))
+            //        resultMsg = string.IsNullOrEmpty(resultMsg) ? rendResult : $"{resultMsg}\n{rendResult}";
+            //}
 
             return resultMsg;
         }
@@ -271,7 +272,7 @@ namespace ACE.Server.WorldObjects
 
             //Capped at 2 dmg bonuses for any given item
             var lottoDmgBonusCount = GetCountDmgLottoBonus();
-            if (dmgBonusroll < 0.05 && lottoDmgBonusCount < 2)
+            if (dmgBonusroll < 0.05 && lottoDmgBonusCount < 1)
             {
                 this.WeaponOffense += 0.01f;
                 resultMsg = "Improved Attack Mod by 1%";
@@ -289,13 +290,13 @@ namespace ACE.Server.WorldObjects
                 }
             }
 
-            var rendRoll = rand.NextDouble();
-            if (rendRoll < 0.025)
-            {
-                var rendResult = TinkeringLotto_ApplyResistanceCleaveMutation();
-                if (!string.IsNullOrEmpty(rendResult))
-                    resultMsg = string.IsNullOrEmpty(resultMsg) ? rendResult : $"{resultMsg}\n{rendResult}";
-            }
+            //var rendRoll = rand.NextDouble();
+            //if (rendRoll < 0.025)
+            //{
+            //    var rendResult = TinkeringLotto_ApplyResistanceCleaveMutation();
+            //    if (!string.IsNullOrEmpty(rendResult))
+            //        resultMsg = string.IsNullOrEmpty(resultMsg) ? rendResult : $"{resultMsg}\n{rendResult}";
+            //}
 
             return resultMsg;
         }
@@ -307,9 +308,9 @@ namespace ACE.Server.WorldObjects
             Random rand = new Random();
             var dmgBonusroll = rand.NextDouble();
 
-            //Capped at 2 dmg bonuses for any given item
+            //Capped at 1 dmg bonuses for any given item
             var lottoDmgBonusCount = GetCountDmgLottoBonus();
-            if (dmgBonusroll < 0.05 && lottoDmgBonusCount < 2)
+            if (dmgBonusroll < 0.05 && lottoDmgBonusCount < 1)
             {
                 this.WeaponDefense += 0.01f;
                 resultMsg = "Improved Melee Defence Mod by 1%";
@@ -327,13 +328,13 @@ namespace ACE.Server.WorldObjects
                 }
             }
 
-            var rendRoll = rand.NextDouble();
-            if (rendRoll < 0.025)
-            {
-                var rendResult = TinkeringLotto_ApplyResistanceCleaveMutation();
-                if (!string.IsNullOrEmpty(rendResult))
-                    resultMsg = string.IsNullOrEmpty(resultMsg) ? rendResult : $"{resultMsg}\n{rendResult}";
-            }
+            //var rendRoll = rand.NextDouble();
+            //if (rendRoll < 0.025)
+            //{
+            //    var rendResult = TinkeringLotto_ApplyResistanceCleaveMutation();
+            //    if (!string.IsNullOrEmpty(rendResult))
+            //        resultMsg = string.IsNullOrEmpty(resultMsg) ? rendResult : $"{resultMsg}\n{rendResult}";
+            //}
 
             return resultMsg;
         }
@@ -346,7 +347,7 @@ namespace ACE.Server.WorldObjects
             var roll = rand.NextDouble();
 
             var lottoDmgBonusCount = GetCountDmgLottoBonus();
-            if (roll < 0.3 && lottoDmgBonusCount < 2)
+            if (roll < 0.3 && lottoDmgBonusCount < 1)
             {
                 if (this.ItemType == ItemType.MissileWeapon)
                 {
@@ -362,81 +363,81 @@ namespace ACE.Server.WorldObjects
                 }
                 else if (this.ItemType == ItemType.Caster)
                 {
-                    this.ElementalDamageMod = (this.ElementalDamageMod ?? 0.0f) + 0.05f;
-                    resultMsg = "Improved Elemental Damage Bonus by 5% vs Monsters and 2.5% against Players";
-                    HandleTinkerLottoLog("CasterDmgBonus5%");
+                    //this.ElementalDamageMod = (this.ElementalDamageMod ?? 0.0f) + 0.05f;
+                    //resultMsg = "Improved Elemental Damage Bonus by 5% vs Monsters and 2.5% against Players";
+                    //HandleTinkerLottoLog("CasterDmgBonus5%");
                 }
             }
 
             // If you're using WS 10 salvage and your target item is <= WS 6
             if (salvageWorkmanship == 10 && this.Workmanship <= 6)
             {
-                // 15% chance for bonus effect
-                roll = rand.NextDouble();
-                if (roll < 0.15)
-                {
-                    var currRollResultMsg = "";
+                //// 15% chance for bonus effect
+                //roll = rand.NextDouble();
+                //if (roll < 0.15)
+                //{
+                //    var currRollResultMsg = "";
 
-                    if (this.ItemType == ItemType.MissileWeapon)
-                    {
-                        this.IgnoreShield = 1;
-                        currRollResultMsg = "Added Shield Hollow";
-                        HandleTinkerLottoLog("ShieldHollow");
-                    }
-                    else if (this.ItemType == ItemType.MeleeWeapon)
-                    {
-                        if (!this.GetProperty(PropertyInt.Cleaving).HasValue || this.GetProperty(PropertyInt.Cleaving) < 2)
-                            this.SetProperty(PropertyInt.Cleaving, 2);
-                        else
-                            this.SetProperty(PropertyInt.Cleaving, 3);
+                //    if (this.ItemType == ItemType.MissileWeapon)
+                //    {
+                //        this.IgnoreShield = 1;
+                //        currRollResultMsg = "Added Shield Hollow";
+                //        HandleTinkerLottoLog("ShieldHollow");
+                //    }
+                //    else if (this.ItemType == ItemType.MeleeWeapon)
+                //    {
+                //        if (!this.GetProperty(PropertyInt.Cleaving).HasValue || this.GetProperty(PropertyInt.Cleaving) < 2)
+                //            this.SetProperty(PropertyInt.Cleaving, 2);
+                //        else
+                //            this.SetProperty(PropertyInt.Cleaving, 3);
 
-                        currRollResultMsg = "Added +1 Cleaving Target";
-                        HandleTinkerLottoLog("Cleave1");
-                    }
-                    else if (this.ItemType == ItemType.Caster)
-                    {
-                        roll = rand.NextDouble();
-                        if (roll < 0.5)
-                        {
-                            this.SetProperty(PropertyFloat.CriticalFrequency, 0.25);
-                            currRollResultMsg = "Added Biting Strike";
-                            HandleTinkerLottoLog("BS");
-                        }
-                        else
-                        {
-                            this.SetProperty(PropertyFloat.CriticalMultiplier, 2.5);
-                            currRollResultMsg = "Added Crushing Blow";
-                            HandleTinkerLottoLog("CB");
-                        }
-                    }
+                //        currRollResultMsg = "Added +1 Cleaving Target";
+                //        HandleTinkerLottoLog("Cleave1");
+                //    }
+                //    else if (this.ItemType == ItemType.Caster)
+                //    {
+                //        roll = rand.NextDouble();
+                //        if (roll < 0.5)
+                //        {
+                //            this.SetProperty(PropertyFloat.CriticalFrequency, 0.25);
+                //            currRollResultMsg = "Added Biting Strike";
+                //            HandleTinkerLottoLog("BS");
+                //        }
+                //        else
+                //        {
+                //            this.SetProperty(PropertyFloat.CriticalMultiplier, 2.5);
+                //            currRollResultMsg = "Added Crushing Blow";
+                //            HandleTinkerLottoLog("CB");
+                //        }
+                //    }
 
-                    resultMsg = string.IsNullOrEmpty(resultMsg) ? currRollResultMsg : $"{resultMsg}\n{currRollResultMsg}";
-                }
+                //    resultMsg = string.IsNullOrEmpty(resultMsg) ? currRollResultMsg : $"{resultMsg}\n{currRollResultMsg}";
+                //}
 
-                // 15% chance for cast on strike
-                roll = rand.NextDouble();
-                if (roll < 0.15)
-                {
-                    var currRollResultMsg = "";
+                //// 15% chance for cast on strike
+                //roll = rand.NextDouble();
+                //if (roll < 0.15)
+                //{
+                //    var currRollResultMsg = "";
 
-                    this.ProcSpellRate = 0.15f;
-                    this.ProcSpellSelfTargeted = false;
-                    this.ItemSpellcraft = 525;
-                    if (this.ItemType == ItemType.Caster)
-                    {
-                        this.ProcSpell = (uint)SpellId.MagicYieldOther8;
-                        currRollResultMsg = "Added Cast on Strike Magic Yield";
-                        HandleTinkerLottoLog("COSYIELD");
-                    }
-                    else
-                    {
-                        this.ProcSpell = (uint)SpellId.ImperilOther8;
-                        currRollResultMsg = "Added Cast on Strike Imperil";
-                        HandleTinkerLottoLog("COSIMP");
-                    }
+                //    this.ProcSpellRate = 0.15f;
+                //    this.ProcSpellSelfTargeted = false;
+                //    this.ItemSpellcraft = 525;
+                //    if (this.ItemType == ItemType.Caster)
+                //    {
+                //        this.ProcSpell = (uint)SpellId.MagicYieldOther8;
+                //        currRollResultMsg = "Added Cast on Strike Magic Yield";
+                //        HandleTinkerLottoLog("COSYIELD");
+                //    }
+                //    else
+                //    {
+                //        this.ProcSpell = (uint)SpellId.ImperilOther8;
+                //        currRollResultMsg = "Added Cast on Strike Imperil";
+                //        HandleTinkerLottoLog("COSIMP");
+                //    }
 
-                    resultMsg = string.IsNullOrEmpty(resultMsg) ? currRollResultMsg : $"{resultMsg}\n{currRollResultMsg}";
-                }
+                //    resultMsg = string.IsNullOrEmpty(resultMsg) ? currRollResultMsg : $"{resultMsg}\n{currRollResultMsg}";
+                //}
             }
 
             return resultMsg;
@@ -450,7 +451,7 @@ namespace ACE.Server.WorldObjects
             var roll = rand.NextDouble();
 
             var lottoDmgBonusCount = GetCountDmgLottoBonus();
-            if (roll < 0.3 && lottoDmgBonusCount < 2)
+            if (roll < 0.3 && lottoDmgBonusCount < 1)
             {
                 if (this.ItemType == ItemType.MissileWeapon)
                 {
@@ -466,48 +467,48 @@ namespace ACE.Server.WorldObjects
                 }
                 else if (this.ItemType == ItemType.Caster)
                 {
-                    this.ElementalDamageMod = (this.ElementalDamageMod ?? 0.0f) + 0.05f;
-                    resultMsg = "Improved Elemental Damage Bonus by 5% vs Monsters and 1.25% against Players";
-                    HandleTinkerLottoLog("CasterDmgBonus5%");
+                    //this.ElementalDamageMod = (this.ElementalDamageMod ?? 0.0f) + 0.05f;
+                    //resultMsg = "Improved Elemental Damage Bonus by 5% vs Monsters and 1.25% against Players";
+                    //HandleTinkerLottoLog("CasterDmgBonus5%");
                 }
             }
 
             if (salvageWorkmanship == 10 && this.Workmanship <= 6)
             {
-                roll = rand.NextDouble();
-                if (roll < 0.15)
-                {
-                    var currRollResultMsg = "";
+                //roll = rand.NextDouble();
+                //if (roll < 0.15)
+                //{
+                //    var currRollResultMsg = "";
 
-                    if (this.ItemType == ItemType.MissileWeapon)
-                    {
-                        this.IgnoreShield = 1;
-                        currRollResultMsg = "Added Shield Hollow";
-                        HandleTinkerLottoLog("ShieldHollow");
-                    }
-                    else if (this.ItemType == ItemType.MeleeWeapon)
-                    {
-                        if (!this.GetProperty(PropertyInt.Cleaving).HasValue || this.GetProperty(PropertyInt.Cleaving) < 2)
-                            this.SetProperty(PropertyInt.Cleaving, 2);
-                        else
-                            this.SetProperty(PropertyInt.Cleaving, 3);
+                //    if (this.ItemType == ItemType.MissileWeapon)
+                //    {
+                //        this.IgnoreShield = 1;
+                //        currRollResultMsg = "Added Shield Hollow";
+                //        HandleTinkerLottoLog("ShieldHollow");
+                //    }
+                //    else if (this.ItemType == ItemType.MeleeWeapon)
+                //    {
+                //        if (!this.GetProperty(PropertyInt.Cleaving).HasValue || this.GetProperty(PropertyInt.Cleaving) < 2)
+                //            this.SetProperty(PropertyInt.Cleaving, 2);
+                //        else
+                //            this.SetProperty(PropertyInt.Cleaving, 3);
 
-                        currRollResultMsg = "Added +1 Cleaving Target";
-                        HandleTinkerLottoLog("Cleave1");
-                    }
-                    else if (this.ItemType == ItemType.Caster)
-                    {
-                        if (this.WeaponMagicDefense.HasValue)
-                            this.SetProperty(PropertyFloat.WeaponMagicDefense, this.WeaponMagicDefense.Value + 0.01);
-                        else
-                            this.SetProperty(PropertyFloat.WeaponMagicDefense, 1.01);
+                //        currRollResultMsg = "Added +1 Cleaving Target";
+                //        HandleTinkerLottoLog("Cleave1");
+                //    }
+                //    else if (this.ItemType == ItemType.Caster)
+                //    {
+                //        if (this.WeaponMagicDefense.HasValue)
+                //            this.SetProperty(PropertyFloat.WeaponMagicDefense, this.WeaponMagicDefense.Value + 0.01);
+                //        else
+                //            this.SetProperty(PropertyFloat.WeaponMagicDefense, 1.01);
 
-                        currRollResultMsg = "Added +1 Magic Defense";
-                        HandleTinkerLottoLog("MagicD1");
-                    }
+                //        currRollResultMsg = "Added +1 Magic Defense";
+                //        HandleTinkerLottoLog("MagicD1");
+                //    }
 
-                    resultMsg = string.IsNullOrEmpty(resultMsg) ? currRollResultMsg : $"{resultMsg}\n{currRollResultMsg}";
-                }
+                //    resultMsg = string.IsNullOrEmpty(resultMsg) ? currRollResultMsg : $"{resultMsg}\n{currRollResultMsg}";
+                //}
             }
 
             return resultMsg;
