@@ -159,6 +159,13 @@ namespace ACE.Server.WorldObjects
                     return;
             }
 
+            // XP Bottle — entirely custom handler; bypasses all standard gem logic
+            if (WeenieClassId == 490071)
+            {
+                player.UseXpBottle(this);
+                return;
+            }
+
             if (RareUsesTimer)
             {
                 var currentTime = Time.GetUnixTime();

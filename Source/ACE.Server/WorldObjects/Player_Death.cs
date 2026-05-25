@@ -126,6 +126,29 @@ namespace ACE.Server.WorldObjects
             {
                 pkPlayer.PkTimestamp = Time.GetUnixTime();
 
+                // Ancient Bottle drain: victim loses 5% of stored bottle XP, killer gains it as PvP XP
+                var victimBottles = GetInventoryItemsOfWCID(490071);
+                if (victimBottles != null && victimBottles.Count > 0)
+                {
+                    long totalDrained = 0;
+                    foreach (var bottleItem in victimBottles)
+                    {
+                        var stored = bottleItem.ItemTotalXp ?? 0;
+                        if (stored <= 0) continue;
+                        var drain = Math.Max(1L, (long)(stored * 0.05));
+                        bottleItem.ItemTotalXp = stored - drain;
+                        totalDrained += drain;
+                        Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(bottleItem, PropertyInt64.ItemTotalXp, bottleItem.ItemTotalXp.Value));
+                    }
+                    if (totalDrained > 0)
+                    {
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(
+                            $"Your Ancient Bottle lost {totalDrained:N0} experience upon death.",
+                            ChatMessageType.Broadcast));
+                        pkPlayer.GrantXP(totalDrained, XpType.PvP, ShareType.None, $"from {Name}'s Ancient Bottle");
+                    }
+                }
+
                 var globalPKDe = $"{lastDamager.Name} has defeated {Name}!";
 
                 //if ((Location.Cell & 0xFFFF) < 0x100)
