@@ -779,7 +779,10 @@ namespace ACE.Server.WorldObjects
                                 // Scale the flat fudge bonus with clamped time so it stays proportional
                                 // rather than dominating at normal (high-frequency) packet rates.
                                 var flatBonus = Math.Max(5.0f, clampedDelta * 30.0f);
-                                currentMaxSpeed = (1.8f * runRate * clampedDelta * (1.0f + velocity / 8.0f)) + flatBonus;
+                                // Cap velocity at a physically plausible ceiling so injected velocity
+                                // values can't inflate the allowed movement budget.
+                                var clampedVelocity = Math.Min(velocity, runRate * 12.0f);
+                                currentMaxSpeed = (1.8f * runRate * clampedDelta * (1.0f + clampedVelocity / 8.0f)) + flatBonus;
                                 if (runRate < 1.9f && PhysicsObj.CachedVelocity.Z < -20.0f) // Very slow characters can still fall pretty quickly.
                                     currentMaxSpeed *= 2.5f;
                             }
