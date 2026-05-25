@@ -713,6 +713,7 @@ namespace ACE.Server.Managers
                 ("force_login_materialization", new Property<bool>(true, "forces players to remain in portal space for a duration after logging in")),
                 ("recent_teleport_prevention", new Property<bool>(true, "prevents players from teleporting again immediately after materializing")),
                 ("disable_arenas", new Property<bool>(false, "set to true to disable arena events")),
+                ("disable_pvp_cleave", new Property<bool>(true, "disables melee cleave attacks from targeting players")),
                 ("arena_allow_same_ip_match", new Property<bool>(false, "enable to allow two characters from the same IP to be matched in an arena event")),
                 ("arena_allow_observers", new Property<bool>(true, "enable to allow players to watch arena matches as invisible observers")),
                 ("tinker_lotto_enabled", new Property<bool>(false, "enables the tinkering lotto feature")),

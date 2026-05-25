@@ -113,6 +113,7 @@ namespace ACE.Server.WorldObjects
         public List<Creature> GetCleaveTarget(Creature target, WorldObject weapon)
         {
             var player = this as Player;
+            var disablePlayerCleave = PropertyManager.GetBool("disable_pvp_cleave").Item;
 
             if (!weapon.IsCleaving) return null;
 
@@ -132,6 +133,12 @@ namespace ACE.Server.WorldObjects
                 // only cleave creatures
                 var creature = obj.WeenieObj.WorldObject as Creature;
                 if (creature == null || creature.Teleporting || creature.IsDead) continue;
+
+                var cleaveTargetPlayer = obj.WeenieObj.WorldObject as Player;
+
+                // disable cleave on player targets
+                if (disablePlayerCleave && cleaveTargetPlayer != null && player != null && !player.IsAdmin)
+                    continue;
 
                 if (player != null && player.CheckPKStatusVsTarget(creature, null) != null)
                     continue;
