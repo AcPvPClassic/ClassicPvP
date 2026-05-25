@@ -828,6 +828,22 @@ namespace ACE.Server.WorldObjects
                                 // Scale the flat fudge bonus with clamped time so it stays proportional
                                 // rather than dominating at normal (high-frequency) packet rates.
                                 var flatBonus = Math.Max(5.0f, clampedDelta * 30.0f);
+                                // Physics-velocity consistency allowance:
+                                // The AC client stops sending AutoPos packets for ~1 second after it
+                                // receives a ForcePosition (rubber-band) correction.  When it resumes,
+                                // the first packet covers the full elapsed distance at the player's
+                                // normal running speed (typically 10-14 units/s × ~1 s = 10-14 units).
+                                // The 200 ms clampedDelta cap only budgets ~8 units for that packet,
+                                // causing a false violation that triggers another rubber-band, which
+                                // causes another pause, and the cycle repeats indefinitely.
+                                //
+                                // Fix: when enforcementDeltaTime > 200 ms, raise the flat bonus so
+                                // that movement whose distance is consistent with the player's current
+                                // physics velocity over the full elapsed time is always allowed.
+                                // CachedVelocity is computed server-side by the physics engine and
+                                // cannot be injected by the client, so this cannot be spoofed.
+                                if (velocity > 0.5f && enforcementDeltaTime > 0.2f)
+                                    flatBonus = Math.Max(flatBonus, velocity * enforcementDeltaTime * 1.2f);
                                 // Cap velocity at a physically plausible ceiling so injected velocity
                                 // values can't inflate the allowed movement budget.
                                 var clampedVelocity = Math.Min(velocity, runRate * 12.0f);
