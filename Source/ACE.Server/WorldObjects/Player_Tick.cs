@@ -899,18 +899,19 @@ namespace ACE.Server.WorldObjects
                             LastSnapPosAdvanceTime = currentTime;
                         }
 
+                        // --- Position ring buffer maintenance ---
+                        // Always maintained on clean ticks so that any check below that needs
+                        // historical positions (speed windows, timing regularity, packet rate,
+                        // direction reversal) works regardless of which individual configs are on.
+                        MovementWindowBuffer.Add((currentTime, new ACE.Entity.Position(newPosition)));
+                        // Prune entries older than the longest window (15 s).
+                        while (MovementWindowBuffer.Count > 0 && currentTime - MovementWindowBuffer[0].Timestamp > 15.0)
+                            MovementWindowBuffer.RemoveAt(0);
+
                         // --- Sliding window average speed checks (Change 6) ---
-                        // Runs only on clean ticks (violations return false above).
                         // Catches cheaters who pace teleport packets to stay under the per-packet limit.
                         if (PropertyManager.GetBool("enforce_player_movement_avg").Item)
                         {
-                            // Push the validated new position into the ring buffer.
-                            MovementWindowBuffer.Add((currentTime, new ACE.Entity.Position(newPosition)));
-
-                            // Prune entries older than the longest window (15 s).
-                            while (MovementWindowBuffer.Count > 0 && currentTime - MovementWindowBuffer[0].Timestamp > 15.0)
-                                MovementWindowBuffer.RemoveAt(0);
-
                             // runRate is out of scope here (declared inside FastTick block), so recompute cheaply.
                             var avgWindowMaxSpeed = GetRunRate() * 1.15f;
 
@@ -977,6 +978,226 @@ namespace ACE.Server.WorldObjects
                             // Evaluate short window first; if it kicks, skip long window.
                             if (EvalSpeedWindow(3.0, 5.0f, 8.0f)) return false;
                             if (EvalSpeedWindow(15.0, 8.0f, 12.0f)) return false;
+                        }
+
+                        // --- Script detection: inter-packet timing regularity ---
+                        // Human hands always jitter; scripts tick at machine-clock precision.
+                        // Measures the coefficient of variation (stddev / mean) of inter-packet
+                        // intervals over a 4-second rolling window. CV < 0.04 means less than
+                        // 4% variation — impossible to sustain for a real player.
+                        if (PropertyManager.GetBool("enforce_player_timing_regularity").Item)
+                        {
+                            // Find window start (last 4 seconds).
+                            int timingStart = 0;
+                            while (timingStart < MovementWindowBuffer.Count - 1 &&
+                                   currentTime - MovementWindowBuffer[timingStart].Timestamp > 4.0)
+                                timingStart++;
+
+                            int timingSamples = MovementWindowBuffer.Count - timingStart;
+                            if (timingSamples >= 13) // 13 entries = 12 intervals for a stable CV
+                            {
+                                double timingSpan = MovementWindowBuffer[MovementWindowBuffer.Count - 1].Timestamp
+                                                  - MovementWindowBuffer[timingStart].Timestamp;
+                                if (timingSpan >= 3.0)
+                                {
+                                    double sumI = 0.0, sumISq = 0.0;
+                                    int intervalCount = 0;
+                                    for (int i = timingStart; i < MovementWindowBuffer.Count - 1; i++)
+                                    {
+                                        double interval = MovementWindowBuffer[i + 1].Timestamp
+                                                        - MovementWindowBuffer[i].Timestamp;
+                                        sumI   += interval;
+                                        sumISq += interval * interval;
+                                        intervalCount++;
+                                    }
+                                    double meanI    = sumI / intervalCount;
+                                    double varianceI = (sumISq / intervalCount) - (meanI * meanI);
+                                    double stddevI  = Math.Sqrt(Math.Max(0.0, varianceI));
+                                    double cv       = meanI > 0.001 ? stddevI / meanI : 1.0;
+
+                                    if (cv < 0.04)
+                                    {
+                                        MovementSuspicionScore += 6.0f;
+
+                                        Location = new ACE.Entity.Position(SnapPos);
+                                        Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
+                                        SendUpdatePosition();
+                                        Session.Network.EnqueueSend(new GameMessageSystemChat("Invalid movement detected. Rolling back to last known good location.", ChatMessageType.Help));
+
+                                        log.Warn($"{Name} - SCRIPTED TIMING DETECTED - CV: {cv:0.0000} (mean: {meanI * 1000:0.0} ms, stddev: {stddevI * 1000:0.2} ms) SuspicionScore: {MovementSuspicionScore:0.0}");
+
+                                        var _stLoc     = Location?.ToString() ?? "unknown";
+                                        var _stAccount = Session?.Account ?? "unknown";
+                                        var _stScore   = MovementSuspicionScore;
+                                        System.Threading.Tasks.Task.Run(() =>
+                                            DatabaseManager.Log.LogMovementViolation(
+                                                Guid.Full, Name, _stAccount, (float)cv, 0.04f, _stScore, _stLoc));
+
+                                        if (MovementSuspicionScore >= 50.0f)
+                                        {
+                                            log.Warn($"{Name} - MOVEMENT SUSPICION THRESHOLD REACHED ({MovementSuspicionScore:0.0}) - KICKING");
+                                            Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
+                                                new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                            return false;
+                                        }
+
+                                        if (MovementEnforcementCounter >= 10 && PropertyManager.GetBool("movement_violation_kick").Item)
+                                        {
+                                            log.Warn($"{Name} - MOVEMENT ENFORCEMENT COUNTER THRESHOLD ({MovementEnforcementCounter}) - KICKING");
+                                            Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
+                                                new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                            return false;
+                                        }
+
+                                        return false;
+                                    }
+                                }
+                            }
+                        }
+
+                        // --- Script detection: packet flood rate ---
+                        // A legitimate AC client sends 5–15 movement updates per second.
+                        // A script or modified client flooding the server exceeds movement_packet_rate_limit/s.
+                        if (PropertyManager.GetBool("enforce_player_packet_rate").Item)
+                        {
+                            // Count entries added in the last 2 seconds.
+                            int floodStart = 0;
+                            while (floodStart < MovementWindowBuffer.Count &&
+                                   currentTime - MovementWindowBuffer[floodStart].Timestamp > 2.0)
+                                floodStart++;
+
+                            int packetsIn2s = MovementWindowBuffer.Count - floodStart;
+                            float packetRate = packetsIn2s / 2.0f;
+                            var rateLimit = (float)PropertyManager.GetLong("movement_packet_rate_limit").Item;
+
+                            if (packetRate > rateLimit)
+                            {
+                                MovementSuspicionScore += 4.0f;
+
+                                Location = new ACE.Entity.Position(SnapPos);
+                                Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
+                                SendUpdatePosition();
+                                Session.Network.EnqueueSend(new GameMessageSystemChat("Invalid movement detected. Rolling back to last known good location.", ChatMessageType.Help));
+
+                                log.Warn($"{Name} - PACKET FLOOD DETECTED - Rate: {packetRate:0.0}/s (limit: {rateLimit:0}/s) SuspicionScore: {MovementSuspicionScore:0.0}");
+
+                                var _pfLoc     = Location?.ToString() ?? "unknown";
+                                var _pfAccount = Session?.Account ?? "unknown";
+                                var _pfScore   = MovementSuspicionScore;
+                                System.Threading.Tasks.Task.Run(() =>
+                                    DatabaseManager.Log.LogMovementViolation(
+                                        Guid.Full, Name, _pfAccount, packetRate, rateLimit, _pfScore, _pfLoc));
+
+                                if (MovementSuspicionScore >= 50.0f)
+                                {
+                                    log.Warn($"{Name} - MOVEMENT SUSPICION THRESHOLD REACHED ({MovementSuspicionScore:0.0}) - KICKING");
+                                    Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
+                                        new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                    return false;
+                                }
+
+                                if (MovementEnforcementCounter >= 10 && PropertyManager.GetBool("movement_violation_kick").Item)
+                                {
+                                    log.Warn($"{Name} - MOVEMENT ENFORCEMENT COUNTER THRESHOLD ({MovementEnforcementCounter}) - KICKING");
+                                    Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
+                                        new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                    return false;
+                                }
+
+                                return false;
+                            }
+                        }
+
+                        // --- Script detection: inhuman direction reversal ---
+                        // Human reaction time floor is ~150 ms. A back-and-forth kiting script
+                        // performs two consecutive ~180° heading reversals faster than any human can.
+                        // Requires 4 consecutive buffer entries (3 steps), each step having real
+                        // displacement (> 0.2 units), each interval under 150 ms, and two adjacent
+                        // heading changes both near 180°. A single reversal is not flagged.
+                        if (PropertyManager.GetBool("enforce_player_reversal_detection").Item
+                            && MovementWindowBuffer.Count >= 4)
+                        {
+                            int last = MovementWindowBuffer.Count - 1;
+                            var rp0 = MovementWindowBuffer[last - 3];
+                            var rp1 = MovementWindowBuffer[last - 2];
+                            var rp2 = MovementWindowBuffer[last - 1];
+                            var rp3 = MovementWindowBuffer[last];
+
+                            // Interval checks first (cheap) — all three steps must be < 150 ms.
+                            double rdt01 = rp1.Timestamp - rp0.Timestamp;
+                            double rdt12 = rp2.Timestamp - rp1.Timestamp;
+                            double rdt23 = rp3.Timestamp - rp2.Timestamp;
+
+                            if (rdt01 < 0.15 && rdt12 < 0.15 && rdt23 < 0.15)
+                            {
+                                // Displacement checks — each step must be meaningful movement.
+                                float rdx01 = rp1.Pos.PositionX - rp0.Pos.PositionX;
+                                float rdy01 = rp1.Pos.PositionY - rp0.Pos.PositionY;
+                                float rdx12 = rp2.Pos.PositionX - rp1.Pos.PositionX;
+                                float rdy12 = rp2.Pos.PositionY - rp1.Pos.PositionY;
+                                float rdx23 = rp3.Pos.PositionX - rp2.Pos.PositionX;
+                                float rdy23 = rp3.Pos.PositionY - rp2.Pos.PositionY;
+
+                                float rdist01 = (float)Math.Sqrt(rdx01 * rdx01 + rdy01 * rdy01);
+                                float rdist12 = (float)Math.Sqrt(rdx12 * rdx12 + rdy12 * rdy12);
+                                float rdist23 = (float)Math.Sqrt(rdx23 * rdx23 + rdy23 * rdy23);
+
+                                if (rdist01 > 0.2f && rdist12 > 0.2f && rdist23 > 0.2f)
+                                {
+                                    double rh01 = Math.Atan2(rdy01, rdx01);
+                                    double rh12 = Math.Atan2(rdy12, rdx12);
+                                    double rh23 = Math.Atan2(rdy23, rdx23);
+
+                                    // Angular difference, clamped to [0, π].
+                                    static double HeadingDiff(double a, double b)
+                                    {
+                                        double d = Math.Abs(a - b) % (Math.PI * 2);
+                                        return d > Math.PI ? Math.PI * 2 - d : d;
+                                    }
+
+                                    double rAngle1 = HeadingDiff(rh01, rh12);
+                                    double rAngle2 = HeadingDiff(rh12, rh23);
+
+                                    // Both must be within 20° (0.349 rad) of a full 180° reversal.
+                                    const double reversalMin = Math.PI - 0.349;
+                                    if (rAngle1 >= reversalMin && rAngle2 >= reversalMin)
+                                    {
+                                        MovementSuspicionScore += 7.0f;
+
+                                        Location = new ACE.Entity.Position(SnapPos);
+                                        Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
+                                        SendUpdatePosition();
+                                        Session.Network.EnqueueSend(new GameMessageSystemChat("Invalid movement detected. Rolling back to last known good location.", ChatMessageType.Help));
+
+                                        log.Warn($"{Name} - INHUMAN REVERSAL DETECTED - Angle1: {rAngle1 * 180 / Math.PI:0.0}° Angle2: {rAngle2 * 180 / Math.PI:0.0}° Intervals: {rdt01 * 1000:0.0}/{rdt12 * 1000:0.0}/{rdt23 * 1000:0.0} ms SuspicionScore: {MovementSuspicionScore:0.0}");
+
+                                        var _rvLoc     = Location?.ToString() ?? "unknown";
+                                        var _rvAccount = Session?.Account ?? "unknown";
+                                        var _rvScore   = MovementSuspicionScore;
+                                        System.Threading.Tasks.Task.Run(() =>
+                                            DatabaseManager.Log.LogMovementViolation(
+                                                Guid.Full, Name, _rvAccount, (float)rAngle1, (float)reversalMin, _rvScore, _rvLoc));
+
+                                        if (MovementSuspicionScore >= 50.0f)
+                                        {
+                                            log.Warn($"{Name} - MOVEMENT SUSPICION THRESHOLD REACHED ({MovementSuspicionScore:0.0}) - KICKING");
+                                            Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
+                                                new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                            return false;
+                                        }
+
+                                        if (MovementEnforcementCounter >= 10 && PropertyManager.GetBool("movement_violation_kick").Item)
+                                        {
+                                            log.Warn($"{Name} - MOVEMENT ENFORCEMENT COUNTER THRESHOLD ({MovementEnforcementCounter}) - KICKING");
+                                            Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
+                                                new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                            return false;
+                                        }
+
+                                        return false;
+                                    }
+                                }
+                            }
                         }
 
                         // --- Option N: Door collision detection ---
