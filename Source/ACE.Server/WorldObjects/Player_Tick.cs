@@ -773,7 +773,13 @@ namespace ACE.Server.WorldObjects
                             if (FastTick)
                             {
                                 var runRate = GetRunRate();
-                                currentMaxSpeed = (1.8f * runRate * enforcementDeltaTime * (1.0f + velocity / 8.0f)) + 5.0f;
+                                // Clamp deltaTime to 200 ms so a lag spike that delivers a large position
+                                // jump as a single packet doesn't get an artificially tiny budget.
+                                var clampedDelta = Math.Min(enforcementDeltaTime, 0.2f);
+                                // Scale the flat fudge bonus with clamped time so it stays proportional
+                                // rather than dominating at normal (high-frequency) packet rates.
+                                var flatBonus = Math.Max(5.0f, clampedDelta * 30.0f);
+                                currentMaxSpeed = (1.8f * runRate * clampedDelta * (1.0f + velocity / 8.0f)) + flatBonus;
                                 if (runRate < 1.9f && PhysicsObj.CachedVelocity.Z < -20.0f) // Very slow characters can still fall pretty quickly.
                                     currentMaxSpeed *= 2.5f;
                             }
