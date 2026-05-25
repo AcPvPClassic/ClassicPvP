@@ -224,12 +224,20 @@ namespace ACE.Server.WorldObjects
                     LogOut();
             }
 
+            bool wasSpeedEnforcing   = EnforceMovementSpeed; // capture BEFORE config reload
             bool wasAlreadyEnforcing = EnforceMovement || EnforceMovementSpeed;
             EnforceMovement = PropertyManager.GetBool("enforce_player_movement").Item;
             EnforceMovementSpeed = PropertyManager.GetBool("enforce_player_movement_speed").Item;
             if ((EnforceMovement || EnforceMovementSpeed) && !Teleporting)
             {
-                if (!wasAlreadyEnforcing)
+                // Re-init when:
+                //   (a) enforcement is enabled for the first time, OR
+                //   (b) speed checking is newly toggled on even if enforce_player_movement
+                //       was already active.  SnapPos, MovementWindowBuffer, and
+                //       LastPlayerMovementCheckTime are maintained ONLY inside the
+                //       EnforceMovementSpeed block; if speed was off they are stale.
+                bool speedJustEnabled = EnforceMovementSpeed && !wasSpeedEnforcing;
+                if (!wasAlreadyEnforcing || speedJustEnabled)
                 {
                     MovementEnforcementCounter = 0;
                     MovementSuspicionScore = 0.0f;
@@ -767,6 +775,36 @@ namespace ACE.Server.WorldObjects
 
                     if (EnforceMovementSpeed && success && !Teleporting && GodState == null)
                     {
+                        // --- Local helper: correct rubber-band that also keeps physics in sync ---
+                        // Every rubber-band inside this block must use this instead of the bare
+                        // Location=/Sequences/SendUpdatePosition triple.
+                        //
+                        // WHY: physics accepted the move and called set_current_pos(newPosition)
+                        // before we ever entered this block (success == true).  If we then set
+                        // Location = SnapPos without reverting PhysicsObj.Position, the two are
+                        // out of sync.  The next packet arrives; physics validates from newPosition
+                        // toward the client's near-SnapPos position; that backwards step fails the
+                        // physics 0.1-unit threshold; the engine fires its OWN rubber-band sending
+                        // the player forward again.  The client bounces, each bounce can generate
+                        // another violation, and suspicion accumulates until kick.
+                        void RollbackToSnap(string violationInfo = null)
+                        {
+                            // Revert the physics engine's accepted position back to SnapPos.
+                            var _rb = new Position(); // ACE.Server.Physics.Common.Position
+                            _rb.ObjCellID             = SnapPos.Cell;
+                            _rb.Frame.Origin          = SnapPos.Pos;
+                            _rb.Frame.Orientation     = SnapPos.Rotation;
+                            PhysicsObj.set_current_pos(_rb);
+
+                            Location = new ACE.Entity.Position(SnapPos);
+                            Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
+                            SendUpdatePosition();
+
+                            if (violationInfo != null)
+                                Session?.Network.EnqueueSend(new GameMessageSystemChat(
+                                    $"[AntiCheat] {violationInfo}", ChatMessageType.Help));
+                        }
+
                         float enforcementDeltaTime = (float)(currentTime - LastPlayerMovementCheckTime);
                         LastPlayerMovementCheckTime = currentTime;
 
@@ -823,9 +861,7 @@ namespace ACE.Server.WorldObjects
                                 // score = instant false kick for any legitimate lag spike.
                                 if (currentTime < RubberBandRecoveryUntil)
                                 {
-                                    Location = new ACE.Entity.Position(SnapPos);
-                                    Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
-                                    SendUpdatePosition();
+                                    RollbackToSnap(); // silent — already alerted on the triggering event
                                     return false;
                                 }
 
@@ -850,12 +886,7 @@ namespace ACE.Server.WorldObjects
                                     // multiple score events while the client catches up.
                                     RubberBandRecoveryUntil = currentTime + 0.75;
 
-                                    // Rubber-band: restore position to last known good — behavior unchanged.
-                                    Location = new ACE.Entity.Position(SnapPos);
-                                    Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
-                                    SendUpdatePosition();
-
-                                    Session.Network.EnqueueSend(new GameMessageSystemChat("Invalid movement detected. Rolling back to last known good location.", ChatMessageType.Help));
+                                    RollbackToSnap($"speed_packet {dist:0.00}/{currentMaxSpeed:0.00}");
 
                                     log.Warn($"{Name} - INVALID MOVEMENT DETECTED - Speed: {dist.ToString("0.00")}/{currentMaxSpeed.ToString("0.00")} PrevMaxSpeed: {loggingPrevMaxMovementSpeed.ToString("0.00")}({loggingInertia}) FastTick: {FastTick} TimeSpam: {enforcementDeltaTime.ToString("0.00")} Velocity: {velocity.ToString("0.00")} actionsSinceLastMovementUpdate: {loggingHasPerformedActionsSinceLastMovementUpdate} SuspicionScore: {MovementSuspicionScore:0.0}");
                                     //Session.Network.EnqueueSend(new GameMessageSystemChat($"Speed: {dist.ToString("0.00")}/{currentMaxSpeed.ToString("0.00")} PrevMaxSpeed: {loggingPrevMaxMovementSpeed.ToString("0.00")}({loggingInertia}) FastTick: {FastTick} TimeSpam: {deltaTime.ToString("0.00")} Velocity: {velocity.ToString("0.00")} timeSinceLastAction: {timeSinceLastAction.ToString("0.00")} isMovingOrAnimating: {isMovingOrAnimating} actionsSinceLastMovementUpdate: {loggingHasPerformedActionsSinceLastMovementUpdate}", ChatMessageType.Help));
@@ -1043,25 +1074,22 @@ namespace ACE.Server.WorldObjects
                                     double stddevI  = Math.Sqrt(Math.Max(0.0, varianceI));
                                     double cv       = meanI > 0.001 ? stddevI / meanI : 1.0;
 
-                                    if (cv < 0.04)
+                                    if (cv < 0.015)  // 0.04 false-positives on legit AC clients (machine-clock FPS loop); 0.015 only catches true script precision
                                     {
                                         MovementSuspicionScore += 6.0f;
                                         RubberBandRecoveryUntil = currentTime + 0.75;
 
-                                        Location = new ACE.Entity.Position(SnapPos);
-                                        Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
-                                        SendUpdatePosition();
-                                        Session.Network.EnqueueSend(new GameMessageSystemChat("Invalid movement detected. Rolling back to last known good location.", ChatMessageType.Help));
+                                        RollbackToSnap($"script_timing cv={cv:0.0000} (need >{0.015:0.000})");
 
                                         log.Warn($"{Name} - SCRIPTED TIMING DETECTED - CV: {cv:0.0000} (mean: {meanI * 1000:0.0} ms, stddev: {stddevI * 1000:0.2} ms) SuspicionScore: {MovementSuspicionScore:0.0}");
 
                                         var _stLoc     = Location?.ToString() ?? "unknown";
                                         var _stAccount = Session?.Account ?? "unknown";
                                         var _stScore   = MovementSuspicionScore;
-                                        DiscordWebhookManager.SendMovementViolation("script_timing", Name, _stAccount, (float)cv, 0.04f, _stScore, _stLoc);
+                                        DiscordWebhookManager.SendMovementViolation("script_timing", Name, _stAccount, (float)cv, 0.015f, _stScore, _stLoc);
                                         System.Threading.Tasks.Task.Run(() =>
                                             DatabaseManager.Log.LogMovementViolation(
-                                                Guid.Full, Name, _stAccount, "script_timing", (float)cv, 0.04f, _stScore, _stLoc));
+                                                Guid.Full, Name, _stAccount, "script_timing", (float)cv, 0.015f, _stScore, _stLoc));
 
                                         if (MovementSuspicionScore >= 50.0f)
                                         {
@@ -1105,11 +1133,7 @@ namespace ACE.Server.WorldObjects
                                 MovementSuspicionScore += 4.0f;
                                 RubberBandRecoveryUntil = currentTime + 0.75;
 
-                                Location = new ACE.Entity.Position(SnapPos);
-                                Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
-                                SendUpdatePosition();
-                                Session.Network.EnqueueSend(new GameMessageSystemChat("Invalid movement detected. Rolling back to last known good location.", ChatMessageType.Help));
-
+                                RollbackToSnap($"script_packet_rate {packetRate:0.0}/{rateLimit:0.0}/s");
                                 log.Warn($"{Name} - PACKET FLOOD DETECTED - Rate: {packetRate:0.0}/s (limit: {rateLimit:0}/s) SuspicionScore: {MovementSuspicionScore:0.0}");
 
                                 var _pfLoc     = Location?.ToString() ?? "unknown";
@@ -1197,11 +1221,7 @@ namespace ACE.Server.WorldObjects
                                         MovementSuspicionScore += 7.0f;
                                         RubberBandRecoveryUntil = currentTime + 0.75;
 
-                                        Location = new ACE.Entity.Position(SnapPos);
-                                        Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
-                                        SendUpdatePosition();
-                                        Session.Network.EnqueueSend(new GameMessageSystemChat("Invalid movement detected. Rolling back to last known good location.", ChatMessageType.Help));
-
+                                        RollbackToSnap($"script_reversal {rAngle1 * 180 / Math.PI:0.0}°+{rAngle2 * 180 / Math.PI:0.0}° in {rdt01 * 1000:0.0}/{rdt12 * 1000:0.0}/{rdt23 * 1000:0.0}ms");
                                         log.Warn($"{Name} - INHUMAN REVERSAL DETECTED - Angle1: {rAngle1 * 180 / Math.PI:0.0}° Angle2: {rAngle2 * 180 / Math.PI:0.0}° Intervals: {rdt01 * 1000:0.0}/{rdt12 * 1000:0.0}/{rdt23 * 1000:0.0} ms SuspicionScore: {MovementSuspicionScore:0.0}");
 
                                         var _rvLoc     = Location?.ToString() ?? "unknown";
@@ -1244,14 +1264,8 @@ namespace ACE.Server.WorldObjects
                         {
                             MovementSuspicionScore += 8.0f; // higher weight — doors are deliberately placed barriers
 
-                            // Rubber-band back to SnapPos.
                             RubberBandRecoveryUntil = currentTime + 0.75;
-                            Location = new ACE.Entity.Position(SnapPos);
-                            Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
-                            SendUpdatePosition();
-
-                            Session.Network.EnqueueSend(new GameMessageSystemChat("Invalid movement detected. Rolling back to last known good location.", ChatMessageType.Help));
-
+                            RollbackToSnap("door_ghost");
                             log.Warn($"{Name} - DOOR GHOST DETECTED (passed through closed door) - Location: {newPosition} SuspicionScore: {MovementSuspicionScore:0.0}");
 
                             // Log to ace_log for long-term ban evidence (fire-and-forget).
@@ -1294,14 +1308,8 @@ namespace ACE.Server.WorldObjects
                         {
                             MovementSuspicionScore += 4.0f; // lower weight — may be a legitimate spawn overlap
 
-                            // Rubber-band back to SnapPos.
                             RubberBandRecoveryUntil = currentTime + 0.75;
-                            Location = new ACE.Entity.Position(SnapPos);
-                            Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
-                            SendUpdatePosition();
-
-                            Session.Network.EnqueueSend(new GameMessageSystemChat("Invalid movement detected. Rolling back to last known good location.", ChatMessageType.Help));
-
+                            RollbackToSnap("spawn_ghost");
                             log.Warn($"{Name} - SPAWN GHOST DETECTED (passed through newly-spawned creature) - Location: {newPosition} SuspicionScore: {MovementSuspicionScore:0.0}");
 
                             // Log to ace_log for long-term ban evidence (fire-and-forget).
@@ -1348,14 +1356,8 @@ namespace ACE.Server.WorldObjects
                         {
                             MovementSuspicionScore += 5.0f;
 
-                            // Rubber-band: this is more definitive than a speed violation.
                             RubberBandRecoveryUntil = currentTime + 0.75;
-                            Location = new ACE.Entity.Position(SnapPos);
-                            Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
-                            SendUpdatePosition();
-
-                            Session.Network.EnqueueSend(new GameMessageSystemChat("Invalid movement detected. Rolling back to last known good location.", ChatMessageType.Help));
-
+                            RollbackToSnap("geometry");
                             log.Warn($"{Name} - GEOMETRY COLLISION DETECTED (wall-walk/blink) - Location: {newPosition} SuspicionScore: {MovementSuspicionScore:0.0}");
 
                             // Log to ace_log for long-term ban evidence (fire-and-forget).
@@ -1427,14 +1429,8 @@ namespace ACE.Server.WorldObjects
                                             var suspicionGain = Math.Min(overage * 10.0f, 15.0f);
                                             MovementSuspicionScore += suspicionGain;
 
-                                            // Rubber-band: return player to pre-jump ground position.
                                             RubberBandRecoveryUntil = currentTime + 0.75;
-                                            Location = new ACE.Entity.Position(SnapPos);
-                                            Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
-                                            SendUpdatePosition();
-
-                                            Session.Network.EnqueueSend(new GameMessageSystemChat("Invalid movement detected. Rolling back to last known good location.", ChatMessageType.Help));
-
+                                            RollbackToSnap($"jump_height {deltaZ:0.00}/{maxHeight:0.00}");
                                             log.Warn($"{Name} - JUMP HEIGHT VIOLATION - DeltaZ: {deltaZ:0.00} MaxAllowed: {maxHeight:0.00} SuspicionScore: {MovementSuspicionScore:0.0}");
 
                                             // Log to ace_log for long-term ban evidence (fire-and-forget).

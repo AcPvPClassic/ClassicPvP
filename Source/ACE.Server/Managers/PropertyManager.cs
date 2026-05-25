@@ -763,7 +763,7 @@ namespace ACE.Server.Managers
                 ("rolling_xp_cap", new Property<long>(354692, "The currently computed total-XP cap. Managed automatically by RollingLevelCapManager — do not set manually.")),
                 ("rolling_xp_cap_timestamp", new Property<long>(0, "Unix timestamp of the last time rolling_xp_cap was recalculated. Managed automatically by RollingLevelCapManager.")),
                 ("season_max_xp", new Property<long>(80_000_000_000, "Total XP ceiling at the end of the season (day 120). Should be high enough that every player template can max all skills and attributes. Level 126 is reached at day 60; days 60-120 grow linearly from level-126 XP to this value.")),
-                ("movement_packet_rate_limit", new Property<long>(30, "script detection: maximum movement packets per second before enforce_player_packet_rate triggers; measured over a 2-second rolling window")),
+                ("movement_packet_rate_limit", new Property<long>(60, "script detection: maximum movement packets per second before enforce_player_packet_rate triggers; measured over a 2-second rolling window. Default 60: the AC client can reach ~30/s at 30 FPS; 60 leaves a safe margin for fast machines without catching scripts (which flood at 100+/s)")),
 
                 // Bounty Hunter system
                 ("bounty_expiration_time",                new Property<long>(60,         "Minutes until a bounty contract expires after purchase.")),

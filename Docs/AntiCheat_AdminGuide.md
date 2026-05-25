@@ -62,15 +62,22 @@ __Master Switches__ (enable these first)
 `enforce_player_timing_regularity`
   Inter-packet timing regularity. Measures the coefficient of variation
   (stddev ÷ mean) of movement packet intervals over a 4-second rolling
-  window (min 13 entries / 3 seconds). Fires when CV < 0.04.
+  window (min 13 entries / 3 seconds). Fires when CV < 0.015.
   Human hands: CV ≈ 0.15–0.40 from natural jitter.
-  Scripts: CV < 0.01 (machine-clock precision).
-  Observed column in log = measured CV. Allowed = 0.04.
+  Legitimate AC client at fixed FPS: CV ≈ 0.02–0.06 (machine-clock loop).
+  Scripts (near-zero jitter): CV < 0.005.
+  Threshold 0.015 catches only true bot precision, not the client's own
+  fixed-rate send loop. Do NOT raise above 0.04 or you will false-flag
+  players on stable local/LAN connections.
+  Observed column in log = measured CV. Allowed = 0.015.
 
 `enforce_player_packet_rate`
   Packet flood. Counts movement packets received in the last 2 seconds.
-  Fires when rate exceeds movement_packet_rate_limit (default 30/s).
-  Normal AC client: 5–15 packets/sec. Hacked/scripted client: 30+/sec.
+  Fires when rate exceeds movement_packet_rate_limit (default 60/s).
+  Normal AC client at 30 FPS ≈ 30/s; at 60 FPS ≈ 60/s.
+  Scripted/flood clients: 100+/s.
+  Default 60 leaves headroom for high-FPS legit clients. Scripts
+  flooding at 100+/s are caught; players running at 60 FPS are not.
   Observed column = actual rate. Allowed = configured limit.
 
 `enforce_player_reversal_detection`
