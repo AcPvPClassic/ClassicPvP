@@ -834,8 +834,20 @@ namespace ACE.Server.WorldObjects
                         if (HasPerformedActionsSinceLastMovementUpdate && !IsJumping)
                             HasPerformedActionsSinceLastMovementUpdate = false; // Delay disabling this until we're done with the jump.
 
+                        // Primary SnapPos advance: grounded and not jumping — most precise.
                         if (!IsJumping && PhysicsObj.TransientState.HasFlag(TransientStateFlags.OnWalkable))
+                        {
                             SnapPos = Location;
+                            LastSnapPosAdvanceTime = currentTime;
+                        }
+                        // Fallback SnapPos advance: player has had no violations and hasn't been updated
+                        // in over 2 seconds (e.g. sliding, stair-climbing, brief air time on terrain).
+                        // Keeps the rollback target fresh so any rubber-band is imperceptible.
+                        else if (MovementEnforcementCounter == 0 && currentTime - LastSnapPosAdvanceTime > 2.0)
+                        {
+                            SnapPos = Location;
+                            LastSnapPosAdvanceTime = currentTime;
+                        }
                     }
                 }
 

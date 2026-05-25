@@ -79,6 +79,8 @@ namespace ACE.Server.WorldObjects
 
         public ACE.Entity.Position LastGroundPos;
         public ACE.Entity.Position SnapPos;
+        /// <summary>Unix timestamp of the last time SnapPos was advanced on the clean (no-violation) path.</summary>
+        public double LastSnapPosAdvanceTime;
         public float PrevMovementUpdateMaxSpeed;
         public bool HasPerformedActionsSinceLastMovementUpdate; // Ideally we wouldn't need this, but necessary until we figure out how to detect certain actions while a player isn't running with FastTicks enabled.
         public double LastPlayerAutoposTime;
