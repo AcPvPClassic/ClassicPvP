@@ -126,7 +126,7 @@ namespace ACE.Server.WorldObjects
             {
                 pkPlayer.PkTimestamp = Time.GetUnixTime();
 
-                // Ancient Bottle drain: victim loses 5% of stored bottle XP, killer gains it as PvP XP
+                // Ancient Bottle drain: victim loses 1–20% (random) of stored bottle XP per bottle, killer gains it as PvP XP
                 var victimBottles = GetInventoryItemsOfWCID(490071);
                 if (victimBottles != null && victimBottles.Count > 0)
                 {
@@ -135,7 +135,8 @@ namespace ACE.Server.WorldObjects
                     {
                         var stored = bottleItem.ItemTotalXp ?? 0;
                         if (stored <= 0) continue;
-                        var drain = Math.Max(1L, (long)(stored * 0.05));
+                        var drainPct = ThreadSafeRandom.Next(0.01f, 0.20f);
+                        var drain = Math.Max(1L, (long)(stored * drainPct));
                         bottleItem.ItemTotalXp = stored - drain;
                         totalDrained += drain;
                         Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(bottleItem, PropertyInt64.ItemTotalXp, bottleItem.ItemTotalXp.Value));
