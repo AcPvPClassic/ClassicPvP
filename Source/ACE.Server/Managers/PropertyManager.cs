@@ -1254,6 +1254,10 @@ namespace ACE.Server.Managers
                 ("daily_monster_xp_category_ratio",  new Property<double>(0.70, "Rolling cap: maximum fraction of a player's remaining cap XP that the Monster category (kills, fellowship, allegiance, proficiency) can absorb in one cap period.")),
                 ("daily_pvp_xp_category_ratio",      new Property<double>(0.70, "Rolling cap: maximum fraction of a player's remaining cap XP that the PvP category (player kills, arenas, PvP custom content) can absorb in one cap period.")),
 
+                // PK kill XP rewards
+                ("pk_xp_level_diff_decay",           new Property<double>(0.85, "Exponential decay factor applied per level the victim is below the killer when awarding PvP XP on a PK kill. e.g. 0.85 means each level gap multiplies the reward by 0.85.")),
+                ("pk_xp_repeat_cooldown_minutes",     new Property<double>(60.0, "Minutes before the same killer can earn PvP XP again from killing the same victim.")),
+
                 // Bounty Hunter system
                 ("bounty_last_location_duration",    new Property<double>(30.0,  "Seconds a hunter must wait before using the location finder on the same contract again.")),
                 ("bounty_weight_exponent",           new Property<double>(0.75,  "Exponent applied when computing the weighted probability for kill-streak and reward-amount factors (0.25–1.0).")),

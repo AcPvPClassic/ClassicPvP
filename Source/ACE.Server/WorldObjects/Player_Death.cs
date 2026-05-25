@@ -113,6 +113,12 @@ namespace ACE.Server.WorldObjects
             return deathMessage;
         }
 
+        /// <summary>
+        /// Tracks the last time this player earned PvP XP from killing a specific victim (keyed by victim GUID).
+        /// Ephemeral — not persisted across server restarts.
+        /// </summary>
+        private readonly Dictionary<uint, DateTime> _pkXpCooldowns = new Dictionary<uint, DateTime>();
+
         public bool HandlePKDeathBroadcast(DamageHistoryInfo lastDamager, DamageHistoryInfo topDamager)
         {
             if (topDamager == null || !topDamager.IsPlayer)
@@ -147,6 +153,37 @@ namespace ACE.Server.WorldObjects
                             $"Your Ancient Bottle lost {totalDrained:N0} experience upon death.",
                             ChatMessageType.Broadcast));
                         pkPlayer.GrantXP(totalDrained, XpType.PvP, ShareType.None, $"from {Name}'s Ancient Bottle");
+                    }
+                }
+
+                // PvP XP on kill — 1–4% of XP-to-next-level, with level-gap diminishing returns
+                // Guards: different allegiance, repeat-kill cooldown
+                if (!pkPlayer.IsSameAllegiance(this))
+                {
+                    var cooldownMinutes = PropertyManager.GetDouble("pk_xp_repeat_cooldown_minutes").Item;
+                    var victimGuidFull  = Guid.Full;
+                    var now             = DateTime.UtcNow;
+
+                    var onCooldown = pkPlayer._pkXpCooldowns.TryGetValue(victimGuidFull, out var lastKillTime)
+                                     && (now - lastKillTime).TotalMinutes < cooldownMinutes;
+
+                    if (!onCooldown)
+                    {
+                        var killerLevel = pkPlayer.Level ?? 1;
+                        var victimLevel = Level ?? 1;
+                        var levelDiff   = Math.Max(0, killerLevel - victimLevel);
+                        var decay       = PropertyManager.GetDouble("pk_xp_level_diff_decay").Item;
+                        var modifier    = Math.Pow(decay, levelDiff);
+
+                        var randPercent = ThreadSafeRandom.Next(0.01f, 0.04f);
+                        var baseXp      = (long)pkPlayer.GetXPBetweenLevels(killerLevel, killerLevel + 1);
+                        var pvpXp       = (long)Math.Round(baseXp * randPercent * modifier);
+
+                        if (pvpXp > 0)
+                        {
+                            pkPlayer._pkXpCooldowns[victimGuidFull] = now;
+                            pkPlayer.GrantXP(pvpXp, XpType.PvP, ShareType.None, $"for defeating {Name}");
+                        }
                     }
                 }
 
