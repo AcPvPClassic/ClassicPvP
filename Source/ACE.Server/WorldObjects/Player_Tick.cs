@@ -931,8 +931,15 @@ namespace ACE.Server.WorldObjects
                         // Catches cheaters who pace teleport packets to stay under the per-packet limit.
                         if (PropertyManager.GetBool("enforce_player_movement_avg").Item)
                         {
-                            // runRate is out of scope here (declared inside FastTick block), so recompute cheaply.
-                            var avgWindowMaxSpeed = GetRunRate() * 1.15f;
+                            // Convert run rate to world-coordinate units/sec.
+                            // GetRunRate() returns a dimensionless multiplier (1.0–4.5), not a speed.
+                            // The per-packet check scales it with 1.8f * runRate * deltaTime; applying
+                            // the same 1.8f factor here gives the equivalent sustained speed ceiling.
+                            // The additional 1.5f accounts for the velocity-boost term in the per-packet
+                            // formula ((1 + clampedVelocity/8) ≈ 1.5 at typical running velocity) so a
+                            // legitimately fast-running character doesn't false-positive the window check
+                            // while still catching anyone sustaining >2x their normal movement speed.
+                            var avgWindowMaxSpeed = GetRunRate() * 1.8f * 2.0f * 1.15f; // ≈ GetRunRate() × 4.1
 
                             // Local function: evaluate one window and return true if a kick was triggered.
                             bool EvalSpeedWindow(double windowSecs, float scoreMultiplier, float scoreCap, string violationType)
