@@ -231,6 +231,7 @@ namespace ACE.Server.WorldObjects
                 if (!wasAlreadyEnforcing)
                 {
                     MovementEnforcementCounter = 0;
+                    MovementSuspicionScore = 0.0f;
                     Location = PhysicsObj.Position.ACEPosition();
                     SnapPos = Location;
                     PrevMovementUpdateMaxSpeed = 0.0f;
@@ -239,7 +240,11 @@ namespace ACE.Server.WorldObjects
                 }
 
                 if (MovementEnforcementCounter > 0)
+                {
                     MovementEnforcementCounter--;
+                    // Decay suspicion score gradually when no violations are occurring this tick.
+                    MovementSuspicionScore = Math.Max(0.0f, MovementSuspicionScore - 1.0f);
+                }
 
                 if (!HasAnyMovement() && currentUnixTime > LastPlayerMovementCheckTime + 5)
                 {
@@ -805,32 +810,63 @@ namespace ACE.Server.WorldObjects
 
                             if (dist > currentMaxSpeed)
                             {
-                                if (MovementEnforcementCounter < 10 || !PropertyManager.GetBool("enforce_player_movement_kick").Item)
+                                // Suspicion gain is proportional to how far over the limit the player moved.
+                                // Capped at 15 per event so a single extreme packet can't instantly reach 50.
+                                var overage = currentMaxSpeed > 0 ? (dist / currentMaxSpeed) - 1.0f : 1.0f;
+                                var suspicionGain = Math.Min(overage * 10.0f, 15.0f);
+
+                                if (MovementEnforcementCounter == 0 && currentMaxSpeed != 0 && dist < currentMaxSpeed * 1.5)
                                 {
-                                    if (MovementEnforcementCounter == 0 && currentMaxSpeed != 0 && dist < currentMaxSpeed * 1.5)
-                                    {
-                                        // Slight invalid movement detected but the player has otherwise been behaving, assume it was just a lag spike or client stutter.
-                                        MovementEnforcementCounter++;
-                                    }
-                                    else
-                                    {
-                                        MovementEnforcementCounter++;
-                                        Location = new ACE.Entity.Position(SnapPos);
-                                        Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
-                                        SendUpdatePosition();
-
-                                        Session.Network.EnqueueSend(new GameMessageSystemChat("Invalid movement detected. Rolling back to last known good location.", ChatMessageType.Help));
-
-                                        log.Warn($"{Name} - INVALID MOVEMENT DETECTED - Speed: {dist.ToString("0.00")}/{currentMaxSpeed.ToString("0.00")} PrevMaxSpeed: {loggingPrevMaxMovementSpeed.ToString("0.00")}({loggingInertia}) FastTick: {FastTick} TimeSpam: {enforcementDeltaTime.ToString("0.00")} Velocity: {velocity.ToString("0.00")} actionsSinceLastMovementUpdate: {loggingHasPerformedActionsSinceLastMovementUpdate}");
-                                        //Session.Network.EnqueueSend(new GameMessageSystemChat($"Speed: {dist.ToString("0.00")}/{currentMaxSpeed.ToString("0.00")} PrevMaxSpeed: {loggingPrevMaxMovementSpeed.ToString("0.00")}({loggingInertia}) FastTick: {FastTick} TimeSpam: {deltaTime.ToString("0.00")} Velocity: {velocity.ToString("0.00")} timeSinceLastAction: {timeSinceLastAction.ToString("0.00")} isMovingOrAnimating: {isMovingOrAnimating} actionsSinceLastMovementUpdate: {loggingHasPerformedActionsSinceLastMovementUpdate}", ChatMessageType.Help));
-                                        return false;
-                                    }
+                                    // Slight invalid movement detected but the player has otherwise been behaving,
+                                    // assume it was just a lag spike or client stutter.
+                                    MovementEnforcementCounter++;
+                                    MovementSuspicionScore += suspicionGain * 0.5f; // half-weight for borderline events
                                 }
                                 else
                                 {
-                                    // Kick players when they go over 10 enforcements in a minute.
-                                    Session.Terminate(SessionTerminationReason.MovementEnforcementFailure, new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
-                                    log.Warn($"{Name} - INVALID MOVEMENT DETECTED - Speed: {dist.ToString("0.00")}/{currentMaxSpeed.ToString("0.00")} PrevMaxSpeed: {loggingPrevMaxMovementSpeed.ToString("0.00")}({loggingInertia}) FastTick: {FastTick} TimeSpam: {enforcementDeltaTime.ToString("0.00")} Velocity: {velocity.ToString("0.00")} actionsSinceLastMovementUpdate: {loggingHasPerformedActionsSinceLastMovementUpdate}");
+                                    MovementEnforcementCounter++;
+                                    MovementSuspicionScore += suspicionGain;
+
+                                    // Rubber-band: restore position to last known good — behavior unchanged.
+                                    Location = new ACE.Entity.Position(SnapPos);
+                                    Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
+                                    SendUpdatePosition();
+
+                                    Session.Network.EnqueueSend(new GameMessageSystemChat("Invalid movement detected. Rolling back to last known good location.", ChatMessageType.Help));
+
+                                    log.Warn($"{Name} - INVALID MOVEMENT DETECTED - Speed: {dist.ToString("0.00")}/{currentMaxSpeed.ToString("0.00")} PrevMaxSpeed: {loggingPrevMaxMovementSpeed.ToString("0.00")}({loggingInertia}) FastTick: {FastTick} TimeSpam: {enforcementDeltaTime.ToString("0.00")} Velocity: {velocity.ToString("0.00")} actionsSinceLastMovementUpdate: {loggingHasPerformedActionsSinceLastMovementUpdate} SuspicionScore: {MovementSuspicionScore:0.0}");
+                                    //Session.Network.EnqueueSend(new GameMessageSystemChat($"Speed: {dist.ToString("0.00")}/{currentMaxSpeed.ToString("0.00")} PrevMaxSpeed: {loggingPrevMaxMovementSpeed.ToString("0.00")}({loggingInertia}) FastTick: {FastTick} TimeSpam: {deltaTime.ToString("0.00")} Velocity: {velocity.ToString("0.00")} timeSinceLastAction: {timeSinceLastAction.ToString("0.00")} isMovingOrAnimating: {isMovingOrAnimating} actionsSinceLastMovementUpdate: {loggingHasPerformedActionsSinceLastMovementUpdate}", ChatMessageType.Help));
+
+                                    // Log to ace_log for long-term ban evidence (fire-and-forget).
+                                    var _violationLocation = Location?.ToString() ?? "unknown";
+                                    var _violationAccount  = Session?.Account ?? "unknown";
+                                    var _capturedScore     = MovementSuspicionScore;
+                                    var _capturedDist      = dist;
+                                    var _capturedMax       = currentMaxSpeed;
+                                    System.Threading.Tasks.Task.Run(() =>
+                                        DatabaseManager.Log.LogMovementViolation(
+                                            Guid.Full, Name, _violationAccount,
+                                            _capturedDist, _capturedMax, _capturedScore, _violationLocation));
+
+                                    // Kick when suspicion score reaches 50 — sustained cheating pattern.
+                                    // This fires regardless of the movement_violation_kick config.
+                                    if (MovementSuspicionScore >= 50.0f)
+                                    {
+                                        log.Warn($"{Name} - MOVEMENT SUSPICION THRESHOLD REACHED ({MovementSuspicionScore:0.0}) - KICKING");
+                                        Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
+                                            new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                        return false;
+                                    }
+
+                                    // Also kick when counter hits 10 if the config flag is enabled.
+                                    if (MovementEnforcementCounter >= 10 && PropertyManager.GetBool("movement_violation_kick").Item)
+                                    {
+                                        log.Warn($"{Name} - MOVEMENT ENFORCEMENT COUNTER THRESHOLD ({MovementEnforcementCounter}) - KICKING");
+                                        Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
+                                            new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                        return false;
+                                    }
+
                                     return false;
                                 }
                             }

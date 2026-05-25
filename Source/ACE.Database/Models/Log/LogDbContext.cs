@@ -19,6 +19,7 @@ namespace ACE.Database.Models.Log
         public virtual DbSet<StuckCharacterLog> StuckCharacterLogs { get; set; }
         public virtual DbSet<TownControlTown> TownControlTowns { get; set; }
         public virtual DbSet<TownControlEvent> TownControlEvents { get; set; }
+        public virtual DbSet<MovementViolationLog> MovementViolationLogs { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -223,6 +224,21 @@ namespace ACE.Database.Models.Log
                 entity.Property(e => e.DefenderId).HasColumnName("defender_id");
                 entity.Property(e => e.DefenderClanName).HasColumnName("defender_clan_name");
                 entity.Property(e => e.IsAttackSuccess).HasColumnName("is_attack_success");
+            });
+
+            modelBuilder.Entity<MovementViolationLog>(entity =>
+            {
+                entity.HasKey(e => e.Id).HasName("PRIMARY");
+                entity.ToTable("movement_violation_log");
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.CharacterId).HasColumnName("character_id");
+                entity.Property(e => e.CharacterName).HasColumnName("character_name");
+                entity.Property(e => e.AccountName).HasColumnName("account_name");
+                entity.Property(e => e.ObservedSpeed).HasColumnName("observed_speed");
+                entity.Property(e => e.AllowedSpeed).HasColumnName("allowed_speed");
+                entity.Property(e => e.SuspicionScore).HasColumnName("suspicion_score");
+                entity.Property(e => e.Location).HasColumnName("location");
+                entity.Property(e => e.ViolationDateTime).HasColumnName("violation_datetime");
             });
 
             OnModelCreatingPartial(modelBuilder);

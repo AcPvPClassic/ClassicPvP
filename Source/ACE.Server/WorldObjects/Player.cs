@@ -87,6 +87,12 @@ namespace ACE.Server.WorldObjects
         public double LastPlayerMovementCheckTime;
         public int MovementEnforcementCounter;
 
+        /// <summary>
+        /// Accumulates each time a speed violation fires. Decays each heartbeat when no violations occur.
+        /// Reaching 50 triggers a session kick regardless of <c>movement_violation_kick</c> config.
+        /// </summary>
+        public float MovementSuspicionScore;
+
         public float LatestMovementHeading = 0;
 
         public double NextTechniqueActivationTime = 0;

@@ -516,6 +516,42 @@ namespace ACE.Database
 
         #endregion
 
+        #region Movement Violation
+
+        /// <summary>
+        /// Records a single movement speed violation event for long-term ban evidence.
+        /// Fire-and-forget: failures are logged but never thrown to the caller.
+        /// </summary>
+        public void LogMovementViolation(uint characterId, string characterName, string accountName,
+            float observedSpeed, float allowedSpeed, float suspicionScore, string location)
+        {
+            if (!IsConfigured) return;
+            try
+            {
+                using (var context = new LogDbContext())
+                {
+                    context.MovementViolationLogs.Add(new MovementViolationLog
+                    {
+                        CharacterId       = characterId,
+                        CharacterName     = characterName,
+                        AccountName       = accountName,
+                        ObservedSpeed     = observedSpeed,
+                        AllowedSpeed      = allowedSpeed,
+                        SuspicionScore    = suspicionScore,
+                        Location          = location,
+                        ViolationDateTime = DateTime.UtcNow
+                    });
+                    context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception in LogMovementViolation for character {characterName} ({characterId}). Ex: {ex}");
+            }
+        }
+
+        #endregion
+
         #region Town Control
 
         public List<TownControlTown> GetAllTownControlTowns()
