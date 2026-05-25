@@ -970,6 +970,7 @@ namespace ACE.Server.WorldObjects
 
             CheckMonsters();
             CheckHouse();
+            CheckVisibleBounties();
             CheckMaterializedLogoutState();
 
             EnqueueBroadcastPhysicsState();

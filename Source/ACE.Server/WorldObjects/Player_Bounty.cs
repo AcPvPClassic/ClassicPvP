@@ -601,6 +601,25 @@ namespace ACE.Server.WorldObjects
 
         // --- Tracking integration ---
 
+        /// <summary>
+        /// Called on teleport completion. Checks all visible players and refreshes the PK timer
+        /// on any player who is either hunting this player or being hunted by this player.
+        /// This prevents the target from recalling or using portals for pk_bounty_timer seconds (default 2 min).
+        /// </summary>
+        private void CheckVisibleBounties()
+        {
+            if (!BountyContract.IsBountySystemEnabled || !BountyContract.IsBountyPkTimerActiveEnabled)
+                return;
+
+            var visiblePlayers = PhysicsObj.ObjMaint.GetVisibleObjectsValuesOfTypeCreature().OfType<Player>();
+
+            foreach (var player in visiblePlayers)
+            {
+                TryMarkHunterTarget(player, this); // player hunts me
+                TryMarkHunterTarget(this, player); // I hunt player
+            }
+        }
+
         private static void TryMarkHunterTarget(Player hunter, Player target)
         {
             if (!hunter.TryGetActiveBountyContract(target.Guid.Full, out _))
