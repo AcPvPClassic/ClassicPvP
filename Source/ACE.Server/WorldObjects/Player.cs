@@ -81,6 +81,15 @@ namespace ACE.Server.WorldObjects
         public ACE.Entity.Position SnapPos;
         /// <summary>Unix timestamp of the last time SnapPos was advanced on the clean (no-violation) path.</summary>
         public double LastSnapPosAdvanceTime;
+
+        /// <summary>
+        /// Unix timestamp until which suspicion score accumulation is suppressed after a rubber-band fires.
+        /// When any check rubber-bands the player, this is set to currentTime + 0.75 s.
+        /// Subsequent violation packets during that window still get rubber-banded (to push the
+        /// correction to the client) but do NOT add to MovementSuspicionScore, preventing the
+        /// normal rubber-band recovery sequence from cascading into a false kick.
+        /// </summary>
+        public double RubberBandRecoveryUntil;
         public float PrevMovementUpdateMaxSpeed;
         public bool HasPerformedActionsSinceLastMovementUpdate; // Ideally we wouldn't need this, but necessary until we figure out how to detect certain actions while a player isn't running with FastTicks enabled.
         public double LastPlayerAutoposTime;

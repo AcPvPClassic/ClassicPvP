@@ -233,6 +233,7 @@ namespace ACE.Server.WorldObjects
                 {
                     MovementEnforcementCounter = 0;
                     MovementSuspicionScore = 0.0f;
+                    RubberBandRecoveryUntil = 0.0;
                     MovementWindowBuffer.Clear();
                     WasJumping = false;
                     JumpStartZ = 0f;
@@ -815,6 +816,19 @@ namespace ACE.Server.WorldObjects
 
                             if (dist > currentMaxSpeed)
                             {
+                                // Recovery guard: if we just rubber-banded, the client hasn't acknowledged
+                                // the correction yet and is still sending packets from its old position.
+                                // Suppress scoring (but still apply the rubber-band correction) until the
+                                // client has had 750 ms to catch up. Without this, 4 recovery packets × +15
+                                // score = instant false kick for any legitimate lag spike.
+                                if (currentTime < RubberBandRecoveryUntil)
+                                {
+                                    Location = new ACE.Entity.Position(SnapPos);
+                                    Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
+                                    SendUpdatePosition();
+                                    return false;
+                                }
+
                                 // Suspicion gain is proportional to how far over the limit the player moved.
                                 // Capped at 15 per event so a single extreme packet can't instantly reach 50.
                                 var overage = currentMaxSpeed > 0 ? (dist / currentMaxSpeed) - 1.0f : 1.0f;
@@ -831,6 +845,10 @@ namespace ACE.Server.WorldObjects
                                 {
                                     MovementEnforcementCounter++;
                                     MovementSuspicionScore += suspicionGain;
+
+                                    // Stamp the recovery window so this rubber-band doesn't cascade into
+                                    // multiple score events while the client catches up.
+                                    RubberBandRecoveryUntil = currentTime + 0.75;
 
                                     // Rubber-band: restore position to last known good — behavior unchanged.
                                     Location = new ACE.Entity.Position(SnapPos);
@@ -1021,6 +1039,7 @@ namespace ACE.Server.WorldObjects
                                     if (cv < 0.04)
                                     {
                                         MovementSuspicionScore += 6.0f;
+                                        RubberBandRecoveryUntil = currentTime + 0.75;
 
                                         Location = new ACE.Entity.Position(SnapPos);
                                         Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
@@ -1077,6 +1096,7 @@ namespace ACE.Server.WorldObjects
                             if (packetRate > rateLimit)
                             {
                                 MovementSuspicionScore += 4.0f;
+                                RubberBandRecoveryUntil = currentTime + 0.75;
 
                                 Location = new ACE.Entity.Position(SnapPos);
                                 Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
@@ -1168,6 +1188,7 @@ namespace ACE.Server.WorldObjects
                                     if (rAngle1 >= reversalMin && rAngle2 >= reversalMin)
                                     {
                                         MovementSuspicionScore += 7.0f;
+                                        RubberBandRecoveryUntil = currentTime + 0.75;
 
                                         Location = new ACE.Entity.Position(SnapPos);
                                         Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
@@ -1217,6 +1238,7 @@ namespace ACE.Server.WorldObjects
                             MovementSuspicionScore += 8.0f; // higher weight — doors are deliberately placed barriers
 
                             // Rubber-band back to SnapPos.
+                            RubberBandRecoveryUntil = currentTime + 0.75;
                             Location = new ACE.Entity.Position(SnapPos);
                             Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
                             SendUpdatePosition();
@@ -1266,6 +1288,7 @@ namespace ACE.Server.WorldObjects
                             MovementSuspicionScore += 4.0f; // lower weight — may be a legitimate spawn overlap
 
                             // Rubber-band back to SnapPos.
+                            RubberBandRecoveryUntil = currentTime + 0.75;
                             Location = new ACE.Entity.Position(SnapPos);
                             Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
                             SendUpdatePosition();
@@ -1315,6 +1338,7 @@ namespace ACE.Server.WorldObjects
                             MovementSuspicionScore += 5.0f;
 
                             // Rubber-band: this is more definitive than a speed violation.
+                            RubberBandRecoveryUntil = currentTime + 0.75;
                             Location = new ACE.Entity.Position(SnapPos);
                             Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
                             SendUpdatePosition();
@@ -1393,6 +1417,7 @@ namespace ACE.Server.WorldObjects
                                             MovementSuspicionScore += suspicionGain;
 
                                             // Rubber-band: return player to pre-jump ground position.
+                                            RubberBandRecoveryUntil = currentTime + 0.75;
                                             Location = new ACE.Entity.Position(SnapPos);
                                             Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
                                             SendUpdatePosition();
