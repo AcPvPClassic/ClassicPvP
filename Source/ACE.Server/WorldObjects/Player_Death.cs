@@ -135,7 +135,7 @@ namespace ACE.Server.WorldObjects
                     {
                         var stored = bottleItem.ItemTotalXp ?? 0;
                         if (stored <= 0) continue;
-                        var drainPct = ThreadSafeRandom.Next(0.01f, 0.20f);
+                        var drainPct = ThreadSafeRandom.Next(0.01f, 0.12f);
                         var drain = Math.Max(1L, (long)(stored * drainPct));
                         bottleItem.ItemTotalXp = stored - drain;
                         totalDrained += drain;
