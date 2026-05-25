@@ -4419,8 +4419,18 @@ namespace ACE.Server.Physics
                         dist = Position.Distance(RequestPos);
 
                     // Anti-cheat (Change 7): record whether the physics engine reported a geometry collision.
-                    // When forcePos=true, valid=false means the path was blocked but we forced through it.
-                    LastTransitionHitGeometry = fullTransition != null && !valid;
+                    // Only flag as genuine static-geometry blockage when:
+                    //   • dist > 0.5f  — significant stoppage; values < 0.1f are precision noise (engine
+                    //                    rubber-bands at > 0.1f, so anything smaller is already ignored).
+                    //   • CollideObject is empty — dynamic world objects (creatures, doors, other players)
+                    //                    populate this list; if it is non-empty the block was caused by
+                    //                    a movable object, not by terrain or static architecture.
+                    bool _blockedByDynamicObjects = fullTransition != null
+                        && fullTransition.CollisionInfo.CollideObject != null
+                        && fullTransition.CollisionInfo.CollideObject.Count > 0;
+                    LastTransitionHitGeometry = fullTransition != null && !valid
+                        && dist > 0.5f
+                        && !_blockedByDynamicObjects;
 
                     // Anti-cheat (Options K & N): scan the collision list for specific object types.
                     LastTransitionHitClosedDoor   = false;

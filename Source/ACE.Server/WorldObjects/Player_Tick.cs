@@ -1335,9 +1335,13 @@ namespace ACE.Server.WorldObjects
 
                         // --- Geometry collision detection (Change 7) ---
                         // update_object_server_new() already computed a full physics transition.
-                        // LastTransitionHitGeometry = true when forcePos bypassed a geometry collision —
-                        // the path from the current position to the requested position required
-                        // passing through solid geometry (wall-walk, ghost-through-door exploit, etc.).
+                        // LastTransitionHitGeometry = true only when ALL of:
+                        //   • the transition was blocked (valid == false)
+                        //   • dist > 0.5f  (significant blockage, not terrain precision noise)
+                        //   • CollideObject is empty (no dynamic object — creature/door/player —
+                        //     caused the block; only static geometry / terrain triggers this flag)
+                        // Catches wall-walk and out-of-bounds glitches without firing on players
+                        // jostled by monsters or minor terrain precision errors.
                         if (PropertyManager.GetBool("enforce_player_movement_raycast").Item
                             && PhysicsObj.LastTransitionHitGeometry
                             && GodState == null)
