@@ -84,6 +84,31 @@ namespace ACE.Server.Managers
         }
 
         /// <summary>
+        /// Sends a movement anti-cheat violation alert to the configured movement violation webhook.
+        /// PropertyManager key: <c>movement_violation_webhook</c>
+        /// </summary>
+        /// <param name="violationType">Short type tag, e.g. "script_timing", "speed_packet".</param>
+        /// <param name="playerName">In-game character name.</param>
+        /// <param name="accountName">Account login name.</param>
+        /// <param name="observed">Measured value (units depend on violation type).</param>
+        /// <param name="allowed">Allowed limit for comparison.</param>
+        /// <param name="suspicionScore">Running suspicion score at time of violation.</param>
+        /// <param name="location">String representation of the player's location.</param>
+        public static void SendMovementViolation(string violationType, string playerName, string accountName,
+            float observed, float allowed, float suspicionScore, string location)
+        {
+            var url = PropertyManager.GetString("movement_violation_webhook").Item;
+            if (string.IsNullOrWhiteSpace(url)) return;
+
+            var message = $"[AntiCheat] **{SanitiseMessage(violationType)}** | "
+                        + $"{SanitiseMessage(playerName)} ({SanitiseMessage(accountName)}) | "
+                        + $"Observed: {observed:0.000} | Allowed: {allowed:0.000} | "
+                        + $"Suspicion: {suspicionScore:0.0} | {SanitiseMessage(location)}";
+
+            _ = SendAsync(url, message);
+        }
+
+        /// <summary>
         /// Sends a Hot Dungeon announcement to the configured Hot Dungeon webhook.
         /// PropertyManager key: <c>hot_dungeon_webhook</c>
         /// </summary>

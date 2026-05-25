@@ -234,6 +234,7 @@ namespace ACE.Database.Models.Log
                 entity.Property(e => e.CharacterId).HasColumnName("character_id");
                 entity.Property(e => e.CharacterName).HasColumnName("character_name");
                 entity.Property(e => e.AccountName).HasColumnName("account_name");
+                entity.Property(e => e.ViolationType).HasColumnName("violation_type").HasMaxLength(64);
                 entity.Property(e => e.ObservedSpeed).HasColumnName("observed_speed");
                 entity.Property(e => e.AllowedSpeed).HasColumnName("allowed_speed");
                 entity.Property(e => e.SuspicionScore).HasColumnName("suspicion_score");

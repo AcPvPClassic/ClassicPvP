@@ -1308,7 +1308,8 @@ namespace ACE.Server.Managers
 
                 // Town Control
                 ("town_control_alleglist",     new Property<string>("", "Comma-separated list of monarch GUIDs (uint) whose allegiances are permitted to initiate Town Control conflicts")),
-                ("town_control_globals_webhook", new Property<string>("", "Discord webhook URL for Town Control global broadcast messages"))
+                ("town_control_globals_webhook", new Property<string>("", "Discord webhook URL for Town Control global broadcast messages")),
+                ("movement_violation_webhook", new Property<string>("", "Discord webhook URL for movement anti-cheat violation alerts (all violation types: speed, geometry, jump, door ghost, script detection, etc.)"))
                 );
     }
 }

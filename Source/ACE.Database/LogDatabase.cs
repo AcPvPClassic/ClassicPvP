@@ -519,11 +519,15 @@ namespace ACE.Database
         #region Movement Violation
 
         /// <summary>
-        /// Records a single movement speed violation event for long-term ban evidence.
+        /// Records a single movement anti-cheat violation event for long-term ban evidence.
         /// Fire-and-forget: failures are logged but never thrown to the caller.
         /// </summary>
+        /// <param name="violationType">
+        /// Short identifier for the check that fired, e.g. "speed_packet", "script_timing",
+        /// "geometry", "door_ghost".  See MovementViolationLog.ViolationType for the full list.
+        /// </param>
         public void LogMovementViolation(uint characterId, string characterName, string accountName,
-            float observedSpeed, float allowedSpeed, float suspicionScore, string location)
+            string violationType, float observedSpeed, float allowedSpeed, float suspicionScore, string location)
         {
             if (!IsConfigured) return;
             try
@@ -535,6 +539,7 @@ namespace ACE.Database
                         CharacterId       = characterId,
                         CharacterName     = characterName,
                         AccountName       = accountName,
+                        ViolationType     = violationType ?? "unknown",
                         ObservedSpeed     = observedSpeed,
                         AllowedSpeed      = allowedSpeed,
                         SuspicionScore    = suspicionScore,

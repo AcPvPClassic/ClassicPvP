@@ -842,15 +842,16 @@ namespace ACE.Server.WorldObjects
                                     log.Warn($"{Name} - INVALID MOVEMENT DETECTED - Speed: {dist.ToString("0.00")}/{currentMaxSpeed.ToString("0.00")} PrevMaxSpeed: {loggingPrevMaxMovementSpeed.ToString("0.00")}({loggingInertia}) FastTick: {FastTick} TimeSpam: {enforcementDeltaTime.ToString("0.00")} Velocity: {velocity.ToString("0.00")} actionsSinceLastMovementUpdate: {loggingHasPerformedActionsSinceLastMovementUpdate} SuspicionScore: {MovementSuspicionScore:0.0}");
                                     //Session.Network.EnqueueSend(new GameMessageSystemChat($"Speed: {dist.ToString("0.00")}/{currentMaxSpeed.ToString("0.00")} PrevMaxSpeed: {loggingPrevMaxMovementSpeed.ToString("0.00")}({loggingInertia}) FastTick: {FastTick} TimeSpam: {deltaTime.ToString("0.00")} Velocity: {velocity.ToString("0.00")} timeSinceLastAction: {timeSinceLastAction.ToString("0.00")} isMovingOrAnimating: {isMovingOrAnimating} actionsSinceLastMovementUpdate: {loggingHasPerformedActionsSinceLastMovementUpdate}", ChatMessageType.Help));
 
-                                    // Log to ace_log for long-term ban evidence (fire-and-forget).
+                                    // Log to ace_log and Discord webhook for long-term ban evidence (fire-and-forget).
                                     var _violationLocation = Location?.ToString() ?? "unknown";
                                     var _violationAccount  = Session?.Account ?? "unknown";
                                     var _capturedScore     = MovementSuspicionScore;
                                     var _capturedDist      = dist;
                                     var _capturedMax       = currentMaxSpeed;
+                                    DiscordWebhookManager.SendMovementViolation("speed_packet", Name, _violationAccount, _capturedDist, _capturedMax, _capturedScore, _violationLocation);
                                     System.Threading.Tasks.Task.Run(() =>
                                         DatabaseManager.Log.LogMovementViolation(
-                                            Guid.Full, Name, _violationAccount,
+                                            Guid.Full, Name, _violationAccount, "speed_packet",
                                             _capturedDist, _capturedMax, _capturedScore, _violationLocation));
 
                                     // Kick when suspicion score reaches 50 — sustained cheating pattern.
@@ -916,7 +917,7 @@ namespace ACE.Server.WorldObjects
                             var avgWindowMaxSpeed = GetRunRate() * 1.15f;
 
                             // Local function: evaluate one window and return true if a kick was triggered.
-                            bool EvalSpeedWindow(double windowSecs, float scoreMultiplier, float scoreCap)
+                            bool EvalSpeedWindow(double windowSecs, float scoreMultiplier, float scoreCap, string violationType)
                             {
                                 // Find the first entry within the window.
                                 int startIdx = 0;
@@ -944,15 +945,17 @@ namespace ACE.Server.WorldObjects
 
                                 log.Warn($"{Name} - AVG SPEED VIOLATION ({windowSecs:0}s window) - AvgSpeed: {avgSpeed:0.00}/{avgWindowMaxSpeed:0.00} SuspicionScore: {MovementSuspicionScore:0.0}");
 
-                                // Log to ace_log for long-term ban evidence (fire-and-forget).
+                                // Log to ace_log and Discord webhook (fire-and-forget).
                                 var _loc     = Location?.ToString() ?? "unknown";
                                 var _account = Session?.Account ?? "unknown";
                                 var _score   = MovementSuspicionScore;
                                 var _avg     = avgSpeed;
                                 var _max     = avgWindowMaxSpeed;
+                                var _vtype   = violationType;
+                                DiscordWebhookManager.SendMovementViolation(_vtype, Name, _account, _avg, _max, _score, _loc);
                                 System.Threading.Tasks.Task.Run(() =>
                                     DatabaseManager.Log.LogMovementViolation(
-                                        Guid.Full, Name, _account, _avg, _max, _score, _loc));
+                                        Guid.Full, Name, _account, _vtype, _avg, _max, _score, _loc));
 
                                 // Kick when suspicion score reaches 50 (sustained cheating pattern).
                                 if (MovementSuspicionScore >= 50.0f)
@@ -976,8 +979,8 @@ namespace ACE.Server.WorldObjects
                             }
 
                             // Evaluate short window first; if it kicks, skip long window.
-                            if (EvalSpeedWindow(3.0, 5.0f, 8.0f)) return false;
-                            if (EvalSpeedWindow(15.0, 8.0f, 12.0f)) return false;
+                            if (EvalSpeedWindow(3.0, 5.0f, 8.0f, "speed_avg_3s")) return false;
+                            if (EvalSpeedWindow(15.0, 8.0f, 12.0f, "speed_avg_15s")) return false;
                         }
 
                         // --- Script detection: inter-packet timing regularity ---
@@ -1029,9 +1032,10 @@ namespace ACE.Server.WorldObjects
                                         var _stLoc     = Location?.ToString() ?? "unknown";
                                         var _stAccount = Session?.Account ?? "unknown";
                                         var _stScore   = MovementSuspicionScore;
+                                        DiscordWebhookManager.SendMovementViolation("script_timing", Name, _stAccount, (float)cv, 0.04f, _stScore, _stLoc);
                                         System.Threading.Tasks.Task.Run(() =>
                                             DatabaseManager.Log.LogMovementViolation(
-                                                Guid.Full, Name, _stAccount, (float)cv, 0.04f, _stScore, _stLoc));
+                                                Guid.Full, Name, _stAccount, "script_timing", (float)cv, 0.04f, _stScore, _stLoc));
 
                                         if (MovementSuspicionScore >= 50.0f)
                                         {
@@ -1084,9 +1088,10 @@ namespace ACE.Server.WorldObjects
                                 var _pfLoc     = Location?.ToString() ?? "unknown";
                                 var _pfAccount = Session?.Account ?? "unknown";
                                 var _pfScore   = MovementSuspicionScore;
+                                DiscordWebhookManager.SendMovementViolation("script_packet_rate", Name, _pfAccount, packetRate, rateLimit, _pfScore, _pfLoc);
                                 System.Threading.Tasks.Task.Run(() =>
                                     DatabaseManager.Log.LogMovementViolation(
-                                        Guid.Full, Name, _pfAccount, packetRate, rateLimit, _pfScore, _pfLoc));
+                                        Guid.Full, Name, _pfAccount, "script_packet_rate", packetRate, rateLimit, _pfScore, _pfLoc));
 
                                 if (MovementSuspicionScore >= 50.0f)
                                 {
@@ -1174,9 +1179,10 @@ namespace ACE.Server.WorldObjects
                                         var _rvLoc     = Location?.ToString() ?? "unknown";
                                         var _rvAccount = Session?.Account ?? "unknown";
                                         var _rvScore   = MovementSuspicionScore;
+                                        DiscordWebhookManager.SendMovementViolation("script_reversal", Name, _rvAccount, (float)rAngle1, (float)reversalMin, _rvScore, _rvLoc);
                                         System.Threading.Tasks.Task.Run(() =>
                                             DatabaseManager.Log.LogMovementViolation(
-                                                Guid.Full, Name, _rvAccount, (float)rAngle1, (float)reversalMin, _rvScore, _rvLoc));
+                                                Guid.Full, Name, _rvAccount, "script_reversal", (float)rAngle1, (float)reversalMin, _rvScore, _rvLoc));
 
                                         if (MovementSuspicionScore >= 50.0f)
                                         {
@@ -1223,9 +1229,10 @@ namespace ACE.Server.WorldObjects
                             var _doorLocation = Location?.ToString() ?? "unknown";
                             var _doorAccount  = Session?.Account ?? "unknown";
                             var _doorScore    = MovementSuspicionScore;
+                            DiscordWebhookManager.SendMovementViolation("door_ghost", Name, _doorAccount, 0f, 0f, _doorScore, _doorLocation);
                             System.Threading.Tasks.Task.Run(() =>
                                 DatabaseManager.Log.LogMovementViolation(
-                                    Guid.Full, Name, _doorAccount, 0f, 0f, _doorScore, _doorLocation));
+                                    Guid.Full, Name, _doorAccount, "door_ghost", 0f, 0f, _doorScore, _doorLocation));
 
                             // Shared kick thresholds.
                             if (MovementSuspicionScore >= 50.0f)
@@ -1271,9 +1278,10 @@ namespace ACE.Server.WorldObjects
                             var _spawnLocation = Location?.ToString() ?? "unknown";
                             var _spawnAccount  = Session?.Account ?? "unknown";
                             var _spawnScore    = MovementSuspicionScore;
+                            DiscordWebhookManager.SendMovementViolation("spawn_ghost", Name, _spawnAccount, 0f, 0f, _spawnScore, _spawnLocation);
                             System.Threading.Tasks.Task.Run(() =>
                                 DatabaseManager.Log.LogMovementViolation(
-                                    Guid.Full, Name, _spawnAccount, 0f, 0f, _spawnScore, _spawnLocation));
+                                    Guid.Full, Name, _spawnAccount, "spawn_ghost", 0f, 0f, _spawnScore, _spawnLocation));
 
                             // Shared kick thresholds.
                             if (MovementSuspicionScore >= 50.0f)
@@ -1319,9 +1327,10 @@ namespace ACE.Server.WorldObjects
                             var _geoLocation = Location?.ToString() ?? "unknown";
                             var _geoAccount  = Session?.Account ?? "unknown";
                             var _geoScore    = MovementSuspicionScore;
+                            DiscordWebhookManager.SendMovementViolation("geometry", Name, _geoAccount, 0f, 0f, _geoScore, _geoLocation);
                             System.Threading.Tasks.Task.Run(() =>
                                 DatabaseManager.Log.LogMovementViolation(
-                                    Guid.Full, Name, _geoAccount, 0f, 0f, _geoScore, _geoLocation));
+                                    Guid.Full, Name, _geoAccount, "geometry", 0f, 0f, _geoScore, _geoLocation));
 
                             // Kick thresholds shared with Change 5.
                             if (MovementSuspicionScore >= 50.0f)
@@ -1398,9 +1407,10 @@ namespace ACE.Server.WorldObjects
                                             var _jumpScore    = MovementSuspicionScore;
                                             var _jumpDelta    = deltaZ;
                                             var _jumpMax      = maxHeight;
+                                            DiscordWebhookManager.SendMovementViolation("jump_height", Name, _jumpAccount, _jumpDelta, _jumpMax, _jumpScore, _jumpLocation);
                                             System.Threading.Tasks.Task.Run(() =>
                                                 DatabaseManager.Log.LogMovementViolation(
-                                                    Guid.Full, Name, _jumpAccount,
+                                                    Guid.Full, Name, _jumpAccount, "jump_height",
                                                     _jumpDelta, _jumpMax, _jumpScore, _jumpLocation));
 
                                             // Kick thresholds shared with all movement checks.
