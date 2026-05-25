@@ -65,6 +65,13 @@ namespace ACE.Server.Physics
         public PositionManager PositionManager;
         public bool LastMoveWasAutonomous;
         public bool JumpedThisFrame;
+        /// <summary>
+        /// Set by <see cref="update_object_server_new"/> after each call.
+        /// True when the full physics transition could NOT reach the requested position,
+        /// indicating the path passed through solid geometry.
+        /// Only meaningful as an anti-cheat signal when forcePos=true (enforce_player_movement disabled).
+        /// </summary>
+        public bool LastTransitionHitGeometry;
         public double UpdateTime;
         public Vector3 Velocity;
         public Vector3 Acceleration;
@@ -4325,6 +4332,7 @@ namespace ACE.Server.Physics
             //    return false;
 
             var success = true;
+            LastTransitionHitGeometry = false; // reset each call; set below if a collision is detected
             var isTeleport = WeenieObj.WorldObject?.Teleporting ?? false;
             // for teleport, use SetPosition?
             if (isTeleport)
@@ -4395,6 +4403,10 @@ namespace ACE.Server.Physics
                     }
                     else
                         dist = Position.Distance(RequestPos);
+
+                    // Anti-cheat (Change 7): record whether the physics engine reported a geometry collision.
+                    // When forcePos=true, valid=false means the path was blocked but we forced through it.
+                    LastTransitionHitGeometry = fullTransition != null && !valid;
 
                     if (valid || forcePos || player?.GodState != null)
                     {

@@ -974,6 +974,54 @@ namespace ACE.Server.WorldObjects
                             if (EvalSpeedWindow(3.0, 5.0f, 8.0f)) return false;
                             if (EvalSpeedWindow(15.0, 8.0f, 12.0f)) return false;
                         }
+
+                        // --- Geometry collision detection (Change 7) ---
+                        // update_object_server_new() already computed a full physics transition.
+                        // LastTransitionHitGeometry = true when forcePos bypassed a geometry collision —
+                        // the path from the current position to the requested position required
+                        // passing through solid geometry (wall-walk, ghost-through-door exploit, etc.).
+                        if (PropertyManager.GetBool("enforce_player_movement_raycast").Item
+                            && PhysicsObj.LastTransitionHitGeometry
+                            && GodState == null)
+                        {
+                            MovementSuspicionScore += 5.0f;
+
+                            // Rubber-band: this is more definitive than a speed violation.
+                            Location = new ACE.Entity.Position(SnapPos);
+                            Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
+                            SendUpdatePosition();
+
+                            Session.Network.EnqueueSend(new GameMessageSystemChat("Invalid movement detected. Rolling back to last known good location.", ChatMessageType.Help));
+
+                            log.Warn($"{Name} - GEOMETRY COLLISION DETECTED (wall-walk/blink) - Location: {newPosition} SuspicionScore: {MovementSuspicionScore:0.0}");
+
+                            // Log to ace_log for long-term ban evidence (fire-and-forget).
+                            var _geoLocation = Location?.ToString() ?? "unknown";
+                            var _geoAccount  = Session?.Account ?? "unknown";
+                            var _geoScore    = MovementSuspicionScore;
+                            System.Threading.Tasks.Task.Run(() =>
+                                DatabaseManager.Log.LogMovementViolation(
+                                    Guid.Full, Name, _geoAccount, 0f, 0f, _geoScore, _geoLocation));
+
+                            // Kick thresholds shared with Change 5.
+                            if (MovementSuspicionScore >= 50.0f)
+                            {
+                                log.Warn($"{Name} - MOVEMENT SUSPICION THRESHOLD REACHED ({MovementSuspicionScore:0.0}) - KICKING");
+                                Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
+                                    new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                return false;
+                            }
+
+                            if (MovementEnforcementCounter >= 10 && PropertyManager.GetBool("movement_violation_kick").Item)
+                            {
+                                log.Warn($"{Name} - MOVEMENT ENFORCEMENT COUNTER THRESHOLD ({MovementEnforcementCounter}) - KICKING");
+                                Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
+                                    new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                return false;
+                            }
+
+                            return false;
+                        }
                     }
                 }
 
