@@ -482,7 +482,7 @@ namespace ACE.Server.WorldObjects
             var prevVitae = Vitae;
             // update vitae
             // players who died in a PKLite fight do not accrue vitae
-            if (!IsPKLiteDeath(topDamager) && !IsHardcore)
+            if (!IsPKLiteDeath(topDamager) && !IsHardcore && !IsTinker)
                 InflictVitaePenalty();
             var vitaeDelta = Math.Abs((int)Math.Round(100 * (Vitae - prevVitae)));
 

@@ -9,6 +9,7 @@ namespace ACE.Entity.Enum
         SoloSelfFound   = 5000,
         HardcoreNPK     = 10000,
         HardcorePK      = 20000,
+        Tinker          = 30000,
         InitialMode     = int.MaxValue,
     }
 }

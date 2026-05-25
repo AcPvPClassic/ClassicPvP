@@ -53,6 +53,7 @@ namespace ACE.Server.Entity
         bool IsHardcore { get; }
         bool IsSoloSelfFound { get; }
         bool IsInLimboMode { get; }
+        bool IsTinker { get; }
 
         bool IsOlthoiPlayer { get; }
 

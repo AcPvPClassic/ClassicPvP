@@ -1096,6 +1096,41 @@ namespace ACE.Server.Command.Handlers
             }
         }
 
+        // flagtinker
+        [CommandHandler("flagtinker", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, 0,
+            "Permanently designates this character as a Tinker. " +
+            "Requirements: character must be level 1 and the account must not already have a Tinker character. " +
+            "All crafting skills will be auto-specialized and maxed. All offensive combat skills will be removed. " +
+            "Tinker characters cannot train or specialize new skills and do not suffer vitae on death. This is irreversible.")]
+        public static void HandleFlagTinker(Session session, params string[] parameters)
+        {
+            var player = session.Player;
+
+            // Already a Tinker
+            if (player.IsTinker)
+            {
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat("This character is already a Tinker.", ChatMessageType.Broadcast));
+                return;
+            }
+
+            // Must be level 1
+            if ((player.Level ?? 0) > 1)
+            {
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat("Only a level 1 character may be designated as a Tinker.", ChatMessageType.Broadcast));
+                return;
+            }
+
+            // One Tinker per account
+            var accountPlayers = PlayerManager.GetAccountPlayers(session.AccountId);
+            if (accountPlayers != null && accountPlayers.Values.Any(p => p.IsTinker))
+            {
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat("Your account already has a Tinker character. Only one Tinker is allowed per account.", ChatMessageType.Broadcast));
+                return;
+            }
+
+            player.FlagAsTinker();
+        }
+
         [CommandHandler("allowres", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, "Toggles allowing resurrection attempts.")]
         [CommandHandler("allowress", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, "Toggles allowing resurrection attempts.")]
         public static void HandleAllowRess(Session session, params string[] parameters)
