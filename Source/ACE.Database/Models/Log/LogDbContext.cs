@@ -17,6 +17,8 @@ namespace ACE.Database.Models.Log
         public virtual DbSet<ArenaCharacterStats> ArenaCharacterStats { get; set; }
         public virtual DbSet<RareLog> RareLogs { get; set; }
         public virtual DbSet<StuckCharacterLog> StuckCharacterLogs { get; set; }
+        public virtual DbSet<TownControlTown> TownControlTowns { get; set; }
+        public virtual DbSet<TownControlEvent> TownControlEvents { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -189,6 +191,38 @@ namespace ACE.Database.Models.Log
                 entity.Property(e => e.MaterializedLogoutState).HasColumnName("materializedLogoutState");
                 entity.Property(e => e.LogoffPath).HasColumnName("logoffPath");
                 entity.Property(e => e.CreatedAtUtc).HasColumnName("createdAtUtc");
+            });
+
+            modelBuilder.Entity<TownControlTown>(entity =>
+            {
+                entity.HasKey(e => e.TownId).HasName("PRIMARY");
+                entity.ToTable("town_control_town");
+                entity.Property(e => e.TownId).HasColumnName("town_id");
+                entity.Property(e => e.TownName).HasColumnName("town_name");
+                entity.Property(e => e.OwnerId).HasColumnName("owner_id");
+                entity.Property(e => e.IsInConflict).HasColumnName("is_in_conflict");
+                entity.Property(e => e.LastConflictStartTime).HasColumnName("last_conflict_start_time");
+                entity.Property(e => e.ConflictLength).HasColumnName("conflict_length");
+                entity.Property(e => e.ConflictRespiteLength).HasColumnName("conflict_respite_length");
+                entity.Property(e => e.AttackerAwardsIndividual).HasColumnName("attacker_awards_individual");
+                entity.Property(e => e.AttackerAwardsTotal).HasColumnName("attacker_awards_total");
+                entity.Property(e => e.DefenderAwardsIndividual).HasColumnName("defender_awards_individual");
+                entity.Property(e => e.DefenderAwardsTotal).HasColumnName("defender_awards_total");
+            });
+
+            modelBuilder.Entity<TownControlEvent>(entity =>
+            {
+                entity.HasKey(e => e.EventId).HasName("PRIMARY");
+                entity.ToTable("town_control_event");
+                entity.Property(e => e.EventId).HasColumnName("event_id");
+                entity.Property(e => e.TownId).HasColumnName("town_id");
+                entity.Property(e => e.EventStartTime).HasColumnName("event_start_time");
+                entity.Property(e => e.EventEndTime).HasColumnName("event_end_time");
+                entity.Property(e => e.AttackerId).HasColumnName("attacker_id");
+                entity.Property(e => e.AttackerClanName).HasColumnName("attacker_clan_name");
+                entity.Property(e => e.DefenderId).HasColumnName("defender_id");
+                entity.Property(e => e.DefenderClanName).HasColumnName("defender_clan_name");
+                entity.Property(e => e.IsAttackSuccess).HasColumnName("is_attack_success");
             });
 
             OnModelCreatingPartial(modelBuilder);

@@ -53,6 +53,9 @@ namespace ACE.Server.WorldObjects
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"Its lifespan finished, your {expireItem.Name} crumbles to dust.", ChatMessageType.Broadcast));
             }
 
+            if (IsTownControlBoss)
+                HandleTownControlBossHeartbeat();
+
             base.Heartbeat(currentUnixTime);
         }
     }

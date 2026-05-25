@@ -322,7 +322,7 @@ namespace ACE.Server.Network.Handlers
 
                     if (adjustedchatType == ChatType.General && adjustedChannelID == TurbineChatChannel.General)
                     {
-                        _ = SendWebhookedChat(gameMessageTurbineChat.SenderName, gameMessageTurbineChat.Message, null, adjustedChannelID);
+                        DiscordWebhookManager.SendGeneralChat(gameMessageTurbineChat.SenderName, gameMessageTurbineChat.Message);
                     }
                 }
 

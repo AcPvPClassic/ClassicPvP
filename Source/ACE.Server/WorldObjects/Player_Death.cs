@@ -55,7 +55,7 @@ namespace ACE.Server.WorldObjects
 
                 PlayerManager.BroadcastToAll(new GameMessageSystemChat(globalPKDe, ChatMessageType.Broadcast));
 
-                _ = TurbineChatHandler.SendWebhookedChat("", webhookMsg, null, "Hardcore PvE");
+                DiscordWebhookManager.SendPkKill(webhookMsg);
             }
 
             var deathMessage = base.OnDeath(lastDamager, damageType, criticalHit);
@@ -311,7 +311,7 @@ namespace ACE.Server.WorldObjects
 
                 PlayerManager.BroadcastToAll(new GameMessageSystemChat(globalPKDe, ChatMessageType.Broadcast));
 
-                _ = TurbineChatHandler.SendWebhookedChat("", webhookMsg, null, "PvP");
+                DiscordWebhookManager.SendPkKill(webhookMsg);
 
                 return true;
             }

@@ -107,6 +107,21 @@ namespace ACE.Server.Entity
 
         private DateTime lastDatabaseSave = DateTime.MinValue;
 
+        // Town Control anomaly recovery fires every 30 seconds on TC landblocks
+        private static readonly TimeSpan tcRecoveryInterval = TimeSpan.FromSeconds(30);
+        private DateTime lastTcRecovery = DateTime.MinValue;
+
+        private bool? _isTownControlLandblock;
+        public bool IsTownControlLandblock
+        {
+            get
+            {
+                if (_isTownControlLandblock == null)
+                    _isTownControlLandblock = ACE.Server.Entity.TownControl.TownControlLandblocks.IsTownControlLandblock(Id.Landblock);
+                return _isTownControlLandblock.Value;
+            }
+        }
+
         /// <summary>
         /// Landblocks which have been inactive for this many seconds will be dormant
         /// </summary>
@@ -251,6 +266,24 @@ namespace ACE.Server.Entity
 
                 NextExplorationMarkerRefresh = Time.GetFutureUnixTime(ExplorationMarkerRefreshInterval);
             }));
+        }
+
+        /// <summary>
+        /// Detects and corrects stale Town Control events that were never resolved by normal
+        /// Creature death/tick paths (e.g., server crash mid-conflict).
+        /// Calls TownControlManager.RecoverStaleEvent for each town mapped to this landblock.
+        /// </summary>
+        private void HandleTownControlRecovery()
+        {
+            var townId = ACE.Server.Entity.TownControl.TownControlLandblocks.GetTownIdByLandblockId(Id.Landblock);
+            if (townId.HasValue)
+            {
+                TownControlManager.RecoverStaleEvent(townId.Value, msg =>
+                {
+                    if (PropertyManager.GetBool("town_control_enable_debug_log").Item)
+                        log.Warn(msg);
+                });
+            }
         }
 
         public void RefreshExplorationMarkers(bool forceRefresh = false)
@@ -940,6 +973,13 @@ namespace ACE.Server.Entity
                 lastHeartBeat = thisHeartBeat;
             }
             ServerPerformanceMonitor.AddToCumulativeEvent(ServerPerformanceMonitor.CumulativeEventHistoryType.Landblock_Tick_Heartbeat, stopwatch.Elapsed.TotalSeconds);
+
+            // Town Control anomaly recovery — runs every 30 s on TC landblocks
+            if (IsTownControlLandblock && lastTcRecovery + tcRecoveryInterval <= DateTime.UtcNow)
+            {
+                lastTcRecovery = DateTime.UtcNow;
+                HandleTownControlRecovery();
+            }
 
             // Database Save
             stopwatch.Restart();
@@ -1742,6 +1782,12 @@ namespace ACE.Server.Entity
                     adjacent.EnqueueBroadcast(excludeList, false, pos, maxRangeSq, msgs);
             }
         }
+
+        /// <summary>
+        /// Returns a snapshot list of all players currently on this landblock.
+        /// Used by Town Control reward distribution and other cross-system queries.
+        /// </summary>
+        public List<Player> GetPlayers() => new List<Player>(players);
 
         private bool? isDungeon;
 

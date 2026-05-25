@@ -515,5 +515,161 @@ namespace ACE.Database
         }
 
         #endregion
+
+        #region Town Control
+
+        public List<TownControlTown> GetAllTownControlTowns()
+        {
+            if (!IsConfigured) return new List<TownControlTown>();
+            try
+            {
+                using (var context = new LogDbContext())
+                {
+                    return context.TownControlTowns.AsNoTracking().ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception in GetAllTownControlTowns. Ex: {ex}");
+            }
+            return new List<TownControlTown>();
+        }
+
+        public void UpdateTownControlTown(TownControlTown town)
+        {
+            if (!IsConfigured) return;
+            try
+            {
+                using (var context = new LogDbContext())
+                {
+                    var rec = context.TownControlTowns.FirstOrDefault(x => x.TownId == town.TownId);
+                    if (rec == null) return;
+
+                    rec.OwnerId                = town.OwnerId;
+                    rec.IsInConflict           = town.IsInConflict;
+                    rec.LastConflictStartTime  = town.LastConflictStartTime;
+
+                    context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception in UpdateTownControlTown for TownId = {town.TownId}. Ex: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// Inserts a new town_control_event row and returns the populated record (with auto-assigned EventId).
+        /// </summary>
+        public TownControlEvent StartTownControlEvent(ushort townId, uint attackerId, string attackerClanName,
+            uint? defenderId, string defenderClanName)
+        {
+            if (!IsConfigured) return null;
+            try
+            {
+                var tcEvent = new TownControlEvent
+                {
+                    TownId           = townId,
+                    AttackerId       = attackerId,
+                    AttackerClanName = attackerClanName,
+                    DefenderId       = defenderId,
+                    DefenderClanName = defenderClanName,
+                    EventStartTime   = DateTime.UtcNow,
+                    EventEndTime     = null,
+                    IsAttackSuccess  = null
+                };
+
+                using (var context = new LogDbContext())
+                {
+                    context.TownControlEvents.Add(tcEvent);
+                    context.SaveChanges();
+                }
+
+                return tcEvent;
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception in StartTownControlEvent for TownId = {townId}. Ex: {ex}");
+            }
+            return null;
+        }
+
+        public void UpdateTownControlEvent(TownControlEvent tcEvent)
+        {
+            if (!IsConfigured) return;
+            try
+            {
+                using (var context = new LogDbContext())
+                {
+                    var rec = context.TownControlEvents.FirstOrDefault(x => x.EventId == tcEvent.EventId);
+                    if (rec == null) return;
+
+                    rec.AttackerId       = tcEvent.AttackerId;
+                    rec.AttackerClanName = tcEvent.AttackerClanName;
+                    rec.DefenderId       = tcEvent.DefenderId;
+                    rec.DefenderClanName = tcEvent.DefenderClanName;
+                    rec.EventStartTime   = tcEvent.EventStartTime;
+                    rec.EventEndTime     = tcEvent.EventEndTime;
+                    rec.IsAttackSuccess  = tcEvent.IsAttackSuccess;
+
+                    context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception in UpdateTownControlEvent for EventId = {tcEvent.EventId}. Ex: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// Returns the most recent event for a given town (by EventId descending), or null if none.
+        /// </summary>
+        public TownControlEvent GetLatestTownControlEventByTownId(ushort townId)
+        {
+            if (!IsConfigured) return null;
+            try
+            {
+                using (var context = new LogDbContext())
+                {
+                    return context.TownControlEvents
+                        .AsNoTracking()
+                        .Where(r => r.TownId == townId)
+                        .OrderByDescending(r => r.EventId)
+                        .FirstOrDefault();
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception in GetLatestTownControlEventByTownId for TownId = {townId}. Ex: {ex}");
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Returns the most recent event for a given town where a specific allegiance was the attacker.
+        /// Used to enforce respite timers.
+        /// </summary>
+        public TownControlEvent GetLatestTownControlEventByAttacker(uint attackerId, ushort townId)
+        {
+            if (!IsConfigured) return null;
+            try
+            {
+                using (var context = new LogDbContext())
+                {
+                    return context.TownControlEvents
+                        .AsNoTracking()
+                        .Where(r => r.TownId == townId && r.AttackerId == attackerId)
+                        .OrderByDescending(r => r.EventId)
+                        .FirstOrDefault();
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception in GetLatestTownControlEventByAttacker for AttackerId = {attackerId}, TownId = {townId}. Ex: {ex}");
+            }
+            return null;
+        }
+
+        #endregion
     }
 }

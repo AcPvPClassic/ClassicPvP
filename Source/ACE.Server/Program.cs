@@ -331,6 +331,9 @@ namespace ACE.Server
             log.Info("Initializing ArenaManager...");
             ArenaManager.Initialize();
 
+            log.Info("Initializing TownControlManager...");
+            TownControlManager.Initialize();
+
             // Free up memory before the server goes online. This can free up 6 GB+ on larger servers.
             log.Info("Forcing .net garbage collection...");
             for (int i = 0; i < 10; i++)
