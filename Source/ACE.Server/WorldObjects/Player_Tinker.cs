@@ -2,6 +2,7 @@ using System.Collections.Generic;
 
 using ACE.DatLoader;
 using ACE.Entity.Enum;
+using ACE.Server.Factories;
 using ACE.Server.Network.GameMessages.Messages;
 
 namespace ACE.Server.WorldObjects
@@ -57,6 +58,10 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public void FlagAsTinker()
         {
+            // Guard: cannot flag as Tinker more than once
+            if (IsTinker)
+                return;
+
             GameplayMode = GameplayModes.Tinker;
 
             var specXpTable = DatManager.PortalDat.XpTable.SpecializedSkillXpList;
@@ -122,6 +127,11 @@ namespace ACE.Server.WorldObjects
                 new GameMessagePrivateUpdateVital(this, Health),
                 new GameMessagePrivateUpdateVital(this, Stamina),
                 new GameMessagePrivateUpdateVital(this, Mana));
+
+            // --- Grant Tinkering Trinket ---
+            var trinket = WorldObjectFactory.CreateNewWorldObject(8142017u);
+            if (trinket != null)
+                TryCreateInInventoryWithNetworking(trinket);
 
             Session.Network.EnqueueSend(new GameMessageSystemChat(
                 "You have been designated as a Tinker. Your crafting skills have been fully specialized and all combat skills have been removed. " +
