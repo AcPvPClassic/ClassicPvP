@@ -1497,6 +1497,26 @@ namespace ACE.Server.WorldObjects
                 // double update path: landblock physics update -> updateplayerphysics() -> update_object_server() -> Teleport() -> updateplayerphysics() -> return to end of original branch
                 if (Teleporting && !forceUpdate) return true;
 
+                // When physics reports a failed transition (cell-mismatch, geometry reject, etc.) but
+                // DID run UpdateObjectInternal, PhysicsObj.Position holds the physics-validated position
+                // the player actually reached.  Without syncing, Location and LastPlayerMovementCheckTime
+                // freeze at the pre-failure values.  On the next successful tick the gap can span dozens
+                // of physics steps, making dist >> currentMaxSpeed and triggering a false speed violation.
+                //
+                // Fix: on a physics failure while speed-checking is active, advance Location to wherever
+                // physics placed the player and reset the timing baseline.  SnapPos is intentionally NOT
+                // advanced here — it stays at the last clean accepted position so any rollback still
+                // returns the player to a confirmed-good point.
+                if (!success && EnforceMovementSpeed && !Teleporting)
+                {
+                    var _physPos = PhysicsObj?.Position?.ACEPosition();
+                    if (_physPos != null && _physPos.Cell != 0)
+                    {
+                        Location = _physPos;
+                        LastPlayerMovementCheckTime = currentTime;
+                    }
+                }
+
                 if (!success) return false;
 
                 var landblockUpdate = Location.Cell >> 16 != newPosition.Cell >> 16;
