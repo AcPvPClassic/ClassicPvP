@@ -93,6 +93,14 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public float MovementSuspicionScore;
 
+        /// <summary>
+        /// Ring buffer of recently validated positions used by the sliding-window average speed checks.
+        /// Entries older than 15 seconds are pruned on each position update.
+        /// Only contains positions that passed the per-packet speed check.
+        /// </summary>
+        public System.Collections.Generic.List<(double Timestamp, ACE.Entity.Position Pos)> MovementWindowBuffer
+            = new System.Collections.Generic.List<(double, ACE.Entity.Position)>();
+
         public float LatestMovementHeading = 0;
 
         public double NextTechniqueActivationTime = 0;

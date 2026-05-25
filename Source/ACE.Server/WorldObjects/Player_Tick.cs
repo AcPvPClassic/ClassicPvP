@@ -232,6 +232,7 @@ namespace ACE.Server.WorldObjects
                 {
                     MovementEnforcementCounter = 0;
                     MovementSuspicionScore = 0.0f;
+                    MovementWindowBuffer.Clear();
                     Location = PhysicsObj.Position.ACEPosition();
                     SnapPos = Location;
                     PrevMovementUpdateMaxSpeed = 0.0f;
@@ -892,6 +893,86 @@ namespace ACE.Server.WorldObjects
                         {
                             SnapPos = Location;
                             LastSnapPosAdvanceTime = currentTime;
+                        }
+
+                        // --- Sliding window average speed checks (Change 6) ---
+                        // Runs only on clean ticks (violations return false above).
+                        // Catches cheaters who pace teleport packets to stay under the per-packet limit.
+                        if (PropertyManager.GetBool("enforce_player_movement_avg").Item)
+                        {
+                            // Push the validated new position into the ring buffer.
+                            MovementWindowBuffer.Add((currentTime, new ACE.Entity.Position(newPosition)));
+
+                            // Prune entries older than the longest window (15 s).
+                            while (MovementWindowBuffer.Count > 0 && currentTime - MovementWindowBuffer[0].Timestamp > 15.0)
+                                MovementWindowBuffer.RemoveAt(0);
+
+                            // runRate is out of scope here (declared inside FastTick block), so recompute cheaply.
+                            var avgWindowMaxSpeed = GetRunRate() * 1.15f;
+
+                            // Local function: evaluate one window and return true if a kick was triggered.
+                            bool EvalSpeedWindow(double windowSecs, float scoreMultiplier, float scoreCap)
+                            {
+                                // Find the first entry within the window.
+                                int startIdx = 0;
+                                while (startIdx < MovementWindowBuffer.Count - 1 &&
+                                       currentTime - MovementWindowBuffer[startIdx].Timestamp > windowSecs)
+                                    startIdx++;
+
+                                // Need at least two entries spanning at least 0.5 s for a meaningful measurement.
+                                if (MovementWindowBuffer.Count - startIdx < 2) return false;
+                                var span = MovementWindowBuffer[MovementWindowBuffer.Count - 1].Timestamp
+                                         - MovementWindowBuffer[startIdx].Timestamp;
+                                if (span < 0.5) return false;
+
+                                // Cumulative step-wise displacement so round-trip teleport patterns are caught.
+                                float totalDist = 0f;
+                                for (int i = startIdx; i < MovementWindowBuffer.Count - 1; i++)
+                                    totalDist += MovementWindowBuffer[i].Pos.DistanceTo(MovementWindowBuffer[i + 1].Pos);
+
+                                var avgSpeed = (float)(totalDist / span);
+                                if (avgSpeed <= avgWindowMaxSpeed) return false;
+
+                                var overage = (avgSpeed / avgWindowMaxSpeed) - 1.0f;
+                                var suspicionGain = Math.Min(overage * scoreMultiplier, scoreCap);
+                                MovementSuspicionScore += suspicionGain;
+
+                                log.Warn($"{Name} - AVG SPEED VIOLATION ({windowSecs:0}s window) - AvgSpeed: {avgSpeed:0.00}/{avgWindowMaxSpeed:0.00} SuspicionScore: {MovementSuspicionScore:0.0}");
+
+                                // Log to ace_log for long-term ban evidence (fire-and-forget).
+                                var _loc     = Location?.ToString() ?? "unknown";
+                                var _account = Session?.Account ?? "unknown";
+                                var _score   = MovementSuspicionScore;
+                                var _avg     = avgSpeed;
+                                var _max     = avgWindowMaxSpeed;
+                                System.Threading.Tasks.Task.Run(() =>
+                                    DatabaseManager.Log.LogMovementViolation(
+                                        Guid.Full, Name, _account, _avg, _max, _score, _loc));
+
+                                // Kick when suspicion score reaches 50 (sustained cheating pattern).
+                                if (MovementSuspicionScore >= 50.0f)
+                                {
+                                    log.Warn($"{Name} - MOVEMENT SUSPICION THRESHOLD REACHED ({MovementSuspicionScore:0.0}) - KICKING");
+                                    Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
+                                        new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                    return true;
+                                }
+
+                                // Also kick when counter hits 10 and the config flag is enabled.
+                                if (MovementEnforcementCounter >= 10 && PropertyManager.GetBool("movement_violation_kick").Item)
+                                {
+                                    log.Warn($"{Name} - MOVEMENT ENFORCEMENT COUNTER THRESHOLD ({MovementEnforcementCounter}) - KICKING");
+                                    Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
+                                        new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                    return true;
+                                }
+
+                                return false;
+                            }
+
+                            // Evaluate short window first; if it kicks, skip long window.
+                            if (EvalSpeedWindow(3.0, 5.0f, 8.0f)) return false;
+                            if (EvalSpeedWindow(15.0, 8.0f, 12.0f)) return false;
                         }
                     }
                 }
