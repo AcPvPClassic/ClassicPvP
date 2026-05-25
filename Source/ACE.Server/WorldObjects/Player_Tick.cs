@@ -979,6 +979,101 @@ namespace ACE.Server.WorldObjects
                             if (EvalSpeedWindow(15.0, 8.0f, 12.0f)) return false;
                         }
 
+                        // --- Option N: Door collision detection ---
+                        // Flags players whose physics transition passed through a closed door.
+                        // LastTransitionHitClosedDoor is set in update_object_server_new() when the
+                        // collision list contains a Door with IsOpen == false.
+                        if (PropertyManager.GetBool("enforce_player_door_collision").Item
+                            && PhysicsObj.LastTransitionHitClosedDoor
+                            && GodState == null)
+                        {
+                            MovementSuspicionScore += 8.0f; // higher weight — doors are deliberately placed barriers
+
+                            // Rubber-band back to SnapPos.
+                            Location = new ACE.Entity.Position(SnapPos);
+                            Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
+                            SendUpdatePosition();
+
+                            Session.Network.EnqueueSend(new GameMessageSystemChat("Invalid movement detected. Rolling back to last known good location.", ChatMessageType.Help));
+
+                            log.Warn($"{Name} - DOOR GHOST DETECTED (passed through closed door) - Location: {newPosition} SuspicionScore: {MovementSuspicionScore:0.0}");
+
+                            // Log to ace_log for long-term ban evidence (fire-and-forget).
+                            var _doorLocation = Location?.ToString() ?? "unknown";
+                            var _doorAccount  = Session?.Account ?? "unknown";
+                            var _doorScore    = MovementSuspicionScore;
+                            System.Threading.Tasks.Task.Run(() =>
+                                DatabaseManager.Log.LogMovementViolation(
+                                    Guid.Full, Name, _doorAccount, 0f, 0f, _doorScore, _doorLocation));
+
+                            // Shared kick thresholds.
+                            if (MovementSuspicionScore >= 50.0f)
+                            {
+                                log.Warn($"{Name} - MOVEMENT SUSPICION THRESHOLD REACHED ({MovementSuspicionScore:0.0}) - KICKING");
+                                Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
+                                    new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                return false;
+                            }
+
+                            if (MovementEnforcementCounter >= 10 && PropertyManager.GetBool("movement_violation_kick").Item)
+                            {
+                                log.Warn($"{Name} - MOVEMENT ENFORCEMENT COUNTER THRESHOLD ({MovementEnforcementCounter}) - KICKING");
+                                Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
+                                    new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                return false;
+                            }
+
+                            return false;
+                        }
+
+                        // --- Option K: Spawn grace period creature collision ---
+                        // Flags players whose physics transition passed through a creature that spawned
+                        // within the last 5 seconds. This catches the brief window where a mob spawns
+                        // inside or immediately adjacent to a player who can then walk through it.
+                        // LastTransitionHitNewCreature is set in update_object_server_new().
+                        if (PropertyManager.GetBool("enforce_player_spawn_collision").Item
+                            && PhysicsObj.LastTransitionHitNewCreature
+                            && GodState == null)
+                        {
+                            MovementSuspicionScore += 4.0f; // lower weight — may be a legitimate spawn overlap
+
+                            // Rubber-band back to SnapPos.
+                            Location = new ACE.Entity.Position(SnapPos);
+                            Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
+                            SendUpdatePosition();
+
+                            Session.Network.EnqueueSend(new GameMessageSystemChat("Invalid movement detected. Rolling back to last known good location.", ChatMessageType.Help));
+
+                            log.Warn($"{Name} - SPAWN GHOST DETECTED (passed through newly-spawned creature) - Location: {newPosition} SuspicionScore: {MovementSuspicionScore:0.0}");
+
+                            // Log to ace_log for long-term ban evidence (fire-and-forget).
+                            var _spawnLocation = Location?.ToString() ?? "unknown";
+                            var _spawnAccount  = Session?.Account ?? "unknown";
+                            var _spawnScore    = MovementSuspicionScore;
+                            System.Threading.Tasks.Task.Run(() =>
+                                DatabaseManager.Log.LogMovementViolation(
+                                    Guid.Full, Name, _spawnAccount, 0f, 0f, _spawnScore, _spawnLocation));
+
+                            // Shared kick thresholds.
+                            if (MovementSuspicionScore >= 50.0f)
+                            {
+                                log.Warn($"{Name} - MOVEMENT SUSPICION THRESHOLD REACHED ({MovementSuspicionScore:0.0}) - KICKING");
+                                Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
+                                    new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                return false;
+                            }
+
+                            if (MovementEnforcementCounter >= 10 && PropertyManager.GetBool("movement_violation_kick").Item)
+                            {
+                                log.Warn($"{Name} - MOVEMENT ENFORCEMENT COUNTER THRESHOLD ({MovementEnforcementCounter}) - KICKING");
+                                Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
+                                    new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                return false;
+                            }
+
+                            return false;
+                        }
+
                         // --- Geometry collision detection (Change 7) ---
                         // update_object_server_new() already computed a full physics transition.
                         // LastTransitionHitGeometry = true when forcePos bypassed a geometry collision —

@@ -72,6 +72,20 @@ namespace ACE.Server.Physics
         /// Only meaningful as an anti-cheat signal when forcePos=true (enforce_player_movement disabled).
         /// </summary>
         public bool LastTransitionHitGeometry;
+
+        /// <summary>
+        /// Set by <see cref="update_object_server_new"/> after each call.
+        /// True when the physics transition collided with a Door whose IsOpen == false.
+        /// </summary>
+        public bool LastTransitionHitClosedDoor;
+
+        /// <summary>
+        /// Set by <see cref="update_object_server_new"/> after each call.
+        /// True when the physics transition collided with a living Creature that spawned
+        /// within the last 5 seconds (spawn grace period).
+        /// </summary>
+        public bool LastTransitionHitNewCreature;
+
         public double UpdateTime;
         public Vector3 Velocity;
         public Vector3 Acceleration;
@@ -4407,6 +4421,30 @@ namespace ACE.Server.Physics
                     // Anti-cheat (Change 7): record whether the physics engine reported a geometry collision.
                     // When forcePos=true, valid=false means the path was blocked but we forced through it.
                     LastTransitionHitGeometry = fullTransition != null && !valid;
+
+                    // Anti-cheat (Options K & N): scan the collision list for specific object types.
+                    LastTransitionHitClosedDoor   = false;
+                    LastTransitionHitNewCreature  = false;
+                    if (fullTransition != null && !valid)
+                    {
+                        foreach (var colObj in fullTransition.CollisionInfo.CollideObject)
+                        {
+                            var wo = colObj?.WeenieObj?.WorldObject;
+                            if (wo == null) continue;
+
+                            // Option N: closed door the player passed through.
+                            if (wo is Door door && !door.IsOpen)
+                                LastTransitionHitClosedDoor = true;
+
+                            // Option K: creature that spawned within the last 5 seconds (ghost window).
+                            if (wo is Creature creature && !creature.IsDead
+                                && (DateTime.UtcNow - creature.SpawnTimestamp).TotalSeconds < 5.0)
+                                LastTransitionHitNewCreature = true;
+
+                            if (LastTransitionHitClosedDoor && LastTransitionHitNewCreature)
+                                break; // both flags set, no need to continue
+                        }
+                    }
 
                     if (valid || forcePos || player?.GodState != null)
                     {

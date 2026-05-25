@@ -61,6 +61,12 @@ namespace ACE.Server.WorldObjects
 
         public PhysicsObj PhysicsObj { get; protected set; }
 
+        /// <summary>
+        /// UTC time at which this world object entered the world (EnterWorld was called).
+        /// Used by anti-cheat to identify newly-spawned creatures within the grace period.
+        /// </summary>
+        public DateTime SpawnTimestamp;
+
         public ObjectDescriptionFlag ObjectDescriptionFlags { get; protected set; }
 
         public SequenceManager Sequences { get; } = new SequenceManager();
@@ -896,6 +902,8 @@ namespace ACE.Server.WorldObjects
         {
             if (Location == null)
                 return false;
+
+            SpawnTimestamp = DateTime.UtcNow;
 
             if (!LandblockManager.AddObject(this))
                 return false;
