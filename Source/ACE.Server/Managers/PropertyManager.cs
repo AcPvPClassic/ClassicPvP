@@ -705,6 +705,7 @@ namespace ACE.Server.Managers
                 ("disable_arenas", new Property<bool>(false, "set to true to disable arena events")),
                 ("arena_allow_same_ip_match", new Property<bool>(false, "enable to allow two characters from the same IP to be matched in an arena event")),
                 ("arena_allow_observers", new Property<bool>(true, "enable to allow players to watch arena matches as invisible observers")),
+                ("tinker_lotto_enabled", new Property<bool>(false, "enables the tinkering lotto feature")),
                 ("rolling_level_cap_enabled", new Property<bool>(false, "Enables the server-wide rolling level cap. When enabled, players cannot exceed the XP threshold for the current cap level. The cap starts at 15 and increases daily based on rolling_level_cap_start_timestamp.")),
 
                 // Bounty Hunter system
