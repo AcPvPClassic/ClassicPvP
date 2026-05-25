@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 
 using ACE.Common;
+using ACE.Database;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Entity.Models;
@@ -233,6 +234,9 @@ namespace ACE.Server.WorldObjects
                     MovementEnforcementCounter = 0;
                     MovementSuspicionScore = 0.0f;
                     MovementWindowBuffer.Clear();
+                    WasJumping = false;
+                    JumpStartZ = 0f;
+                    JumpPeakZ = 0f;
                     Location = PhysicsObj.Position.ACEPosition();
                     SnapPos = Location;
                     PrevMovementUpdateMaxSpeed = 0.0f;
@@ -1022,6 +1026,94 @@ namespace ACE.Server.WorldObjects
 
                             return false;
                         }
+
+                        // --- Jump height tracking and cap (Change 8) ---
+                        // Detects the start of a jump, tracks the apex Z, and on landing checks
+                        // whether the player reached higher than their Strength/Jump skill allows.
+                        // Only enforced within the same landblock to avoid cross-cell coordinate issues.
+                        var isJumpingNow = IsJumping;
+                        if (!WasJumping && isJumpingNow)
+                        {
+                            // Jump started: record the launch Z and landblock.
+                            JumpStartZ    = newPosition.PositionZ;
+                            JumpStartCell = newPosition.Cell;
+                            JumpPeakZ     = JumpStartZ;
+                        }
+                        else if (isJumpingNow)
+                        {
+                            // In-flight: keep tracking the apex.
+                            if (newPosition.PositionZ > JumpPeakZ)
+                                JumpPeakZ = newPosition.PositionZ;
+                        }
+                        else if (WasJumping)
+                        {
+                            // Just landed: evaluate the apex if the feature is enabled.
+                            if (PropertyManager.GetBool("enforce_player_jump_height").Item
+                                && GodState == null
+                                && (JumpStartCell >> 16) == (newPosition.Cell >> 16)) // same landblock
+                            {
+                                var deltaZ = JumpPeakZ - JumpStartZ;
+                                if (deltaZ > 0.5f) // ignore trivial height deltas from uneven terrain
+                                {
+                                    var maxVz = 0f;
+                                    if (PhysicsObj.WeenieObj.InqJumpVelocity(1.0f, out maxVz) && maxVz > 0f)
+                                    {
+                                        // max height from kinematics: h = vz² / (2g), 2g = 19.6
+                                        // add 50% fudge factor to absorb timing/lag differences
+                                        var maxHeight = (maxVz * maxVz / 19.6f) * 1.5f;
+                                        if (deltaZ > maxHeight)
+                                        {
+                                            var overage = deltaZ / maxHeight - 1.0f;
+                                            var suspicionGain = Math.Min(overage * 10.0f, 15.0f);
+                                            MovementSuspicionScore += suspicionGain;
+
+                                            // Rubber-band: return player to pre-jump ground position.
+                                            Location = new ACE.Entity.Position(SnapPos);
+                                            Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
+                                            SendUpdatePosition();
+
+                                            Session.Network.EnqueueSend(new GameMessageSystemChat("Invalid movement detected. Rolling back to last known good location.", ChatMessageType.Help));
+
+                                            log.Warn($"{Name} - JUMP HEIGHT VIOLATION - DeltaZ: {deltaZ:0.00} MaxAllowed: {maxHeight:0.00} SuspicionScore: {MovementSuspicionScore:0.0}");
+
+                                            // Log to ace_log for long-term ban evidence (fire-and-forget).
+                                            var _jumpLocation = Location?.ToString() ?? "unknown";
+                                            var _jumpAccount  = Session?.Account ?? "unknown";
+                                            var _jumpScore    = MovementSuspicionScore;
+                                            var _jumpDelta    = deltaZ;
+                                            var _jumpMax      = maxHeight;
+                                            System.Threading.Tasks.Task.Run(() =>
+                                                DatabaseManager.Log.LogMovementViolation(
+                                                    Guid.Full, Name, _jumpAccount,
+                                                    _jumpDelta, _jumpMax, _jumpScore, _jumpLocation));
+
+                                            // Kick thresholds shared with all movement checks.
+                                            if (MovementSuspicionScore >= 50.0f)
+                                            {
+                                                log.Warn($"{Name} - MOVEMENT SUSPICION THRESHOLD REACHED ({MovementSuspicionScore:0.0}) - KICKING");
+                                                Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
+                                                    new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                                WasJumping = false;
+                                                return false;
+                                            }
+
+                                            if (MovementEnforcementCounter >= 10 && PropertyManager.GetBool("movement_violation_kick").Item)
+                                            {
+                                                log.Warn($"{Name} - MOVEMENT ENFORCEMENT COUNTER THRESHOLD ({MovementEnforcementCounter}) - KICKING");
+                                                Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
+                                                    new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                                WasJumping = false;
+                                                return false;
+                                            }
+
+                                            WasJumping = false;
+                                            return false;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        WasJumping = isJumpingNow;
                     }
                 }
 

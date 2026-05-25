@@ -101,6 +101,16 @@ namespace ACE.Server.WorldObjects
         public System.Collections.Generic.List<(double Timestamp, ACE.Entity.Position Pos)> MovementWindowBuffer
             = new System.Collections.Generic.List<(double, ACE.Entity.Position)>();
 
+        // --- Jump height tracking fields (Change 8) ---
+        /// <summary>Whether the player was in the air (IsJumping) on the previous clean position tick.</summary>
+        public bool WasJumping;
+        /// <summary>Z coordinate at the moment the current jump began.</summary>
+        public float JumpStartZ;
+        /// <summary>Landblock cell ID at the moment the current jump began (upper 16 bits = landblock).</summary>
+        public uint JumpStartCell;
+        /// <summary>Highest Z coordinate observed during the current jump.</summary>
+        public float JumpPeakZ;
+
         public float LatestMovementHeading = 0;
 
         public double NextTechniqueActivationTime = 0;

@@ -688,6 +688,7 @@ namespace ACE.Server.Managers
                 ("movement_violation_kick", new Property<bool>(false, "enable this to kick players when their movement suspicion score reaches the kick threshold (counter >= 10); score >= 50 always kicks regardless")),
                 ("enforce_player_movement_avg", new Property<bool>(false, "enable sliding window average speed checks using both a 3s window and a 15s window; violations feed the suspicion scoring system")),
                 ("enforce_player_movement_raycast", new Property<bool>(false, "enable geometry collision detection; flags position updates where the physics engine could not reach the requested position without passing through solid geometry")),
+                ("enforce_player_jump_height", new Property<bool>(false, "enable jump height cap; flags jumps where the player reached a higher apex than their Strength/Jump skill allows")),
                 ("allow_PKs_to_go_NPK", new Property<bool>(true, "Allows PKs to go back to being NPKs by using the appropriate altar")),
                 ("show_discord_chat_ingame", new Property<bool>(false, "Display messages posted to Discord in general chat")),
                 ("allow_custom_gameplay_modes", new Property<bool>(true, "CustomDM: Allow creation of new characters using gameplay modes such as hardcore and solo self-found")),
