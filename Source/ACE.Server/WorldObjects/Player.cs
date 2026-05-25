@@ -95,6 +95,8 @@ namespace ACE.Server.WorldObjects
         public double LastPlayerAutoposTime;
         public double LastPlayerMovementCheckTime;
         public int MovementEnforcementCounter;
+        /// <summary>Unix timestamp of the last time the movement_debug_chat throttle sent a message.</summary>
+        private double _lastDebugChatTime;
 
         /// <summary>
         /// Accumulates each time a speed violation fires. Decays each heartbeat when no violations occur.

@@ -889,7 +889,10 @@ namespace ACE.Server.WorldObjects
                                     RollbackToSnap($"speed_packet {dist:0.00}/{currentMaxSpeed:0.00}");
 
                                     log.Warn($"{Name} - INVALID MOVEMENT DETECTED - Speed: {dist.ToString("0.00")}/{currentMaxSpeed.ToString("0.00")} PrevMaxSpeed: {loggingPrevMaxMovementSpeed.ToString("0.00")}({loggingInertia}) FastTick: {FastTick} TimeSpam: {enforcementDeltaTime.ToString("0.00")} Velocity: {velocity.ToString("0.00")} actionsSinceLastMovementUpdate: {loggingHasPerformedActionsSinceLastMovementUpdate} SuspicionScore: {MovementSuspicionScore:0.0}");
-                                    //Session.Network.EnqueueSend(new GameMessageSystemChat($"Speed: {dist.ToString("0.00")}/{currentMaxSpeed.ToString("0.00")} PrevMaxSpeed: {loggingPrevMaxMovementSpeed.ToString("0.00")}({loggingInertia}) FastTick: {FastTick} TimeSpam: {deltaTime.ToString("0.00")} Velocity: {velocity.ToString("0.00")} timeSinceLastAction: {timeSinceLastAction.ToString("0.00")} isMovingOrAnimating: {isMovingOrAnimating} actionsSinceLastMovementUpdate: {loggingHasPerformedActionsSinceLastMovementUpdate}", ChatMessageType.Help));
+                                    if (PropertyManager.GetBool("movement_debug_chat").Item)
+                                        Session?.Network.EnqueueSend(new GameMessageSystemChat(
+                                            $"[AC DBG] speed_packet {dist:0.00}/{currentMaxSpeed:0.00} | Δt={enforcementDeltaTime*1000:0}ms | v={velocity:0.0} | score={MovementSuspicionScore:0.0}",
+                                            ChatMessageType.Help));
 
                                     // Log to ace_log and Discord webhook for long-term ban evidence (fire-and-forget).
                                     var _violationLocation = Location?.ToString() ?? "unknown";
@@ -925,19 +928,35 @@ namespace ACE.Server.WorldObjects
                                     return false;
                                 }
                             }
-                            //else
-                            //    Session.Network.EnqueueSend(new GameMessageSystemChat($"Speed: {dist.ToString("0.00")}/{currentMaxSpeed.ToString("0.00")} PrevMaxSpeed: {loggingPrevMaxMovementSpeed.ToString("0.00")}({loggingInertia}) FastTick: {FastTick} TimeSpam: {deltaTime.ToString("0.00")} Velocity: {velocity.ToString("0.00")} timeSinceLastAction: {timeSinceLastAction.ToString("0.00")} isMovingOrAnimating: {isMovingOrAnimating} actionsSinceLastMovementUpdate: {loggingHasPerformedActionsSinceLastMovementUpdate}", ChatMessageType.Broadcast));
+                            else if (PropertyManager.GetBool("movement_debug_chat").Item)
+                            {
+                                // Throttle to 1 message/sec so chat isn't completely unusable.
+                                // Still shows which packets are near the limit.
+                                if (currentTime - _lastDebugChatTime >= 1.0)
+                                {
+                                    _lastDebugChatTime = currentTime;
+                                    Session?.Network.EnqueueSend(new GameMessageSystemChat(
+                                        $"[AC DBG] ok {dist:0.00}/{currentMaxSpeed:0.00} | Δt={enforcementDeltaTime*1000:0}ms | v={velocity:0.0} | score={MovementSuspicionScore:0.0}",
+                                        ChatMessageType.Help));
+                                }
+                            }
                         }
-                        //else
-                        //    Session.Network.EnqueueSend(new GameMessageSystemChat($"Speed: {dist.ToString("0.00")}/0.00 PrevMaxSpeed: {loggingPrevMaxMovementSpeed.ToString("0.00")}({loggingInertia}) FastTick: {FastTick} TimeSpam: {deltaTime.ToString("0.00")} Velocity: {velocity.ToString("0.00")} timeSinceLastAction: {timeSinceLastAction.ToString("0.00")} isMovingOrAnimating: {isMovingOrAnimating} actionsSinceLastMovementUpdate: {loggingHasPerformedActionsSinceLastMovementUpdate}", ChatMessageType.Broadcast));
+                        else if (PropertyManager.GetBool("movement_debug_chat").Item)
+                        {
+                            // dist <= EPSILON: no real movement this tick (rotation-only packet).
+                            // Don't spam; already throttled in the branch above on moving ticks.
+                        }
 
                         if (HasPerformedActionsSinceLastMovementUpdate && !IsJumping)
                             HasPerformedActionsSinceLastMovementUpdate = false; // Delay disabling this until we're done with the jump.
 
                         // Primary SnapPos advance: grounded and not jumping — most precise.
+                        // Use newPosition (the packet we just accepted) rather than Location (the previous
+                        // packet's position).  Location isn't updated to newPosition until line 1485, so using
+                        // Location here would leave SnapPos one step behind, causing rollbacks to overshoot.
                         if (!IsJumping && PhysicsObj.TransientState.HasFlag(TransientStateFlags.OnWalkable))
                         {
-                            SnapPos = Location;
+                            SnapPos = new ACE.Entity.Position(newPosition);
                             LastSnapPosAdvanceTime = currentTime;
                         }
                         // Fallback SnapPos advance: player has had no violations and hasn't been updated
@@ -945,7 +964,7 @@ namespace ACE.Server.WorldObjects
                         // Keeps the rollback target fresh so any rubber-band is imperceptible.
                         else if (MovementEnforcementCounter == 0 && currentTime - LastSnapPosAdvanceTime > 2.0)
                         {
-                            SnapPos = Location;
+                            SnapPos = new ACE.Entity.Position(newPosition);
                             LastSnapPosAdvanceTime = currentTime;
                         }
 

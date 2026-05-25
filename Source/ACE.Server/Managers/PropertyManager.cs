@@ -694,6 +694,7 @@ namespace ACE.Server.Managers
                 ("enforce_player_timing_regularity", new Property<bool>(false, "script detection: flag players whose inter-packet movement timing has a coefficient of variation below 0.04 over 12+ samples in 3+ seconds; human hands always jitter, scripts do not")),
                 ("enforce_player_packet_rate", new Property<bool>(false, "script detection: flag players who send movement packets faster than movement_packet_rate_limit per second over a 2-second rolling window")),
                 ("enforce_player_reversal_detection", new Property<bool>(false, "script detection: flag players who execute two consecutive ~180 degree heading reversals each within 150 ms; impossible for human reaction time")),
+                ("movement_debug_chat", new Property<bool>(false, "anti-cheat diagnosis: when true, sends per-packet speed values to the violating player's chat window (~1/sec throttled) so you can observe which check fires and at what values; WARNING — disable immediately after diagnosis")),
                 ("allow_PKs_to_go_NPK", new Property<bool>(true, "Allows PKs to go back to being NPKs by using the appropriate altar")),
                 ("show_discord_chat_ingame", new Property<bool>(false, "Display messages posted to Discord in general chat")),
                 ("allow_custom_gameplay_modes", new Property<bool>(true, "CustomDM: Allow creation of new characters using gameplay modes such as hardcore and solo self-found")),
