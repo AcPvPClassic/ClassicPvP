@@ -72,6 +72,46 @@ CREATE TABLE `account` (
   CONSTRAINT `fk_accesslevel` FOREIGN KEY (`accessLevel`) REFERENCES `accesslevel` (`level`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `account_ip_binding`
+--
+
+DROP TABLE IF EXISTS `account_ip_binding`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `account_ip_binding` (
+  `id`          INT UNSIGNED    NOT NULL AUTO_INCREMENT,
+  `account_id`  INT UNSIGNED    NOT NULL,
+  `ip_address`  VARCHAR(45)     NOT NULL,
+  `bound_at`    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `bound_by`    VARCHAR(10)     NOT NULL DEFAULT 'login',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uidx_ip`      (`ip_address`),
+  UNIQUE KEY `uidx_account` (`account_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `account_ip_change_log`
+--
+
+DROP TABLE IF EXISTS `account_ip_change_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `account_ip_change_log` (
+  `id`            INT UNSIGNED    NOT NULL AUTO_INCREMENT,
+  `account_id`    INT UNSIGNED    NOT NULL,
+  `old_ip`        VARCHAR(45)     NOT NULL,
+  `new_ip`        VARCHAR(45)     NOT NULL,
+  `changed_at`    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `auto_banned`   TINYINT(1)      NOT NULL DEFAULT 0,
+  `admin_cleared` TINYINT(1)      NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_account_date` (`account_id`, `changed_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

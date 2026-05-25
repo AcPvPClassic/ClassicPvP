@@ -320,6 +320,20 @@ namespace ACE.Server.Network.Handlers
                 }
             }
 
+            // --- IP binding enforcement ---
+            if (PropertyManager.GetBool("enforce_account_ip_binding").Item)
+            {
+                var ipStr    = session.EndPointC2S.Address.ToString();
+                var isLocal  = ipStr == "127.0.0.1" || ipStr == "::1";
+                var isAdmin  = (AccessLevel)account.AccessLevel >= AccessLevel.Admin;
+
+                if (!isLocal && !isAdmin)
+                {
+                    if (!CheckIpBinding(account, ipStr, session))
+                        return;
+                }
+            }
+
             account.UpdateLastLogin(session.EndPointC2S.Address);
 
             session.SetAccount(account.AccountId, account.AccountName, (AccessLevel)account.AccessLevel);
@@ -332,6 +346,79 @@ namespace ACE.Server.Network.Handlers
             catch(Exception ex)
             {
                 log.Error($"Exception in AuthenticationHandler.AccountSelectCallback logging account session start. Ex: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// Enforces the one-IP-per-account rule.
+        /// Returns true if login should proceed, false if the session has been terminated.
+        /// </summary>
+        private static bool CheckIpBinding(Account account, string ipStr, Session session)
+        {
+            try
+            {
+                // Case: this IP is already bound to a *different* account — reject immediately.
+                var bindingForIp = DatabaseManager.Authentication.GetIpBindingByIp(ipStr);
+                if (bindingForIp != null && bindingForIp.AccountId != account.AccountId)
+                {
+                    log.Warn($"[IPBinding] Conflict: account '{account.AccountName}' tried to log in from {ipStr}, which is bound to account ID {bindingForIp.AccountId}.");
+                    var msg = "This IP address is already registered to another account. Contact an administrator if you believe this is an error.";
+                    session.Terminate(SessionTerminationReason.AccountBooted, new GameMessageBootAccount(" " + msg), null, msg);
+                    return false;
+                }
+
+                var accountBinding = DatabaseManager.Authentication.GetIpBinding(account.AccountId);
+
+                // Case: no existing binding — first ever login; create it and proceed.
+                if (accountBinding == null)
+                {
+                    DatabaseManager.Authentication.CreateIpBinding(account.AccountId, ipStr, "login");
+                    log.Info($"[IPBinding] Bound account '{account.AccountName}' to {ipStr} (first login).");
+                    return true;
+                }
+
+                // Case: same IP as already bound — normal login.
+                if (accountBinding.IpAddress == ipStr)
+                    return true;
+
+                // Case: IP has changed — check how many times this month.
+                var monthlyChanges = DatabaseManager.Authentication.GetMonthlyIpChangeCount(account.AccountId);
+
+                if (monthlyChanges == 0)
+                {
+                    // First change this month — allowed.
+                    DatabaseManager.Authentication.InsertIpChangeLog(account.AccountId, accountBinding.IpAddress, ipStr, autoBanned: false);
+                    DatabaseManager.Authentication.UpdateIpBinding(account.AccountId, ipStr, "login");
+                    log.Info($"[IPBinding] IP change allowed for account '{account.AccountName}': {accountBinding.IpAddress} → {ipStr} (1st change this month).");
+                    return true;
+                }
+                else
+                {
+                    // Second change this month — auto-ban.
+                    DatabaseManager.Authentication.InsertIpChangeLog(account.AccountId, accountBinding.IpAddress, ipStr, autoBanned: true);
+
+                    account.BanExpireTime      = DateTime.UtcNow.AddYears(100);
+                    account.BanReason          = "Automatic ban: multiple IP address changes detected within one calendar month.";
+                    account.BannedTime         = DateTime.UtcNow;
+                    account.BannedByAccountId  = null; // null = system/console
+                    DatabaseManager.Authentication.UpdateAccount(account);
+
+                    log.Warn($"[IPBinding] Auto-banned account '{account.AccountName}' for IP change abuse: {accountBinding.IpAddress} → {ipStr} (2nd change this month).");
+
+                    session.Terminate(
+                        SessionTerminationReason.AccountBanned,
+                        new GameMessageAccountBanned(account.BanExpireTime.Value,
+                            " - Automatic ban: multiple IP address changes detected within one calendar month. Contact an administrator to appeal."),
+                        null,
+                        account.BanReason);
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"[IPBinding] Exception during IP binding check for account '{account.AccountName}': {ex}");
+                // On error, fail open — don't block a legitimate login due to a DB issue.
+                return true;
             }
         }
 

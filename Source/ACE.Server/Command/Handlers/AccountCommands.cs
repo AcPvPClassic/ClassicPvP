@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using System.Text;
 
 using log4net;
 
@@ -222,6 +223,81 @@ namespace ACE.Server.Command.Handlers
             DatabaseManager.Authentication.UpdateAccount(account);
 
             CommandHandlerHelper.WriteOutputInfo(session, "Account password successfully changed.", ChatMessageType.Broadcast);
+        }
+
+        // clearipbinding accountname
+        [CommandHandler("clearipbinding", AccessLevel.Admin, CommandHandlerFlag.None, 1,
+            "Clears the IP binding for an account, allowing them to re-bind on next login. Also resets their monthly IP change counter.",
+            "accountname")]
+        public static void HandleClearIpBinding(Session session, params string[] parameters)
+        {
+            var accountName = parameters[0].ToLower();
+            var account     = DatabaseManager.Authentication.GetAccountByName(accountName);
+
+            if (account == null)
+            {
+                CommandHandlerHelper.WriteOutputInfo(session, $"Account '{accountName}' does not exist.", ChatMessageType.Broadcast);
+                return;
+            }
+
+            var binding = DatabaseManager.Authentication.GetIpBinding(account.AccountId);
+            var oldIp   = binding?.IpAddress ?? "(none)";
+
+            DatabaseManager.Authentication.DeleteIpBinding(account.AccountId);
+            DatabaseManager.Authentication.MarkChangeLogEntriesAdminCleared(account.AccountId);
+
+            var adminName = session?.Player?.Name ?? "CONSOLE";
+            log.Info($"[IPBinding] Admin '{adminName}' cleared IP binding for account '{accountName}' (was: {oldIp}).");
+
+            CommandHandlerHelper.WriteOutputInfo(session,
+                $"IP binding cleared for '{accountName}' (was: {oldIp}). Their next login will create a new binding and their monthly change counter has been reset.",
+                ChatMessageType.Broadcast);
+        }
+
+        // checkipbinding accountname
+        [CommandHandler("checkipbinding", AccessLevel.Admin, CommandHandlerFlag.None, 1,
+            "Displays the current IP binding and recent IP change history for an account.",
+            "accountname")]
+        public static void HandleCheckIpBinding(Session session, params string[] parameters)
+        {
+            var accountName = parameters[0].ToLower();
+            var account     = DatabaseManager.Authentication.GetAccountByName(accountName);
+
+            if (account == null)
+            {
+                CommandHandlerHelper.WriteOutputInfo(session, $"Account '{accountName}' does not exist.", ChatMessageType.Broadcast);
+                return;
+            }
+
+            var binding        = DatabaseManager.Authentication.GetIpBinding(account.AccountId);
+            var monthlyChanges = DatabaseManager.Authentication.GetMonthlyIpChangeCount(account.AccountId);
+            var changeLog      = DatabaseManager.Authentication.GetIpChangeLog(account.AccountId, limit: 5);
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"=== IP Binding: '{account.AccountName}' ===");
+
+            if (binding == null)
+                sb.AppendLine("Bound IP    : (none — will bind on next login)");
+            else
+                sb.AppendLine($"Bound IP    : {binding.IpAddress}  (bound {binding.BoundAt:yyyy-MM-dd HH:mm} UTC, source: {binding.BoundBy})");
+
+            sb.AppendLine($"Changes/mo  : {monthlyChanges} of 1 allowed this calendar month");
+
+            if (changeLog.Count == 0)
+            {
+                sb.AppendLine("Change log  : (none)");
+            }
+            else
+            {
+                sb.AppendLine("Recent changes (newest first):");
+                foreach (var entry in changeLog)
+                {
+                    var tag = entry.AutoBanned ? " [AUTO-BANNED]" : entry.AdminCleared ? " [admin-cleared]" : "";
+                    sb.AppendLine($"  {entry.ChangedAt:yyyy-MM-dd HH:mm} UTC  {entry.OldIp} → {entry.NewIp}{tag}");
+                }
+            }
+
+            CommandHandlerHelper.WriteOutputInfo(session, sb.ToString(), ChatMessageType.Broadcast);
         }
     }
 }

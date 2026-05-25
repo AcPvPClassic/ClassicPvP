@@ -158,6 +158,160 @@ namespace ACE.Database
             }
         }
 
+        // -------------------------------------------------------------------------
+        // IP Binding
+        // -------------------------------------------------------------------------
+
+        /// <summary>Returns the IP binding for an account, or null if none exists.</summary>
+        public AccountIpBinding GetIpBinding(uint accountId)
+        {
+            using (var context = new AuthDbContext())
+                return context.AccountIpBinding.AsNoTracking().FirstOrDefault(r => r.AccountId == accountId);
+        }
+
+        /// <summary>Returns the IP binding that owns the given IP address, or null if unclaimed.</summary>
+        public AccountIpBinding GetIpBindingByIp(string ip)
+        {
+            using (var context = new AuthDbContext())
+                return context.AccountIpBinding.AsNoTracking().FirstOrDefault(r => r.IpAddress == ip);
+        }
+
+        /// <summary>Creates a new IP binding for an account (first-ever login).</summary>
+        public void CreateIpBinding(uint accountId, string ip, string boundBy = "login")
+        {
+            using (var context = new AuthDbContext())
+            {
+                context.AccountIpBinding.Add(new AccountIpBinding
+                {
+                    AccountId = accountId,
+                    IpAddress = ip,
+                    BoundAt   = DateTime.UtcNow,
+                    BoundBy   = boundBy
+                });
+                context.SaveChanges();
+            }
+        }
+
+        /// <summary>Updates the bound IP for an account (allowed IP change).</summary>
+        public void UpdateIpBinding(uint accountId, string newIp, string boundBy = "login")
+        {
+            using (var context = new AuthDbContext())
+            {
+                var binding = context.AccountIpBinding.FirstOrDefault(r => r.AccountId == accountId);
+                if (binding != null)
+                {
+                    binding.IpAddress = newIp;
+                    binding.BoundAt   = DateTime.UtcNow;
+                    binding.BoundBy   = boundBy;
+                }
+                else
+                {
+                    context.AccountIpBinding.Add(new AccountIpBinding
+                    {
+                        AccountId = accountId,
+                        IpAddress = newIp,
+                        BoundAt   = DateTime.UtcNow,
+                        BoundBy   = boundBy
+                    });
+                }
+                context.SaveChanges();
+            }
+        }
+
+        /// <summary>Removes the IP binding for an account (admin clear).</summary>
+        public void DeleteIpBinding(uint accountId)
+        {
+            using (var context = new AuthDbContext())
+            {
+                var binding = context.AccountIpBinding.FirstOrDefault(r => r.AccountId == accountId);
+                if (binding != null)
+                {
+                    context.AccountIpBinding.Remove(binding);
+                    context.SaveChanges();
+                }
+            }
+        }
+
+        // -------------------------------------------------------------------------
+        // IP Change Log
+        // -------------------------------------------------------------------------
+
+        /// <summary>
+        /// Returns the number of non-admin-cleared, non-auto-ban IP changes for this account
+        /// in the current calendar month. Used to enforce the one-change-per-month rule.
+        /// </summary>
+        public int GetMonthlyIpChangeCount(uint accountId)
+        {
+            var now            = DateTime.UtcNow;
+            var startOfMonth   = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var startOfNext    = startOfMonth.AddMonths(1);
+
+            using (var context = new AuthDbContext())
+                return context.AccountIpChangeLog.Count(r =>
+                    r.AccountId    == accountId &&
+                    r.ChangedAt    >= startOfMonth &&
+                    r.ChangedAt    < startOfNext &&
+                    !r.AutoBanned  &&
+                    !r.AdminCleared);
+        }
+
+        /// <summary>Appends a record to the IP change audit log.</summary>
+        public void InsertIpChangeLog(uint accountId, string oldIp, string newIp, bool autoBanned)
+        {
+            using (var context = new AuthDbContext())
+            {
+                context.AccountIpChangeLog.Add(new AccountIpChangeLog
+                {
+                    AccountId    = accountId,
+                    OldIp        = oldIp,
+                    NewIp        = newIp,
+                    ChangedAt    = DateTime.UtcNow,
+                    AutoBanned   = autoBanned,
+                    AdminCleared = false
+                });
+                context.SaveChanges();
+            }
+        }
+
+        /// <summary>Returns recent IP change log entries for an account, newest first.</summary>
+        public List<AccountIpChangeLog> GetIpChangeLog(uint accountId, int limit = 10)
+        {
+            using (var context = new AuthDbContext())
+                return context.AccountIpChangeLog
+                    .AsNoTracking()
+                    .Where(r => r.AccountId == accountId)
+                    .OrderByDescending(r => r.ChangedAt)
+                    .Take(limit)
+                    .ToList();
+        }
+
+        /// <summary>
+        /// Marks all current-month change log entries for an account as admin-cleared,
+        /// effectively resetting that account's monthly IP change counter.
+        /// </summary>
+        public void MarkChangeLogEntriesAdminCleared(uint accountId)
+        {
+            var now          = DateTime.UtcNow;
+            var startOfMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var startOfNext  = startOfMonth.AddMonths(1);
+
+            using (var context = new AuthDbContext())
+            {
+                var entries = context.AccountIpChangeLog
+                    .Where(r =>
+                        r.AccountId  == accountId &&
+                        r.ChangedAt  >= startOfMonth &&
+                        r.ChangedAt  < startOfNext &&
+                        !r.AdminCleared)
+                    .ToList();
+
+                foreach (var entry in entries)
+                    entry.AdminCleared = true;
+
+                context.SaveChanges();
+            }
+        }
+
         public List<string> GetListofBannedAccounts()
         {
             using (var context = new AuthDbContext())
