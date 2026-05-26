@@ -1389,39 +1389,57 @@ namespace ACE.Server.WorldObjects
                             && PhysicsObj.LastTransitionHitGeometry
                             && GodState == null)
                         {
-                            MovementSuspicionScore += 5.0f;
-
-                            RubberBandRecoveryUntil = currentTime + 0.75;
-                            RollbackToSnap("geometry");
-                            log.Warn($"{Name} - GEOMETRY COLLISION DETECTED (wall-walk/blink) - Location: {newPosition} SuspicionScore: {MovementSuspicionScore:0.0}");
-
-                            // Log to ace_log for long-term ban evidence (fire-and-forget).
-                            var _geoLocation = Location?.ToString() ?? "unknown";
-                            var _geoAccount  = Session?.Account ?? "unknown";
-                            var _geoScore    = MovementSuspicionScore;
-                            DiscordWebhookManager.SendMovementViolation("geometry", Name, _geoAccount, 0f, 0f, _geoScore, _geoLocation);
-                            System.Threading.Tasks.Task.Run(() =>
-                                DatabaseManager.Log.LogMovementViolation(
-                                    Guid.Full, Name, _geoAccount, "geometry", 0f, 0f, _geoScore, _geoLocation));
-
-                            // Kick thresholds shared with Change 5.
-                            if (MovementSuspicionScore >= 50.0f)
+                            if (currentTime < GeometryViolationCooldownUntil)
                             {
-                                log.Warn($"{Name} - MOVEMENT SUSPICION THRESHOLD REACHED ({MovementSuspicionScore:0.0}) - KICKING");
-                                Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
-                                    new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                // Within the per-geometry cooldown window: skip silently.
+                                // When enforce_player_movement is on, physics already validated the
+                                // transition; the secondary transition() check fires on tight dungeon
+                                // geometry even for legitimate positions.  Suppressing follow-on hits
+                                // prevents the cascade (e.g. 9 × +5 in 1 s → kick) seen for players
+                                // walking through normal dungeon corridors.
+                                // Do NOT return false here — let the physics-valid position be accepted
+                                // so the player can walk away from the problem area.
+                            }
+                            else
+                            {
+                                // First geometry hit (or cooldown expired): score once, set a 2-second
+                                // suppression window, and rubber-band so a real wall-walk is corrected.
+                                GeometryViolationCooldownUntil = currentTime + 2.0;
+
+                                MovementSuspicionScore += 5.0f;
+
+                                RubberBandRecoveryUntil = currentTime + 0.75;
+                                RollbackToSnap("geometry");
+                                log.Warn($"{Name} - GEOMETRY COLLISION DETECTED (wall-walk/blink) - Location: {newPosition} SuspicionScore: {MovementSuspicionScore:0.0}");
+
+                                // Log to ace_log for long-term ban evidence (fire-and-forget).
+                                var _geoLocation = Location?.ToString() ?? "unknown";
+                                var _geoAccount  = Session?.Account ?? "unknown";
+                                var _geoScore    = MovementSuspicionScore;
+                                DiscordWebhookManager.SendMovementViolation("geometry", Name, _geoAccount, 0f, 0f, _geoScore, _geoLocation);
+                                System.Threading.Tasks.Task.Run(() =>
+                                    DatabaseManager.Log.LogMovementViolation(
+                                        Guid.Full, Name, _geoAccount, "geometry", 0f, 0f, _geoScore, _geoLocation));
+
+                                // Kick thresholds shared with Change 5.
+                                if (MovementSuspicionScore >= 50.0f)
+                                {
+                                    log.Warn($"{Name} - MOVEMENT SUSPICION THRESHOLD REACHED ({MovementSuspicionScore:0.0}) - KICKING");
+                                    Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
+                                        new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                    return false;
+                                }
+
+                                if (MovementEnforcementCounter >= 10 && PropertyManager.GetBool("movement_violation_kick").Item)
+                                {
+                                    log.Warn($"{Name} - MOVEMENT ENFORCEMENT COUNTER THRESHOLD ({MovementEnforcementCounter}) - KICKING");
+                                    Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
+                                        new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                    return false;
+                                }
+
                                 return false;
                             }
-
-                            if (MovementEnforcementCounter >= 10 && PropertyManager.GetBool("movement_violation_kick").Item)
-                            {
-                                log.Warn($"{Name} - MOVEMENT ENFORCEMENT COUNTER THRESHOLD ({MovementEnforcementCounter}) - KICKING");
-                                Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
-                                    new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
-                                return false;
-                            }
-
-                            return false;
                         }
 
                         // --- Jump height tracking and cap (Change 8) ---

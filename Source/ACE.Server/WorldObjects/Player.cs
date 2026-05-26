@@ -98,6 +98,11 @@ namespace ACE.Server.WorldObjects
         /// <summary>Unix timestamp of the last time the movement_debug_chat throttle sent a message.</summary>
         private double _lastDebugChatTime;
 
+        /// <summary>Unix timestamp after which the geometry-collision cooldown expires. Suppresses
+        /// repeated geometry scores from tight dungeon walls so a single wall-adjacent position
+        /// can't cascade into an instant kick.</summary>
+        public double GeometryViolationCooldownUntil;
+
         /// <summary>
         /// Accumulates each time a speed violation fires. Decays each heartbeat when no violations occur.
         /// Reaching 50 triggers a session kick regardless of <c>movement_violation_kick</c> config.
