@@ -15,6 +15,7 @@ namespace ACE.Database.Models.Log
         public virtual DbSet<ArenaEvent> ArenaEvents { get; set; }
         public virtual DbSet<ArenaPlayer> ArenaPlayers { get; set; }
         public virtual DbSet<ArenaCharacterStats> ArenaCharacterStats { get; set; }
+        public virtual DbSet<ArenaTeamStats> ArenaTeamStats { get; set; }
         public virtual DbSet<RareLog> RareLogs { get; set; }
         public virtual DbSet<StuckCharacterLog> StuckCharacterLogs { get; set; }
         public virtual DbSet<TownControlTown> TownControlTowns { get; set; }
@@ -147,7 +148,11 @@ namespace ACE.Database.Models.Log
                 entity.Property(e => e.CharacterId).HasColumnName("character_id");
                 entity.Property(e => e.CharacterName).HasColumnName("character_name");
                 entity.Property(e => e.EventType).HasColumnName("event_type");
+                entity.Property(e => e.Elo).HasColumnName("elo");
                 entity.Property(e => e.RankPoints).HasColumnName("rank_points");
+                entity.Property(e => e.LastMatchDatetime).HasColumnName("last_match_datetime");
+                entity.Property(e => e.LastDecayDatetime).HasColumnName("last_decay_datetime");
+                entity.Property(e => e.TotalSurvived).HasColumnName("total_survived");
                 entity.Property(e => e.TotalMatches).HasColumnName("total_matches");
                 entity.Property(e => e.TotalWins).HasColumnName("total_wins");
                 entity.Property(e => e.TotalLosses).HasColumnName("total_losses");
@@ -157,6 +162,28 @@ namespace ACE.Database.Models.Log
                 entity.Property(e => e.TotalKills).HasColumnName("total_kills");
                 entity.Property(e => e.TotalDmgDealt).HasColumnName("total_dmg_dealt");
                 entity.Property(e => e.TotalDmgReceived).HasColumnName("total_dmg_received");
+            });
+
+            modelBuilder.Entity<ArenaTeamStats>(entity =>
+            {
+                entity.HasKey(e => e.Id).HasName("PRIMARY");
+                entity.ToTable("arena_team_stats");
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.TeamKey).HasColumnName("team_key").HasMaxLength(40);
+                entity.Property(e => e.CharacterIdA).HasColumnName("character_id_a");
+                entity.Property(e => e.CharacterNameA).HasColumnName("character_name_a");
+                entity.Property(e => e.CharacterIdB).HasColumnName("character_id_b");
+                entity.Property(e => e.CharacterNameB).HasColumnName("character_name_b");
+                entity.Property(e => e.Elo).HasColumnName("elo");
+                entity.Property(e => e.RankPoints).HasColumnName("rank_points");
+                entity.Property(e => e.TotalMatches).HasColumnName("total_matches");
+                entity.Property(e => e.TotalWins).HasColumnName("total_wins");
+                entity.Property(e => e.TotalLosses).HasColumnName("total_losses");
+                entity.Property(e => e.TotalDraws).HasColumnName("total_draws");
+                entity.Property(e => e.TotalDisqualified).HasColumnName("total_disqualified");
+                entity.Property(e => e.TotalSurvived).HasColumnName("total_survived");
+                entity.Property(e => e.LastMatchDatetime).HasColumnName("last_match_datetime");
+                entity.Property(e => e.LastDecayDatetime).HasColumnName("last_decay_datetime");
             });
 
             modelBuilder.Entity<RareLog>(entity =>

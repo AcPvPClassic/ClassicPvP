@@ -5607,7 +5607,7 @@ namespace ACE.Server.Command.Handlers
                             var winnerCurrentRank = characterRankings.ContainsKey(winner.CharacterId) ? characterRankings[winner.CharacterId] : 1500;
                             var loserCurrentRank = characterRankings.ContainsKey(loser.CharacterId) ? characterRankings[loser.CharacterId] : 1500;
 
-                            var rankChange = ACE.Server.Entity.ArenaRanking.GetRankChange(winnerCurrentRank, loserCurrentRank, 32);
+                            var rankChange = ArenaRanking.GetRankChange(winnerCurrentRank, loserCurrentRank, 32);
 
                             var winnerNewRank = (int)winnerCurrentRank + rankChange > 0 ? (uint)(winnerCurrentRank + rankChange) : default(uint);
                             var loserNewRank = (int)loserCurrentRank - rankChange > 0 ? (uint)(loserCurrentRank - rankChange) : default(uint);

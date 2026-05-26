@@ -2674,32 +2674,55 @@ namespace ACE.Server.Command.Handlers
                     if (parameters.Count() >= 2)
                         eventTypeParam = parameters[1];
 
-                    bool validParam = eventTypeParam.ToLower().Equals("1v1") ||
-                                      eventTypeParam.ToLower().Equals("2v2") ||
-                                      eventTypeParam.ToLower().Equals("ffa") ||
+                    bool validParam = eventTypeParam.ToLower().Equals("1v1")      ||
+                                      eventTypeParam.ToLower().Equals("2v2")      ||
+                                      eventTypeParam.ToLower().Equals("2v2team")  ||
+                                      eventTypeParam.ToLower().Equals("ffa")      ||
                                       eventTypeParam.ToLower().Equals("tugak");
 
                     if (!validParam)
                     {
-                        CommandHandlerHelper.WriteOutputInfo(session, "Invalid Event Type Parameter\nUsage: /arena rank {eventType}\nExample: /arena rank 1v1");
+                        CommandHandlerHelper.WriteOutputInfo(session, "Invalid Event Type Parameter\nUsage: /arena rank {eventType}\nValid types: 1v1, 2v2, 2v2team, ffa, tugak");
                         break;
                     }
 
-                    List<ACE.Database.Models.Log.ArenaCharacterStats> topTen = DatabaseManager.Log.GetArenaTopRankedByEventType(eventTypeParam.ToLower());
-
-                    rankReturnMsg.Append($"***** Top Ten {eventTypeParam.ToLower()} Players *****\n\n");
-                    for (int i = 0; i < topTen.Count(); i++)
+                    if (eventTypeParam.ToLower().Equals("2v2team"))
                     {
-                        var currStats = topTen[i];
-                        rankReturnMsg.Append($"  Rank #{i + 1} - {currStats.CharacterName}\n  Rank Points: {currStats.RankPoints}\n  Total Matches: {currStats.TotalMatches}\n  Total Wins: {currStats.TotalWins}\n  Total Draws: {currStats.TotalDraws}\n  Total Losses: {currStats.TotalLosses}\n\n");
+                        var topTeams = DatabaseManager.Log.GetArenaTopRankedTeams();
+                        rankReturnMsg.Append("***** Top Ten 2v2 Teams *****\n\n");
+                        for (int i = 0; i < topTeams.Count; i++)
+                        {
+                            var t = topTeams[i];
+                            rankReturnMsg.Append($"  Rank #{i + 1} - {t.TeamName}\n");
+                            rankReturnMsg.Append($"  Score: {t.CompositeScore.ToString("n0")}  ELO: {t.Elo.ToString("n0")}\n");
+                            rankReturnMsg.Append($"  Matches: {t.TotalMatches}  Wins: {t.TotalWins}  Losses: {t.TotalLosses}  Survived: {t.TotalSurvived}\n\n");
+                        }
+                        rankReturnMsg.Append("**********\n");
+                    }
+                    else
+                    {
+                        List<ACE.Database.Models.Log.ArenaCharacterStats> topTen = DatabaseManager.Log.GetArenaTopRankedByEventType(eventTypeParam.ToLower());
+                        bool isEloMode = eventTypeParam.ToLower().Equals("1v1") || eventTypeParam.ToLower().Equals("2v2");
+
+                        rankReturnMsg.Append($"***** Top Ten {eventTypeParam} Players *****\n\n");
+                        for (int i = 0; i < topTen.Count; i++)
+                        {
+                            var currStats = topTen[i];
+                            rankReturnMsg.Append($"  Rank #{i + 1} - {currStats.CharacterName}\n");
+                            if (isEloMode)
+                                rankReturnMsg.Append($"  Score: {currStats.CompositeScore.ToString("n0")}  ELO: {currStats.Elo.ToString("n0")}\n");
+                            else
+                                rankReturnMsg.Append($"  Points: {currStats.RankPoints.ToString("n0")}\n");
+                            rankReturnMsg.Append($"  Matches: {currStats.TotalMatches}  Wins: {currStats.TotalWins}  Draws: {currStats.TotalDraws}  Losses: {currStats.TotalLosses}\n\n");
+                        }
+                        rankReturnMsg.Append("**********\n");
                     }
 
-                    rankReturnMsg.Append($"**********\n");
                     CommandHandlerHelper.WriteOutputInfo(session, rankReturnMsg.ToString());
                     break;
 
                 default:
-                    CommandHandlerHelper.WriteOutputInfo(session, $"Arena Commands...\n\n  To join a 1v1 arena match: /arena join\n\n  To join a specific type of arena match: /arena join eventType\n  (replace eventType with the string code for the type of match you want to join; 1v1, 2v2, FFA, Tugak or Group)\n\n  To leave an arena queue or stop observing a match: /arena cancel\n\n  To get info about players in an arena queue and active arena matches: /arena info\n\n  To get your current character's stats: /arena stats\n\n  To get a named character's stats: /arena stats characterName\n  (replace characterName with the target character's name)\n\n  To get rank leaderboard by event type: /arena rank eventType\n  (replace eventType with the string code for the type of match you want ranking for; 1v1, 2v2, Tugak or FFA)\n\n  To watch a match as a silent observer: /arena watch EventID\n  (use /arena info to get the EventID of an active arena match and use that value in the command)\n\n  To get this help file: /arena help\n");
+                    CommandHandlerHelper.WriteOutputInfo(session, $"Arena Commands...\n\n  To join a 1v1 arena match: /arena join\n\n  To join a specific type of arena match: /arena join eventType\n  (replace eventType with the string code for the type of match you want to join; 1v1, 2v2, FFA, Tugak or Group)\n\n  To leave an arena queue or stop observing a match: /arena cancel\n\n  To get info about players in an arena queue and active arena matches: /arena info\n\n  To get your current character's stats: /arena stats\n\n  To get a named character's stats: /arena stats characterName\n  (replace characterName with the target character's name)\n\n  To get rank leaderboard by event type: /arena rank eventType\n  (replace eventType with the string code for the type of match you want ranking for; 1v1, 2v2, 2v2team, Tugak or FFA)\n\n  To watch a match as a silent observer: /arena watch EventID\n  (use /arena info to get the EventID of an active arena match and use that value in the command)\n\n  To get this help file: /arena help\n");
                     return;
             }
         }

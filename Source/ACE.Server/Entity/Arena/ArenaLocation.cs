@@ -587,43 +587,91 @@ namespace ACE.Server.Entity
             else if (underageCount > 2 && ActiveEvent.EventType.Equals("ffa"))
                 underageViolation = true;
 
-            Dictionary<uint, uint> newRankings = new Dictionary<uint, uint>();
+            // Build per-player new ELO values (1v1 and 2v2).
+            // FFA / Tugak use placement points instead; their entry stays null here.
+            var newEloMap = new Dictionary<uint, uint>();
+
             if (ActiveEvent.EventType.Equals("1v1"))
             {
                 var winner = winners.FirstOrDefault();
-                var loser = losers.FirstOrDefault();
+                var loser  = losers.FirstOrDefault();
                 if (winner != null && loser != null)
                 {
-                    var winnerCurrentRank = DatabaseManager.Log.GetCharacterArenaStatsByEvent(winner.CharacterId, "1v1")?.RankPoints ?? 1500;
-                    var loserCurrentRank = DatabaseManager.Log.GetCharacterArenaStatsByEvent(loser.CharacterId, "1v1")?.RankPoints ?? 1500;
-                    var rankChange = ArenaRanking.GetRankChange(winnerCurrentRank, loserCurrentRank, 32);
+                    var winnerElo = DatabaseManager.Log.GetCharacterArenaStatsByEvent(winner.CharacterId, "1v1")?.Elo ?? 1500;
+                    var loserElo  = DatabaseManager.Log.GetCharacterArenaStatsByEvent(loser.CharacterId,  "1v1")?.Elo ?? 1500;
+                    var rankChange = ArenaRanking.GetRankChange(winnerElo, loserElo, 32);
 
-                    var winnerNewRank = (int)winnerCurrentRank + rankChange > 0 ? (uint)(winnerCurrentRank + rankChange) : default(uint);
-                    var loserNewRank = (int)loserCurrentRank - rankChange > 0 ? (uint)(loserCurrentRank - rankChange) : default(uint);
+                    newEloMap[winner.CharacterId] = (uint)Math.Max(1, (int)winnerElo + rankChange);
+                    newEloMap[loser.CharacterId]  = (uint)Math.Max(1, (int)loserElo  - rankChange);
+                }
+            }
+            else if (ActiveEvent.EventType.Equals("2v2"))
+            {
+                // Average-ELO team comparison; each individual gains/loses the same delta.
+                double winnerTeamEloAvg = winners.Average(w =>
+                    (double)(DatabaseManager.Log.GetCharacterArenaStatsByEvent(w.CharacterId, "2v2")?.Elo ?? 1500));
+                double loserTeamEloAvg  = losers.Average(l =>
+                    (double)(DatabaseManager.Log.GetCharacterArenaStatsByEvent(l.CharacterId,  "2v2")?.Elo ?? 1500));
 
-                    if (!newRankings.ContainsKey(winner.CharacterId))
-                        newRankings.Add(winner.CharacterId, winnerNewRank);
-                    else
-                        newRankings[winner.CharacterId] = winnerNewRank;
+                var rankChange = ArenaRanking.GetRankChange((uint)winnerTeamEloAvg, (uint)loserTeamEloAvg, 32);
 
-                    if (!newRankings.ContainsKey(loser.CharacterId))
-                        newRankings.Add(loser.CharacterId, loserNewRank);
-                    else
-                        newRankings[loser.CharacterId] = loserNewRank;
+                foreach (var w in winners)
+                {
+                    var currentElo = DatabaseManager.Log.GetCharacterArenaStatsByEvent(w.CharacterId, "2v2")?.Elo ?? 1500;
+                    newEloMap[w.CharacterId] = (uint)Math.Max(1, (int)currentElo + rankChange);
+                }
+                foreach (var l in losers)
+                {
+                    var currentElo = DatabaseManager.Log.GetCharacterArenaStatsByEvent(l.CharacterId, "2v2")?.Elo ?? 1500;
+                    newEloMap[l.CharacterId] = (uint)Math.Max(1, (int)currentElo - rankChange);
+                }
+
+                // Update team-pair standings
+                uint winnerTeamSurvived = (uint)winners.Count(w => !w.IsEliminated && !w.IsDisqualified);
+                uint loserTeamSurvived  = 0;
+
+                var winnersSorted = winners.OrderBy(w => w.CharacterId).ToList();
+                var losersSorted  = losers .OrderBy(l => l.CharacterId).ToList();
+
+                if (winnersSorted.Count == 2)
+                {
+                    var eloA = newEloMap.TryGetValue(winnersSorted[0].CharacterId, out var eA) ? eA : 1500u;
+                    var eloB = newEloMap.TryGetValue(winnersSorted[1].CharacterId, out var eB) ? eB : 1500u;
+                    var teamWinnerElo = (eloA + eloB) / 2;
+                    DatabaseManager.Log.AddToArenaTeamStats(
+                        winnersSorted[0].CharacterId, winnersSorted[0].CharacterName,
+                        winnersSorted[1].CharacterId, winnersSorted[1].CharacterName,
+                        1, 1, 0, 0, 0, winnerTeamSurvived, teamWinnerElo);
+                }
+                if (losersSorted.Count == 2)
+                {
+                    var teamLoserEloA = newEloMap.TryGetValue(losersSorted[0].CharacterId, out var eLa) ? eLa : 1500u;
+                    var teamLoserEloB = newEloMap.TryGetValue(losersSorted[1].CharacterId, out var eLb) ? eLb : 1500u;
+                    var teamLoserElo  = (teamLoserEloA + teamLoserEloB) / 2;
+                    DatabaseManager.Log.AddToArenaTeamStats(
+                        losersSorted[0].CharacterId, losersSorted[0].CharacterName,
+                        losersSorted[1].CharacterId, losersSorted[1].CharacterName,
+                        1, 0, 0, 1, 0, 0, teamLoserElo);
                 }
             }
 
             foreach (var winner in winners)
             {
-                uint? newRank = null;
-                if (newRankings.ContainsKey(winner.CharacterId))
-                    newRank = newRankings[winner.CharacterId];
+                uint? newElo = newEloMap.TryGetValue(winner.CharacterId, out var e) ? e : (uint?)null;
+
+                // FFA / Tugak winners always finish 1st
+                uint ffaPoints = (ActiveEvent.EventType.Equals("ffa") || ActiveEvent.EventType.Equals("tugak"))
+                    ? ArenaRanking.GetFfaPlacementPoints(1)
+                    : 0;
+
+                // 2v2 survival: winner survived if not eliminated
+                bool survived2v2 = ActiveEvent.EventType.Equals("2v2") && !winner.IsEliminated && !winner.IsDisqualified;
 
                 DatabaseManager.Log.AddToArenaStats(
                     winner.CharacterId, winner.CharacterName, winner.EventType,
                     1, 1, 0, 0, 0,
                     winner.TotalDeaths, winner.TotalKills, winner.TotalDmgDealt, winner.TotalDmgReceived,
-                    newRank);
+                    newElo, ffaPoints, survived2v2);
 
                 var player = PlayerManager.GetOnlinePlayer(winner.CharacterId);
                 if (player != null)
@@ -819,13 +867,13 @@ namespace ACE.Server.Entity
 
             foreach (var loser in losers)
             {
-                bool isFFA = loser.EventType.Equals("ffa") || loser.EventType.Equals("tugak");
+                bool isFFA      = loser.EventType.Equals("ffa") || loser.EventType.Equals("tugak");
                 bool isOvertime = this.ActiveEvent.IsOvertime;
-                bool isDraw = (!isFFA && isOvertime) || (isFFA && loser.FinishPlace <= 3 && loser.FinishPlace > 0);
+                bool isDraw     = (!isFFA && isOvertime) || (isFFA && loser.FinishPlace <= 3 && loser.FinishPlace > 0);
 
-                uint? newRank = null;
-                if (newRankings.ContainsKey(loser.CharacterId))
-                    newRank = newRankings[loser.CharacterId];
+                uint? newElo = newEloMap.TryGetValue(loser.CharacterId, out var el) ? el : (uint?)null;
+
+                uint ffaPoints = isFFA ? ArenaRanking.GetFfaPlacementPoints(loser.FinishPlace) : 0;
 
                 DatabaseManager.Log.AddToArenaStats(
                     loser.CharacterId, loser.CharacterName, loser.EventType,
@@ -834,7 +882,7 @@ namespace ACE.Server.Entity
                     isDraw || isOvertime ? 0 : (uint)1,
                     loser.FinishPlace == -1 ? 1 : (uint)0,
                     loser.TotalDeaths, loser.TotalKills, loser.TotalDmgDealt, loser.TotalDmgReceived,
-                    newRank);
+                    newElo, ffaPoints);
 
                 var player = PlayerManager.GetOnlinePlayer(loser.CharacterId);
                 if (player != null)
@@ -1173,17 +1221,23 @@ namespace ACE.Server.Entity
 
             foreach (var arenaPlayer in ActiveEvent.Players)
             {
-                var isLoss = (arenaPlayer.FinishPlace > 3 || arenaPlayer.FinishPlace < 1) &&
+                bool isFFA  = arenaPlayer.EventType.Equals("ffa") || arenaPlayer.EventType.Equals("tugak");
+                var isLoss  = (arenaPlayer.FinishPlace > 3 || arenaPlayer.FinishPlace < 1) &&
                     !arenaPlayer.EventType.ToLower().Equals("group");
                 var isDq = arenaPlayer.FinishPlace == -1;
 
+                // FFA / Tugak: award placement points even on timeout
+                uint ffaPoints = isFFA ? ArenaRanking.GetFfaPlacementPoints(arenaPlayer.FinishPlace) : 0;
+
+                // 1v1 / 2v2 draw: ELO unchanged but LastMatchDatetime still refreshes (newElo = null)
                 DatabaseManager.Log.AddToArenaStats(
                     arenaPlayer.CharacterId, arenaPlayer.CharacterName, arenaPlayer.EventType,
                     1, 0,
                     isLoss ? 0 : (uint)1,
                     isLoss ? 1 : (uint)0,
                     isDq ? 1 : (uint)0,
-                    arenaPlayer.TotalDeaths, arenaPlayer.TotalKills, arenaPlayer.TotalDmgDealt, arenaPlayer.TotalDmgReceived);
+                    arenaPlayer.TotalDeaths, arenaPlayer.TotalKills, arenaPlayer.TotalDmgDealt, arenaPlayer.TotalDmgReceived,
+                    null, ffaPoints);
 
                 var player = PlayerManager.GetOnlinePlayer(arenaPlayer.CharacterId);
                 if (player != null)

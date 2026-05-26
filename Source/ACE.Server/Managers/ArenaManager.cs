@@ -26,11 +26,23 @@ namespace ACE.Server.Managers
             arenaLocations = ArenaLocation.InitializeArenaLocations();
         }
 
-        private static DateTime LastTickDateTime = DateTime.MinValue;
+        private static DateTime LastTickDateTime  = DateTime.MinValue;
+        private static DateTime LastDecayTickDate = DateTime.MinValue;
+
         public static void Tick()
         {
             if (DateTime.Now.AddSeconds(-3) < LastTickDateTime)
                 return;
+
+            // Apply ELO decay once per calendar day regardless of arena enabled/disabled state.
+            // Each event category (1v1, 2v2) decays independently; playing one does not
+            // reset the other.
+            if (DateTime.Now.Date > LastDecayTickDate.Date)
+            {
+                LastDecayTickDate = DateTime.Now;
+                DatabaseManager.Log.ApplyArenaEloDecay();
+                log.Info("[Arena] Daily ELO decay applied.");
+            }
 
             bool isArenasDisabled = PropertyManager.GetBool("disable_arenas").Item;
             if (isArenasDisabled)

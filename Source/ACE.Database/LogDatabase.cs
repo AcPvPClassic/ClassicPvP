@@ -209,7 +209,25 @@ namespace ACE.Database
             return 0;
         }
 
-        public void AddToArenaStats(uint characterId, string characterName, string eventType, uint totalMatches, uint totalWins, uint totalDraws, uint totalLosses, uint totalDisqualified, uint totalDeaths, uint totalKills, uint totalDmgDealt, uint totalDmgReceived, uint? newRankPoints = null)
+        /// <summary>
+        /// Updates or creates the arena stats row for a character after a match.
+        /// </summary>
+        /// <param name="newElo">
+        /// If set, replaces the stored raw ELO (1v1 / 2v2 only).
+        /// Pass null for FFA, Tugak, draw results, or any case where ELO should not change.
+        /// </param>
+        /// <param name="addRankPoints">
+        /// Amount to add to the stored RankPoints column (FFA / Tugak placement points).
+        /// Has no effect on the composite score used for 1v1 / 2v2 leaderboards.
+        /// </param>
+        /// <param name="survived">
+        /// Whether to increment TotalSurvived (2v2 survival bonus; always false for other modes).
+        /// </param>
+        public void AddToArenaStats(
+            uint characterId, string characterName, string eventType,
+            uint totalMatches, uint totalWins, uint totalDraws, uint totalLosses, uint totalDisqualified,
+            uint totalDeaths, uint totalKills, uint totalDmgDealt, uint totalDmgReceived,
+            uint? newElo = null, uint addRankPoints = 0, bool survived = false)
         {
             if (!IsConfigured) return;
             try
@@ -223,7 +241,8 @@ namespace ACE.Database
                         {
                             CharacterId = characterId,
                             CharacterName = characterName,
-                            EventType = eventType
+                            EventType = eventType,
+                            Elo = 1500
                         };
                         context.ArenaCharacterStats.Add(stats);
                     }
@@ -241,7 +260,17 @@ namespace ACE.Database
                     stats.TotalKills        += totalKills;
                     stats.TotalDmgDealt     += totalDmgDealt;
                     stats.TotalDmgReceived  += totalDmgReceived;
-                    stats.RankPoints = newRankPoints.HasValue ? newRankPoints.Value : stats.RankPoints;
+                    stats.LastMatchDatetime  = DateTime.Now;
+                    stats.LastDecayDatetime  = null; // reset decay grace period on match play
+
+                    if (newElo.HasValue)
+                        stats.Elo = newElo.Value;
+
+                    if (addRankPoints > 0)
+                        stats.RankPoints += addRankPoints;
+
+                    if (survived)
+                        stats.TotalSurvived++;
 
                     context.SaveChanges();
                 }
@@ -252,6 +281,72 @@ namespace ACE.Database
             }
         }
 
+        /// <summary>
+        /// Updates or creates the team-pair ranking row for a 2v2 match.
+        /// Team members must be supplied in any order; the team key is sorted internally.
+        /// </summary>
+        public void AddToArenaTeamStats(
+            uint charIdA, string charNameA, uint charIdB, string charNameB,
+            uint totalMatches, uint totalWins, uint totalDraws, uint totalLosses, uint totalDisqualified,
+            uint totalSurvived, uint? newElo = null)
+        {
+            if (!IsConfigured) return;
+            try
+            {
+                // Canonical key: lower ID first
+                var (loId, loName, hiId, hiName) = charIdA <= charIdB
+                    ? (charIdA, charNameA, charIdB, charNameB)
+                    : (charIdB, charNameB, charIdA, charNameA);
+                string teamKey = $"{loId}_{hiId}";
+
+                using (var context = new LogDbContext())
+                {
+                    var team = context.ArenaTeamStats.FirstOrDefault(x => x.TeamKey == teamKey);
+                    if (team == null)
+                    {
+                        team = new ArenaTeamStats
+                        {
+                            TeamKey        = teamKey,
+                            CharacterIdA   = loId,
+                            CharacterNameA = loName,
+                            CharacterIdB   = hiId,
+                            CharacterNameB = hiName,
+                            Elo            = 1500
+                        };
+                        context.ArenaTeamStats.Add(team);
+                    }
+                    else
+                    {
+                        // Keep names current in case of rename
+                        team.CharacterNameA = loName;
+                        team.CharacterNameB = hiName;
+                        context.Entry(team).State = EntityState.Modified;
+                    }
+
+                    team.TotalMatches      += totalMatches;
+                    team.TotalWins         += totalWins;
+                    team.TotalDraws        += totalDraws;
+                    team.TotalLosses       += totalLosses;
+                    team.TotalDisqualified += totalDisqualified;
+                    team.TotalSurvived     += totalSurvived;
+                    team.LastMatchDatetime  = DateTime.Now;
+                    team.LastDecayDatetime  = null; // reset decay grace period on match play
+
+                    if (newElo.HasValue)
+                        team.Elo = newElo.Value;
+
+                    // Keep RankPoints in sync with the composite score for display
+                    team.RankPoints = ArenaRanking.ComputeCompositeScore(team);
+
+                    context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception saving ArenaTeamStats. ex: {ex}");
+            }
+        }
+
         public ArenaCharacterStats GetCharacterArenaStatsByEvent(uint characterId, string eventType)
         {
             if (!IsConfigured) return null;
@@ -259,7 +354,12 @@ namespace ACE.Database
             {
                 using (var context = new LogDbContext())
                 {
-                    return context.ArenaCharacterStats.FirstOrDefault(x => x.CharacterId == characterId && x.EventType.Equals(eventType));
+                    var stats = context.ArenaCharacterStats.FirstOrDefault(x => x.CharacterId == characterId && x.EventType.Equals(eventType));
+                    if (stats != null)
+                        stats.CompositeScore = IsEloEventType(eventType)
+                            ? ArenaRanking.ComputeCompositeScore(stats)
+                            : stats.RankPoints;
+                    return stats;
                 }
             }
             catch (Exception ex)
@@ -285,11 +385,24 @@ namespace ACE.Database
 
                     void AppendStats(ArenaCharacterStats s, string label, bool showRank)
                     {
+                        bool isElo = IsEloEventType(s.EventType);
+                        uint displayScore = isElo
+                            ? ArenaRanking.ComputeCompositeScore(s)
+                            : s.RankPoints;
+
                         returnMsg.Append($"{label}\n");
                         if (showRank)
                         {
-                            returnMsg.Append($"  Rank: {GetArenaRank(s.EventType, s.RankPoints).ToString("n0")}\n");
-                            returnMsg.Append($"  Rank Points: {s.RankPoints.ToString("n0")}\n");
+                            int rank = isElo ? GetArenaRank(s) : GetArenaRankByPoints(s.EventType, s.RankPoints);
+                            returnMsg.Append($"  Rank: {rank.ToString("n0")}\n");
+                            if (isElo)
+                            {
+                                returnMsg.Append($"  Score: {displayScore.ToString("n0")}  (ELO: {s.Elo.ToString("n0")}, Wins: {s.TotalWins.ToString("n0")}, Survived: {s.TotalSurvived.ToString("n0")})\n");
+                            }
+                            else
+                            {
+                                returnMsg.Append($"  Points: {displayScore.ToString("n0")}\n");
+                            }
                         }
                         returnMsg.Append($"  Matches: {s.TotalMatches.ToString("n0")}\n");
                         returnMsg.Append($"  Wins: {s.TotalWins.ToString("n0")}\n");
@@ -302,8 +415,8 @@ namespace ACE.Database
                         returnMsg.Append($"  Damage Received: {s.TotalDmgReceived.ToString("n0")}\n\n");
                     }
 
-                    AppendStats(stats.FirstOrDefault(x => x.EventType.Equals("1v1"))   ?? new ArenaCharacterStats { EventType = "1v1"   }, "1v1",   true);
-                    AppendStats(stats.FirstOrDefault(x => x.EventType.Equals("2v2"))   ?? new ArenaCharacterStats { EventType = "2v2"   }, "2v2",   true);
+                    AppendStats(stats.FirstOrDefault(x => x.EventType.Equals("1v1"))   ?? new ArenaCharacterStats { EventType = "1v1",   Elo = 1500 }, "1v1",   true);
+                    AppendStats(stats.FirstOrDefault(x => x.EventType.Equals("2v2"))   ?? new ArenaCharacterStats { EventType = "2v2",   Elo = 1500 }, "2v2",   true);
                     AppendStats(stats.FirstOrDefault(x => x.EventType.Equals("ffa"))   ?? new ArenaCharacterStats { EventType = "ffa"   }, "FFA",   true);
                     AppendStats(stats.FirstOrDefault(x => x.EventType.Equals("tugak")) ?? new ArenaCharacterStats { EventType = "tugak" }, "Tugak", true);
                     AppendStats(stats.FirstOrDefault(x => x.EventType.Equals("group")) ?? new ArenaCharacterStats { EventType = "group" }, "Group", false);
@@ -329,25 +442,63 @@ namespace ACE.Database
             return returnMsg.ToString();
         }
 
-        public int GetArenaRank(string eventType, uint rankPoints)
+        // 1v1 and 2v2 are ELO-based; ffa, tugak, group are not.
+        private static bool IsEloEventType(string eventType) =>
+            eventType == "1v1" || eventType == "2v2";
+
+        /// <summary>
+        /// Returns the player's leaderboard rank for a 1v1 or 2v2 event type.
+        /// Loads all rows in memory and computes composite scores with decay.
+        /// </summary>
+        public int GetArenaRank(ArenaCharacterStats playerStats)
+        {
+            if (!IsConfigured) return -1;
+            try
+            {
+                uint playerScore = ArenaRanking.ComputeCompositeScore(playerStats);
+                using (var context = new LogDbContext())
+                {
+                    var all = context.ArenaCharacterStats
+                        .Where(x => x.EventType.Equals(playerStats.EventType))
+                        .ToList();
+                    int higher = all.Count(x => ArenaRanking.ComputeCompositeScore(x) > playerScore);
+                    return higher + 1;
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error in GetArenaRank (ELO). ex:{ex}");
+            }
+            return -1;
+        }
+
+        /// <summary>
+        /// Returns the player's leaderboard rank for FFA / Tugak (points-based, SQL-side).
+        /// </summary>
+        public int GetArenaRankByPoints(string eventType, uint rankPoints)
         {
             if (!IsConfigured) return -1;
             try
             {
                 using (var context = new LogDbContext())
                 {
-                    var higherPlayers = context.ArenaCharacterStats.Where(x => x.EventType.Equals(eventType) && x.RankPoints > rankPoints);
-                    return (higherPlayers?.Count() ?? 0) + 1;
+                    int higher = context.ArenaCharacterStats
+                        .Count(x => x.EventType.Equals(eventType) && x.RankPoints > rankPoints);
+                    return higher + 1;
                 }
             }
             catch (Exception ex)
             {
-                log.Error($"Error in GetArenaRank. ex:{ex}");
+                log.Error($"Error in GetArenaRankByPoints. ex:{ex}");
             }
-
             return -1;
         }
 
+        /// <summary>
+        /// Returns the top 10 players for the given event type.
+        /// For 1v1/2v2, sorts by composite score (with decay) computed in memory.
+        /// For FFA/Tugak, sorts by accumulated placement points via SQL.
+        /// </summary>
         public List<ArenaCharacterStats> GetArenaTopRankedByEventType(string eventType)
         {
             if (!IsConfigured) return new List<ArenaCharacterStats>();
@@ -355,13 +506,33 @@ namespace ACE.Database
             {
                 using (var context = new LogDbContext())
                 {
-                    var topTen = context.ArenaCharacterStats
-                        .Where(x => x.EventType.Equals(eventType))
-                        ?.OrderByDescending(x => x.RankPoints)
-                        ?.Take(10);
+                    if (IsEloEventType(eventType))
+                    {
+                        // Load all rows and rank by composite score in memory so
+                        // ELO decay is applied correctly.
+                        var all = context.ArenaCharacterStats
+                            .Where(x => x.EventType.Equals(eventType))
+                            .ToList();
 
-                    if (topTen != null)
-                        return topTen.ToList();
+                        foreach (var s in all)
+                            s.CompositeScore = ArenaRanking.ComputeCompositeScore(s);
+
+                        return all.OrderByDescending(x => x.CompositeScore).Take(10).ToList();
+                    }
+                    else
+                    {
+                        // FFA / Tugak: accumulated placement points, sort in SQL.
+                        var topTen = context.ArenaCharacterStats
+                            .Where(x => x.EventType.Equals(eventType))
+                            .OrderByDescending(x => x.RankPoints)
+                            .Take(10)
+                            .ToList();
+
+                        foreach (var s in topTen)
+                            s.CompositeScore = s.RankPoints;
+
+                        return topTen;
+                    }
                 }
             }
             catch (Exception ex)
@@ -370,6 +541,95 @@ namespace ACE.Database
             }
 
             return new List<ArenaCharacterStats>();
+        }
+
+        /// <summary>
+        /// Returns the top 10 2v2 team pairs ranked by composite score (with ELO decay).
+        /// </summary>
+        public List<ArenaTeamStats> GetArenaTopRankedTeams()
+        {
+            if (!IsConfigured) return new List<ArenaTeamStats>();
+            try
+            {
+                using (var context = new LogDbContext())
+                {
+                    var all = context.ArenaTeamStats.ToList();
+                    foreach (var t in all)
+                        t.CompositeScore = ArenaRanking.ComputeCompositeScore(t);
+                    return all.OrderByDescending(x => x.CompositeScore).Take(10).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error in GetArenaTopRankedTeams. ex:{ex}");
+            }
+            return new List<ArenaTeamStats>();
+        }
+
+        /// <summary>
+        /// Applies daily ELO decay to all 1v1 and 2v2 character and team stats rows.
+        /// Called once per day by ArenaManager.Tick().  Rows still within the
+        /// <see cref="ArenaRanking.EloDecayGracePeriodDays"/>-day grace period, or
+        /// already at the floor, are skipped.  Changes are persisted so that raw DB
+        /// queries always reflect accurate rank scores.
+        /// </summary>
+        public void ApplyArenaEloDecay()
+        {
+            if (!IsConfigured) return;
+            try
+            {
+                // ── Individual character stats ────────────────────────────────────
+                using (var context = new LogDbContext())
+                {
+                    var eloRows = context.ArenaCharacterStats
+                        .Where(x => x.EventType == "1v1" || x.EventType == "2v2")
+                        .ToList();
+
+                    bool anyChanged = false;
+                    foreach (var stats in eloRows)
+                    {
+                        var result = ArenaRanking.ComputeAndApplyDecay(
+                            stats.Elo, stats.LastMatchDatetime, stats.LastDecayDatetime);
+
+                        if (!result.HasValue) continue;
+
+                        stats.Elo               = result.Value.newElo;
+                        stats.LastDecayDatetime = result.Value.newLastDecayDatetime;
+                        anyChanged = true;
+                    }
+
+                    if (anyChanged)
+                        context.SaveChanges();
+                }
+
+                // ── Team stats ────────────────────────────────────────────────────
+                using (var context = new LogDbContext())
+                {
+                    var teamRows = context.ArenaTeamStats.ToList();
+
+                    bool anyChanged = false;
+                    foreach (var team in teamRows)
+                    {
+                        var result = ArenaRanking.ComputeAndApplyDecay(
+                            team.Elo, team.LastMatchDatetime, team.LastDecayDatetime);
+
+                        if (!result.HasValue) continue;
+
+                        team.Elo               = result.Value.newElo;
+                        team.LastDecayDatetime = result.Value.newLastDecayDatetime;
+                        // Keep RankPoints snapshot current for raw DB queries
+                        team.RankPoints        = ArenaRanking.ComputeCompositeScore(team);
+                        anyChanged = true;
+                    }
+
+                    if (anyChanged)
+                        context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception in ApplyArenaEloDecay. Ex: {ex}");
+            }
         }
 
         public uint CreateArenaPlayer(ArenaPlayer player)
