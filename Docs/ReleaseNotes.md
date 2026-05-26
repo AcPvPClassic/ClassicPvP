@@ -96,6 +96,16 @@ XP passed up to you through your allegiance chain counts against your **Monster 
 **PvP Overflow — Ancient Bottles**
 PvP is the one category with a safety valve. If your PvP bucket is full — or you're at the global cap — any PvP XP you would have earned doesn't vanish. Instead, it is absorbed by **Ancient Bottles** in your inventory (if you have any). You can then use an Ancient Bottle later when your PvP budget has room, releasing its stored XP at that point. The bottle holds up to 100 million XP and tells you how full it is as it absorbs overflow.
 
+### Checking Your Status
+
+Use `/season status` to see a live snapshot of the current season:
+
+- **Season day** — how many days have elapsed since launch
+- **Level cap** — the current maximum level (or "post-cap XP grind" once level 126 is reached)
+- **XP cap** — the exact total-XP ceiling in effect right now
+- **Next advance** — hours and minutes until the cap ticks up again
+- **XP budgets** — your Monster, Quest, and PK XP earned vs. your budget for this window, with a percentage and a `[FULL]` indicator when a bucket is exhausted
+
 ---
 
 ## 👑 Allegiance Passup XP
