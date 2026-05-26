@@ -1,0 +1,53 @@
+{
+  // pvp_dmg_mod_presets.json
+  //
+  // Defines sets of pvp_dmg_mod property values that are automatically applied
+  // when the rolling global level cap reaches a specific level threshold.
+  //
+  // HOW IT WORKS
+  //   - The server evaluates presets once per day when the rolling XP cap updates.
+  //   - The "active" preset is the one with the highest levelThreshold that is
+  //     less than or equal to the current global level cap.
+  //   - Each preset is a PARTIAL override: only the properties listed are changed.
+  //     All other pvp_dmg_mod values retain whatever is stored in the database.
+  //   - Presets only apply forward (cap rises). Manually lowering the cap does NOT
+  //     automatically roll back already-applied presets.
+  //   - Use /reloadpvpdmgpresets to hot-reload this file without a server restart.
+  //   - Use /applypvpdmgpreset <level> to force-apply a preset for testing.
+  //   - Use /pvpdmgpresets to view current preset status.
+  //
+  // VALID PROPERTY KEYS
+  //   Any key registered in DefaultPropertyManager as a double property beginning
+  //   with "pvp_dmg_mod_" is valid. Examples:
+  //     pvp_dmg_mod_low_war, pvp_dmg_mod_high_war
+  //     pvp_dmg_mod_low_sword, pvp_dmg_mod_high_sword
+  //     pvp_dmg_mod_low_crit_dmg, pvp_dmg_mod_high_crit_dmg
+  //     pvp_dmg_mod_low_level, pvp_dmg_mod_high_level  (the reference levels for interpolation)
+  //     pvp_dmg_mod_war, pvp_dmg_mod_void              (the flat Doctide-style modifiers)
+  //   See PropertyManager.cs DefaultDoubleProperties for the full list.
+  //
+  // EXAMPLE (uncomment and edit to activate):
+  //
+  //   "presets": [
+  //     {
+  //       "levelThreshold": 20,
+  //       "description": "Early game — gentle war magic reduction",
+  //       "properties": {
+  //         "pvp_dmg_mod_low_war": 0.85,
+  //         "pvp_dmg_mod_high_war": 0.80
+  //       }
+  //     },
+  //     {
+  //       "levelThreshold": 50,
+  //       "description": "Mid game — tighten war and crit damage",
+  //       "properties": {
+  //         "pvp_dmg_mod_low_war": 0.75,
+  //         "pvp_dmg_mod_high_war": 0.70,
+  //         "pvp_dmg_mod_low_war_crit_dmg": 0.90,
+  //         "pvp_dmg_mod_high_war_crit_dmg": 0.85
+  //       }
+  //     }
+  //   ]
+
+  "presets": []
+}

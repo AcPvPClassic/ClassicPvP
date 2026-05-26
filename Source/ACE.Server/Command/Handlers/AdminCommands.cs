@@ -5916,6 +5916,137 @@ namespace ACE.Server.Command.Handlers
             }
         }
 
+        // ── pvp_dmg_mod Preset Commands ──────────────────────────────────────────
+
+        [CommandHandler("pvpdmgpresets", AccessLevel.Admin, CommandHandlerFlag.None, 0,
+            "Shows the loaded pvp_dmg_mod presets and which one is currently active",
+            "Usage: /pvpdmgpresets")]
+        public static void HandlePvpDmgPresets(Session session, params string[] parameters)
+        {
+            try
+            {
+                var presets     = Managers.RollingLevelCapManager.GetLoadedPresets();
+                var xpCap       = Managers.RollingLevelCapManager.GetCurrentXpCap();
+                var levelCap    = Managers.RollingLevelCapManager.GetCurrentLevelCap(xpCap);
+                var activePreset= Managers.RollingLevelCapManager.GetActivePreset(levelCap);
+                var lastApplied = PropertyManager.GetLong("pvp_dmg_mod_preset_applied_level").Item;
+
+                var sb = new System.Text.StringBuilder("pvp_dmg_mod Presets:\n");
+                sb.AppendLine($"  Current level cap:  {(levelCap > 0 ? levelCap.ToString() : "not running")}");
+                sb.AppendLine($"  Last applied level: {(lastApplied >= 0 ? lastApplied.ToString() : "none")}");
+                sb.AppendLine($"  Active preset:      {(activePreset != null ? $"threshold {activePreset.LevelThreshold} — \"{activePreset.Description}\"" : "none")}");
+                sb.AppendLine($"  Loaded presets:     {presets.Count}");
+
+                if (presets.Count == 0)
+                {
+                    sb.AppendLine("  (no presets defined — edit pvp_dmg_mod_presets.json and run /reloadpvpdmgpresets)");
+                }
+                else
+                {
+                    foreach (var p in presets)
+                    {
+                        var isActive  = activePreset != null && p.LevelThreshold == activePreset.LevelThreshold;
+                        var isApplied = p.LevelThreshold == lastApplied;
+                        var tag = isActive && isApplied ? " [ACTIVE & APPLIED]"
+                                : isActive              ? " [ACTIVE — not yet applied]"
+                                : isApplied             ? " [APPLIED (superseded)]"
+                                : "";
+
+                        sb.AppendLine($"\n  Threshold {p.LevelThreshold}{tag}");
+                        if (!string.IsNullOrWhiteSpace(p.Description))
+                            sb.AppendLine($"    Description: {p.Description}");
+                        sb.AppendLine($"    Properties ({p.Properties.Count}):");
+                        foreach (var kvp in p.Properties)
+                            sb.AppendLine($"      {kvp.Key} = {kvp.Value}");
+                    }
+                }
+
+                CommandHandlerHelper.WriteOutputInfo(session, sb.ToString().TrimEnd());
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error in AdminCommands.HandlePvpDmgPresets. ex: {ex}");
+            }
+        }
+
+        [CommandHandler("reloadpvpdmgpresets", AccessLevel.Admin, CommandHandlerFlag.None, 0,
+            "Hot-reloads pvp_dmg_mod_presets.json from disk without a server restart",
+            "Usage: /reloadpvpdmgpresets\nDoes NOT automatically re-apply presets — use /applypvpdmgpreset or wait for the next daily tick.")]
+        public static void HandleReloadPvpDmgPresets(Session session, params string[] parameters)
+        {
+            try
+            {
+                var result = Managers.RollingLevelCapManager.LoadPresets();
+                CommandHandlerHelper.WriteOutputInfo(session, $"pvp_dmg_mod presets reloaded: {result}");
+                PlayerManager.BroadcastToAuditChannel(session?.Player, $"{session?.Player?.Name ?? "CONSOLE"} reloaded pvp_dmg_mod presets: {result}");
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error in AdminCommands.HandleReloadPvpDmgPresets. ex: {ex}");
+            }
+        }
+
+        [CommandHandler("applypvpdmgpreset", AccessLevel.Admin, CommandHandlerFlag.None, 0,
+            "Force-applies the pvp_dmg_mod preset for a specific level threshold",
+            "Usage: /applypvpdmgpreset <levelThreshold>\n" +
+            "Applies all properties in the preset whose levelThreshold matches the given value.\n" +
+            "Run /pvpdmgpresets to see available thresholds.\n" +
+            "Omit the argument to apply the preset that would be active at the current level cap.")]
+        public static void HandleApplyPvpDmgPreset(Session session, params string[] parameters)
+        {
+            try
+            {
+                var presets = Managers.RollingLevelCapManager.GetLoadedPresets();
+                if (presets.Count == 0)
+                {
+                    CommandHandlerHelper.WriteOutputInfo(session, "No presets loaded. Edit pvp_dmg_mod_presets.json and run /reloadpvpdmgpresets.");
+                    return;
+                }
+
+                Managers.PvpDmgModPreset target;
+
+                if (parameters.Length == 0)
+                {
+                    // No argument — apply the currently active preset for the live level cap.
+                    var xpCap    = Managers.RollingLevelCapManager.GetCurrentXpCap();
+                    var levelCap = Managers.RollingLevelCapManager.GetCurrentLevelCap(xpCap);
+                    target = Managers.RollingLevelCapManager.GetActivePreset(levelCap);
+                    if (target == null)
+                    {
+                        CommandHandlerHelper.WriteOutputInfo(session, $"No preset active at the current level cap ({levelCap}). Specify a threshold explicitly.");
+                        return;
+                    }
+                }
+                else if (int.TryParse(parameters[0], out int threshold))
+                {
+                    target = null;
+                    foreach (var p in presets)
+                    {
+                        if (p.LevelThreshold == threshold) { target = p; break; }
+                    }
+                    if (target == null)
+                    {
+                        var available = string.Join(", ", presets.Select(p => p.LevelThreshold));
+                        CommandHandlerHelper.WriteOutputInfo(session, $"No preset with threshold {threshold}. Available: [{available}]");
+                        return;
+                    }
+                }
+                else
+                {
+                    CommandHandlerHelper.WriteOutputInfo(session, "Usage: /applypvpdmgpreset [levelThreshold]");
+                    return;
+                }
+
+                var result = Managers.RollingLevelCapManager.ApplyPreset(target, reason: $"admin command by {session?.Player?.Name ?? "CONSOLE"}");
+                CommandHandlerHelper.WriteOutputInfo(session, result);
+                PlayerManager.BroadcastToAuditChannel(session?.Player, $"{session?.Player?.Name ?? "CONSOLE"} force-applied pvp_dmg_mod preset: {result}");
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error in AdminCommands.HandleApplyPvpDmgPreset. ex: {ex}");
+            }
+        }
+
         #endregion Rolling XP Cap Commands
     }
 }

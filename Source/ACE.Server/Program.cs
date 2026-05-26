@@ -331,6 +331,9 @@ namespace ACE.Server
             log.Info("Initializing ArenaManager...");
             ArenaManager.Initialize();
 
+            log.Info("Loading pvp_dmg_mod presets...");
+            Managers.RollingLevelCapManager.LoadPresets();
+
             log.Info("Initializing TownControlManager...");
             TownControlManager.Initialize();
 

@@ -1,5 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
 
+using ACE.Common;
 using ACE.DatLoader;
 
 namespace ACE.Server.Managers
@@ -40,9 +45,16 @@ namespace ACE.Server.Managers
     ///                                                max all skills and attributes
     ///   rolling_xp_cap                    (long)   — computed XP cap (managed automatically)
     ///   rolling_xp_cap_timestamp          (long)   — last update time (managed automatically)
+    ///   pvp_dmg_mod_preset_applied_level  (long)   — level threshold of last applied preset
+    ///                                                (managed automatically)
     ///
     /// Note: allow_xp_at_max_level must be true (it is set automatically for Infiltration)
     /// for players at level 126 to continue earning XP during Phase 4.
+    ///
+    /// PvP damage modifier presets are defined in pvp_dmg_mod_presets.json in the server
+    /// output directory.  The active preset (highest threshold &lt;= current level cap) is
+    /// applied once per day alongside the XP cap update.  Use /reloadpvpdmgpresets to
+    /// hot-reload the JSON without a server restart.
     /// </summary>
     public static class RollingLevelCapManager
     {
@@ -56,11 +68,20 @@ namespace ACE.Server.Managers
 
         private static DateTime LastTickDateTime = DateTime.MinValue;
 
+        // ── pvp_dmg_mod preset state ──────────────────────────────────────────────
+
+        /// <summary>File name relative to the server's working / output directory.</summary>
+        private const string PRESET_FILE_NAME = "pvp_dmg_mod_presets.json";
+
+        /// <summary>In-memory preset list; replaced atomically on reload.</summary>
+        private static List<PvpDmgModPreset> _presets = new List<PvpDmgModPreset>();
+
         // ── Tick ─────────────────────────────────────────────────────────────────
 
         /// <summary>
         /// Called from WorldManager.Tick(). Throttled to once every 15 minutes.
-        /// Recomputes and persists rolling_xp_cap if a new calendar day has started.
+        /// Recomputes and persists rolling_xp_cap if a new calendar day has started,
+        /// then applies any pending pvp_dmg_mod preset.
         /// </summary>
         public static void Tick()
         {
@@ -152,6 +173,9 @@ namespace ACE.Server.Managers
 
                 log.Info($"RollingLevelCapManager: Updated rolling_xp_cap to {xpCap:N0} " +
                          $"(day {daysSinceStart}, {GetCapDescription(xpCap)}).");
+
+                // ── Apply pvp_dmg_mod preset if the level cap has reached a new threshold ──
+                ApplyPresetIfNeeded(levelCap);
             }
             catch (Exception ex)
             {
@@ -302,6 +326,147 @@ namespace ACE.Server.Managers
             int day = GetCurrentSeasonDay();
             if (day < 0 || day >= SEASON_END_DAY) return TimeSpan.Zero;
             return DateTime.UtcNow.Date.AddDays(1) - DateTime.UtcNow;
+        }
+
+        // ── pvp_dmg_mod preset management ─────────────────────────────────────────
+
+        /// <summary>
+        /// Loads (or reloads) pvp_dmg_mod_presets.json from the server's working directory.
+        /// Called once at startup and on demand via /reloadpvpdmgpresets.
+        /// Returns a human-readable status string suitable for admin output.
+        /// </summary>
+        public static string LoadPresets()
+        {
+            string path = ResolvePresetFilePath();
+
+            if (!File.Exists(path))
+            {
+                _presets = new List<PvpDmgModPreset>();
+                log.Info($"RollingLevelCapManager: {PRESET_FILE_NAME} not found at '{path}'. No presets loaded.");
+                return $"{PRESET_FILE_NAME} not found at '{path}'. No presets active.";
+            }
+
+            try
+            {
+                var json = File.ReadAllText(path);
+                var config = JsonSerializer.Deserialize<PvpDmgModPresetConfig>(json, ConfigManager.SerializerOptions);
+
+                if (config?.Presets == null || config.Presets.Count == 0)
+                {
+                    _presets = new List<PvpDmgModPreset>();
+                    log.Info($"RollingLevelCapManager: {PRESET_FILE_NAME} loaded — no presets defined.");
+                    return $"{PRESET_FILE_NAME} loaded — no presets defined.";
+                }
+
+                // Sort ascending by level threshold so the "highest ≤ cap" search is easy.
+                config.Presets.Sort((a, b) => a.LevelThreshold.CompareTo(b.LevelThreshold));
+                _presets = config.Presets;
+
+                log.Info($"RollingLevelCapManager: Loaded {_presets.Count} pvp_dmg_mod preset(s) from '{path}'. " +
+                         $"Thresholds: [{string.Join(", ", _presets.Select(p => p.LevelThreshold))}]");
+
+                return $"Loaded {_presets.Count} preset(s). Thresholds: [{string.Join(", ", _presets.Select(p => p.LevelThreshold))}]";
+            }
+            catch (Exception ex)
+            {
+                log.Error($"RollingLevelCapManager: Failed to load {PRESET_FILE_NAME}: {ex.Message}");
+                return $"Error loading {PRESET_FILE_NAME}: {ex.Message}";
+            }
+        }
+
+        /// <summary>
+        /// Returns a snapshot of the currently loaded presets (for admin display).
+        /// </summary>
+        public static IReadOnlyList<PvpDmgModPreset> GetLoadedPresets() => _presets;
+
+        /// <summary>
+        /// Returns the active preset for the given level cap, or null if none applies.
+        /// The active preset is the one with the highest LevelThreshold &lt;= levelCap.
+        /// </summary>
+        public static PvpDmgModPreset GetActivePreset(int levelCap)
+        {
+            PvpDmgModPreset active = null;
+            foreach (var p in _presets)
+            {
+                if (p.LevelThreshold <= levelCap)
+                    active = p;
+                else
+                    break;  // list is sorted ascending; no point continuing
+            }
+            return active;
+        }
+
+        /// <summary>
+        /// Checks whether the active preset for <paramref name="levelCap"/> differs from
+        /// the last-applied one, and if so applies it.  Called automatically from
+        /// <see cref="UpdateXpCap"/> each daily tick.
+        /// </summary>
+        private static void ApplyPresetIfNeeded(int levelCap)
+        {
+            if (_presets.Count == 0)
+                return;
+
+            var activePreset = GetActivePreset(levelCap);
+            if (activePreset == null)
+                return;
+
+            var lastAppliedLevel = PropertyManager.GetLong("pvp_dmg_mod_preset_applied_level").Item;
+            if (activePreset.LevelThreshold == lastAppliedLevel)
+                return;  // already applied — nothing to do
+
+            ApplyPreset(activePreset, reason: $"level cap reached {levelCap} (threshold {activePreset.LevelThreshold})");
+        }
+
+        /// <summary>
+        /// Applies all properties in <paramref name="preset"/> via PropertyManager and
+        /// records the threshold in pvp_dmg_mod_preset_applied_level.
+        /// Returns a summary string suitable for admin output.
+        /// </summary>
+        public static string ApplyPreset(PvpDmgModPreset preset, string reason = "manual")
+        {
+            if (preset == null)
+                return "No preset to apply.";
+
+            int applied = 0, skipped = 0;
+            var skippedKeys = new List<string>();
+
+            foreach (var kvp in preset.Properties)
+            {
+                if (PropertyManager.ModifyDouble(kvp.Key, kvp.Value))
+                    applied++;
+                else
+                {
+                    skipped++;
+                    skippedKeys.Add(kvp.Key);
+                }
+            }
+
+            PropertyManager.ModifyLong("pvp_dmg_mod_preset_applied_level", preset.LevelThreshold);
+
+            var desc = string.IsNullOrWhiteSpace(preset.Description) ? "(no description)" : preset.Description;
+            var summary = $"Applied pvp_dmg_mod preset (threshold {preset.LevelThreshold} — \"{desc}\") " +
+                          $"via {reason}: {applied} propert{(applied == 1 ? "y" : "ies")} set";
+
+            if (skipped > 0)
+                summary += $", {skipped} unknown key(s) skipped: [{string.Join(", ", skippedKeys)}]";
+
+            log.Info($"RollingLevelCapManager: {summary}.");
+            return summary;
+        }
+
+        // ── Helpers ───────────────────────────────────────────────────────────────
+
+        private static string ResolvePresetFilePath()
+        {
+            // Prefer the directory of the executing assembly (the server output dir),
+            // fall back to the current working directory.
+            var assemblyDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            if (!string.IsNullOrEmpty(assemblyDir))
+            {
+                var p = Path.Combine(assemblyDir, PRESET_FILE_NAME);
+                if (File.Exists(p)) return p;
+            }
+            return Path.Combine(Environment.CurrentDirectory, PRESET_FILE_NAME);
         }
     }
 }
