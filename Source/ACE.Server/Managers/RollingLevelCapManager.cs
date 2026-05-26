@@ -256,5 +256,52 @@ namespace ACE.Server.Managers
             PropertyManager.ModifyLong("rolling_xp_cap_timestamp", 0);
             UpdateXpCap(startTimestamp);
         }
+
+        /// <summary>
+        /// Returns the current season day number (0-based, UTC).
+        /// Returns -1 if the season has not been started.
+        /// </summary>
+        public static int GetCurrentSeasonDay()
+        {
+            var startTimestamp = PropertyManager.GetLong("rolling_level_cap_start_timestamp").Item;
+            if (startTimestamp <= 0) return -1;
+            var startDate = DateTimeOffset.FromUnixTimeSeconds(startTimestamp).UtcDateTime.Date;
+            return Math.Max(0, (DateTime.UtcNow.Date - startDate).Days);
+        }
+
+        /// <summary>
+        /// Returns the maximum character level implied by <paramref name="xpCap"/> using
+        /// the dat-file XP table.  Returns 0 if the dat is unavailable or xpCap is 0.
+        /// </summary>
+        public static int GetCurrentLevelCap(long xpCap)
+        {
+            if (xpCap <= 0) return 0;
+            try
+            {
+                var xpTable        = DatManager.PortalDat.XpTable.CharacterLevelXPList;
+                var maxPossibleLvl = (int)xpTable.Count - 1;
+                int impliedLevel   = 0;
+                for (int lvl = 1; lvl <= maxPossibleLvl; lvl++)
+                {
+                    if ((long)xpTable[lvl] <= xpCap)
+                        impliedLevel = lvl;
+                    else
+                        break;
+                }
+                return impliedLevel;
+            }
+            catch { return 0; }
+        }
+
+        /// <summary>
+        /// Returns the time remaining until the cap next advances (next UTC midnight).
+        /// Returns <see cref="TimeSpan.Zero"/> if the season has ended or has not started.
+        /// </summary>
+        public static TimeSpan GetTimeUntilNextCapIncrease()
+        {
+            int day = GetCurrentSeasonDay();
+            if (day < 0 || day >= SEASON_END_DAY) return TimeSpan.Zero;
+            return DateTime.UtcNow.Date.AddDays(1) - DateTime.UtcNow;
+        }
     }
 }

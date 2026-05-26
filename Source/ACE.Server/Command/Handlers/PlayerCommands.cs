@@ -2806,5 +2806,86 @@ namespace ACE.Server.Command.Handlers
         }
 
         #endregion Arena
+
+        #region Season
+
+        [CommandHandler("season", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, 0,
+            "Shows current season status: cap level, XP cap, season day, time to next advance, and your per-category XP budget usage.",
+            "Usage: /season status")]
+        public static void HandleSeason(Session session, params string[] parameters)
+        {
+            if (!CheckPlayerCommandRateLimit(session))
+                return;
+
+            var sub = parameters.Length > 0 ? parameters[0].ToLower() : "status";
+            if (sub != "status")
+            {
+                CommandHandlerHelper.WriteOutputInfo(session, "Usage: /season status");
+                return;
+            }
+
+            if (!PropertyManager.GetBool("rolling_level_cap_enabled").Item ||
+                PropertyManager.GetLong("rolling_level_cap_start_timestamp").Item <= 0)
+            {
+                CommandHandlerHelper.WriteOutputInfo(session, "The season has not started yet.");
+                return;
+            }
+
+            var  player   = session.Player;
+            long xpCap    = RollingLevelCapManager.GetCurrentXpCap();
+            int  day      = RollingLevelCapManager.GetCurrentSeasonDay();
+            int  levelCap = RollingLevelCapManager.GetCurrentLevelCap(xpCap);
+
+            var sb = new StringBuilder();
+            sb.AppendLine("------- Season Status -------");
+            sb.AppendLine($"  Day:         {day}");
+
+            if (levelCap >= 126)
+                sb.AppendLine($"  Level Cap:   126  (post-cap XP grind)");
+            else
+                sb.AppendLine($"  Level Cap:   {levelCap}");
+
+            sb.AppendLine($"  XP Cap:      {xpCap:N0}");
+
+            // Time until next cap advance — rounded to nearest minute
+            var timeUntil = RollingLevelCapManager.GetTimeUntilNextCapIncrease();
+            if (timeUntil == TimeSpan.Zero)
+                sb.AppendLine($"  Next Advance: season cap is frozen");
+            else
+            {
+                int totalMinutes = (int)Math.Round(timeUntil.TotalMinutes);
+                sb.AppendLine($"  Next Advance: {totalMinutes / 60}h {totalMinutes % 60}m");
+            }
+
+            // Per-category XP budgets — use same fallback as enforcement code for
+            // players who haven't yet triggered a bucket reset this window.
+            double monsterRatio = PropertyManager.GetDouble("daily_monster_xp_category_ratio").Item;
+            double questRatio   = PropertyManager.GetDouble("daily_quest_xp_category_ratio").Item;
+            double pvpRatio     = PropertyManager.GetDouble("daily_pvp_xp_category_ratio").Item;
+
+            long monsterBudget = player.CapDailyMaxMonsterCat > 0 ? player.CapDailyMaxMonsterCat : (long)(xpCap * monsterRatio);
+            long questBudget   = player.CapDailyMaxQuestCat   > 0 ? player.CapDailyMaxQuestCat   : (long)(xpCap * questRatio);
+            long pvpBudget     = player.CapDailyMaxPvpCat     > 0 ? player.CapDailyMaxPvpCat     : (long)(xpCap * pvpRatio);
+
+            sb.AppendLine();
+            sb.AppendLine("  XP Budgets (reset each time cap advances):");
+            sb.AppendLine(FormatSeasonBudgetLine("  Monster", player.CapMonsterXp, monsterBudget));
+            sb.AppendLine(FormatSeasonBudgetLine("  Quest  ", player.CapQuestXp,   questBudget));
+            sb.AppendLine(FormatSeasonBudgetLine("  PK     ", player.CapPvpXp,     pvpBudget));
+            sb.Append("-----------------------------");
+
+            CommandHandlerHelper.WriteOutputInfo(session, sb.ToString());
+        }
+
+        private static string FormatSeasonBudgetLine(string label, long earned, long budget)
+        {
+            if (budget <= 0)
+                return $"{label}:  --";
+            double pct    = Math.Min(100.0, earned * 100.0 / budget);
+            string status = pct >= 100.0 ? " [FULL]" : $" ({pct:F1}%)";
+            return $"{label}:  {earned:N0} / {budget:N0}{status}";
+        }
+
+        #endregion Season
     }
 }
