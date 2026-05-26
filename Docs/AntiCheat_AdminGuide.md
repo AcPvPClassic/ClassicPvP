@@ -34,6 +34,10 @@ __Master Switches__ (enable these first)
   Geometry collision. Flags any position update where the physics engine
   could not reach the requested position without passing through solid
   geometry (wall-walk, out-of-bounds glitch, etc.).
+  Scores +5 and rubber-bands on the first hit; a 2-second cooldown then
+  suppresses follow-on hits at the same location so tight dungeon corridors
+  cannot cascade a single wall-touch into an instant kick.  After 2 seconds
+  of clean movement the cooldown resets and any new collision scores normally.
 
 `enforce_player_jump_height`
   Jump apex cap. Calculates max legal jump height from the player's
