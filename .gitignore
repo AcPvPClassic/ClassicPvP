@@ -22,7 +22,7 @@ x86/
 bld/
 [Bb]in/
 [Oo]bj/
-[Ll]og/
+[Aa][Cc][Ee]*[Ll][Oo][Gg]*
 
 # Visual Studio / Visual Studio Code
 .vs/
