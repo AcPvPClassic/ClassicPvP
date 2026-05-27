@@ -1,14 +1,34 @@
 -- AddArenaFeature.sql
 -- Adds arena tables and pk_kills_log arena columns to an existing ace_log database.
 -- Run ONCE on any instance that has LogBase.sql already applied but predates the
--- arena feature.  Safe to re-run: DROP IF EXISTS guards prevent duplicate errors.
+-- arena feature.
+--
+-- MySQL 8.0 compatible — no MariaDB-specific syntax.
+-- ADD COLUMN IF NOT EXISTS is NOT supported by MySQL 8.0; idempotency for column
+-- additions is achieved by querying information_schema.COLUMNS before each ALTER.
+-- Indexes inside CREATE TABLE are always safe because the tables are dropped first.
 
 USE `ace_log`;
 
--- Add arena player FK columns to pk_kills_log (idempotent via IF NOT EXISTS emulation)
-ALTER TABLE `pk_kills_log`
-  ADD COLUMN IF NOT EXISTS `killer_arena_player_id` INT,
-  ADD COLUMN IF NOT EXISTS `victim_arena_player_id` INT;
+-- ---------------------------------------------------------------------------
+-- Add arena player FK columns to pk_kills_log (idempotent via info_schema check)
+-- ---------------------------------------------------------------------------
+
+SELECT COUNT(*) INTO @x FROM information_schema.COLUMNS
+  WHERE table_schema = DATABASE() AND table_name = 'pk_kills_log'
+    AND column_name = 'killer_arena_player_id';
+SET @s = IF(@x = 0,
+  'ALTER TABLE `pk_kills_log` ADD COLUMN `killer_arena_player_id` INT',
+  'SELECT 1');
+PREPARE _stmt FROM @s; EXECUTE _stmt; DEALLOCATE PREPARE _stmt;
+
+SELECT COUNT(*) INTO @x FROM information_schema.COLUMNS
+  WHERE table_schema = DATABASE() AND table_name = 'pk_kills_log'
+    AND column_name = 'victim_arena_player_id';
+SET @s = IF(@x = 0,
+  'ALTER TABLE `pk_kills_log` ADD COLUMN `victim_arena_player_id` INT',
+  'SELECT 1');
+PREPARE _stmt FROM @s; EXECUTE _stmt; DEALLOCATE PREPARE _stmt;
 
 -- ---------------------------------------------------------------------------
 -- arena_event
@@ -24,7 +44,7 @@ CREATE TABLE `arena_event` (
   `end_datetime`      DATETIME,
   `winning_team_guid` VARCHAR(36),
   `cancel_reason`     VARCHAR(500),
-  `is_overtime`       BIT           NOT NULL DEFAULT (0),
+  `is_overtime`       BIT           NOT NULL DEFAULT 0,
   `create_datetime`   DATETIME,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -78,10 +98,45 @@ CREATE TABLE `arena_character_stats` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Arena indexes (also covered by AddLogDbIndexes.sql; CREATE INDEX IF NOT EXISTS
--- is available in MySQL 8.0+)
-CREATE INDEX IF NOT EXISTS idx_arena_character_stats_char       ON arena_character_stats (character_id);
-CREATE INDEX IF NOT EXISTS idx_arena_character_stats_event      ON arena_character_stats (event_type);
-CREATE INDEX IF NOT EXISTS idx_arena_character_stats_char_event ON arena_character_stats (character_id, event_type);
-CREATE INDEX IF NOT EXISTS idx_arena_character_stats_event_rank ON arena_character_stats (event_type, rank_points);
-CREATE INDEX IF NOT EXISTS idx_arena_player_event               ON arena_player           (event_id);
+-- Arena indexes — declared after CREATE TABLE via information_schema guard
+-- (CREATE INDEX IF NOT EXISTS is NOT supported by MySQL 8.0).
+
+SELECT COUNT(*) INTO @x FROM information_schema.STATISTICS
+  WHERE table_schema = DATABASE() AND table_name = 'arena_character_stats'
+    AND index_name = 'idx_arena_character_stats_char';
+SET @s = IF(@x = 0,
+  'CREATE INDEX idx_arena_character_stats_char ON arena_character_stats (character_id)',
+  'SELECT 1');
+PREPARE _stmt FROM @s; EXECUTE _stmt; DEALLOCATE PREPARE _stmt;
+
+SELECT COUNT(*) INTO @x FROM information_schema.STATISTICS
+  WHERE table_schema = DATABASE() AND table_name = 'arena_character_stats'
+    AND index_name = 'idx_arena_character_stats_event';
+SET @s = IF(@x = 0,
+  'CREATE INDEX idx_arena_character_stats_event ON arena_character_stats (event_type)',
+  'SELECT 1');
+PREPARE _stmt FROM @s; EXECUTE _stmt; DEALLOCATE PREPARE _stmt;
+
+SELECT COUNT(*) INTO @x FROM information_schema.STATISTICS
+  WHERE table_schema = DATABASE() AND table_name = 'arena_character_stats'
+    AND index_name = 'idx_arena_character_stats_char_event';
+SET @s = IF(@x = 0,
+  'CREATE INDEX idx_arena_character_stats_char_event ON arena_character_stats (character_id, event_type)',
+  'SELECT 1');
+PREPARE _stmt FROM @s; EXECUTE _stmt; DEALLOCATE PREPARE _stmt;
+
+SELECT COUNT(*) INTO @x FROM information_schema.STATISTICS
+  WHERE table_schema = DATABASE() AND table_name = 'arena_character_stats'
+    AND index_name = 'idx_arena_character_stats_event_rank';
+SET @s = IF(@x = 0,
+  'CREATE INDEX idx_arena_character_stats_event_rank ON arena_character_stats (event_type, rank_points)',
+  'SELECT 1');
+PREPARE _stmt FROM @s; EXECUTE _stmt; DEALLOCATE PREPARE _stmt;
+
+SELECT COUNT(*) INTO @x FROM information_schema.STATISTICS
+  WHERE table_schema = DATABASE() AND table_name = 'arena_player'
+    AND index_name = 'idx_arena_player_event';
+SET @s = IF(@x = 0,
+  'CREATE INDEX idx_arena_player_event ON arena_player (event_id)',
+  'SELECT 1');
+PREPARE _stmt FROM @s; EXECUTE _stmt; DEALLOCATE PREPARE _stmt;
