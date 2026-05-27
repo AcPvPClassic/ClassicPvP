@@ -1118,6 +1118,8 @@ namespace ACE.Server.Entity
             {
                 log.ErrorFormat("Failed sending Arena global message to webhook. Ex:{0}", ex);
             }
+
+            SeasonManager.InvalidateArenaCache();
         }
 
         public void SetPlayerRewardLimitProperties(Player player, ArenaPlayer arenaPlayer)
@@ -1320,6 +1322,8 @@ namespace ACE.Server.Entity
             {
                 log.ErrorFormat("Failed sending Arena global message to webhook. Ex:{0}", ex);
             }
+
+            SeasonManager.InvalidateArenaCache();
         }
 
         public void EndEventCancel()

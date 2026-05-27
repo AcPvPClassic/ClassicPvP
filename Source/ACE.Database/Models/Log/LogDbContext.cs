@@ -22,6 +22,10 @@ namespace ACE.Database.Models.Log
         public virtual DbSet<TownControlEvent> TownControlEvents { get; set; }
         public virtual DbSet<MovementViolationLog> MovementViolationLogs { get; set; }
 
+        public virtual DbSet<SeasonCharacterStats>  SeasonCharacterStats   { get; set; }
+        public virtual DbSet<SeasonMilestone>       SeasonMilestones       { get; set; }
+        public virtual DbSet<SeasonMilestoneLeader> SeasonMilestoneLeaders { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
@@ -267,6 +271,45 @@ namespace ACE.Database.Models.Log
                 entity.Property(e => e.SuspicionScore).HasColumnName("suspicion_score");
                 entity.Property(e => e.Location).HasColumnName("location");
                 entity.Property(e => e.ViolationDateTime).HasColumnName("violation_datetime");
+            });
+
+            modelBuilder.Entity<SeasonCharacterStats>(entity =>
+            {
+                entity.HasKey(e => e.Id).HasName("PRIMARY");
+                entity.ToTable("season_character_stats");
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.CharacterId).HasColumnName("character_id");
+                entity.Property(e => e.CharacterName).HasColumnName("character_name");
+                entity.Property(e => e.PkKills).HasColumnName("pk_kills");
+                entity.Property(e => e.PkDeaths).HasColumnName("pk_deaths");
+                entity.Property(e => e.PkKillStreakBest).HasColumnName("pk_kill_streak_best");
+                entity.Property(e => e.PkKillStreakCur).HasColumnName("pk_kill_streak_cur");
+                entity.Property(e => e.BountiesCompleted).HasColumnName("bounties_completed");
+            });
+
+            modelBuilder.Entity<SeasonMilestone>(entity =>
+            {
+                entity.HasKey(e => e.Id).HasName("PRIMARY");
+                entity.ToTable("season_milestone");
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.WeekNumber).HasColumnName("week_number");
+                entity.Property(e => e.SnapshotDatetime).HasColumnName("snapshot_datetime");
+            });
+
+            modelBuilder.Entity<SeasonMilestoneLeader>(entity =>
+            {
+                entity.HasKey(e => e.Id).HasName("PRIMARY");
+                entity.ToTable("season_milestone_leader");
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.MilestoneId).HasColumnName("milestone_id");
+                entity.Property(e => e.WeekNumber).HasColumnName("week_number");
+                entity.Property(e => e.Category).HasColumnName("category");
+                entity.Property(e => e.Rank).HasColumnName("rank");
+                entity.Property(e => e.CharacterId).HasColumnName("character_id");
+                entity.Property(e => e.CharacterName).HasColumnName("character_name");
+                entity.Property(e => e.Score).HasColumnName("score");
+                entity.Property(e => e.RewardClaimed).HasColumnName("reward_claimed");
+                entity.Property(e => e.ClaimedDatetime).HasColumnName("claimed_datetime");
             });
 
             OnModelCreatingPartial(modelBuilder);

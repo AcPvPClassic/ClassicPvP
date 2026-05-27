@@ -109,6 +109,20 @@ namespace ACE.Server.Managers
         }
 
         /// <summary>
+        /// Sends a Season milestone / weekly leader notification to the configured Season webhook.
+        /// PropertyManager key: <c>season_milestone_webhook</c>
+        /// </summary>
+        public static void SendSeasonMilestone(string message)
+        {
+            if (string.IsNullOrWhiteSpace(message)) return;
+
+            var url = PropertyManager.GetString("season_milestone_webhook").Item;
+            if (string.IsNullOrWhiteSpace(url)) return;
+
+            _ = SendAsync(url, SanitiseMessage(message));
+        }
+
+        /// <summary>
         /// Sends a Hot Dungeon announcement to the configured Hot Dungeon webhook.
         /// PropertyManager key: <c>hot_dungeon_webhook</c>
         /// </summary>

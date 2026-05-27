@@ -6048,5 +6048,48 @@ namespace ACE.Server.Command.Handlers
         }
 
         #endregion Rolling XP Cap Commands
+
+        // ====================================================================
+        #region Season Admin Commands
+
+        [CommandHandler("seasons", AccessLevel.Developer, CommandHandlerFlag.None, 0,
+            "Season leaderboard admin commands.",
+            "Usage:\n" +
+            "  /seasons status          — Show week number, last milestone date, cache stats\n" +
+            "  /seasons forcemilestone  — Force an immediate weekly milestone snapshot\n" +
+            "  /seasons resetcache      — Flush all cached leaderboard data")]
+        public static void HandleSeasonsAdmin(Session session, params string[] parameters)
+        {
+            var sub = parameters.Length > 0 ? parameters[0].ToLower() : "status";
+
+            switch (sub)
+            {
+                case "status":
+                    CommandHandlerHelper.WriteOutputInfo(session, Managers.SeasonManager.GetStatusString());
+                    break;
+
+                case "forcemilestone":
+                    CommandHandlerHelper.WriteOutputInfo(session, "[Season] Forcing milestone snapshot...");
+                    Managers.SeasonManager.ForceMilestone();
+                    CommandHandlerHelper.WriteOutputInfo(session, "[Season] Milestone snapshot complete. Check the log for details.");
+                    PlayerManager.BroadcastToAuditChannel(session?.Player,
+                        $"{session?.Player?.Name ?? "CONSOLE"} forced a Season milestone snapshot.");
+                    break;
+
+                case "resetcache":
+                    Managers.SeasonManager.ResetCache();
+                    CommandHandlerHelper.WriteOutputInfo(session, "[Season] Leaderboard cache cleared.");
+                    PlayerManager.BroadcastToAuditChannel(session?.Player,
+                        $"{session?.Player?.Name ?? "CONSOLE"} reset the Season leaderboard cache.");
+                    break;
+
+                default:
+                    CommandHandlerHelper.WriteOutputInfo(session,
+                        $"Unknown sub-command \"{sub}\". Valid options: status, forcemilestone, resetcache");
+                    break;
+            }
+        }
+
+        #endregion Season Admin Commands
     }
 }

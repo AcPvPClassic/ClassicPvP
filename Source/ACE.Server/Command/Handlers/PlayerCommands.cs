@@ -2810,20 +2810,77 @@ namespace ACE.Server.Command.Handlers
         #region Season
 
         [CommandHandler("season", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, 0,
-            "Shows current season status: cap level, XP cap, season day, time to next advance, and your per-category XP budget usage.",
-            "Usage: /season status")]
+            "Season information, leaderboards, and rewards.",
+            "Usage:\n" +
+            "  /season status        — Season day, level cap, and your XP budgets\n" +
+            "  /season top           — #1 leader in each category\n" +
+            "  /season top <cat>     — Top 10 for a specific category\n" +
+            "  /season stats         — Your rank in every leaderboard category\n" +
+            "  /season stats <name>  — Another player's leaderboard standings\n" +
+            "  /season rewards       — Collect unclaimed weekly milestone reward items\n" +
+            "  /season info          — Category list and descriptions\n" +
+            "  /season help          — Full help and category aliases")]
         public static void HandleSeason(Session session, params string[] parameters)
         {
-            if (!CheckPlayerCommandRateLimit(session))
-                return;
+            if (session?.Player == null) return;
+            if (!CheckPlayerCommandRateLimit(session)) return;
 
             var sub = parameters.Length > 0 ? parameters[0].ToLower() : "status";
-            if (sub != "status")
-            {
-                CommandHandlerHelper.WriteOutputInfo(session, "Usage: /season status");
-                return;
-            }
 
+            switch (sub)
+            {
+                case "status":
+                    HandleSeasonStatus(session);
+                    break;
+
+                case "":
+                case "info":
+                    HandleSeasonInfo(session);
+                    break;
+
+                case "top":
+                case "leaderboard":
+                    if (!CheckSeasonCommandRateLimit(session)) return;
+                    var topCat = parameters.Length > 1
+                        ? SeasonConfig.ResolveAlias(parameters[1])
+                        : null;
+                    HandleSeasonTop(session, topCat);
+                    break;
+
+                case "stats":
+                    if (!CheckSeasonCommandRateLimit(session)) return;
+                    var statsName = parameters.Length > 1 ? parameters[1] : null;
+                    HandleSeasonStats(session, statsName);
+                    break;
+
+                case "claim":
+                case "rewards":
+                    HandleSeasonClaim(session);
+                    break;
+
+                case "help":
+                    HandleSeasonHelp(session);
+                    break;
+
+                default:
+                    // Allow /season <alias> as shorthand for /season top <alias>
+                    var aliasCheck = SeasonConfig.ResolveAlias(sub);
+                    if (aliasCheck != null)
+                    {
+                        if (!CheckSeasonCommandRateLimit(session)) return;
+                        HandleSeasonTop(session, aliasCheck);
+                    }
+                    else
+                    {
+                        CommandHandlerHelper.WriteOutputInfo(session,
+                            $"Unknown sub-command \"{sub}\". Type /season help for usage.");
+                    }
+                    break;
+            }
+        }
+
+        private static void HandleSeasonStatus(Session session)
+        {
             if (!PropertyManager.GetBool("rolling_level_cap_enabled").Item ||
                 PropertyManager.GetLong("rolling_level_cap_start_timestamp").Item <= 0)
             {
@@ -2887,5 +2944,177 @@ namespace ACE.Server.Command.Handlers
         }
 
         #endregion Season
+
+        // ====================================================================
+        #region Season Leaderboard
+
+        private static readonly Dictionary<uint, DateTime> _seasonCommandTimestamps = new();
+        private const int SeasonCommandCooldownSeconds = 60;
+
+        private static bool CheckSeasonCommandRateLimit(Session session)
+        {
+            if (session == null) return false;
+            var charId = session.Player.Guid.Full;
+            var now    = DateTime.UtcNow;
+            if (_seasonCommandTimestamps.TryGetValue(charId, out var last)
+                && (now - last).TotalSeconds < SeasonCommandCooldownSeconds)
+            {
+                CommandHandlerHelper.WriteOutputInfo(session,
+                    $"You can only use this command every {SeasonCommandCooldownSeconds} seconds. Please wait a moment.");
+                return false;
+            }
+            _seasonCommandTimestamps[charId] = now;
+            return true;
+        }
+
+        private static void HandleSeasonInfo(Session session)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("═══════════════════════════════════");
+            sb.AppendLine("         SEASON LEADERBOARDS       ");
+            sb.AppendLine("═══════════════════════════════════");
+            sb.AppendLine("Categories:");
+            sb.AppendLine("  Arena:  1v1 Arena, 2v2 Arena, FFA Arena, Tugak Arena, Group Arena");
+            sb.AppendLine("          Arena Wins, Arena Kills, Arena Matches");
+            sb.AppendLine("  World:  PK Kills, K/D Ratio (min 10 kills), Kill Streak, Bounty Hunter");
+            sb.AppendLine("  Overall: Season Champion  (weighted rank-points across all categories)");
+            sb.AppendLine();
+            sb.AppendLine("Commands:");
+            sb.AppendLine("  /season top [category]  — View top 10 for a category");
+            sb.AppendLine("  /season stats [name]    — View your (or another player's) standings");
+            sb.AppendLine("  /season rewards         — Collect unclaimed weekly milestone rewards");
+            sb.AppendLine("  /season help            — Category aliases and full usage");
+            sb.AppendLine();
+            sb.AppendLine("Weekly Milestone: Every Sunday the top 10 in each category earn rewards.");
+            sb.AppendLine("Use /season rewards to collect reward items from past milestones.");
+            CommandHandlerHelper.WriteOutputInfo(session, sb.ToString());
+        }
+
+        private static void HandleSeasonTop(Session session, string category)
+        {
+            if (category == null)
+            {
+                // No category — print 1 leader per category as a summary
+                var sb = new StringBuilder();
+                sb.AppendLine("════════ Season Leaders ════════");
+                foreach (var cat in SeasonConfig.ScoredCategories)
+                {
+                    var top = SeasonManager.GetTopForCategory(cat, 1);
+                    var name  = top.Count > 0 ? top[0].CharacterName : "(none)";
+                    var score = top.Count > 0 ? top[0].ScoreDisplay   : "-";
+                    sb.AppendLine($"  {SeasonConfig.GetCategoryDisplayName(cat),-18} {name,-20} {score}");
+                }
+
+                // Overall
+                var overallTop = SeasonManager.GetTopForCategory(SeasonConfig.Cat_Overall, 1);
+                var oName  = overallTop.Count > 0 ? overallTop[0].CharacterName : "(none)";
+                var oScore = overallTop.Count > 0 ? overallTop[0].ScoreDisplay   : "-";
+                sb.AppendLine($"  {"Season Champion",-18} {oName,-20} {oScore}");
+
+                sb.AppendLine();
+                sb.AppendLine("Use /season top <category> for the full top 10.  /season help for aliases.");
+                CommandHandlerHelper.WriteOutputInfo(session, sb.ToString());
+                return;
+            }
+
+            var entries = SeasonManager.GetTopForCategory(category, 10);
+            var displayName = SeasonConfig.GetCategoryDisplayName(category);
+
+            var sb2 = new StringBuilder();
+            sb2.AppendLine($"════ Top 10: {displayName} ════");
+
+            if (entries.Count == 0)
+            {
+                sb2.AppendLine("  No entries yet.");
+            }
+            else
+            {
+                foreach (var e in entries)
+                {
+                    var rankLabel = e.Rank < 10 ? $" {e.Rank}." : $"{e.Rank}.";
+                    sb2.AppendLine($"  {rankLabel} {e.CharacterName,-22} {e.ScoreDisplay}");
+                }
+            }
+
+            CommandHandlerHelper.WriteOutputInfo(session, sb2.ToString());
+        }
+
+        private static void HandleSeasonStats(Session session, string targetName)
+        {
+            uint   charId;
+            string charName;
+
+            if (string.IsNullOrWhiteSpace(targetName))
+            {
+                charId   = session.Player.Guid.Full;
+                charName = session.Player.Name;
+            }
+            else
+            {
+                var found = PlayerManager.FindByName(targetName);
+                if (found == null)
+                {
+                    CommandHandlerHelper.WriteOutputInfo(session, $"Player \"{targetName}\" not found.");
+                    return;
+                }
+                charId   = found.Guid.Full;
+                charName = found.Name;
+            }
+
+            var standing = SeasonManager.GetPlayerStanding(charId, charName);
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"════ Season Standings: {charName} ════");
+
+            foreach (var cat in SeasonConfig.ScoredCategories)
+            {
+                if (!standing.CategoryStandings.TryGetValue(cat, out var entry))
+                    continue;
+
+                var rankStr  = entry.Rank > 0 ? $"Rank {entry.Rank,4}" : "   Unranked";
+                var scoreStr = entry.ScoreDisplay ?? "0";
+                sb.AppendLine($"  {SeasonConfig.GetCategoryDisplayName(cat),-18} {rankStr}  {scoreStr}");
+            }
+
+            if (standing.CategoryStandings.TryGetValue(SeasonConfig.Cat_Overall, out var overall))
+            {
+                var oRank = overall.Rank > 0 ? $"Rank {overall.Rank,4}" : "   Unranked";
+                sb.AppendLine($"  {"Season Champion",-18} {oRank}  {overall.ScoreDisplay}");
+            }
+
+            CommandHandlerHelper.WriteOutputInfo(session, sb.ToString());
+        }
+
+        private static void HandleSeasonClaim(Session session)
+        {
+            SeasonManager.ClaimRewards(session.Player);
+        }
+
+        private static void HandleSeasonHelp(Session session)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("════════ /season Help ════════");
+            sb.AppendLine("Sub-commands:");
+            sb.AppendLine("  /season              — Season overview & your best category rank");
+            sb.AppendLine("  /season info         — Category descriptions");
+            sb.AppendLine("  /season top          — #1 leader summary for all categories");
+            sb.AppendLine("  /season top <cat>    — Full top 10 for a specific category");
+            sb.AppendLine("  /season stats        — Your standings across all categories");
+            sb.AppendLine("  /season stats <name> — Another player's standings");
+            sb.AppendLine("  /season rewards      — Collect any unclaimed weekly milestone rewards");
+            sb.AppendLine();
+            sb.AppendLine("Category aliases for /season top <cat>:");
+            sb.AppendLine("  1v1,  2v2,  ffa,  tugak,  group");
+            sb.AppendLine("  arena-wins | wins,  arena-kills | slayer,  arena-matches | matches | veteran");
+            sb.AppendLine("  bounty | bountyhunter,  pk-kills | reaper | kills");
+            sb.AppendLine("  pk-kd | kd | ratio | precision,  pk-streak | streak | unstoppable");
+            sb.AppendLine("  overall | champion");
+            sb.AppendLine();
+            sb.AppendLine("Weekly Milestone: Every Sunday the top 10 in each category are");
+            sb.AppendLine("snapshotted. Use /season rewards to collect reward items.");
+            CommandHandlerHelper.WriteOutputInfo(session, sb.ToString());
+        }
+
+        #endregion Season Leaderboard
     }
 }

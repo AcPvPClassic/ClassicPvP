@@ -428,6 +428,8 @@ namespace ACE.Server.WorldObjects
                     var victimMonarchId = MonarchId.HasValue ? (uint?)MonarchId.Value : null;
                     var killerMonarchId = killerPlayer?.MonarchId.HasValue == true ? (uint?)killerPlayer.MonarchId.Value : null;
                     DatabaseManager.Log.LogPkKill((uint)Character.Id, (uint)topDamager.Guid.Full, victimMonarchId, killerMonarchId);
+                    SeasonManager.RecordPkKill((uint)topDamager.Guid.Full, killerPlayer?.Name ?? topDamager.Name);
+                    SeasonManager.RecordPkDeath((uint)Character.Id, Name);
                 }
                 catch (Exception ex)
                 {

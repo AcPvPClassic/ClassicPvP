@@ -96,6 +96,7 @@ namespace ACE.Server.WorldObjects
             var targetInfo = GetBountyTargetInfo(targetGuid);
 
             info.TotalBountiesCompleted++;
+            SeasonManager.RecordBountyCompleted(Guid.Full, Name);
             targetInfo.LastCompletedTimestamp = Time.GetUnixTime();
             targetInfo.TotalCompletions++;
 

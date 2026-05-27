@@ -17,7 +17,7 @@ namespace ACE.Database
     {
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        private static bool IsConfigured => Common.ConfigManager.Config.MySql.Log != null;
+        public static bool IsConfigured => Common.ConfigManager.Config.MySql.Log != null;
 
         public bool Exists(bool retryUntilFound)
         {
@@ -967,6 +967,585 @@ namespace ACE.Database
             catch (Exception ex)
             {
                 log.Error($"Exception in GetLatestTownControlEventByAttacker for AttackerId = {attackerId}, TownId = {townId}. Ex: {ex}");
+            }
+            return null;
+        }
+
+        #endregion
+
+        // ====================================================================
+        #region Season
+
+        // ── Kill / Death / Bounty increments ────────────────────────────────
+
+        /// <summary>
+        /// Increments pk_kills and updates the kill streak columns for the killer.
+        /// Upserts the row if it does not yet exist.
+        /// </summary>
+        public void UpdateSeasonKill(uint characterId, string characterName, uint newCurrentStreak)
+        {
+            if (!IsConfigured) return;
+            try
+            {
+                using var context = new LogDbContext();
+                var row = GetOrCreateSeasonStats(context, characterId, characterName);
+
+                row.PkKills++;
+                row.PkKillStreakCur = newCurrentStreak;
+                if (newCurrentStreak > row.PkKillStreakBest)
+                    row.PkKillStreakBest = newCurrentStreak;
+
+                context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception in UpdateSeasonKill for characterId={characterId}. Ex: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// Increments pk_deaths and resets the current kill streak to 0.
+        /// </summary>
+        public void UpdateSeasonDeath(uint characterId, string characterName)
+        {
+            if (!IsConfigured) return;
+            try
+            {
+                using var context = new LogDbContext();
+                var row = GetOrCreateSeasonStats(context, characterId, characterName);
+
+                row.PkDeaths++;
+                row.PkKillStreakCur = 0;
+
+                context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception in UpdateSeasonDeath for characterId={characterId}. Ex: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// Increments bounties_completed for the given character.
+        /// </summary>
+        public void UpdateSeasonBounty(uint characterId, string characterName)
+        {
+            if (!IsConfigured) return;
+            try
+            {
+                using var context = new LogDbContext();
+                var row = GetOrCreateSeasonStats(context, characterId, characterName);
+                row.BountiesCompleted++;
+                context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception in UpdateSeasonBounty for characterId={characterId}. Ex: {ex}");
+            }
+        }
+
+        private static Models.Log.SeasonCharacterStats GetOrCreateSeasonStats(
+            LogDbContext context, uint characterId, string characterName)
+        {
+            var row = context.SeasonCharacterStats
+                .FirstOrDefault(x => x.CharacterId == characterId);
+
+            if (row == null)
+            {
+                row = new Models.Log.SeasonCharacterStats
+                {
+                    CharacterId   = characterId,
+                    CharacterName = characterName
+                };
+                context.SeasonCharacterStats.Add(row);
+            }
+            else
+            {
+                // Keep name current in case of rename
+                row.CharacterName = characterName;
+                context.Entry(row).State = EntityState.Modified;
+            }
+
+            return row;
+        }
+
+        // ── Streak initialisation (called on server start) ───────────────────
+
+        /// <summary>
+        /// Loads all current kill streaks from the DB into a dictionary keyed by
+        /// character_id.  Used by SeasonManager to restore in-memory state on startup.
+        /// </summary>
+        public Dictionary<uint, uint> LoadAllCurrentStreaks()
+        {
+            if (!IsConfigured) return new Dictionary<uint, uint>();
+            try
+            {
+                using var context = new LogDbContext();
+                return context.SeasonCharacterStats
+                    .AsNoTracking()
+                    .Where(x => x.PkKillStreakCur > 0)
+                    .ToDictionary(x => x.CharacterId, x => x.PkKillStreakCur);
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception in LoadAllCurrentStreaks. Ex: {ex}");
+            }
+            return new Dictionary<uint, uint>();
+        }
+
+        // ── Leaderboard queries ──────────────────────────────────────────────
+
+        /// <summary>
+        /// Returns the top <paramref name="count"/> rows for the given category.
+        /// Arena categories are read from arena_character_stats (aggregated where needed).
+        /// PK/bounty categories are read from season_character_stats.
+        /// The overall category is computed from rank-points across all other categories.
+        /// </summary>
+        public List<SeasonLeaderEntry> GetSeasonTopForCategory(string category, int count = 10)
+        {
+            if (!IsConfigured) return new List<SeasonLeaderEntry>();
+            try
+            {
+                using var context = new LogDbContext();
+                return category switch
+                {
+                    SeasonConfig.Cat_1v1 or SeasonConfig.Cat_2v2 =>
+                        GetTopArenaElo(context, category, count),
+
+                    SeasonConfig.Cat_Ffa or SeasonConfig.Cat_Tugak =>
+                        GetTopArenaPoints(context, category, count),
+
+                    SeasonConfig.Cat_Group =>
+                        GetTopArenaGroupWins(context, count),
+
+                    SeasonConfig.Cat_ArenaWins =>
+                        GetTopArenaAggregate(context, "total_wins", count),
+
+                    SeasonConfig.Cat_ArenaKills =>
+                        GetTopArenaAggregate(context, "total_kills", count),
+
+                    SeasonConfig.Cat_ArenaMatches =>
+                        GetTopArenaAggregate(context, "total_matches", count),
+
+                    SeasonConfig.Cat_Bounty =>
+                        GetTopSeasonColumn(context, category,
+                            q => q.OrderByDescending(x => x.BountiesCompleted),
+                            x => (ulong)x.BountiesCompleted, count),
+
+                    SeasonConfig.Cat_PkKills =>
+                        GetTopSeasonColumn(context, category,
+                            q => q.OrderByDescending(x => x.PkKills),
+                            x => (ulong)x.PkKills, count),
+
+                    SeasonConfig.Cat_PkKd =>
+                        GetTopPkKd(context, count),
+
+                    SeasonConfig.Cat_PkStreak =>
+                        GetTopSeasonColumn(context, category,
+                            q => q.OrderByDescending(x => x.PkKillStreakBest),
+                            x => (ulong)x.PkKillStreakBest, count),
+
+                    SeasonConfig.Cat_Overall =>
+                        GetTopOverall(context, count),
+
+                    _ => new List<SeasonLeaderEntry>()
+                };
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception in GetSeasonTopForCategory('{category}'). Ex: {ex}");
+            }
+            return new List<SeasonLeaderEntry>();
+        }
+
+        // Arena — ELO-based (1v1, 2v2)
+        private static List<SeasonLeaderEntry> GetTopArenaElo(
+            LogDbContext context, string category, int count)
+        {
+            var all = context.ArenaCharacterStats
+                .AsNoTracking()
+                .Where(x => x.EventType == category)
+                .ToList();
+
+            foreach (var s in all)
+                s.CompositeScore = ArenaRanking.ComputeCompositeScore(s);
+
+            return all.OrderByDescending(x => x.CompositeScore)
+                .Take(count)
+                .Select((s, i) => new SeasonLeaderEntry
+                {
+                    Rank          = i + 1,
+                    CharacterId   = s.CharacterId,
+                    CharacterName = s.CharacterName,
+                    Score         = s.CompositeScore,
+                    ScoreDisplay  = $"{s.CompositeScore:n0}  (ELO: {s.Elo:n0})"
+                })
+                .ToList();
+        }
+
+        // Arena — placement-points (ffa, tugak)
+        private static List<SeasonLeaderEntry> GetTopArenaPoints(
+            LogDbContext context, string category, int count)
+        {
+            return context.ArenaCharacterStats
+                .AsNoTracking()
+                .Where(x => x.EventType == category)
+                .OrderByDescending(x => x.RankPoints)
+                .Take(count)
+                .AsEnumerable()
+                .Select((s, i) => new SeasonLeaderEntry
+                {
+                    Rank          = i + 1,
+                    CharacterId   = s.CharacterId,
+                    CharacterName = s.CharacterName,
+                    Score         = s.RankPoints,
+                    ScoreDisplay  = s.RankPoints.ToString("n0")
+                })
+                .ToList();
+        }
+
+        // Arena — group wins
+        private static List<SeasonLeaderEntry> GetTopArenaGroupWins(
+            LogDbContext context, int count)
+        {
+            return context.ArenaCharacterStats
+                .AsNoTracking()
+                .Where(x => x.EventType == SeasonConfig.Cat_Group)
+                .OrderByDescending(x => x.TotalWins)
+                .Take(count)
+                .AsEnumerable()
+                .Select((s, i) => new SeasonLeaderEntry
+                {
+                    Rank          = i + 1,
+                    CharacterId   = s.CharacterId,
+                    CharacterName = s.CharacterName,
+                    Score         = s.TotalWins,
+                    ScoreDisplay  = s.TotalWins.ToString("n0")
+                })
+                .ToList();
+        }
+
+        // Arena — aggregate across all event types (wins, kills, or matches)
+        private static List<SeasonLeaderEntry> GetTopArenaAggregate(
+            LogDbContext context, string column, int count)
+        {
+            // EF Core doesn't support dynamic column selection cleanly, so we
+            // load all rows for all event types and aggregate in-memory.
+            // This is acceptably cheap given the small row counts in arena_character_stats.
+            var grouped = context.ArenaCharacterStats
+                .AsNoTracking()
+                .ToList()
+                .GroupBy(x => new { x.CharacterId, x.CharacterName })
+                .Select(g => new
+                {
+                    g.Key.CharacterId,
+                    g.Key.CharacterName,
+                    Total = column switch
+                    {
+                        "total_wins"    => (ulong)g.Sum(x => (long)x.TotalWins),
+                        "total_kills"   => (ulong)g.Sum(x => (long)x.TotalKills),
+                        "total_matches" => (ulong)g.Sum(x => (long)x.TotalMatches),
+                        _               => 0UL
+                    }
+                })
+                .OrderByDescending(x => x.Total)
+                .Take(count)
+                .ToList();
+
+            return grouped.Select((x, i) => new SeasonLeaderEntry
+            {
+                Rank          = i + 1,
+                CharacterId   = x.CharacterId,
+                CharacterName = x.CharacterName,
+                Score         = x.Total,
+                ScoreDisplay  = x.Total.ToString("n0")
+            }).ToList();
+        }
+
+        // Season — generic column accessor for season_character_stats
+        private static List<SeasonLeaderEntry> GetTopSeasonColumn(
+            LogDbContext context,
+            string category,
+            Func<IQueryable<Models.Log.SeasonCharacterStats>,
+                 IOrderedQueryable<Models.Log.SeasonCharacterStats>> orderBy,
+            Func<Models.Log.SeasonCharacterStats, ulong> scoreSelector,
+            int count)
+        {
+            return orderBy(context.SeasonCharacterStats.AsNoTracking())
+                .Take(count)
+                .AsEnumerable()
+                .Select((x, i) => new SeasonLeaderEntry
+                {
+                    Rank          = i + 1,
+                    CharacterId   = x.CharacterId,
+                    CharacterName = x.CharacterName,
+                    Score         = scoreSelector(x),
+                    ScoreDisplay  = scoreSelector(x).ToString("n0")
+                })
+                .ToList();
+        }
+
+        // PK K/D ratio (min SeasonConfig.PkKd_MinKills kills required)
+        private static List<SeasonLeaderEntry> GetTopPkKd(LogDbContext context, int count)
+        {
+            return context.SeasonCharacterStats
+                .AsNoTracking()
+                .Where(x => x.PkKills >= SeasonConfig.PkKd_MinKills)
+                .ToList()
+                .OrderByDescending(x => x.KdRatio)
+                .Take(count)
+                .Select((x, i) =>
+                {
+                    var kd = x.KdRatio;
+                    return new SeasonLeaderEntry
+                    {
+                        Rank          = i + 1,
+                        CharacterId   = x.CharacterId,
+                        CharacterName = x.CharacterName,
+                        Score         = (ulong)(kd * 1000),      // scaled for integer storage
+                        ScoreDisplay  = $"{kd:0.00}  ({x.PkKills:n0} K / {x.PkDeaths:n0} D)"
+                    };
+                })
+                .ToList();
+        }
+
+        // Overall — weighted rank-point sum across all ScoredCategories
+        private List<SeasonLeaderEntry> GetTopOverall(LogDbContext context, int count)
+        {
+            // Build rank-lists for all scored categories then compute weighted totals.
+            var scores = new Dictionary<uint, (string name, double total)>();
+
+            foreach (var cat in SeasonConfig.ScoredCategories)
+            {
+                if (!SeasonConfig.CategoryWeights.TryGetValue(cat, out var weight))
+                    continue;
+
+                var top = GetSeasonTopForCategory(cat, 9999);   // full list for rank computation
+                for (int i = 0; i < top.Count; i++)
+                {
+                    var entry = top[i];
+                    var pts   = SeasonConfig.RankToPoints(i + 1) * weight;
+
+                    if (scores.TryGetValue(entry.CharacterId, out var existing))
+                        scores[entry.CharacterId] = (existing.name, existing.total + pts);
+                    else
+                        scores[entry.CharacterId] = (entry.CharacterName, pts);
+                }
+            }
+
+            return scores
+                .OrderByDescending(kv => kv.Value.total)
+                .Take(count)
+                .Select((kv, i) => new SeasonLeaderEntry
+                {
+                    Rank          = i + 1,
+                    CharacterId   = kv.Key,
+                    CharacterName = kv.Value.name,
+                    Score         = (ulong)(kv.Value.total * 100), // scaled to avoid float storage
+                    ScoreDisplay  = $"{kv.Value.total:0.0} pts"
+                })
+                .ToList();
+        }
+
+        // ── Per-player standings ─────────────────────────────────────────────
+
+        /// <summary>
+        /// Returns the rank and score of <paramref name="characterId"/> in every
+        /// scored category plus overall.  Unranked categories show rank 0.
+        /// </summary>
+        public SeasonPlayerStanding GetSeasonPlayerStanding(uint characterId, string characterName)
+        {
+            if (!IsConfigured)
+                return new SeasonPlayerStanding { CharacterId = characterId, CharacterName = characterName };
+
+            var standing = new SeasonPlayerStanding
+            {
+                CharacterId   = characterId,
+                CharacterName = characterName
+            };
+
+            try
+            {
+                // Pull a full top list for every category and find where this player sits.
+                foreach (var cat in SeasonConfig.ScoredCategories)
+                {
+                    var top  = GetSeasonTopForCategory(cat, 9999);
+                    var mine = top.FirstOrDefault(x => x.CharacterId == characterId);
+                    standing.CategoryStandings[cat] = mine ?? new SeasonLeaderEntry
+                    {
+                        Rank          = 0,
+                        CharacterId   = characterId,
+                        CharacterName = characterName,
+                        Score         = 0,
+                        ScoreDisplay  = "0"
+                    };
+                }
+
+                // Overall
+                var overallTop  = GetSeasonTopForCategory(SeasonConfig.Cat_Overall, 9999);
+                var overallMine = overallTop.FirstOrDefault(x => x.CharacterId == characterId);
+                standing.CategoryStandings[SeasonConfig.Cat_Overall] = overallMine ?? new SeasonLeaderEntry
+                {
+                    Rank          = 0,
+                    CharacterId   = characterId,
+                    CharacterName = characterName,
+                    Score         = 0,
+                    ScoreDisplay  = "0 pts"
+                };
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception in GetSeasonPlayerStanding for characterId={characterId}. Ex: {ex}");
+            }
+
+            return standing;
+        }
+
+        // ── Milestone snapshot ───────────────────────────────────────────────
+
+        /// <summary>
+        /// Captures the current top-10 for every scored category (plus overall)
+        /// into a new season_milestone + season_milestone_leader rows.
+        /// Returns the new milestone ID, or 0 on failure.
+        /// </summary>
+        public ushort CaptureSeasonMilestone(ushort weekNumber)
+        {
+            if (!IsConfigured) return 0;
+            try
+            {
+                // Insert the milestone header
+                var milestone = new Models.Log.SeasonMilestone
+                {
+                    WeekNumber       = weekNumber,
+                    SnapshotDatetime = DateTime.Now
+                };
+
+                using var context = new LogDbContext();
+                context.SeasonMilestones.Add(milestone);
+                context.SaveChanges();
+
+                var milestoneId = milestone.Id;
+
+                // Snapshot every category
+                var allCategories = new List<string>(SeasonConfig.ScoredCategories) { SeasonConfig.Cat_Overall };
+                var leaderRows    = new List<Models.Log.SeasonMilestoneLeader>();
+
+                foreach (var cat in allCategories)
+                {
+                    var top = GetSeasonTopForCategory(cat, 10);
+                    foreach (var entry in top)
+                    {
+                        leaderRows.Add(new Models.Log.SeasonMilestoneLeader
+                        {
+                            MilestoneId   = milestoneId,
+                            WeekNumber    = weekNumber,
+                            Category      = cat,
+                            Rank          = (byte)entry.Rank,
+                            CharacterId   = entry.CharacterId,
+                            CharacterName = entry.CharacterName,
+                            Score         = entry.Score,
+                            RewardClaimed = false
+                        });
+                    }
+                }
+
+                context.SeasonMilestoneLeaders.AddRange(leaderRows);
+                context.SaveChanges();
+
+                return milestoneId;
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception in CaptureSeasonMilestone (week {weekNumber}). Ex: {ex}");
+            }
+            return 0;
+        }
+
+        // ── Reward claim ─────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Returns all unclaimed milestone leader rows for a given character.
+        /// </summary>
+        public List<Models.Log.SeasonMilestoneLeader> GetUnclaimedMilestoneLeaders(uint characterId)
+        {
+            if (!IsConfigured) return new List<Models.Log.SeasonMilestoneLeader>();
+            try
+            {
+                using var context = new LogDbContext();
+                return context.SeasonMilestoneLeaders
+                    .AsNoTracking()
+                    .Where(x => x.CharacterId == characterId && !x.RewardClaimed)
+                    .OrderBy(x => x.WeekNumber)
+                    .ThenBy(x => x.Category)
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception in GetUnclaimedMilestoneLeaders for characterId={characterId}. Ex: {ex}");
+            }
+            return new List<Models.Log.SeasonMilestoneLeader>();
+        }
+
+        /// <summary>
+        /// Marks a single milestone leader row as claimed.
+        /// </summary>
+        public void MarkMilestoneLeaderClaimed(uint rowId)
+        {
+            if (!IsConfigured) return;
+            try
+            {
+                using var context = new LogDbContext();
+                var row = context.SeasonMilestoneLeaders.FirstOrDefault(x => x.Id == rowId);
+                if (row == null) return;
+                row.RewardClaimed   = true;
+                row.ClaimedDatetime = DateTime.Now;
+                context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception in MarkMilestoneLeaderClaimed for rowId={rowId}. Ex: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// Returns the highest week_number recorded in season_milestone, or 0 if none.
+        /// Used by SeasonManager on startup to restore the week counter.
+        /// </summary>
+        public ushort GetLastMilestoneWeekNumber()
+        {
+            if (!IsConfigured) return 0;
+            try
+            {
+                using var context = new LogDbContext();
+                if (!context.SeasonMilestones.Any()) return 0;
+                return context.SeasonMilestones.Max(x => x.WeekNumber);
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception in GetLastMilestoneWeekNumber. Ex: {ex}");
+            }
+            return 0;
+        }
+
+        /// <summary>
+        /// Returns the snapshot_datetime of the most recent milestone, or null if none.
+        /// Used by SeasonManager on startup to avoid re-firing the same Sunday's snapshot.
+        /// </summary>
+        public DateTime? GetLastMilestoneDatetime()
+        {
+            if (!IsConfigured) return null;
+            try
+            {
+                using var context = new LogDbContext();
+                if (!context.SeasonMilestones.Any()) return null;
+                return context.SeasonMilestones
+                    .OrderByDescending(x => x.Id)
+                    .Select(x => (DateTime?)x.SnapshotDatetime)
+                    .FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception in GetLastMilestoneDatetime. Ex: {ex}");
             }
             return null;
         }

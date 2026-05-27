@@ -468,6 +468,16 @@ namespace ACE.Server.Managers
                 log.Error($"Exception executing ArenaManager Tick. ex: {ex}");
             }
 
+            //Season leaderboard logic
+            try
+            {
+                SeasonManager.Tick();
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception executing SeasonManager Tick. ex: {ex}");
+            }
+
             //Rolling Level Cap
             try
             {
