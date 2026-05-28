@@ -283,4 +283,100 @@ Note: Many of the ratings introduced in later retail patches (Crit Rating, Damag
 
 ---
 
+## 🏆 Season Leaderboards
+
+ClassicPvP tracks a **Season leaderboard** across 12 scored categories spanning both arena and open-world PvP. Every week the top players in each category are recognized and rewarded.
+
+### Leaderboard Categories
+
+#### Arena
+| Category | What It Ranks |
+|---|---|
+| **1v1 Arena** | Composite score (ELO + wins + matches) |
+| **2v2 Arena** | Composite score (ELO + wins + matches + survival bonus) |
+| **FFA Arena** | Lifetime placement points across all FFA events |
+| **Tugak Arena** | Lifetime placement points across all Tugak events |
+| **Group Arena** | Total Group arena wins |
+| **Arena Wins** | Total wins across all arena types combined |
+| **Arena Kills** | Total kills recorded inside arena matches |
+| **Arena Matches** | Total arena matches played (any type) |
+
+#### Open World
+| Category | What It Ranks |
+|---|---|
+| **PK Kills** | Total open-world player kills |
+| **K/D Ratio** | Kill/death ratio (minimum 10 kills to qualify) |
+| **Kill Streak** | Best consecutive open-world kill streak without dying |
+| **Bounty Hunter** | Total bounty contracts completed |
+
+#### Overall
+| Category | What It Ranks |
+|---|---|
+| **Season Champion** | Weighted rank-points across all 12 categories |
+
+The Season Champion score gives more weight to categories that require skill and consistency. Categories are weighted as follows:
+
+| Category | Weight |
+|---|---|
+| 1v1 Arena | 3.0 |
+| 2v2 Arena, PK Kills | 2.5 each |
+| FFA Arena, Group Arena, K/D Ratio, Bounty Hunter | 2.0 each |
+| Tugak Arena, Kill Streak, Arena Wins | 1.5 each |
+| Arena Kills | 1.0 |
+| Arena Matches | 0.5 |
+
+For each category you are ranked in, you earn `max(0, 11 − rank)` rank-points, multiplied by the category's weight. Your Season Champion score is the total across all 13 categories.
+
+### Weekly Milestones
+
+Every **Sunday**, the server automatically snapshots the top 10 players in each category. This is the weekly **milestone**.
+
+- A server-wide broadcast announces the top finishers in each category.
+- An announcement is also posted to the ClassicPvP Discord.
+- The **top 10** players in each category earn rewards for that week.
+
+**Milestone rewards by rank:**
+
+| Rank | XP | Darkbeat Keys | Phials of Bloody Tears | PK Trophies |
+|---|---|---|---|---|
+| 🥇 1st | +10% to next level | 3 | 2 | 1 |
+| 🥈 2nd | +7% to next level | 2 | 1 | — |
+| 🥉 3rd | +5% to next level | 1 | — | 1 |
+| 4th–10th | +2% to next level | — | 1 | — |
+
+Rewards are **not delivered automatically** — you must claim them with `/season rewards`. Unclaimed rewards accumulate and can be collected at any time.
+
+### Commands
+
+| Command | Description |
+|---|---|
+| `/season status` | Season day, current level cap, and your XP budget usage |
+| `/season top` | Current #1 leader in every category |
+| `/season top <category>` | Full top 10 for a specific category |
+| `/season stats` | Your rank in every leaderboard category |
+| `/season stats <name>` | Another player's standings |
+| `/season rewards` | Collect any unclaimed weekly milestone reward items |
+| `/season info` | Category list and descriptions |
+| `/season help` | Full help text and category aliases |
+
+**Category shorthand aliases** — you can type `/season top <alias>` or just `/season <alias>`:
+
+| Alias(es) | Category |
+|---|---|
+| `1v1` | 1v1 Arena |
+| `2v2` | 2v2 Arena |
+| `ffa` | FFA Arena |
+| `tugak` | Tugak Arena |
+| `group` | Group Arena |
+| `wins` | Arena Wins |
+| `slayer` | Arena Kills |
+| `matches`, `veteran` | Arena Matches |
+| `reaper`, `kills` | PK Kills |
+| `kd`, `ratio`, `precision` | K/D Ratio |
+| `streak`, `unstoppable` | Kill Streak |
+| `bounty`, `bountyhunter` | Bounty Hunter |
+| `champion` | Season Champion |
+
+---
+
 *This document will be updated as new systems and content are added. Stay tuned.*
