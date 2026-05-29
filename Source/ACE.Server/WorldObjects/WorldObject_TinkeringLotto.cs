@@ -33,6 +33,10 @@ namespace ACE.Server.WorldObjects
                 //    resultMessage = TinkeringLotto_PlayGreenGarnetLottery(salvageWorkmanship, chanceMod);
                 //    break;
 
+                case "Opal":
+                    resultMessage = TinkeringLotto_PlayOpalLottery(salvageWorkmanship, chanceMod);
+                    break;
+
                 case "Mahogany":
                     resultMessage = TinkeringLotto_PlayMahoganyLottery(salvageWorkmanship, chanceMod);
                     break;
@@ -101,6 +105,29 @@ namespace ACE.Server.WorldObjects
                     this.ArmorLevel += alBonus;                    
                     resultMsg = $"Improved Armor Level by {alBonus}";
                     HandleTinkerLottoLog($"AL+{alBonus}");
+                }
+            }
+
+            //Roll for Creature Resist and Creature Slayer ratings            
+            if (this.GearCreatureResistType == 0)
+            {
+                roll = rand.NextDouble();
+                if (roll < 0.05)
+                {
+                    string gearCreatureResult = TinkeringLotto_ApplyGearCreatureResistMutation();
+                    if (!string.IsNullOrEmpty(gearCreatureResult))
+                        resultMsg = string.IsNullOrEmpty(resultMsg) ? gearCreatureResult : $"{resultMsg}\n{gearCreatureResult}";
+                }
+            }
+
+            if (this.GearCreatureSlayerType == 0)
+            {
+                roll = rand.NextDouble();
+                if (roll < 0.05)
+                {
+                    string gearCreatureResult = TinkeringLotto_ApplyGearCreatureSlayerMutation();
+                    if (!string.IsNullOrEmpty(gearCreatureResult))
+                        resultMsg = string.IsNullOrEmpty(resultMsg) ? gearCreatureResult : $"{resultMsg}\n{gearCreatureResult}";
                 }
             }
 
@@ -224,6 +251,45 @@ namespace ACE.Server.WorldObjects
             return resultMsg;
         }
 
+        private string TinkeringLotto_PlayOpalLottery(int salvageWorkmanship, float chanceMod = 1.0f)
+        {
+            string resultMsg = "";
+
+            Random rand = new Random();
+            var manaConvRoll = rand.NextDouble();
+
+            //Capped at 5 bonuses for any given item
+            var lottoBonusCount = GetCountManaConvLottoBonus();
+            if (manaConvRoll < 0.05 && lottoBonusCount < 5)
+            {
+                //Add +1% dmg bonus
+                this.ManaConversionMod = (this.ManaConversionMod ?? 0.0f) + 0.01f;
+                resultMsg = "Improved Mana Conversion Mod by 1%";
+                HandleTinkerLottoLog("CasterManaConvMod1%");
+            }
+
+            var slayerRoll = rand.NextDouble();
+            if (slayerRoll < 0.025)
+            {
+                if (!this.SlayerCreatureType.HasValue)
+                {
+                    var slayerResult = TinkeringLotto_ApplySlayerMutation();
+                    if (!string.IsNullOrEmpty(slayerResult))
+                        resultMsg = string.IsNullOrEmpty(resultMsg) ? slayerResult : $"{resultMsg}\n{slayerResult}";
+                }
+            }
+
+            //var rendRoll = rand.NextDouble();
+            //if (rendRoll < 0.025)
+            //{
+            //    var rendResult = TinkeringLotto_ApplyResistanceCleaveMutation();
+            //    if (!string.IsNullOrEmpty(rendResult))
+            //        resultMsg = string.IsNullOrEmpty(resultMsg) ? rendResult : $"{resultMsg}\n{rendResult}";
+            //}
+
+            return resultMsg;
+        }
+
         private string TinkeringLotto_PlayMahoganyLottery(int salvageWorkmanship, float chanceMod = 1.0f)
         {
             string resultMsg = "";
@@ -270,7 +336,7 @@ namespace ACE.Server.WorldObjects
             Random rand = new Random();
             var dmgBonusroll = rand.NextDouble();
 
-            //Capped at 2 dmg bonuses for any given item
+            //Capped at 1 dmg bonuses for any given item
             var lottoDmgBonusCount = GetCountDmgLottoBonus();
             if (dmgBonusroll < 0.05 && lottoDmgBonusCount < 1)
             {
@@ -363,6 +429,11 @@ namespace ACE.Server.WorldObjects
                 }
                 else if (this.ItemType == ItemType.Caster)
                 {
+                    //Add +10% mana c bonus
+                    this.ManaConversionMod = (this.ManaConversionMod ?? 0.0f) + 0.1f;
+                    resultMsg = "Improved Mana Conversion Mod by 10%";
+                    HandleTinkerLottoLog("CasterManaConvMod10%");
+                   
                     //this.ElementalDamageMod = (this.ElementalDamageMod ?? 0.0f) + 0.05f;
                     //resultMsg = "Improved Elemental Damage Bonus by 5% vs Monsters and 2.5% against Players";
                     //HandleTinkerLottoLog("CasterDmgBonus5%");
@@ -467,6 +538,11 @@ namespace ACE.Server.WorldObjects
                 }
                 else if (this.ItemType == ItemType.Caster)
                 {
+                    //Add +10% mana c bonus
+                    this.ManaConversionMod = (this.ManaConversionMod ?? 0.0f) + 0.1f;
+                    resultMsg = "Improved Mana Conversion Mod by 10%";
+                    HandleTinkerLottoLog("CasterManaConvMod10%");
+
                     //this.ElementalDamageMod = (this.ElementalDamageMod ?? 0.0f) + 0.05f;
                     //resultMsg = "Improved Elemental Damage Bonus by 5% vs Monsters and 1.25% against Players";
                     //HandleTinkerLottoLog("CasterDmgBonus5%");
@@ -541,12 +617,35 @@ namespace ACE.Server.WorldObjects
                 HandleTinkerLottoLog($"AL+{alBonus}");
             }
 
+            //Roll for Creature Resist and Creature Slayer ratings            
+            if (this.GearCreatureResistType == 0)
+            {
+                roll = rand.NextDouble();
+                if (roll < 0.1)
+                {
+                    string gearCreatureResult = TinkeringLotto_ApplyGearCreatureResistMutation();
+                    if (!string.IsNullOrEmpty(gearCreatureResult))
+                        resultMsg = string.IsNullOrEmpty(resultMsg) ? gearCreatureResult : $"{resultMsg}\n{gearCreatureResult}";
+                }
+            }
+
+            if (this.GearCreatureSlayerType == 0)
+            {
+                roll = rand.NextDouble();
+                if (roll < 0.1)
+                {
+                    string gearCreatureResult = TinkeringLotto_ApplyGearCreatureSlayerMutation();
+                    if (!string.IsNullOrEmpty(gearCreatureResult))
+                        resultMsg = string.IsNullOrEmpty(resultMsg) ? gearCreatureResult : $"{resultMsg}\n{gearCreatureResult}";
+                }
+            }
+
             return resultMsg;
         }
 
         private string TinkeringLotto_ApplySlayerMutation()
         {
-            ApplyRandomSlayer(1.2);
+            ApplyRandomSlayer(1.5);
             HandleTinkerLottoLog($"{this.SlayerCreatureType}Slayer");
             return $"Added {this.SlayerCreatureType} slayer";
         }
@@ -620,6 +719,20 @@ namespace ACE.Server.WorldObjects
             return resultMsg;
         }
 
+        private string TinkeringLotto_ApplyGearCreatureSlayerMutation()
+        {
+            ApplyRandomGearCreatureSlayerRating();
+            HandleTinkerLottoLog($"{this.GearCreatureSlayerType}GearSlayer_{this.GearCreatureSlayerRating}");
+            return $"Added {this.GearCreatureSlayerType} Creature Slayer Rating {this.GearCreatureSlayerRating}";
+        }
+
+        private string TinkeringLotto_ApplyGearCreatureResistMutation()
+        {
+            ApplyRandomGearCreatureResistRating();
+            HandleTinkerLottoLog($"{this.GearCreatureResistType}GearResist_{this.GearCreatureResistRating}");
+            return $"Added {this.GearCreatureResistType} Creature Resist Rating {this.GearCreatureResistRating}";
+        }
+
         public void HandleTinkerLottoLog(string lottoResult)
         {
             if (!string.IsNullOrEmpty(this.TinkerLottoLog))
@@ -666,6 +779,24 @@ namespace ACE.Server.WorldObjects
             }
 
             return dmgBonusCount;
+        }
+
+        private int GetCountManaConvLottoBonus()
+        {
+            if (string.IsNullOrEmpty(this.TinkerLottoLog))
+                return 0;
+
+            var bonusCount = 0;
+
+            var lottoEvents = this.TinkerLottoLog.Split(',');
+
+            foreach (var lottoEvent in lottoEvents)
+            {
+                if (lottoEvent.Contains("ManaConvMod"))
+                    bonusCount++;
+            }
+
+            return bonusCount;
         }
     }
 }

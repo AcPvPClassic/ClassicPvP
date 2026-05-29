@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using ACE.Common;
 using ACE.Entity.Enum;
 
 using ECreatureType = ACE.Entity.Enum.CreatureType;
@@ -58,6 +58,18 @@ namespace ACE.Server.WorldObjects
         {
             this.SlayerDamageBonus = slayerDamageBonus;
             this.SlayerCreatureType = GetRandomCreatureType(currentCreatureType);
+        }
+
+        public void ApplyRandomGearCreatureSlayerRating(int? rating = default, CreatureType currentCreatureType = default)
+        {
+            this.GearCreatureSlayerRating = rating ?? ThreadSafeRandom.Next(1, 3);
+            this.GearCreatureSlayerType = GetRandomCreatureType(currentCreatureType);
+        }
+
+        public void ApplyRandomGearCreatureResistRating(int? rating = default, CreatureType currentCreatureType = default)
+        {
+            this.GearCreatureResistRating = rating ?? ThreadSafeRandom.Next(1, 3);
+            this.GearCreatureResistType = GetRandomCreatureType(currentCreatureType);
         }
     }
 }
