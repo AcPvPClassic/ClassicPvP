@@ -2,6 +2,30 @@
 
 ---
 
+## 🚀 Getting Started
+
+### Server Info
+
+| Field | Value |
+|-------|-------|
+| **URL** | doctide.online |
+| **Port** | 9002 |
+| **Name** | Classic PvP |
+| **Type** | ACE |
+
+### Client Setup
+
+1. Download the `.7z` file from [mega.nz/folder/xi4jiKjJ#jpuTVa7CQYyNxyp-UHC_GA](https://mega.nz/folder/xi4jiKjJ#jpuTVa7CQYyNxyp-UHC_GA)
+2. Unzip it with 7-Zip (free utility — google it if you don't have it)
+3. Go to `C:\Turbine` and make a copy of your `Asheron's Call` folder. Name the copy **ClassicPvP**
+4. Copy the DAT and client (`.exe`) files you downloaded and paste them into `C:\Turbine\ClassicPvP`, overwriting the existing files
+5. In **Thwarg Launcher**, click the three dots next to the client path at the bottom and select `C:\Turbine\ClassicPvP\acclient_Infiltration.exe`
+6. You're ready — log in to ClassicPvP. To return to an End of Retail server like Doctide, switch the path back to `C:\Turbine\Asheron's Call\acclient.exe`
+
+For more detail, see the full [Getting Started guide](GettingStarted.md).
+
+---
+
 ## 🕹️ Server Era — February 2005 (Infiltration Patch)
 
 ClassicPvP is set in **February 2005**, specifically the **Infiltration patch era** of Asheron's Call. This is the classic, raw PvP experience — before years of power creep, skill consolidation, and late-game systems changed the game's identity.
