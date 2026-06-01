@@ -8,7 +8,7 @@ VALUES (490071,   1,    2048) /* ItemType - Gem */
      , (490071,   5,       5) /* EncumbranceVal */
      , (490071,  16,       8) /* ItemUseable - Contained */
      , (490071,  18,       1) /* UiEffects - Magical */
-     , (490071,  19,       0) /* Value */
+     , (490071,  19,      20) /* Value */
      , (490071,  33,       1) /* Bonded - Bonded */
      , (490071,  93,    1044) /* PhysicsState - Ethereal, IgnoreCollisions, Gravity */
      , (490071, 114,       1) /* Attuned - Attuned */;

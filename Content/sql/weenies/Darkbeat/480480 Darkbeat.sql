@@ -199,4 +199,5 @@ VALUES  (480480, 2,   6046, 0, 93, 1.1, False) /* Greater Shadow Amuli Coat (660
      , (480480, 2,    107,  1, 93, 0.9, False) /* Create Sollerets (107) for Wield */
      , (480480, 2,   480622, 0, 0, 0, False) /* Deadly Hollow Staff (21362) for Wield */
      , (480480, 4, 60000213,  -1, 0, 0, False) /* Bounty Purchase Token for Shop */
-	 , (480480, 4, 60000215,  -1, 0, 0, False) /* Writ of Pursuite for Shop */;
+	, (480480, 4, 60000215,  -1, 0, 0, False) /* Writ of Pursuite for Shop */
+     , (480480, 4, 490071,  -1, 0, 0, False) /* Ancient Bottle for Shop */;
