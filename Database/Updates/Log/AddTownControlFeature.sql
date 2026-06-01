@@ -3,7 +3,7 @@
 -- Run ONCE on any instance that has LogBase.sql already applied.
 -- Safe to re-run: DROP IF EXISTS guards prevent duplicate errors.
 
-USE `ace_log`;
+USE `classicpvp_log`;
 
 -- ---------------------------------------------------------------------------
 -- town_control_town
@@ -23,7 +23,7 @@ CREATE TABLE `town_control_town` (
   `defender_awards_individual` SMALLINT UNSIGNED NOT NULL DEFAULT 5,
   `defender_awards_total`      SMALLINT UNSIGNED NOT NULL DEFAULT 20,
   PRIMARY KEY (`town_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=INNODB DEFAULT CHARSET=utf8mb4;
 
 -- Seed town rows (Holtburg=72, Shoushi=91, Yaraq=102)
 INSERT IGNORE INTO `town_control_town`
@@ -31,9 +31,9 @@ INSERT IGNORE INTO `town_control_town`
    `attacker_awards_individual`, `attacker_awards_total`,
    `defender_awards_individual`, `defender_awards_total`)
 VALUES
-  (72,  'Holtburg', 3600, 86400, 5, 20, 5, 20),
-  (91,  'Shoushi',  3600, 86400, 5, 20, 5, 20),
-  (102, 'Yaraq',    3600, 86400, 5, 20, 5, 20);
+  (58,  'Arwic', 3600, 86400, 5, 20, 5, 20),
+  (57,  'Al-Jalima',  3600, 86400, 5, 20, 5, 20),
+  (95, 'Tou-Tou',    3600, 86400, 5, 20, 5, 20);
 
 -- ---------------------------------------------------------------------------
 -- town_control_event
