@@ -397,7 +397,7 @@ namespace ACE.Server.Network.Handlers
                     // Second change this month — auto-ban.
                     DatabaseManager.Authentication.InsertIpChangeLog(account.AccountId, accountBinding.IpAddress, ipStr, autoBanned: true);
 
-                    account.BanExpireTime      = DateTime.UtcNow.AddYears(100);
+                    account.BanExpireTime      = DateTime.UtcNow.AddDays(7);
                     account.BanReason          = "Automatic ban: multiple IP address changes detected within one calendar month.";
                     account.BannedTime         = DateTime.UtcNow;
                     account.BannedByAccountId  = null; // null = system/console
