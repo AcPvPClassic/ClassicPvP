@@ -5878,6 +5878,10 @@ namespace ACE.Server.Command.Handlers
                 var lastUpdate     = PropertyManager.GetLong("rolling_xp_cap_timestamp").Item;
                 var seasonMaxXp    = PropertyManager.GetLong("season_max_xp").Item;
 
+                var xpModifierEnabled = PropertyManager.GetBool("rolling_xp_modifier_enabled").Item;
+                var xpModifierMax     = PropertyManager.GetDouble("rolling_xp_modifier_max").Item;
+                var xpModifierCurrent = PropertyManager.GetDouble("xp_modifier").Item;
+
                 var sb = new System.Text.StringBuilder("Rolling XP Cap Status:\n");
                 sb.AppendLine($"  Enabled:         {enabled}");
                 sb.AppendLine($"  Start date:      {(startTimestamp > 0 ? DateTimeOffset.FromUnixTimeSeconds(startTimestamp).UtcDateTime.ToString("yyyy-MM-dd") : "not set")}");
@@ -5887,15 +5891,36 @@ namespace ACE.Server.Command.Handlers
 
                 if (startTimestamp > 0)
                 {
-                    var startDate     = DateTimeOffset.FromUnixTimeSeconds(startTimestamp).UtcDateTime.Date;
+                    var startDate      = DateTimeOffset.FromUnixTimeSeconds(startTimestamp).UtcDateTime.Date;
                     var daysSinceStart = (DateTime.UtcNow.Date - startDate).Days;
-                    sb.AppendLine($"  Day of season:   {daysSinceStart}  (cap freezes at season_max_xp after day 83)");
+                    sb.AppendLine($"  Day of season:   {daysSinceStart}  (cap freezes at season_max_xp after day {Managers.RollingLevelCapManager.SeasonEndDay})");
 
                     if (seasonMaxXp > 0 && xpCap > 0)
                     {
                         double pct = Math.Min(100.0, xpCap * 100.0 / seasonMaxXp);
                         sb.AppendLine($"  Progress:        {pct:F1}% of season_max_xp");
                     }
+                }
+
+                sb.AppendLine($"\n  Rolling XP Modifier:");
+                sb.AppendLine($"    Enabled:         {xpModifierEnabled}  (rolling_xp_modifier_enabled)");
+                sb.AppendLine($"    Current value:   {xpModifierCurrent:F3}  (xp_modifier)");
+                if (xpModifierEnabled)
+                {
+                    sb.AppendLine($"    Max modifier:    {xpModifierMax:F2}  (rolling_xp_modifier_max)");
+                    if (startTimestamp > 0)
+                    {
+                        var startDate2     = DateTimeOffset.FromUnixTimeSeconds(startTimestamp).UtcDateTime.Date;
+                        var days2          = (DateTime.UtcNow.Date - startDate2).Days;
+                        var projected      = Managers.RollingLevelCapManager.ComputeRollingXpModifier(days2, Managers.RollingLevelCapManager.SeasonEndDay, xpModifierMax);
+                        sb.AppendLine($"    Expected today:  {projected:F3}  (based on day {days2})");
+                        if (Math.Abs(projected - xpModifierCurrent) > 0.001)
+                            sb.AppendLine($"    ⚠  Value is out of sync — run /forcerollingcap to reconcile.");
+                    }
+                }
+                else
+                {
+                    sb.AppendLine($"    (Auto-management disabled — set rolling_xp_modifier_enabled=true to activate)");
                 }
 
                 CommandHandlerHelper.WriteOutputInfo(session, sb.ToString().TrimEnd());

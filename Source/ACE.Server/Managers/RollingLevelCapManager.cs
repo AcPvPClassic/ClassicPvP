@@ -66,6 +66,9 @@ namespace ACE.Server.Managers
         // changes above automatically propagate without touching this constant.
         private const int SEASON_END_DAY = 120;
 
+        /// <summary>Exposed for admin status display and tests.</summary>
+        public static int SeasonEndDay => SEASON_END_DAY;
+
         private static DateTime LastTickDateTime = DateTime.MinValue;
 
         // ── pvp_dmg_mod preset state ──────────────────────────────────────────────
@@ -174,6 +177,9 @@ namespace ACE.Server.Managers
                 log.Info($"RollingLevelCapManager: Updated rolling_xp_cap to {xpCap:N0} " +
                          $"(day {daysSinceStart}, {GetCapDescription(xpCap)}).");
 
+                // ── Auto-update xp_modifier along the rolling curve ───────────────────
+                UpdateXpModifier(daysSinceStart);
+
                 // ── Apply pvp_dmg_mod preset if the level cap has reached a new threshold ──
                 ApplyPresetIfNeeded(levelCap);
             }
@@ -202,6 +208,82 @@ namespace ACE.Server.Managers
                     return i + 1;   // day *after* this increment
             }
             return 56;  // fallback — phases exhausted without hitting maxLevel
+        }
+
+        // ── Rolling XP Modifier ──────────────────────────────────────────────────
+
+        /// <summary>
+        /// If <c>rolling_xp_modifier_enabled</c> is true, computes and persists
+        /// <c>xp_modifier</c> for the given season day using a quadratic curve:
+        /// <list type="bullet">
+        ///   <item>Day 0 → 0.25</item>
+        ///   <item>Day ~44 (~36 % through the season, level cap ~101) → 1.0</item>
+        ///   <item>Day 96 (80 % through the season) → <c>rolling_xp_modifier_max</c></item>
+        ///   <item>Day 97–120 → capped at <c>rolling_xp_modifier_max</c></item>
+        /// </list>
+        /// The curve coefficients are re-derived each call so that changing
+        /// <c>rolling_xp_modifier_max</c> live is reflected on the next daily tick.
+        /// </summary>
+        private static void UpdateXpModifier(int daysSinceStart)
+        {
+            if (!PropertyManager.GetBool("rolling_xp_modifier_enabled").Item)
+                return;
+
+            var maxModifier = PropertyManager.GetDouble("rolling_xp_modifier_max").Item;
+            if (maxModifier <= 0) maxModifier = 3.0;
+
+            var modifier = ComputeRollingXpModifier(daysSinceStart, SEASON_END_DAY, maxModifier);
+            PropertyManager.ModifyDouble("xp_modifier", modifier);
+
+            log.Info($"RollingLevelCapManager: Updated xp_modifier to {modifier:F3} " +
+                     $"(day {daysSinceStart}, max={maxModifier:F2}).");
+        }
+
+        /// <summary>
+        /// Computes the rolling XP modifier for a given season day using a
+        /// quadratic curve anchored to three design points:
+        /// <list type="bullet">
+        ///   <item><c>t = 0.000</c>   → 0.25  (season start)</item>
+        ///   <item><c>t ≈ 0.364</c>   → 1.0   (~36 % through season, day ~44)</item>
+        ///   <item><c>t = 0.800</c>   → <paramref name="maxModifier"/> (80 % through season, day 96)</item>
+        /// </list>
+        /// The t-breakpoints 0.364 and 0.800 are derived from the level-100 and
+        /// level-220 milestones on a 275-level scale (the original design reference
+        /// values), but the implementation uses season-day progress as the axis so
+        /// it works correctly in the Infiltration ruleset where max level is 126.
+        /// <para>The curve is capped at <paramref name="maxModifier"/> for days
+        /// beyond the 80 % point, and floored at 0.25 to prevent a mis-configured
+        /// start-day from driving the modifier below its intended floor.</para>
+        /// </summary>
+        /// <param name="daysSinceStart">Days elapsed since season day 0 (0-based, UTC).</param>
+        /// <param name="seasonEndDay">Total season length in days (<see cref="SEASON_END_DAY"/>).</param>
+        /// <param name="maxModifier">Configurable end-of-ramp modifier (e.g. 3.0).</param>
+        public static double ComputeRollingXpModifier(int daysSinceStart, int seasonEndDay, double maxModifier)
+        {
+            if (seasonEndDay <= 0)
+                return maxModifier;
+
+            double t = Math.Min(1.0, Math.Max(0.0, (double)daysSinceStart / seasonEndDay));
+
+            // Design anchor points (as fractions of season length).
+            // t1 / t2 map to "level 100" and "level 220" on a 275-level scale —
+            // coincidentally t1 ≈ 0.364 maps to day ~44 / level cap ~101, and
+            // t2 = 0.800 maps to day 96 in a 120-day season.
+            const double c  = 0.25;
+            const double t1 = 100.0 / 275.0;   // ≈ 0.3636
+            const double t2 = 220.0 / 275.0;   // = 0.8000
+            const double y1 = 1.0;
+            double       y2 = maxModifier;
+
+            // Solve the 2×2 system:  a*t1² + b*t1 = y1-c,  a*t2² + b*t2 = y2-c
+            double r1  = y1 - c;
+            double r2  = y2 - c;
+            double det = t1 * t1 * t2 - t2 * t2 * t1;   // t1*t2*(t1 - t2), always ≠ 0
+            double a   = (r1 * t2 - r2 * t1) / det;
+            double b   = (r2 * t1 * t1 - r1 * t2 * t2) / det;
+
+            double raw = a * t * t + b * t + c;
+            return Math.Min(maxModifier, Math.Max(0.25, raw));
         }
 
         // ── Public API ───────────────────────────────────────────────────────────

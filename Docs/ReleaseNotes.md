@@ -94,6 +94,30 @@ The cap opens at **level 15** on launch day. The early season moves fast — you
 **What happens after level 126?**
 The level cap tops out at 126 (the Infiltration-era maximum). Once that's reached, the rolling cap continues — but now as a raw XP ceiling rather than a level. This extra XP goes toward investing in skills and attributes beyond the level cap. This post-cap grind phase runs until approximately day 120, after which the ceiling is frozen for the rest of the season.
 
+### 📊 Rolling XP Rate Bonus
+
+As the season progresses and the level cap rises, the global XP rate bonus increases alongside it — rewarding players who stay active later in the season.
+
+The bonus starts low in the opening days, holds near 1× (normal rate) through the mid-season, and then accelerates sharply toward the end. Players grinding during the final weeks of the season earn XP significantly faster than those who played only in the early days.
+
+**How the rate scales:**
+
+| Season Stage | Approx. Level Cap | XP Rate |
+|---|---|---|
+| Launch (Day 0) | 15 | **0.25×** |
+| Day 7 | 36 | ~0.39× |
+| Day 14 | 57 | ~0.52× |
+| Day 21 | 69 | ~0.66× |
+| Day ~44 | 101 | **1.0×** (normal rate) |
+| Day 63 | 126 (level cap reached) | ~1.56× |
+| Day 84 | post-cap XP grind | ~2.24× |
+| **Day 96** | post-cap XP grind | **3.0×** |
+| Days 96–120 | post-cap XP grind | **3.0×** (maintained) |
+
+The rate accelerates on a quadratic curve — the gains are small at first and ramp up faster as the season matures. By the time level cap is reached (~day 60), you are already earning at 1.5× base rate. The last stretch of the season hits 3× and holds there through the final weeks.
+
+The maximum rate (3×) is configurable by admins and may change between seasons.
+
 ---
 
 ## ⏱️ XP Cap Categories
