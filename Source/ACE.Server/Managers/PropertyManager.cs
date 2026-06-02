@@ -718,6 +718,7 @@ namespace ACE.Server.Managers
                 ("arena_allow_observers", new Property<bool>(true, "enable to allow players to watch arena matches as invisible observers")),
                 ("tinker_lotto_enabled", new Property<bool>(false, "enables the tinkering lotto feature")),
                 ("rolling_level_cap_enabled", new Property<bool>(false, "Enables the server-wide rolling level cap. When enabled, players cannot exceed the XP threshold for the current cap level. The cap starts at 15 and increases daily based on rolling_level_cap_start_timestamp.")),
+                ("hot_dungeon_enabled", new Property<bool>(false, "Enables the Hot Dungeons system on Infiltration servers. When enabled, up to 3 dungeons are periodically selected to offer bonus XP and loot.")),
 
                 // Bounty Hunter system
                 ("bounty_system_enabled",            new Property<bool>(true,  "Enable or disable the bounty hunter system entirely.")),

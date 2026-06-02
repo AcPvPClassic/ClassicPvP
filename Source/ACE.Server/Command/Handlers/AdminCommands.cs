@@ -5075,39 +5075,29 @@ namespace ACE.Server.Command.Handlers
             player.CurrentLandblock.RefreshExplorationMarkers(true);
         }
 
-        [CommandHandler("SwitchHotDungeon", AccessLevel.Admin, CommandHandlerFlag.None, "")]
+        [CommandHandler("SwitchHotDungeon", AccessLevel.Admin, CommandHandlerFlag.None, "Forces a new Hot Dungeon to be rolled immediately.")]
         public static void HandleRefreshHotDungeon(Session session, params string[] parameters)
         {
-            if (Common.ConfigManager.Config.Server.WorldRuleset != Common.Ruleset.CustomDM)
-            {
-                session.Network.EnqueueSend(new GameMessageSystemChat($"This command is only available in the CustomDM ruleset.", ChatMessageType.Help));
-                return;
-            }
-
-            EventManager.RollHotDungeon();
+            HotDungeonManager.AdminForceRoll();
+            CommandHandlerHelper.WriteOutputInfo(session, "Hot Dungeon roll forced.", ChatMessageType.Broadcast);
         }
 
-        [CommandHandler("ForceHotDungeon", AccessLevel.Admin, CommandHandlerFlag.RequiresWorld, "")]
+        [CommandHandler("ForceHotDungeon", AccessLevel.Admin, CommandHandlerFlag.RequiresWorld, "Forces the player's current landblock to become a Hot Dungeon.")]
         public static void HandleForceHotDungeon(Session session, params string[] parameters)
         {
-            if (Common.ConfigManager.Config.Server.WorldRuleset != Common.Ruleset.CustomDM)
-            {
-                session.Network.EnqueueSend(new GameMessageSystemChat($"This command is only available in the CustomDM ruleset.", ChatMessageType.Help));
-                return;
-            }
-
             var player = session?.Player;
-
             if (player == null)
                 return;
 
-            EventManager.RollHotDungeon(player.CurrentLandblock.Id.Landblock);
+            HotDungeonManager.AdminForceLandblock(player.CurrentLandblock.Id.Landblock);
+            CommandHandlerHelper.WriteOutputInfo(session, $"Forced landblock 0x{player.CurrentLandblock.Id.Landblock:X4} to become a Hot Dungeon.", ChatMessageType.Broadcast);
         }
 
-        [CommandHandler("ProlongHotDungeon", AccessLevel.Admin, CommandHandlerFlag.None, "")]
+        [CommandHandler("ProlongHotDungeon", AccessLevel.Admin, CommandHandlerFlag.None, "Extends all active Hot Dungeons by 1 hour.")]
         public static void HandleProlongHotDungeon(Session session, params string[] parameters)
         {
-            EventManager.ProlongHotDungeon();
+            HotDungeonManager.AdminProlong();
+            CommandHandlerHelper.WriteOutputInfo(session, "Hot Dungeon durations extended by 1 hour.", ChatMessageType.Broadcast);
         }
 
         [CommandHandler("DiscordChatStart", AccessLevel.Admin, CommandHandlerFlag.None, "")]

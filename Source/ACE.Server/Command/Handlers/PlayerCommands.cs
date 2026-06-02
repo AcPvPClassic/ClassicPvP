@@ -869,6 +869,12 @@ namespace ACE.Server.Command.Handlers
             return validRecommendations;
         }
 
+        [CommandHandler("hotdungeons", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, "Lists all currently active Hot Dungeons.")]
+        public static void HandleHotDungeons(Session session, params string[] parameters)
+        {
+            CommandHandlerHelper.WriteOutputInfo(session, HotDungeonManager.GetStatusMessage(), ChatMessageType.Broadcast);
+        }
+
         [CommandHandler("xptracker", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, 0, "Return XP tracking information.", "<reset>")]
         public static void HandleXpTracker(Session session, params string[] parameters)
         {
@@ -1479,26 +1485,14 @@ namespace ACE.Server.Command.Handlers
 
         public static void ShowHotDungeon(Session session, bool failSilently, ulong discordChannel = 0)
         {
-            if (EventManager.HotDungeonLandblock == 0)
-            {
-                if (!failSilently)
-                {
-                    var msg = "There's no dungeons providing extra experience rewards at the moment.";
-                    if (discordChannel == 0)
-                        CommandHandlerHelper.WriteOutputInfo(session, msg);
-                    else
-                        DiscordChatBridge.SendMessage(discordChannel, msg);
-                }
-            }
+            var msg = HotDungeonManager.GetStatusMessage();
+            if (HotDungeonManager.ActiveDungeons.Count == 0 && failSilently)
+                return;
+
+            if (discordChannel == 0)
+                CommandHandlerHelper.WriteOutputInfo(session, msg);
             else
-            {
-                var timeRemaining = TimeSpan.FromSeconds(EventManager.NextHotDungeonEnd - Time.GetUnixTime()).GetFriendlyString();
-                var msg = $"{EventManager.HotDungeonDescription} Time Remaining: {timeRemaining}.";
-                if (discordChannel == 0)
-                    CommandHandlerHelper.WriteOutputInfo(session, msg);
-                else
-                    DiscordChatBridge.SendMessage(discordChannel, msg);
-            }
+                DiscordChatBridge.SendMessage(discordChannel, msg);
         }
 
 

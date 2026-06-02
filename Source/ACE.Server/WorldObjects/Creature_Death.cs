@@ -214,6 +214,9 @@ namespace ACE.Server.WorldObjects
                     msg = $"Hardcore Bonus: +{hardcoreExtraXp:N0}xp";
                 }
 
+                if (HotDungeonManager.IsHotDungeon(Location.LandblockId.Landblock, out var xpHotDungeon))
+                    totalXP *= xpHotDungeon.XpMultiplier;
+
                 var campValue = Math.Clamp((uint)Math.Floor(1f + (totalHealth / 1000f)), 1, 100);
                 playerDamager.EarnXP((long)Math.Round(totalXP), XpType.Kill, Level, (uint)CreatureType, campValue, Tier, ShareType.All, msg);
 
@@ -737,6 +740,21 @@ namespace ACE.Server.WorldObjects
 	                    }
 	                }
 
+                    if (isPKdeath && HotDungeonManager.IsHotDungeon(player.Location.LandblockId.Landblock, out _))
+                    {
+                        var killerPlayer = killer?.TryGetAttacker() as Player;
+                        if (killerPlayer != null && !killerPlayer.IsSameAllegiance(player))
+                        {
+                            var phial = WorldObjectFactory.CreateNewWorldObject(HotDungeonManager.PhialOfBloodyTearsWcid);
+                            if (phial != null)
+                                corpse.TryAddToInventory(phial);
+
+                            var pkBox = WorldObjectFactory.CreateNewWorldObject(HotDungeonManager.BoxWcid);
+                            if (pkBox != null)
+                                corpse.TryAddToInventory(pkBox);
+                        }
+                    }
+
                     if (!isPKdeath && !isPKLdeath && !IsHardcore)
                     {
                         var miserAug = player.AugmentationLessDeathItemLoss * 5;
@@ -753,7 +771,21 @@ namespace ACE.Server.WorldObjects
                 corpse.IsMonster = true;
 
                 if (killer == null || !killer.IsOlthoiPlayer)
+                {
                     GenerateTreasure(killer, corpse);
+
+                    if (HotDungeonManager.IsHotDungeon(Location.LandblockId.Landblock, out var hotDungeon))
+                    {
+                        GenerateTreasure(killer, corpse);
+
+                        if (ThreadSafeRandom.Next(0.0f, 1.0f) < hotDungeon.BoxDropChance)
+                        {
+                            var box = WorldObjectFactory.CreateNewWorldObject(HotDungeonManager.BoxWcid);
+                            if (box != null)
+                                corpse.TryAddToInventory(box);
+                        }
+                    }
+                }
                 else
                     GenerateTreasure_Olthoi(killer, corpse);
 

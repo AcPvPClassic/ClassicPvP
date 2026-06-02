@@ -403,4 +403,28 @@ Rewards are **not delivered automatically** — you must claim them with `/seaso
 
 ---
 
+## 🔥 Hot Dungeons
+
+Periodically, up to **3 dungeons** across Dereth will become **Hot** — offering bonus experience and extra loot for players who venture inside.
+
+### How It Works
+
+- Every **12–36 hours**, a new dungeon is selected from a curated list and becomes Hot.
+- Each Hot Dungeon stays active for **24–48 hours**, then expires independently.
+- A **global broadcast** announces each dungeon when it becomes Hot, and again every hour while it remains active. A final announcement goes out when the dungeon cools down.
+- Use the command **`/hotdungeons`** at any time to see all currently active Hot Dungeons, their XP multipliers, and time remaining.
+
+### Dungeon Eligibility
+
+Each dungeon in the pool has a **level bracket** (minimum and maximum server level cap). A dungeon only becomes eligible when the rolling level cap falls within that bracket, ensuring the featured content is always appropriate for the current progression stage of the season.
+
+### Rewards While a Dungeon is Hot
+
+| Reward | Details |
+|--------|---------|
+| **XP Multiplier** | All monster and PK kills inside the dungeon have their XP multiplied (multiplier varies per dungeon, ranging from 1.5× to 4×). The multiplier is applied before fellowship sharing. |
+| **Double Loot** | Monster corpses receive two independent loot rolls, effectively doubling item generation. |
+| **A Box** | Each monster kill has a per-dungeon configurable chance to drop **A Box** on the corpse. |
+| **PK Rewards** | When a PK kill occurs inside a Hot Dungeon between players of **different allegiances**, the victim's corpse will contain a **Phial of Bloody Tears** and **A Box**. |
+
 *This document will be updated as new systems and content are added. Stay tuned.*

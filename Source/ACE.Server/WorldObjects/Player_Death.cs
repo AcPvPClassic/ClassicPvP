@@ -179,6 +179,9 @@ namespace ACE.Server.WorldObjects
                         var baseXp      = (long)pkPlayer.GetXPBetweenLevels(killerLevel, killerLevel + 1);
                         var pvpXp       = (long)Math.Round(baseXp * randPercent * modifier);
 
+                        if (HotDungeonManager.IsHotDungeon(Location.LandblockId.Landblock, out var pkHotDungeon))
+                            pvpXp = (long)Math.Round(pvpXp * pkHotDungeon.XpMultiplier);
+
                         if (pvpXp > 0)
                         {
                             pkPlayer._pkXpCooldowns[victimGuidFull] = now;

@@ -278,14 +278,6 @@ namespace ACE.Server.WorldObjects
                     }
                     else if (xpType == XpType.Kill)
                     {
-                        if (CurrentLandblock != null && EventManager.HotDungeonLandblock == CurrentLandblock.Id.Raw >> 16)
-                        {
-                            var extraXP = m_amount * (float)PropertyManager.GetDouble("hot_dungeon_bonus_xp").Item;
-                            totalExtraXP += extraXP;
-
-                            xpMessage = $"Hot Dungeon Bonus: +{extraXP:N0}xp {xpMessage}";
-                        }
-
                         if (Level < (MaxReachedLevel ?? 1) && IsHardcore)
                         {
                             var extraXP = m_amount * (float)PropertyManager.GetDouble("relive_bonus_xp").Item;

@@ -26,7 +26,7 @@ namespace ACE.Server.Managers
         {
             Events = new Dictionary<string, Event>(StringComparer.OrdinalIgnoreCase);
 
-            NextHotDungeonRoll = Time.GetFutureUnixTime(PropertyManager.GetDouble("hot_dungeon_roll_delay").Item);
+            HotDungeonManager.Initialize();
             NextFireSaleTownRoll = Time.GetFutureUnixTime(FireSaleTownRollDelay);
         }
 
@@ -190,15 +190,16 @@ namespace ACE.Server.Managers
         private static double EventManagerHeartbeatLongInterval = 300;
         public static void Tick()
         {
-            if (Common.ConfigManager.Config.Server.WorldRuleset != Common.Ruleset.CustomDM)
-                return;
-
             double currentUnixTime = Time.GetUnixTime();
             if (NextEventManagerShortHeartbeat > currentUnixTime)
                 return;
             NextEventManagerShortHeartbeat = Time.GetFutureUnixTime(EventManagerHeartbeatShortInterval);
 
-            HotDungeonTick(currentUnixTime);
+            HotDungeonManager.Tick(currentUnixTime);
+
+            if (Common.ConfigManager.Config.Server.WorldRuleset != Common.Ruleset.CustomDM)
+                return;
+
             FireSaleTick(currentUnixTime);
 
             if (NextEventManagerLongHeartbeat > currentUnixTime)
@@ -210,59 +211,6 @@ namespace ACE.Server.Managers
                 StartEvent("smugglersden", null, null);
             else if (smugglersDen == GameEventState.On && PlayerManager.GetOnlinePKCount() < 5)
                 StopEvent("smugglersden", null, null);
-        }
-
-        public static int HotDungeonLandblock = 0;
-        public static string HotDungeonName = "";
-        public static string HotDungeonDescription = "";
-        public static double NextHotDungeonRoll = 0;
-        public static double NextHotDungeonEnd = 0;
-
-        public static void HotDungeonTick(double currentUnixTime)
-        {
-            if (Common.ConfigManager.Config.Server.WorldRuleset != Common.Ruleset.CustomDM)
-                return;
-
-            if (NextHotDungeonEnd != 0 && NextHotDungeonEnd > currentUnixTime)
-                return;
-
-            NextHotDungeonEnd = 0;
-            if (HotDungeonLandblock != 0)
-            {
-                var msg = $"{HotDungeonName} is no longer giving extra experience rewards.";
-                PlayerManager.BroadcastToAll(new GameMessageSystemChat(msg, ChatMessageType.WorldBroadcast));
-                PlayerManager.LogBroadcastChat(Channel.AllBroadcast, null, msg);
-            }
-
-            HotDungeonLandblock = 0;
-            HotDungeonName = "";
-            HotDungeonDescription = "";
-
-            if (NextHotDungeonRoll > currentUnixTime)
-                return;
-
-            var roll = ThreadSafeRandom.Next(0.0f, 1.0f);
-            if (roll > PropertyManager.GetDouble("hot_dungeon_chance").Item)
-            {
-                // No hot dungeons for now!
-                NextHotDungeonRoll = Time.GetFutureUnixTime(PropertyManager.GetDouble("hot_dungeon_roll_delay").Item);
-                return;
-            }
-
-            RollHotDungeon();
-        }
-
-        public static void ProlongHotDungeon()
-        {
-            if (Common.ConfigManager.Config.Server.WorldRuleset != Common.Ruleset.CustomDM)
-                return;
-
-            NextHotDungeonEnd = Time.GetFutureUnixTime(PropertyManager.GetDouble("hot_dungeon_duration").Item);
-            NextHotDungeonRoll = Time.GetFutureUnixTime(PropertyManager.GetDouble("hot_dungeon_interval").Item);
-
-            var msg = $"The current extra experience dungeon duration has been prolonged!";
-            PlayerManager.BroadcastToAll(new GameMessageSystemChat(msg, ChatMessageType.WorldBroadcast));
-            PlayerManager.LogBroadcastChat(Channel.AllBroadcast, null, msg);
         }
 
         public static int RollOnlineLevel()
@@ -292,72 +240,6 @@ namespace ACE.Server.Managers
             }
 
             return levelChance.Roll();
-        }
-
-        public static void RollHotDungeon(ushort forceLandblock = 0)
-        {
-            if (Common.ConfigManager.Config.Server.WorldRuleset != Common.Ruleset.CustomDM)
-                return;
-
-            var onlineLevel = RollOnlineLevel();
-            if (onlineLevel > 0 || forceLandblock != 0)
-            {
-                List<ExplorationSite> possibleDungeonList;
-
-                if (forceLandblock == 0)
-                {
-                    var minLevel = Math.Max(onlineLevel - (int)(onlineLevel * 0.1f), 1);
-                    var maxLevel = onlineLevel + (int)(onlineLevel * 0.2f);
-                    if (onlineLevel > 100)
-                        maxLevel = int.MaxValue;
-                    possibleDungeonList = DatabaseManager.World.GetExplorationSitesByLevelRange(minLevel, maxLevel, onlineLevel);
-                }
-                else
-                    possibleDungeonList = DatabaseManager.World.GetExplorationSitesByLandblock(forceLandblock);
-
-                if (possibleDungeonList.Count != 0)
-                {
-                    var dungeon = possibleDungeonList[ThreadSafeRandom.Next(0, possibleDungeonList.Count - 1)];
-
-                    string dungeonName;
-                    string dungeonDirections;
-                    var entryLandblock = DatabaseManager.World.GetLandblockDescriptionsByLandblock((ushort)dungeon.Landblock).FirstOrDefault();
-                    if (entryLandblock != null)
-                    {
-                        dungeonName = entryLandblock.Name;
-                        if (entryLandblock.MicroRegion != "")
-                            dungeonDirections = $"{entryLandblock.Directions} {entryLandblock.Reference} in {entryLandblock.MicroRegion}";
-                        else if (entryLandblock.MacroRegion != "" && entryLandblock.MacroRegion != "Dereth")
-                            dungeonDirections = $"{entryLandblock.Directions} {entryLandblock.Reference} in {entryLandblock.MacroRegion}";
-                        else
-                            dungeonDirections = $"{entryLandblock.Directions} {entryLandblock.Reference}";
-                    }
-                    else
-                    {
-                        dungeonName = $"unknown location({dungeon.Landblock})";
-                        dungeonDirections = "at an unknown location";
-                    }
-
-                    HotDungeonLandblock = dungeon.Landblock;
-                    HotDungeonName = dungeonName;
-
-                    var dungeonLevel = Math.Clamp(dungeon.Level, dungeon.MinLevel, dungeon.MaxLevel != 0 ? dungeon.MaxLevel : int.MaxValue);
-                    HotDungeonDescription = $"Extra experience rewards dungeon: {dungeonName} located {dungeonDirections}. Dungeon level: {dungeonLevel:N0}.";
-
-                    NextHotDungeonEnd = Time.GetFutureUnixTime(PropertyManager.GetDouble("hot_dungeon_duration").Item);
-                    NextHotDungeonRoll = Time.GetFutureUnixTime(PropertyManager.GetDouble("hot_dungeon_interval").Item);
-
-                    var timeRemaining = TimeSpan.FromSeconds(PropertyManager.GetDouble("hot_dungeon_duration").Item).GetFriendlyString();
-
-                    var msg = $"{dungeonName} will be giving extra experience rewards for the next {timeRemaining}! The dungeon level is {dungeonLevel:N0}. The entrance is located {dungeonDirections}!";
-                    PlayerManager.BroadcastToAll(new GameMessageSystemChat(msg, ChatMessageType.WorldBroadcast));
-                    PlayerManager.LogBroadcastChat(Channel.AllBroadcast, null, msg);
-
-                    return;
-                }
-            }
-
-            NextHotDungeonRoll = Time.GetFutureUnixTime(PropertyManager.GetDouble("hot_dungeon_roll_delay").Item); // We failed to select a new hot dungeon, reschedule it.
         }
 
         public static List<(string Name, int Tier)> PossibleFireSaleTowns = new List<(string, int)>()
