@@ -33,21 +33,35 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public static readonly List<Skill> TinkerOffensiveSkills = new List<Skill>
         {
+            // Infiltration-era retired weapon skills
+            Skill.Axe,
+            Skill.Bow,
+            Skill.Crossbow,
+            Skill.Dagger,
+            Skill.Mace,
+            Skill.Spear,
+            Skill.Staff,
+            Skill.Sword,
+            Skill.ThrownWeapon,
+            Skill.UnarmedCombat,
+            // Modern weapon skills
             Skill.HeavyWeapons,
             Skill.LightWeapons,
             Skill.FinesseWeapons,
             Skill.MissileWeapons,
             Skill.TwoHandedCombat,
             Skill.DualWield,
+            // Combat modifiers
             Skill.Recklessness,
             Skill.SneakAttack,
             Skill.DirtyFighting,
+            Skill.Shield,
+            // Offensive magic
             Skill.WarMagic,
             Skill.VoidMagic,
             Skill.LifeMagic,
             Skill.CreatureEnchantment,
             Skill.ItemEnchantment,
-            Skill.Shield,
             Skill.Summoning,
         };
 
