@@ -357,6 +357,15 @@ namespace ACE.Server.Network.Handlers
         {
             try
             {
+                // Case: IP is on the admin whitelist — skip all binding enforcement.
+                var ipWhitelist = PropertyManager.GetString("ip_binding_ip_whitelist").Item
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                if (ipWhitelist.Contains(ipStr))
+                {
+                    log.Info($"[IPBinding] Skipping binding check for account '{account.AccountName}' — IP {ipStr} is whitelisted.");
+                    return true;
+                }
+
                 // Case: this IP is already bound to a *different* account — reject immediately.
                 var bindingForIp = DatabaseManager.Authentication.GetIpBindingByIp(ipStr);
                 if (bindingForIp != null && bindingForIp.AccountId != account.AccountId)

@@ -47,6 +47,23 @@ Each IP address may only be associated with one account. The binding is created 
 | Property | Type | Default | Description |
 |---|---|---|---|
 | `enforce_account_ip_binding` | bool | `true` | Master on/off for the IP binding system |
+| `ip_binding_ip_whitelist` | string | `""` | Comma-separated list of IPs exempt from all binding enforcement (e.g. `192.168.1.1,10.0.0.5`). Accounts logging in from a whitelisted IP bypass both the conflict check and the monthly change limit. Use for LAN setups or trusted staff locations where multiple accounts sharing an IP is expected. |
+
+### IP Whitelist
+
+To allow multiple accounts from a shared IP (e.g. a home LAN, internet café, or staff office):
+
+```
+/modifystring ip_binding_ip_whitelist 192.168.1.100,203.0.113.42
+```
+
+To clear the whitelist:
+
+```
+/modifystring ip_binding_ip_whitelist 
+```
+
+Changes take effect immediately — no restart required.
 
 ### Admin Commands
 

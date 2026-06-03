@@ -1305,6 +1305,7 @@ namespace ACE.Server.Managers
                 ("season_milestone_webhook", new Property<string>("", "Discord webhook URL for Season weekly milestone announcements. Leave empty to disable Discord posting.")),
                 ("proxycheck_api_key", new Property<string>("", "API key for proxycheck.io service for VPN detection")),
                 ("vpn_account_whitelist", new Property<string>("", "A comma separated list of account names for which VPN detection is bypassed")),
+                ("ip_binding_ip_whitelist", new Property<string>("", "Comma-separated list of IP addresses exempt from the one-account-per-IP binding rule (e.g. a LAN or staff office IP). Accounts logging in from these IPs bypass conflict checks and change-limit enforcement.")),
                 ("discord_login_token", new Property<string>("", "Login Token used for Discord chat integration")),
                 ("arena_globals_webhook", new Property<string>("", "Webhook for sending arena global messages to Discord")),
                 ("arenas_blacklist", new Property<string>("", "Comma-separated list of character/monarch IDs blocked from arena queues")),
