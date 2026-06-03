@@ -7,6 +7,7 @@ using log4net;
 using ACE.Database;
 using ACE.Database.Models.Auth;
 using ACE.Entity.Enum;
+using ACE.Server.Managers;
 using ACE.Server.Network;
 
 namespace ACE.Server.Command.Handlers
