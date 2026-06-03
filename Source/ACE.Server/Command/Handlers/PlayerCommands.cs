@@ -2908,6 +2908,10 @@ namespace ACE.Server.Command.Handlers
                 sb.AppendLine($"  Next Advance: {totalMinutes / 60}h {totalMinutes % 60}m");
             }
 
+            // XP rate modifier
+            var xpModifier = PropertyManager.GetDouble("xp_modifier").Item;
+            sb.AppendLine($"  XP Rate:     {xpModifier:F2}x");
+
             // Per-category XP budgets — use same fallback as enforcement code for
             // players who haven't yet triggered a bucket reset this window.
             double monsterRatio = PropertyManager.GetDouble("daily_monster_xp_category_ratio").Item;
