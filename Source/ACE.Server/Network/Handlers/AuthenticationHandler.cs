@@ -392,18 +392,19 @@ namespace ACE.Server.Network.Handlers
 
                 // Case: IP has changed — check how many times this month.
                 var monthlyChanges = DatabaseManager.Authentication.GetMonthlyIpChangeCount(account.AccountId);
+                var monthlyLimit   = PropertyManager.GetLong("ip_binding_monthly_change_limit").Item;
 
-                if (monthlyChanges == 0)
+                if (monthlyChanges < monthlyLimit)
                 {
-                    // First change this month — allowed.
+                    // Under the monthly limit — allowed.
                     DatabaseManager.Authentication.InsertIpChangeLog(account.AccountId, accountBinding.IpAddress, ipStr, autoBanned: false);
                     DatabaseManager.Authentication.UpdateIpBinding(account.AccountId, ipStr, "login");
-                    log.Info($"[IPBinding] IP change allowed for account '{account.AccountName}': {accountBinding.IpAddress} → {ipStr} (1st change this month).");
+                    log.Info($"[IPBinding] IP change allowed for account '{account.AccountName}': {accountBinding.IpAddress} → {ipStr} (change {monthlyChanges + 1} of {monthlyLimit} this month).");
                     return true;
                 }
                 else
                 {
-                    // Second change this month — auto-ban.
+                    // Monthly limit exceeded — auto-ban.
                     DatabaseManager.Authentication.InsertIpChangeLog(account.AccountId, accountBinding.IpAddress, ipStr, autoBanned: true);
 
                     account.BanExpireTime      = DateTime.UtcNow.AddDays(7);
@@ -412,7 +413,7 @@ namespace ACE.Server.Network.Handlers
                     account.BannedByAccountId  = null; // null = system/console
                     DatabaseManager.Authentication.UpdateAccount(account);
 
-                    log.Warn($"[IPBinding] Auto-banned account '{account.AccountName}' for IP change abuse: {accountBinding.IpAddress} → {ipStr} (2nd change this month).");
+                    log.Warn($"[IPBinding] Auto-banned account '{account.AccountName}' for IP change abuse: {accountBinding.IpAddress} → {ipStr} (exceeded {monthlyLimit} changes/month).");
 
                     session.Terminate(
                         SessionTerminationReason.AccountBanned,

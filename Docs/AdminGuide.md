@@ -35,8 +35,8 @@ Each IP address may only be associated with one account. The binding is created 
 | First login from any IP | IP is bound to the account silently |
 | Same IP as bound IP | Login proceeds normally |
 | IP already claimed by a *different* account | Session terminated; player told to contact admin |
-| New IP, first change this calendar month | Allowed; binding updated; change logged |
-| New IP, second change this calendar month | Account **auto-banned for 7 days**; change logged with `auto_banned=1` |
+| New IP, within monthly change limit | Allowed; binding updated; change logged |
+| New IP, monthly change limit exceeded | Account **auto-banned for 7 days**; change logged with `auto_banned=1` |
 
 - Localhost (`127.0.0.1` / `::1`) and `Admin+` accounts are always exempt.
 - The monthly change window resets on the 1st of each calendar month (UTC).
@@ -47,6 +47,7 @@ Each IP address may only be associated with one account. The binding is created 
 | Property | Type | Default | Description |
 |---|---|---|---|
 | `enforce_account_ip_binding` | bool | `true` | Master on/off for the IP binding system |
+| `ip_binding_monthly_change_limit` | long | `3` | Number of IP changes allowed per account per calendar month before an auto-ban is triggered |
 | `ip_binding_ip_whitelist` | string | `""` | Comma-separated list of IPs exempt from all binding enforcement (e.g. `192.168.1.1,10.0.0.5`). Accounts logging in from a whitelisted IP bypass both the conflict check and the monthly change limit. Use for LAN setups or trusted staff locations where multiple accounts sharing an IP is expected. |
 
 ### IP Whitelist

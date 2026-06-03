@@ -281,7 +281,8 @@ namespace ACE.Server.Command.Handlers
             else
                 sb.AppendLine($"Bound IP    : {binding.IpAddress}  (bound {binding.BoundAt:yyyy-MM-dd HH:mm} UTC, source: {binding.BoundBy})");
 
-            sb.AppendLine($"Changes/mo  : {monthlyChanges} of 1 allowed this calendar month");
+            var monthlyLimit = PropertyManager.GetLong("ip_binding_monthly_change_limit").Item;
+            sb.AppendLine($"Changes/mo  : {monthlyChanges} of {monthlyLimit} allowed this calendar month");
 
             if (changeLog.Count == 0)
             {

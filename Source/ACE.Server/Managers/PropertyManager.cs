@@ -735,6 +735,7 @@ namespace ACE.Server.Managers
 
         public static readonly ReadOnlyDictionary<string, Property<long>> DefaultLongProperties =
             DictOf(
+                ("ip_binding_monthly_change_limit", new Property<long>(3, "Number of IP changes allowed per account per calendar month before an auto-ban is triggered. Requires enforce_account_ip_binding to be enabled.")),
                 ("char_delete_time", new Property<long>(3600, "the amount of time in seconds a deleted character can be restored")),
                 ("chat_requires_account_time_seconds", new Property<long>(0, "the amount of time in seconds an account is required to have existed for for global chat privileges")),
                 ("chat_requires_player_age", new Property<long>(0, "the amount of time in seconds a player is required to have played for global chat privileges")),
