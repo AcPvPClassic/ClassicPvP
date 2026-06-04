@@ -13,7 +13,6 @@ VALUES (510004,   1,        128) /* ItemType - Misc */
      , (510004,  16,          8) /* ItemUseable - Contained */
      , (510004,  19,      80085) /* Value */
      , (510004,  93,       1044) /* PhysicsState - Ethereal, IgnoreCollisions, Gravity */
-     , (510004,  94,         16) /* TargetType - Creature */
      , (510004, 151,          1) /* HookType - Floor */;
 
 INSERT INTO `weenie_properties_bool` (`object_Id`, `type`, `value`)

@@ -190,9 +190,13 @@ namespace ACE.Server.WorldObjects
 
             if (item != null)
             {
-                if (item.TargetType.HasValue && item.TargetType.Value != ItemType.None)
+                if (item.TargetType.HasValue && item.TargetType.Value != ItemType.None && item.WeenieType != WeenieType.Gem)
                 {
                     // We have a target requirement, so redirect this to the appropriate function.
+                    // Gems are excluded here because Gem.ActOnUse / UseGem validates target requirements
+                    // internally (only PortalLink spells actually need a target). Blocking at this level
+                    // would prevent portal gems from being used without a UI selection even when they
+                    // cast PortalSummon/PortalRecall and have no need for one.
                     var queryTarget = GetQueryTarget(item.Guid.Full);
 
                     if (item.WeenieType == WeenieType.Healer)
