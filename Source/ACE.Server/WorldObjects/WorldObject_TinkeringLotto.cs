@@ -29,9 +29,9 @@ namespace ACE.Server.WorldObjects
                     resultMessage = TinkeringLotto_PlayGraniteLottery(salvageWorkmanship, chanceMod);
                     break;
 
-                //case "Green Garnet":
-                //    resultMessage = TinkeringLotto_PlayGreenGarnetLottery(salvageWorkmanship, chanceMod);
-                //    break;
+                case "Green Garnet":
+                    resultMessage = TinkeringLotto_PlayGreenGarnetLottery(salvageWorkmanship, chanceMod);
+                    break;
 
                 case "Opal":
                     resultMessage = TinkeringLotto_PlayOpalLottery(salvageWorkmanship, chanceMod);
@@ -219,9 +219,9 @@ namespace ACE.Server.WorldObjects
             Random rand = new Random();
             var dmgBonusroll = rand.NextDouble();
 
-            //Capped at 2 dmg bonuses for any given item
+            //Capped at 1 dmg bonuses for any given item
             var lottoDmgBonusCount = GetCountDmgLottoBonus();
-            if (dmgBonusroll < 0.05 && lottoDmgBonusCount < 2)
+            if (dmgBonusroll < 0.05 && lottoDmgBonusCount < 1)
             {
                 //Add +1% dmg bonus
                 this.ElementalDamageMod = (this.ElementalDamageMod ?? 0.0f) + 0.01f;
@@ -240,13 +240,13 @@ namespace ACE.Server.WorldObjects
                 }
             }
 
-            var rendRoll = rand.NextDouble();
-            if (rendRoll < 0.025)
-            {
-                var rendResult = TinkeringLotto_ApplyResistanceCleaveMutation();
-                if (!string.IsNullOrEmpty(rendResult))
-                    resultMsg = string.IsNullOrEmpty(resultMsg) ? rendResult : $"{resultMsg}\n{rendResult}";
-            }
+            //var rendRoll = rand.NextDouble();
+            //if (rendRoll < 0.025)
+            //{
+            //    var rendResult = TinkeringLotto_ApplyResistanceCleaveMutation();
+            //    if (!string.IsNullOrEmpty(rendResult))
+            //        resultMsg = string.IsNullOrEmpty(resultMsg) ? rendResult : $"{resultMsg}\n{rendResult}";
+            //}
 
             return resultMsg;
         }
@@ -258,14 +258,14 @@ namespace ACE.Server.WorldObjects
             Random rand = new Random();
             var manaConvRoll = rand.NextDouble();
 
-            //Capped at 5 bonuses for any given item
+            //Capped at 2 bonuses for any given item
             var lottoBonusCount = GetCountManaConvLottoBonus();
-            if (manaConvRoll < 0.05 && lottoBonusCount < 5)
+            if (manaConvRoll < 0.05 && lottoBonusCount < 2)
             {
                 //Add +1% dmg bonus
                 this.ManaConversionMod = (this.ManaConversionMod ?? 0.0f) + 0.01f;
-                resultMsg = "Improved Mana Conversion Mod by 1%";
-                HandleTinkerLottoLog("CasterManaConvMod1%");
+                resultMsg = "Improved Mana Conversion Mod by 5%";
+                HandleTinkerLottoLog("CasterManaConvMod5%");
             }
 
             var slayerRoll = rand.NextDouble();
@@ -429,14 +429,9 @@ namespace ACE.Server.WorldObjects
                 }
                 else if (this.ItemType == ItemType.Caster)
                 {
-                    //Add +10% mana c bonus
-                    this.ManaConversionMod = (this.ManaConversionMod ?? 0.0f) + 0.1f;
-                    resultMsg = "Improved Mana Conversion Mod by 10%";
-                    HandleTinkerLottoLog("CasterManaConvMod10%");
-                   
-                    //this.ElementalDamageMod = (this.ElementalDamageMod ?? 0.0f) + 0.05f;
-                    //resultMsg = "Improved Elemental Damage Bonus by 5% vs Monsters and 2.5% against Players";
-                    //HandleTinkerLottoLog("CasterDmgBonus5%");
+                    this.ElementalDamageMod = (this.ElementalDamageMod ?? 0.0f) + 0.01f;
+                    resultMsg = "Improved Elemental Damage Bonus by 1% vs Monsters and 0.5% against Players";
+                    HandleTinkerLottoLog("CasterDmgBonus1%");
                 }
             }
 
@@ -538,14 +533,9 @@ namespace ACE.Server.WorldObjects
                 }
                 else if (this.ItemType == ItemType.Caster)
                 {
-                    //Add +10% mana c bonus
-                    this.ManaConversionMod = (this.ManaConversionMod ?? 0.0f) + 0.1f;
-                    resultMsg = "Improved Mana Conversion Mod by 10%";
-                    HandleTinkerLottoLog("CasterManaConvMod10%");
-
-                    //this.ElementalDamageMod = (this.ElementalDamageMod ?? 0.0f) + 0.05f;
-                    //resultMsg = "Improved Elemental Damage Bonus by 5% vs Monsters and 1.25% against Players";
-                    //HandleTinkerLottoLog("CasterDmgBonus5%");
+                    this.ElementalDamageMod = (this.ElementalDamageMod ?? 0.0f) + 0.01f;
+                    resultMsg = "Improved Elemental Damage Bonus by 1% vs Monsters and 0.5% against Players";
+                    HandleTinkerLottoLog("CasterDmgBonus1%");
                 }
             }
 
