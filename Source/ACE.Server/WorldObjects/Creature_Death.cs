@@ -748,10 +748,14 @@ namespace ACE.Server.WorldObjects
                             var phial = WorldObjectFactory.CreateNewWorldObject(HotDungeonManager.PhialOfBloodyTearsWcid);
                             if (phial != null)
                                 corpse.TryAddToInventory(phial);
+                            else
+                                log.Warn($"HotDungeon: Failed to create Phial of Bloody Tears (WCID {HotDungeonManager.PhialOfBloodyTearsWcid}) — weenie may not exist in the world database.");
 
                             var pkBox = WorldObjectFactory.CreateNewWorldObject(HotDungeonManager.BoxWcid);
                             if (pkBox != null)
                                 corpse.TryAddToInventory(pkBox);
+                            else
+                                log.Warn($"HotDungeon: Failed to create Box (WCID {HotDungeonManager.BoxWcid}) — weenie may not exist in the world database.");
                         }
                     }
 
@@ -783,6 +787,8 @@ namespace ACE.Server.WorldObjects
                             var box = WorldObjectFactory.CreateNewWorldObject(HotDungeonManager.BoxWcid);
                             if (box != null)
                                 corpse.TryAddToInventory(box);
+                            else
+                                log.Warn($"HotDungeon: Failed to create Box (WCID {HotDungeonManager.BoxWcid}) — weenie may not exist in the world database.");
                         }
                     }
                 }
