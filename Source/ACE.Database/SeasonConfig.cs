@@ -76,13 +76,14 @@ namespace ACE.Database
         // ── Weekly milestone: XP grants ──────────────────────────────────────
         // Uses GrantLevelProportionalXp(multiplier, 0, 0) — same pattern as ArenaLocation.
         // multiplier = fraction of XP to the next level (0.10 = 10%).
-        public const double Weekly_Rank1_XpMultiplier     = 0.10;
-        public const double Weekly_Rank2_XpMultiplier     = 0.07;
-        public const double Weekly_Rank3_XpMultiplier     = 0.05;
-        public const double Weekly_Rank4to10_XpMultiplier = 0.02;
+        public const double Weekly_Rank1_XpMultiplier     = 1.0;
+        public const double Weekly_Rank2_XpMultiplier     = 0.5;
+        public const double Weekly_Rank3_XpMultiplier     = 0.35;
+        public const double Weekly_Rank4to10_XpMultiplier = 0.2;
 
         // ── Weekly milestone: reward item weenie IDs ─────────────────────────
         public const uint ABox_WeenieId               = 510000;  // "A Box"
+        public const uint DarkbeatKey_WeenieId        = 480608;  // "Darkbeat's Lost Storage Key"
         public const uint PhialOfBloodyTears_WeenieId = 1000003; // "Phial of Bloody Tears"
         public const uint PkTrophy_WeenieId           = 1000002; // "PK Trophy"
 
@@ -91,25 +92,29 @@ namespace ACE.Database
 
         public static readonly (uint weenieId, int qty)[] Weekly_Rank1_Items =
         {
-            (ABox_WeenieId,        3),
+            (ABox_WeenieId,               3),
+            (DarkbeatKey_WeenieId,        3),
             (PhialOfBloodyTears_WeenieId, 2),
-            (PkTrophy_WeenieId,           1),
+            (PkTrophy_WeenieId,          50),
         };
 
         public static readonly (uint weenieId, int qty)[] Weekly_Rank2_Items =
         {
-            (ABox_WeenieId,        2),
+            (ABox_WeenieId,               2),
+            (DarkbeatKey_WeenieId,        2),
             (PhialOfBloodyTears_WeenieId, 1),
         };
 
         public static readonly (uint weenieId, int qty)[] Weekly_Rank3_Items =
         {
             (ABox_WeenieId,        1),
-            (PkTrophy_WeenieId,           1),
+            (DarkbeatKey_WeenieId, 1),
+            (PkTrophy_WeenieId,    1),
         };
 
         public static readonly (uint weenieId, int qty)[] Weekly_Rank4to10_Items =
         {
+            (DarkbeatKey_WeenieId,        1),
             (PhialOfBloodyTears_WeenieId, 1),
         };
 
