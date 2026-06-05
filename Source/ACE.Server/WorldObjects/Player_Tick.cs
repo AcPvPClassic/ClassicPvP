@@ -850,6 +850,14 @@ namespace ACE.Server.WorldObjects
                                 currentMaxSpeed = (1.8f * runRate * clampedDelta * (1.0f + clampedVelocity / 8.0f)) + flatBonus;
                                 if (runRate < 1.9f && PhysicsObj.CachedVelocity.Z < -20.0f) // Very slow characters can still fall pretty quickly.
                                     currentMaxSpeed *= 2.5f;
+                                // Casting or attacking while moving causes the client to send burst
+                                // position updates that overshoot the normal speed budget: the character
+                                // pivots toward a target, executes an attack animation, or channels a
+                                // spell while still travelling forward.  The non-FastTick path applies a
+                                // 1.8× action multiplier; replicate that here so combat doesn't generate
+                                // false speed violations.
+                                if (HasPerformedActionsSinceLastMovementUpdate)
+                                    currentMaxSpeed *= 1.5f;
                             }
                             else
                             {
@@ -886,12 +894,14 @@ namespace ACE.Server.WorldObjects
                                 var overage = currentMaxSpeed > 0 ? (dist / currentMaxSpeed) - 1.0f : 1.0f;
                                 var suspicionGain = Math.Min(overage * 10.0f, 15.0f);
 
-                                if (MovementEnforcementCounter == 0 && currentMaxSpeed != 0 && dist < currentMaxSpeed * 1.5)
+                                if (currentMaxSpeed != 0 && dist < currentMaxSpeed * 1.4f)
                                 {
-                                    // Slight invalid movement detected but the player has otherwise been behaving,
-                                    // assume it was just a lag spike or client stutter.
+                                    // Borderline overage (≤ 40%): typical during casting, charging, or
+                                    // brief post-collision recovery.  Accept the position without a
+                                    // rubber-band so the player isn't disrupted; score at half-weight so
+                                    // a sustained borderline pattern still accumulates suspicion over time.
                                     MovementEnforcementCounter++;
-                                    MovementSuspicionScore += suspicionGain * 0.5f; // half-weight for borderline events
+                                    MovementSuspicionScore += suspicionGain * 0.5f;
                                 }
                                 else
                                 {
@@ -1214,12 +1224,18 @@ namespace ACE.Server.WorldObjects
                             var rp2 = MovementWindowBuffer[last - 1];
                             var rp3 = MovementWindowBuffer[last];
 
-                            // Interval checks first (cheap) — all three steps must be < 150 ms.
+                            // Interval checks first (cheap).
+                            // All three steps must be under 66 ms (≈ 2 game frames at 30 fps).
+                            // Sticky-target auto-facing during combat produces reversals at
+                            // 83–150 ms intervals (the client takes multiple frames to rotate);
+                            // true speed-scripts run at machine-clock precision (16–33 ms).
+                            // The 66 ms cutoff cleanly separates the two without false-positiving
+                            // on any of the combat-reversal patterns observed in testing.
                             double rdt01 = rp1.Timestamp - rp0.Timestamp;
                             double rdt12 = rp2.Timestamp - rp1.Timestamp;
                             double rdt23 = rp3.Timestamp - rp2.Timestamp;
 
-                            if (rdt01 < 0.15 && rdt12 < 0.15 && rdt23 < 0.15)
+                            if (rdt01 < 0.066 && rdt12 < 0.066 && rdt23 < 0.066)
                             {
                                 // Displacement checks — each step must be meaningful movement.
                                 float rdx01 = rp1.Pos.PositionX - rp0.Pos.PositionX;
@@ -1249,8 +1265,11 @@ namespace ACE.Server.WorldObjects
                                     double rAngle1 = HeadingDiff(rh01, rh12);
                                     double rAngle2 = HeadingDiff(rh12, rh23);
 
-                                    // Both must be within 20° (0.349 rad) of a full 180° reversal.
-                                    const double reversalMin = Math.PI - 0.349;
+                                    // Both must be within 10° (0.175 rad) of a full 180° reversal.
+                                    // Tighter than the old 20° window: sticky-target combat facing
+                                    // typically produces 160–170° angles; genuine scripted kiting
+                                    // produces near-exact 180° flips.
+                                    const double reversalMin = Math.PI - 0.175;
                                     if (rAngle1 >= reversalMin && rAngle2 >= reversalMin)
                                     {
                                         MovementSuspicionScore += 7.0f;
