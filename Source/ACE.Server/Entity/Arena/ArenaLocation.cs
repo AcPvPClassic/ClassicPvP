@@ -696,7 +696,7 @@ namespace ACE.Server.Entity
                                 if (player.MaximumLuminance != null)
                                     player.GrantLuminance(30000, XpType.Quest, ShareType.None);
 
-                                var pkTrophy = WorldObjectFactory.CreateNewWorldObject(1000002);
+                                var pkTrophy = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.PkTrophy);
                                 pkTrophy?.SetStackSize(5);
                                 if (pkTrophy != null && player.TryCreateInInventoryWithNetworking(pkTrophy))
                                 {
@@ -704,7 +704,7 @@ namespace ACE.Server.Entity
                                     player.Session.Network.EnqueueSend(new GameMessageSystemChat("You have received 5 PK Trophies", ChatMessageType.Broadcast));
                                 }
 
-                                var arenaTrophy = WorldObjectFactory.CreateNewWorldObject(1000003);
+                                var arenaTrophy = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.PhialOfBloodyTears);
                                 arenaTrophy?.SetStackSize(1);
                                 if (arenaTrophy != null && player.TryCreateInInventoryWithNetworking(arenaTrophy))
                                 {
@@ -712,7 +712,7 @@ namespace ACE.Server.Entity
                                     player.Session.Network.EnqueueSend(new GameMessageSystemChat("You have received a Phial of Bloody Tears", ChatMessageType.Broadcast));
                                 }
 
-                                var arenaKey = WorldObjectFactory.CreateNewWorldObject(480608);
+                                var arenaKey = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.DarkbeatKey);
                                 arenaKey?.SetStackSize(1);
                                 if (arenaKey != null && player.TryCreateInInventoryWithNetworking(arenaKey))
                                 {
@@ -725,7 +725,7 @@ namespace ACE.Server.Entity
                                     var bonusCount = new Random().Next(1, 4);
                                     for (int i = 0; i < bonusCount; i++)
                                     {
-                                        var bonusKey = WorldObjectFactory.CreateNewWorldObject(480608);
+                                        var bonusKey = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.DarkbeatKey);
                                         bonusKey?.SetStackSize(1);
                                         if (bonusKey != null && player.TryCreateInInventoryWithNetworking(bonusKey))
                                         {
@@ -748,7 +748,7 @@ namespace ACE.Server.Entity
                                 if (player.MaximumLuminance != null)
                                     player.GrantLuminance(80000, XpType.Quest, ShareType.None);
 
-                                var ffaWinnerPkTrophy = WorldObjectFactory.CreateNewWorldObject(1000002);
+                                var ffaWinnerPkTrophy = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.PkTrophy);
                                 ffaWinnerPkTrophy?.SetStackSize(5);
                                 if (ffaWinnerPkTrophy != null && player.TryCreateInInventoryWithNetworking(ffaWinnerPkTrophy))
                                 {
@@ -756,7 +756,7 @@ namespace ACE.Server.Entity
                                     player.Session.Network.EnqueueSend(new GameMessageSystemChat("You have received 5 PK Trophies", ChatMessageType.Broadcast));
                                 }
 
-                                var ffaWinnerArenaTrophy = WorldObjectFactory.CreateNewWorldObject(1000003);
+                                var ffaWinnerArenaTrophy = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.PhialOfBloodyTears);
                                 ffaWinnerArenaTrophy?.SetStackSize(3);
                                 if (ffaWinnerArenaTrophy != null && player.TryCreateInInventoryWithNetworking(ffaWinnerArenaTrophy))
                                 {
@@ -766,7 +766,7 @@ namespace ACE.Server.Entity
 
                                 for (int i = 0; i < 5; i++)
                                 {
-                                    var ffaWinnerKey = WorldObjectFactory.CreateNewWorldObject(480608);
+                                    var ffaWinnerKey = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.DarkbeatKey);
                                     ffaWinnerKey?.SetStackSize(1);
                                     if (ffaWinnerKey != null && player.TryCreateInInventoryWithNetworking(ffaWinnerKey))
                                     {
@@ -788,7 +788,7 @@ namespace ACE.Server.Entity
                                 if (player.MaximumLuminance != null)
                                     player.GrantLuminance(20000 * rewardMultiplier, XpType.Quest, ShareType.None);
 
-                                var groupWinnerPkTrophy = WorldObjectFactory.CreateNewWorldObject(1000002);
+                                var groupWinnerPkTrophy = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.PkTrophy);
                                 groupWinnerPkTrophy?.SetStackSize(5 * rewardMultiplier);
                                 if (groupWinnerPkTrophy != null && player.TryCreateInInventoryWithNetworking(groupWinnerPkTrophy))
                                 {
@@ -796,7 +796,7 @@ namespace ACE.Server.Entity
                                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You have received {5 * rewardMultiplier} PK Trophies", ChatMessageType.Broadcast));
                                 }
 
-                                var groupWinnerArenaTrophy = WorldObjectFactory.CreateNewWorldObject(1000003);
+                                var groupWinnerArenaTrophy = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.PhialOfBloodyTears);
                                 groupWinnerArenaTrophy?.SetStackSize(1 * rewardMultiplier);
                                 if (groupWinnerArenaTrophy != null && player.TryCreateInInventoryWithNetworking(groupWinnerArenaTrophy))
                                 {
@@ -806,7 +806,7 @@ namespace ACE.Server.Entity
 
                                 for (int i = 0; i < 2 * rewardMultiplier; i++)
                                 {
-                                    var groupWinnerKey = WorldObjectFactory.CreateNewWorldObject(480608);
+                                    var groupWinnerKey = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.DarkbeatKey);
                                     groupWinnerKey?.SetStackSize(1);
                                     if (groupWinnerKey != null && player.TryCreateInInventoryWithNetworking(groupWinnerKey))
                                     {
@@ -905,7 +905,7 @@ namespace ACE.Server.Entity
                                 if (player.MaximumLuminance != null)
                                     player.GrantLuminance(5000, XpType.Quest, ShareType.None);
 
-                                var pkTrophy = WorldObjectFactory.CreateNewWorldObject(1000002);
+                                var pkTrophy = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.PkTrophy);
                                 pkTrophy?.SetStackSize(1);
                                 if (pkTrophy != null && player.TryCreateInInventoryWithNetworking(pkTrophy))
                                 {
@@ -915,7 +915,7 @@ namespace ACE.Server.Entity
 
                                 if (new Random().NextDouble() > 0.75)
                                 {
-                                    var arenaKey = WorldObjectFactory.CreateNewWorldObject(480608);
+                                    var arenaKey = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.DarkbeatKey);
                                     arenaKey?.SetStackSize(1);
                                     if (arenaKey != null && player.TryCreateInInventoryWithNetworking(arenaKey))
                                     {
@@ -939,7 +939,7 @@ namespace ACE.Server.Entity
                                     if (player.MaximumLuminance != null)
                                         player.GrantLuminance(12000, XpType.Quest, ShareType.None);
 
-                                    var ffaLoserPkTrophy = WorldObjectFactory.CreateNewWorldObject(1000002);
+                                    var ffaLoserPkTrophy = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.PkTrophy);
                                     ffaLoserPkTrophy?.SetStackSize(3);
                                     if (ffaLoserPkTrophy != null && player.TryCreateInInventoryWithNetworking(ffaLoserPkTrophy))
                                     {
@@ -947,7 +947,7 @@ namespace ACE.Server.Entity
                                         player.Session.Network.EnqueueSend(new GameMessageSystemChat("You have received 3 PK Trophies", ChatMessageType.Broadcast));
                                     }
 
-                                    var ffaLoserArenaTrophy = WorldObjectFactory.CreateNewWorldObject(1000003);
+                                    var ffaLoserArenaTrophy = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.PhialOfBloodyTears);
                                     ffaLoserArenaTrophy?.SetStackSize(2);
                                     if (ffaLoserArenaTrophy != null && player.TryCreateInInventoryWithNetworking(ffaLoserArenaTrophy))
                                     {
@@ -955,7 +955,7 @@ namespace ACE.Server.Entity
                                         player.Session.Network.EnqueueSend(new GameMessageSystemChat("You have received 2 Phials of Bloody Tears", ChatMessageType.Broadcast));
                                     }
 
-                                    var ffaLoserKey = WorldObjectFactory.CreateNewWorldObject(480608);
+                                    var ffaLoserKey = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.DarkbeatKey);
                                     ffaLoserKey?.SetStackSize(1);
                                     if (ffaLoserKey != null && player.TryCreateInInventoryWithNetworking(ffaLoserKey))
                                     {
@@ -975,7 +975,7 @@ namespace ACE.Server.Entity
                                     if (player.MaximumLuminance != null)
                                         player.GrantLuminance(8000, XpType.Quest, ShareType.None);
 
-                                    var ffaLoserPkTrophy = WorldObjectFactory.CreateNewWorldObject(1000002);
+                                    var ffaLoserPkTrophy = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.PkTrophy);
                                     ffaLoserPkTrophy?.SetStackSize(1);
                                     if (ffaLoserPkTrophy != null && player.TryCreateInInventoryWithNetworking(ffaLoserPkTrophy))
                                     {
@@ -983,7 +983,7 @@ namespace ACE.Server.Entity
                                         player.Session.Network.EnqueueSend(new GameMessageSystemChat("You have received a PK Trophy", ChatMessageType.Broadcast));
                                     }
 
-                                    var ffaLoserArenaTrophy = WorldObjectFactory.CreateNewWorldObject(1000003);
+                                    var ffaLoserArenaTrophy = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.PhialOfBloodyTears);
                                     ffaLoserArenaTrophy?.SetStackSize(1);
                                     if (ffaLoserArenaTrophy != null && player.TryCreateInInventoryWithNetworking(ffaLoserArenaTrophy))
                                     {
@@ -991,7 +991,7 @@ namespace ACE.Server.Entity
                                         player.Session.Network.EnqueueSend(new GameMessageSystemChat("You have received a Phial of Bloody Tears", ChatMessageType.Broadcast));
                                     }
 
-                                    var ffaLoserKey = WorldObjectFactory.CreateNewWorldObject(480608);
+                                    var ffaLoserKey = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.DarkbeatKey);
                                     ffaLoserKey?.SetStackSize(1);
                                     if (ffaLoserKey != null && player.TryCreateInInventoryWithNetworking(ffaLoserKey))
                                     {
@@ -1013,7 +1013,7 @@ namespace ACE.Server.Entity
 
                                     if (new Random().NextDouble() > 0.75)
                                     {
-                                        var ffaLoserKey = WorldObjectFactory.CreateNewWorldObject(480608);
+                                        var ffaLoserKey = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.DarkbeatKey);
                                         ffaLoserKey?.SetStackSize(1);
                                         if (ffaLoserKey != null && player.TryCreateInInventoryWithNetworking(ffaLoserKey))
                                         {
@@ -1035,7 +1035,7 @@ namespace ACE.Server.Entity
                                 if (player.MaximumLuminance != null)
                                     player.GrantLuminance(20000, XpType.Quest, ShareType.None);
 
-                                var groupLoserPkTrophy = WorldObjectFactory.CreateNewWorldObject(1000002);
+                                var groupLoserPkTrophy = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.PkTrophy);
                                 groupLoserPkTrophy?.SetStackSize(2);
                                 if (groupLoserPkTrophy != null && player.TryCreateInInventoryWithNetworking(groupLoserPkTrophy))
                                 {
@@ -1043,7 +1043,7 @@ namespace ACE.Server.Entity
                                     player.Session.Network.EnqueueSend(new GameMessageSystemChat("You have received 2 PK Trophies", ChatMessageType.Broadcast));
                                 }
 
-                                var groupLoserArenaTrophy = WorldObjectFactory.CreateNewWorldObject(1000003);
+                                var groupLoserArenaTrophy = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.PhialOfBloodyTears);
                                 groupLoserArenaTrophy?.SetStackSize(1);
                                 if (groupLoserArenaTrophy != null && player.TryCreateInInventoryWithNetworking(groupLoserArenaTrophy))
                                 {
@@ -1053,7 +1053,7 @@ namespace ACE.Server.Entity
 
                                 if (new Random().NextDouble() > 0.75)
                                 {
-                                    var groupLoserKey = WorldObjectFactory.CreateNewWorldObject(480608);
+                                    var groupLoserKey = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.DarkbeatKey);
                                     groupLoserKey?.SetStackSize(1);
                                     if (groupLoserKey != null && player.TryCreateInInventoryWithNetworking(groupLoserKey))
                                     {
@@ -1259,7 +1259,7 @@ namespace ACE.Server.Entity
 
                         if (new Random().NextDouble() > 0.75)
                         {
-                            var drawKey = WorldObjectFactory.CreateNewWorldObject(480608);
+                            var drawKey = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.DarkbeatKey);
                             drawKey?.SetStackSize(1);
                             if (drawKey != null && player.TryCreateInInventoryWithNetworking(drawKey))
                             {

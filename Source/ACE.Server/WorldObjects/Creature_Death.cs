@@ -745,17 +745,17 @@ namespace ACE.Server.WorldObjects
                         var killerPlayer = killer?.TryGetAttacker() as Player;
                         if (killerPlayer != null && !killerPlayer.IsSameAllegiance(player))
                         {
-                            var phial = WorldObjectFactory.CreateNewWorldObject(HotDungeonManager.PhialOfBloodyTearsWcid);
+                            var phial = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.PhialOfBloodyTears);
                             if (phial != null)
                                 corpse.TryAddToInventory(phial);
                             else
-                                log.Warn($"HotDungeon: Failed to create Phial of Bloody Tears (WCID {HotDungeonManager.PhialOfBloodyTearsWcid}) — weenie may not exist in the world database.");
+                                log.Warn($"HotDungeon: Failed to create Phial of Bloody Tears (WCID {CustomWeenieId.PhialOfBloodyTears}) — weenie may not exist in the world database.");
 
-                            var pkBox = WorldObjectFactory.CreateNewWorldObject(HotDungeonManager.BoxWcid);
+                            var pkBox = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.ABox);
                             if (pkBox != null)
                                 corpse.TryAddToInventory(pkBox);
                             else
-                                log.Warn($"HotDungeon: Failed to create Box (WCID {HotDungeonManager.BoxWcid}) — weenie may not exist in the world database.");
+                                log.Warn($"HotDungeon: Failed to create Box (WCID {CustomWeenieId.ABox}) — weenie may not exist in the world database.");
                         }
                     }
 
@@ -784,11 +784,11 @@ namespace ACE.Server.WorldObjects
 
                         if (ThreadSafeRandom.Next(0.0f, 1.0f) < hotDungeon.BoxDropChance)
                         {
-                            var box = WorldObjectFactory.CreateNewWorldObject(HotDungeonManager.BoxWcid);
+                            var box = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.ABox);
                             if (box != null)
                                 corpse.TryAddToInventory(box);
                             else
-                                log.Warn($"HotDungeon: Failed to create Box (WCID {HotDungeonManager.BoxWcid}) — weenie may not exist in the world database.");
+                                log.Warn($"HotDungeon: Failed to create Box (WCID {CustomWeenieId.ABox}) — weenie may not exist in the world database.");
                         }
                     }
                 }

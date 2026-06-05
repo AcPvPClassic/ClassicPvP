@@ -2190,7 +2190,7 @@ namespace ACE.Server.Command.Handlers
 
             int renameCost = CalculateRenameCost(session.Player.CharacterRenameCount);
             bool isFirstRenameUsed = session.Player.CharacterRenameCount > 0;
-            var numPkTrophiesInInventory = session.Player.GetNumInventoryItemsOfWCID(1000002);
+            var numPkTrophiesInInventory = session.Player.GetNumInventoryItemsOfWCID(CustomWeenieId.PkTrophy);
             if(isFirstRenameUsed && numPkTrophiesInInventory < renameCost)
             {
                 CommandHandlerHelper.WriteOutputInfo(session, $"Your character has previously been renamed {session.Player.CharacterRenameCount} times. Renaming your character costs {renameCost} PK trophies. You don't have enough PK trophies in your inventory to cover the cost.", ChatMessageType.Broadcast);
@@ -2260,7 +2260,7 @@ namespace ACE.Server.Command.Handlers
                     }
 
                     //Check if the player has sufficient funds to purchase the rename
-                    numPkTrophiesInInventory = session.Player.GetNumInventoryItemsOfWCID(1000002);
+                    numPkTrophiesInInventory = session.Player.GetNumInventoryItemsOfWCID(CustomWeenieId.PkTrophy);
                     if (isFirstRenameUsed && numPkTrophiesInInventory < renameCost)
                     {
                         CommandHandlerHelper.WriteOutputInfo(session, $"Your character has previously been renamed {session.Player.CharacterRenameCount} times. Renaming your character costs {renameCost} PK trophies. You don't have enough PK trophies in your inventory to cover the cost.", ChatMessageType.Broadcast);
@@ -2270,7 +2270,7 @@ namespace ACE.Server.Command.Handlers
                     {
                         if (isFirstRenameUsed)
                         {
-                            if (session.Player.TryConsumeFromInventoryWithNetworking(1000002, renameCost))
+                            if (session.Player.TryConsumeFromInventoryWithNetworking(CustomWeenieId.PkTrophy, renameCost))
                             {
                                 CommandHandlerHelper.WriteOutputInfo(session, $"{renameCost} PK trophies have been removed from your inventory", ChatMessageType.Broadcast);
                             }
@@ -2323,7 +2323,7 @@ namespace ACE.Server.Command.Handlers
                 return;
             }
 
-            var numPkTrophiesInInventory = session.Player.GetNumInventoryItemsOfWCID(1000002);
+            var numPkTrophiesInInventory = session.Player.GetNumInventoryItemsOfWCID(CustomWeenieId.PkTrophy);
             if (numPkTrophiesInInventory < titleBaseCost)
             {
                 CommandHandlerHelper.WriteOutputInfo(session, $"Buying a custom title for your character costs {titleBaseCost} PK trophies. You don't have enough PK trophies in your inventory to cover the cost.", ChatMessageType.Broadcast);
@@ -2368,7 +2368,7 @@ namespace ACE.Server.Command.Handlers
             if (onlinePlayer != null)
             {
                 //Check if the player has sufficient funds to purchase the rename
-                numPkTrophiesInInventory = session.Player.GetNumInventoryItemsOfWCID(1000002);
+                numPkTrophiesInInventory = session.Player.GetNumInventoryItemsOfWCID(CustomWeenieId.PkTrophy);
                 if (numPkTrophiesInInventory < titleBaseCost)
                 {
                     CommandHandlerHelper.WriteOutputInfo(session, $"Buying a custom title for your character costs {titleBaseCost} PK trophies. You don't have enough PK trophies in your inventory to cover the cost.", ChatMessageType.Broadcast);
@@ -2376,7 +2376,7 @@ namespace ACE.Server.Command.Handlers
                 }
                 else
                 {
-                    if (session.Player.TryConsumeFromInventoryWithNetworking(1000002, titleBaseCost))
+                    if (session.Player.TryConsumeFromInventoryWithNetworking(CustomWeenieId.PkTrophy, titleBaseCost))
                     {
                         CommandHandlerHelper.WriteOutputInfo(session, $"{titleBaseCost} PK trophies have been removed from your inventory", ChatMessageType.Broadcast);
                         onlinePlayer.SetProperty(PropertyString.Template, newTitle);

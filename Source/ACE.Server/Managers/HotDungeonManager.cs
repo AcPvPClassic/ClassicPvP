@@ -1,5 +1,6 @@
 using ACE.Common;
 using ACE.Common.Extensions;
+using ACE.Database;
 using ACE.Entity.Enum;
 using ACE.Server.Network.GameMessages.Messages;
 using log4net;
@@ -33,9 +34,6 @@ namespace ACE.Server.Managers
     public static class HotDungeonManager
     {
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-        public const uint PhialOfBloodyTearsWcid = 1000003;
-        public const uint BoxWcid = 510000;
 
         private const int    MaxActive            = 3;
         private const double MinDurationSeconds   = 86400;   // 24 h

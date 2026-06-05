@@ -4,6 +4,7 @@ using System.Linq;
 
 using log4net;
 
+using ACE.Database;
 using ACE.Entity.Enum;
 using ACE.Server.Entity;
 using ACE.Server.Entity.PKQuests;
@@ -222,7 +223,7 @@ namespace ACE.Server.WorldObjects
                                 Session.Network.EnqueueSend(new GameMessageSystemChat(msg, ChatMessageType.System));
                                 for (int i = 0; i < rewardCount; i++)
                                 {
-                                    var dbKey = WorldObjectFactory.CreateNewWorldObject(480608);
+                                    var dbKey = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.DarkbeatKey);
                                     this.TryCreateInInventoryWithNetworking(dbKey);
                                     Session.Network.EnqueueSend(new GameMessageCreateObject(dbKey));
                                 }
@@ -230,7 +231,7 @@ namespace ACE.Server.WorldObjects
                             case "PKTROPHY":
                                 msg = $"Reward: {rewardCount} PK Trophies";
                                 Session.Network.EnqueueSend(new GameMessageSystemChat(msg, ChatMessageType.System));
-                                var trophy = WorldObjectFactory.CreateNewWorldObject(1000002);
+                                var trophy = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.PkTrophy);
                                 trophy.SetStackSize(Math.Min(rewardCount, (int)trophy.MaxStackSize));
                                 this.TryCreateInInventoryWithNetworking(trophy);
                                 Session.Network.EnqueueSend(new GameMessageCreateObject(trophy));
@@ -238,7 +239,7 @@ namespace ACE.Server.WorldObjects
                             case "PHIAL":
                                 msg = $"Reward: {rewardCount} Phial{(rewardCount > 1 ? "s" : "")} of Bloody Tears";
                                 Session.Network.EnqueueSend(new GameMessageSystemChat(msg, ChatMessageType.System));
-                                var phial = WorldObjectFactory.CreateNewWorldObject(1000003);
+                                var phial = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.PhialOfBloodyTears);
                                 phial.SetStackSize(Math.Min(rewardCount, (int)phial.MaxStackSize));
                                 this.TryCreateInInventoryWithNetworking(phial);
                                 Session.Network.EnqueueSend(new GameMessageCreateObject(phial));
@@ -248,7 +249,7 @@ namespace ACE.Server.WorldObjects
                                 Session.Network.EnqueueSend(new GameMessageSystemChat(msg, ChatMessageType.System));
                                 for (int i = 0; i < rewardCount; i++)
                                 {
-                                    var heraKey = WorldObjectFactory.CreateNewWorldObject(490364);
+                                    var heraKey = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.HeraKey);
                                     this.TryCreateInInventoryWithNetworking(heraKey);
                                     Session.Network.EnqueueSend(new GameMessageCreateObject(heraKey));
                                 }
@@ -258,7 +259,7 @@ namespace ACE.Server.WorldObjects
                                 Session.Network.EnqueueSend(new GameMessageSystemChat(msg, ChatMessageType.System));
                                 for (int i = 0; i < rewardCount; i++)
                                 {
-                                    var box = WorldObjectFactory.CreateNewWorldObject(510000);
+                                    var box = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.ABox);
                                     this.TryCreateInInventoryWithNetworking(box);
                                     Session.Network.EnqueueSend(new GameMessageCreateObject(box));
                                 }
@@ -266,7 +267,7 @@ namespace ACE.Server.WorldObjects
                             case "AMBER":
                                 msg = $"Reward: {rewardCount} Radiant Amber Crystal{(rewardCount > 1 ? "s" : "")}";
                                 Session.Network.EnqueueSend(new GameMessageSystemChat(msg, ChatMessageType.System));
-                                var amber = WorldObjectFactory.CreateNewWorldObject(1000005);
+                                var amber = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.RadiantAmberCrystal);
                                 amber.SetStackSize(Math.Min(rewardCount, (int)amber.MaxStackSize));
                                 this.TryCreateInInventoryWithNetworking(amber);
                                 Session.Network.EnqueueSend(new GameMessageCreateObject(amber));

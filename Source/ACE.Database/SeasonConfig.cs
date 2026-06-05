@@ -4,15 +4,8 @@ namespace ACE.Database
 {
     /// <summary>
     /// Central configuration for the Season leaderboard system.
-    /// Category weights, XP reward multipliers, and item weenie IDs are all
-    /// defined here as constants — analogous to <see cref="ArenaRanking"/>.
-    ///
-    /// <para>
-    /// <b>Before server launch:</b> fill in the three weenie ID constants
-    /// (<see cref="ABox_WeenieId"/>, <see cref="PhialOfBloodyTears_WeenieId"/>,
-    /// <see cref="PkTrophy_WeenieId"/>).  Any weenie ID left at 0 is silently skipped
-    /// at reward claim time and logged as a warning.
-    /// </para>
+    /// Category weights, XP reward multipliers, and reward item bundles are defined here.
+    /// Item weenie IDs are sourced from <see cref="CustomWeenieId"/>.
     /// </summary>
     public static class SeasonConfig
     {
@@ -81,41 +74,35 @@ namespace ACE.Database
         public const double Weekly_Rank3_XpMultiplier     = 0.35;
         public const double Weekly_Rank4to10_XpMultiplier = 0.2;
 
-        // ── Weekly milestone: reward item weenie IDs ─────────────────────────
-        public const uint ABox_WeenieId               = 510000;  // "A Box"
-        public const uint DarkbeatKey_WeenieId        = 480608;  // "Darkbeat's Lost Storage Key"
-        public const uint PhialOfBloodyTears_WeenieId = 1000003; // "Phial of Bloody Tears"
-        public const uint PkTrophy_WeenieId           = 1000002; // "PK Trophy"
-
         // ── Weekly milestone: item bundles per rank ──────────────────────────
-        // Each tuple is (weenieId, quantity).
+        // Each tuple is (weenieId, quantity). Weenie IDs from CustomWeenieId.
 
         public static readonly (uint weenieId, int qty)[] Weekly_Rank1_Items =
         {
-            (ABox_WeenieId,               3),
-            (DarkbeatKey_WeenieId,        3),
-            (PhialOfBloodyTears_WeenieId, 2),
-            (PkTrophy_WeenieId,          50),
+            (CustomWeenieId.ABox,               3),
+            (CustomWeenieId.DarkbeatKey,        3),
+            (CustomWeenieId.PhialOfBloodyTears, 2),
+            (CustomWeenieId.PkTrophy,          50),
         };
 
         public static readonly (uint weenieId, int qty)[] Weekly_Rank2_Items =
         {
-            (ABox_WeenieId,               2),
-            (DarkbeatKey_WeenieId,        2),
-            (PhialOfBloodyTears_WeenieId, 1),
+            (CustomWeenieId.ABox,               2),
+            (CustomWeenieId.DarkbeatKey,        2),
+            (CustomWeenieId.PhialOfBloodyTears, 1),
         };
 
         public static readonly (uint weenieId, int qty)[] Weekly_Rank3_Items =
         {
-            (ABox_WeenieId,        1),
-            (DarkbeatKey_WeenieId, 1),
-            (PkTrophy_WeenieId,    1),
+            (CustomWeenieId.ABox,        1),
+            (CustomWeenieId.DarkbeatKey, 1),
+            (CustomWeenieId.PkTrophy,    1),
         };
 
         public static readonly (uint weenieId, int qty)[] Weekly_Rank4to10_Items =
         {
-            (DarkbeatKey_WeenieId,        1),
-            (PhialOfBloodyTears_WeenieId, 1),
+            (CustomWeenieId.DarkbeatKey,        1),
+            (CustomWeenieId.PhialOfBloodyTears, 1),
         };
 
         // ── Accessors ────────────────────────────────────────────────────────

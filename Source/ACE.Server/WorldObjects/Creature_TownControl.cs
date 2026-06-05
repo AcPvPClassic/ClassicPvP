@@ -5,6 +5,7 @@ using System.Linq;
 using log4net;
 
 using ACE.Common;
+using ACE.Database;
 using ACE.Entity;
 using ACE.Entity.Enum;
 using ACE.Server.Entity;
@@ -399,9 +400,6 @@ namespace ACE.Server.WorldObjects
         // Reward distribution
         // -----------------------------------------------------------------------
 
-        private const uint WcidPkTrophy = 1000002;
-        private const uint WcidABox     = 510000;
-        private const uint WcidHeraKey  = 490364;
 
         private static void AwardTownControlRewards(
             ACE.Database.Models.Log.TownControlTown town,
@@ -447,7 +445,7 @@ namespace ACE.Server.WorldObjects
                     // PK Trophies
                     if (trophyCount > 0)
                     {
-                        var trophy = WorldObjectFactory.CreateNewWorldObject(WcidPkTrophy);
+                        var trophy = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.PkTrophy);
                         if (trophy != null)
                         {
                             trophy.SetStackSize(trophyCount);
@@ -462,7 +460,7 @@ namespace ACE.Server.WorldObjects
                     }
 
                     // Hera's Vault Key
-                    var heraKey = WorldObjectFactory.CreateNewWorldObject(WcidHeraKey);
+                    var heraKey = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.HeraKey);
                     if (heraKey != null && player.TryCreateInInventoryWithNetworking(heraKey))
                     {
                         player.Session.Network.EnqueueSend(new GameMessageCreateObject(heraKey));
@@ -475,7 +473,7 @@ namespace ACE.Server.WorldObjects
                     int boxCount = isAttackerVictory ? 1 : 5;
                     for (int i = 0; i < boxCount; i++)
                     {
-                        var box = WorldObjectFactory.CreateNewWorldObject(WcidABox);
+                        var box = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.ABox);
                         if (box != null && player.TryCreateInInventoryWithNetworking(box))
                         {
                             player.Session.Network.EnqueueSend(new GameMessageCreateObject(box));
