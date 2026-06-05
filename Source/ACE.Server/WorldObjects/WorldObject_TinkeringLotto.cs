@@ -258,14 +258,26 @@ namespace ACE.Server.WorldObjects
             Random rand = new Random();
             var manaConvRoll = rand.NextDouble();
 
-            //Capped at 2 bonuses for any given item
-            var lottoBonusCount = GetCountManaConvLottoBonus();
-            if (manaConvRoll < 0.05 && lottoBonusCount < 2)
+            //Capped at 5 bonuses for any given item
+            var manacCount = GetCountManaConvLottoBonus();
+            if (manaConvRoll < 0.1 && manacCount < 5)
+            {
+                //Add +1% Mana C bonus
+                this.ManaConversionMod = (this.ManaConversionMod ?? 0.0f) + 0.01f;
+                resultMsg = "Improved Mana Conversion Mod by 1%";
+                HandleTinkerLottoLog("CasterManaConvMod1%");
+            }
+
+            var dmgRoll = rand.NextDouble();
+
+            //Capped at 1 bonus for any given item
+            var dmgCount = GetCountDmgLottoBonus();
+            if (dmgRoll < 0.05 && dmgCount < 1)
             {
                 //Add +1% dmg bonus
-                this.ManaConversionMod = (this.ManaConversionMod ?? 0.0f) + 0.01f;
-                resultMsg = "Improved Mana Conversion Mod by 5%";
-                HandleTinkerLottoLog("CasterManaConvMod5%");
+                this.ElementalDamageMod = (this.ElementalDamageMod ?? 0.0f) + 0.01f;
+                resultMsg = "Improved Elemental Damage Bonus by 1% vs Monsters and 0.5% against Players";
+                HandleTinkerLottoLog("CasterDmgBonus1%");
             }
 
             var slayerRoll = rand.NextDouble();
