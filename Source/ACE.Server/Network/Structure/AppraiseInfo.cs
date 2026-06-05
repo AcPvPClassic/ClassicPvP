@@ -872,6 +872,36 @@ namespace ACE.Server.Network.Structure
                 if (hasExtraPropertiesText)
                     PropertiesString[PropertyString.Use] = extraPropertiesText.TrimEnd('\n');
             }
+
+            if (Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.Infiltration)
+            {
+                string extraPropertiesText;
+                if (PropertiesString.TryGetValue(PropertyString.Use, out var useText) && useText.Length > 0)
+                    extraPropertiesText = $"{useText}\n\n";
+                else
+                    extraPropertiesText = "";
+
+                bool hasExtraPropertiesText = false;
+
+                if (wo.GearCreatureResistType != CreatureType.Invalid && (wo.GearCreatureResistRating ?? 0) > 0)
+                {
+                    if (hasExtraPropertiesText)
+                        extraPropertiesText += "\n";
+                    extraPropertiesText += $"{wo.GearCreatureResistType} Resist: {wo.GearCreatureResistRating.Value}";
+                    hasExtraPropertiesText = true;
+                }
+
+                if (wo.GearCreatureSlayerType != CreatureType.Invalid && (wo.GearCreatureSlayerRating ?? 0) > 0)
+                {
+                    if (hasExtraPropertiesText)
+                        extraPropertiesText += "\n";
+                    extraPropertiesText += $"{wo.GearCreatureSlayerType} Slayer: {wo.GearCreatureSlayerRating.Value}";
+                    hasExtraPropertiesText = true;
+                }
+
+                if (hasExtraPropertiesText)
+                    PropertiesString[PropertyString.Use] = extraPropertiesText.TrimEnd('\n');
+            }
         }
 
         private void BuildSpells(WorldObject wo)
