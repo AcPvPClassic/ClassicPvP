@@ -3329,7 +3329,7 @@ namespace ACE.Server.WorldObjects
                 return;
             }
 
-            if (sourceStack.GameplayMode != GameplayModes.InitialMode || targetStack.GameplayMode != GameplayMode)
+            if (Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.CustomDM && (sourceStack.GameplayMode != GameplayModes.InitialMode || targetStack.GameplayMode != GameplayMode))
             {
                 if (sourceStack.GameplayMode != targetStack.GameplayMode)
                 {
