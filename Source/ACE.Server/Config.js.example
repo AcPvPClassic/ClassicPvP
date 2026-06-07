@@ -212,7 +212,7 @@
         "AutoUpdateWorldDatabase": true,
 
         // After updating to latest world database, automatically import further customizations
-        // AutoUpdateWorldDatabase must be true for this option to be used
+        // Can be used independently of AutoUpdateWorldDatabase
         // SQL files will be executed given the sort order of the full paths of the files
         "AutoApplyWorldCustomizations": true,
 

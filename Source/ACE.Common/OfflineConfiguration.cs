@@ -56,8 +56,8 @@ namespace ACE.Common
         public bool AutoServerUpdateCheck { get; set; } = true;
 
         /// <summary>
-        /// After updating to latest world database, automatically import further customizations
-        /// AutoUpdateWorldDatabase must be true for this option to be used
+        /// At server startup, automatically import world customization SQL files.
+        /// Can be used independently of AutoUpdateWorldDatabase.
         /// SQL files will be executed given the sort order of the full paths of the files
         /// </summary>
         public bool AutoApplyWorldCustomizations { get; set; } = false;

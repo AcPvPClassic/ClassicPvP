@@ -217,12 +217,14 @@ namespace ACE.Server
             if (ConfigManager.Config.Offline.AutoUpdateWorldDatabase)
             {
                 CheckForWorldDatabaseUpdate();
-
-                if (ConfigManager.Config.Offline.AutoApplyWorldCustomizations)
-                    AutoApplyWorldCustomizations();
             }
             else
                 log.Info($"AutoUpdateWorldDatabase is disabled...");
+
+            if (ConfigManager.Config.Offline.AutoApplyWorldCustomizations)
+                AutoApplyWorldCustomizations();
+            else
+                log.Info($"AutoApplyWorldCustomizations is disabled...");
 
             if (ConfigManager.Config.Offline.AutoApplyDatabaseUpdates)
                 AutoApplyDatabaseUpdates();
