@@ -175,7 +175,7 @@ namespace ACE.Server.WorldObjects
                         var decay       = PropertyManager.GetDouble("pk_xp_level_diff_decay").Item;
                         var modifier    = Math.Pow(decay, levelDiff);
 
-                        var randPercent = ThreadSafeRandom.Next(0.01f, 0.04f);
+                        var randPercent = ThreadSafeRandom.Next(0.10f, 0.20f);
                         var baseXp      = (long)pkPlayer.GetXPBetweenLevels(killerLevel, killerLevel + 1);
                         var pvpXp       = (long)Math.Round(baseXp * randPercent * modifier);
 
