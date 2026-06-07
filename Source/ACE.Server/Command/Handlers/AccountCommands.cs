@@ -7,7 +7,6 @@ using log4net;
 using ACE.Database;
 using ACE.Database.Models.Auth;
 using ACE.Entity.Enum;
-using ACE.Server.Managers;
 using ACE.Server.Network;
 
 namespace ACE.Server.Command.Handlers
@@ -228,7 +227,7 @@ namespace ACE.Server.Command.Handlers
 
         // clearipbinding accountname
         [CommandHandler("clearipbinding", AccessLevel.Admin, CommandHandlerFlag.None, 1,
-            "Clears the IP binding for an account, allowing them to re-bind on next login. Also resets their monthly IP change counter.",
+            "Removes all known IP bindings for an account. Their next login will start fresh.",
             "accountname")]
         public static void HandleClearIpBinding(Session session, params string[] parameters)
         {
@@ -241,23 +240,22 @@ namespace ACE.Server.Command.Handlers
                 return;
             }
 
-            var binding = DatabaseManager.Authentication.GetIpBinding(account.AccountId);
-            var oldIp   = binding?.IpAddress ?? "(none)";
+            var bindings  = DatabaseManager.Authentication.GetIpBindings(account.AccountId);
+            var ipList    = bindings.Count > 0 ? string.Join(", ", bindings.Select(b => b.IpAddress)) : "(none)";
 
             DatabaseManager.Authentication.DeleteIpBinding(account.AccountId);
-            DatabaseManager.Authentication.MarkChangeLogEntriesAdminCleared(account.AccountId);
 
             var adminName = session?.Player?.Name ?? "CONSOLE";
-            log.Info($"[IPBinding] Admin '{adminName}' cleared IP binding for account '{accountName}' (was: {oldIp}).");
+            log.Info($"[IPBinding] Admin '{adminName}' cleared all IP bindings for account '{accountName}' (removed: {ipList}).");
 
             CommandHandlerHelper.WriteOutputInfo(session,
-                $"IP binding cleared for '{accountName}' (was: {oldIp}). Their next login will create a new binding and their monthly change counter has been reset.",
+                $"Cleared {bindings.Count} IP binding(s) for '{accountName}' ({ipList}). Their next login will create a fresh binding.",
                 ChatMessageType.Broadcast);
         }
 
         // checkipbinding accountname
         [CommandHandler("checkipbinding", AccessLevel.Admin, CommandHandlerFlag.None, 1,
-            "Displays the current IP binding and recent IP change history for an account.",
+            "Displays all known IP addresses for an account and their recent IP change history.",
             "accountname")]
         public static void HandleCheckIpBinding(Session session, params string[] parameters)
         {
@@ -270,20 +268,22 @@ namespace ACE.Server.Command.Handlers
                 return;
             }
 
-            var binding        = DatabaseManager.Authentication.GetIpBinding(account.AccountId);
-            var monthlyChanges = DatabaseManager.Authentication.GetMonthlyIpChangeCount(account.AccountId);
-            var changeLog      = DatabaseManager.Authentication.GetIpChangeLog(account.AccountId, limit: 5);
+            var bindings  = DatabaseManager.Authentication.GetIpBindings(account.AccountId);
+            var changeLog = DatabaseManager.Authentication.GetIpChangeLog(account.AccountId, limit: 10);
 
             var sb = new StringBuilder();
             sb.AppendLine($"=== IP Binding: '{account.AccountName}' ===");
 
-            if (binding == null)
-                sb.AppendLine("Bound IP    : (none — will bind on next login)");
+            if (bindings.Count == 0)
+            {
+                sb.AppendLine("Known IPs   : (none — will bind on next login)");
+            }
             else
-                sb.AppendLine($"Bound IP    : {binding.IpAddress}  (bound {binding.BoundAt:yyyy-MM-dd HH:mm} UTC, source: {binding.BoundBy})");
-
-            var monthlyLimit = PropertyManager.GetLong("ip_binding_monthly_change_limit").Item;
-            sb.AppendLine($"Changes/mo  : {monthlyChanges} of {monthlyLimit} allowed this calendar month");
+            {
+                sb.AppendLine($"Known IPs ({bindings.Count}):");
+                foreach (var b in bindings)
+                    sb.AppendLine($"  {b.IpAddress}  (first seen {b.BoundAt:yyyy-MM-dd HH:mm} UTC, source: {b.BoundBy})");
+            }
 
             if (changeLog.Count == 0)
             {
@@ -291,12 +291,9 @@ namespace ACE.Server.Command.Handlers
             }
             else
             {
-                sb.AppendLine("Recent changes (newest first):");
+                sb.AppendLine("Recent IP changes (newest first):");
                 foreach (var entry in changeLog)
-                {
-                    var tag = entry.AutoBanned ? " [AUTO-BANNED]" : entry.AdminCleared ? " [admin-cleared]" : "";
-                    sb.AppendLine($"  {entry.ChangedAt:yyyy-MM-dd HH:mm} UTC  {entry.OldIp} → {entry.NewIp}{tag}");
-                }
+                    sb.AppendLine($"  {entry.ChangedAt:yyyy-MM-dd HH:mm} UTC  {entry.OldIp} → {entry.NewIp}");
             }
 
             CommandHandlerHelper.WriteOutputInfo(session, sb.ToString(), ChatMessageType.Broadcast);

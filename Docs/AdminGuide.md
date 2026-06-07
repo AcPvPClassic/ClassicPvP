@@ -26,29 +26,26 @@ All server properties are stored in `shard_config` and are readable/writable at 
 
 ## 1. One-Account-Per-IP Enforcement
 
-Each IP address may only be associated with one account. The binding is created automatically on first login and is enforced on every subsequent login attempt.
+Each IP address may only be associated with one account. Accounts accumulate every IP they have ever logged in from; if any of those IPs is later used by a different account, that login is rejected. Players whose ISP rotates their IP, or who occasionally connect through a VPN by mistake, are not penalised — they simply add a new IP to their account's known set.
 
 ### How It Works
 
 | Scenario | Behavior |
 |---|---|
 | First login from any IP | IP is bound to the account silently |
-| Same IP as bound IP | Login proceeds normally |
+| Login from a previously seen IP | Login proceeds normally |
+| Login from a new IP (not yet seen for this account) | New IP added to account's known-IP set; login proceeds |
 | IP already claimed by a *different* account | Session terminated; player told to contact admin |
-| New IP, within monthly change limit | Allowed; binding updated; change logged |
-| New IP, monthly change limit exceeded | Account **auto-banned for 7 days**; change logged with `auto_banned=1` |
 
-- Localhost (`127.0.0.1` / `::1`) and `Admin+` accounts are always exempt.
-- The monthly change window resets on the 1st of each calendar month (UTC).
-- Auto-bans use `BannedByAccountId = null` (system/console) so they appear in ban history.
+- Localhost (`127.0.0.1` / `::1`) and `Admin+` accounts are always exempt from all checks.
+- Every new IP is logged to `account_ip_change_log` for audit purposes.
 
 ### Properties
 
 | Property | Type | Default | Description |
 |---|---|---|---|
 | `enforce_account_ip_binding` | bool | `true` | Master on/off for the IP binding system |
-| `ip_binding_monthly_change_limit` | long | `3` | Number of IP changes allowed per account per calendar month before an auto-ban is triggered |
-| `ip_binding_ip_whitelist` | string | `""` | Comma-separated list of IPs exempt from all binding enforcement (e.g. `192.168.1.1,10.0.0.5`). Accounts logging in from a whitelisted IP bypass both the conflict check and the monthly change limit. Use for LAN setups or trusted staff locations where multiple accounts sharing an IP is expected. |
+| `ip_binding_ip_whitelist` | string | `""` | Comma-separated list of IPs exempt from all binding enforcement (e.g. `192.168.1.1,10.0.0.5`). Accounts logging in from a whitelisted IP bypass the conflict check entirely. Use for LAN setups or trusted staff locations where multiple accounts sharing an IP is expected. |
 
 ### IP Whitelist
 
@@ -70,15 +67,15 @@ Changes take effect immediately — no restart required.
 
 | Command | Description |
 |---|---|
-| `/checkipbinding <account>` | Shows the bound IP, monthly change count, and last 5 change log entries with flags |
-| `/clearipbinding <account>` | Removes the binding entirely and resets the monthly counter. Player re-binds on next login. All current-month entries are marked `admin_cleared` (audit trail preserved, count exempted) |
+| `/checkipbinding <account>` | Lists all known IPs for the account and recent IP change history |
+| `/clearipbinding <account>` | Removes all IP bindings for the account. Player's next login creates a fresh binding. Use when an account is legitimately moving to a new household. |
 
 ### Database Tables (`ace_auth`)
 
 | Table | Contents |
 |---|---|
-| `account_ip_binding` | One row per account: bound IP, timestamp, source |
-| `account_ip_change_log` | Full audit log of every IP change, with `auto_banned` and `admin_cleared` flags |
+| `account_ip_binding` | One row per IP per account — accumulates every IP the account has ever used |
+| `account_ip_change_log` | Audit log of every new IP seen per account |
 
 ---
 

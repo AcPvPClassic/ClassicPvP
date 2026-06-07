@@ -376,53 +376,18 @@ namespace ACE.Server.Network.Handlers
                     return false;
                 }
 
-                var accountBinding = DatabaseManager.Authentication.GetIpBinding(account.AccountId);
+                var knownBindings = DatabaseManager.Authentication.GetIpBindings(account.AccountId);
 
-                // Case: no existing binding — first ever login; create it and proceed.
-                if (accountBinding == null)
-                {
-                    DatabaseManager.Authentication.CreateIpBinding(account.AccountId, ipStr, "login");
-                    log.Info($"[IPBinding] Bound account '{account.AccountName}' to {ipStr} (first login).");
-                    return true;
-                }
-
-                // Case: same IP as already bound — normal login.
-                if (accountBinding.IpAddress == ipStr)
+                // Case: IP already in this account's known set — normal login.
+                if (knownBindings.Any(b => b.IpAddress == ipStr))
                     return true;
 
-                // Case: IP has changed — check how many times this month.
-                var monthlyChanges = DatabaseManager.Authentication.GetMonthlyIpChangeCount(account.AccountId);
-                var monthlyLimit   = PropertyManager.GetLong("ip_binding_monthly_change_limit").Item;
-
-                if (monthlyChanges < monthlyLimit)
-                {
-                    // Under the monthly limit — allowed.
-                    DatabaseManager.Authentication.InsertIpChangeLog(account.AccountId, accountBinding.IpAddress, ipStr, autoBanned: false);
-                    DatabaseManager.Authentication.UpdateIpBinding(account.AccountId, ipStr, "login");
-                    log.Info($"[IPBinding] IP change allowed for account '{account.AccountName}': {accountBinding.IpAddress} → {ipStr} (change {monthlyChanges + 1} of {monthlyLimit} this month).");
-                    return true;
-                }
-                else
-                {
-                    // Monthly limit exceeded — auto-ban.
-                    DatabaseManager.Authentication.InsertIpChangeLog(account.AccountId, accountBinding.IpAddress, ipStr, autoBanned: true);
-
-                    account.BanExpireTime      = DateTime.UtcNow.AddDays(7);
-                    account.BanReason          = "Automatic ban: multiple IP address changes detected within one calendar month.";
-                    account.BannedTime         = DateTime.UtcNow;
-                    account.BannedByAccountId  = null; // null = system/console
-                    DatabaseManager.Authentication.UpdateAccount(account);
-
-                    log.Warn($"[IPBinding] Auto-banned account '{account.AccountName}' for IP change abuse: {accountBinding.IpAddress} → {ipStr} (exceeded {monthlyLimit} changes/month).");
-
-                    session.Terminate(
-                        SessionTerminationReason.AccountBanned,
-                        new GameMessageAccountBanned(account.BanExpireTime.Value,
-                            " - Automatic ban: multiple IP address changes detected within one calendar month. Contact an administrator to appeal."),
-                        null,
-                        account.BanReason);
-                    return false;
-                }
+                // Case: new IP — add it to the known-IP set and allow.
+                var mostRecent = knownBindings.FirstOrDefault()?.IpAddress ?? "(none)";
+                DatabaseManager.Authentication.CreateIpBinding(account.AccountId, ipStr, "login");
+                DatabaseManager.Authentication.InsertIpChangeLog(account.AccountId, mostRecent, ipStr, autoBanned: false);
+                log.Info($"[IPBinding] New IP recorded for account '{account.AccountName}': {ipStr} (most recent was {mostRecent}).");
+                return true;
             }
             catch (Exception ex)
             {

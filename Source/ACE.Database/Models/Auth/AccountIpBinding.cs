@@ -9,7 +9,8 @@ public partial class AccountIpBinding
     public uint AccountId { get; set; }
 
     /// <summary>
-    /// The IP address (IPv4 or IPv6) bound to this account. Globally unique — one IP per account, worldwide.
+    /// An IP address (IPv4 or IPv6) associated with this account.
+    /// Globally unique — one account per IP worldwide, but an account may accumulate many IP rows over time.
     /// </summary>
     public string IpAddress { get; set; }
 
