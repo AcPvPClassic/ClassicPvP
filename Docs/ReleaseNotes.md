@@ -452,3 +452,29 @@ Each dungeon in the pool has a **level bracket** (minimum and maximum server lev
 | **PK Rewards** | When a PK kill occurs inside a Hot Dungeon between players of **different allegiances**, the victim's corpse will contain a **Phial of Bloody Tears** and **A Box**. |
 
 *This document will be updated as new systems and content are added. Stay tuned.*
+
+---
+
+## 🔒 One-Account-Per-IP Enforcement
+
+ClassicPvP now enforces that each IP address can only be associated with one account, helping prevent account sharing while staying fair to players with dynamic IPs or VPN hiccups.
+
+### How It Works
+
+Every time you log in, your IP is recorded against your account. If you log in from a new IP — because your ISP changed it, you switched networks, or anything else — that IP is simply added to your account's list and login proceeds normally. There is no penalty for IP changes.
+
+What **is** blocked: if an IP you're connecting from is already registered to a **different** account, your login will be rejected with a message to contact an admin. This is the core protection against account sharing.
+
+### If You're Blocked
+
+If you receive a message saying your IP is registered to another account, contact an administrator. Common legitimate causes:
+
+- A household member plays on the same internet connection
+- You're connecting from a location (library, café, friend's house) that another player has also used
+- A VPN exit node was previously used by another player
+
+Admins can review the binding history and whitelist your IP or clear conflicting bindings as appropriate.
+
+### For Admins
+
+See **Section 1** of the Admin Guide for full details on the `enforce_account_ip_binding` property, the IP whitelist, and the `/checkipbinding` and `/clearipbinding` commands.
