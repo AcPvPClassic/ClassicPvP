@@ -38,9 +38,18 @@ namespace ACE.Server.Managers
         private const int    MaxActive            = 3;
         private const double MinDurationSeconds   = 86400;   // 24 h
         private const double MaxDurationSeconds   = 172800;  // 48 h
-        private const double MinRollIntervalSecs  = 43200;   // 12 h
+        private const double MinRollIntervalSecs  = 43200;   // 12 h — normal interval between rolls
         private const double MaxRollIntervalSecs  = 129600;  // 36 h
         private const double AnnounceIntervalSecs = 3600;    // 60 min
+
+        // Startup phase: on server boot, fill up to MaxActive slots quickly
+        private const double StartupFirstRollMin    = 300;   //  5 min — first roll after boot
+        private const double StartupFirstRollMax    = 900;   // 15 min
+        private const double StartupRollIntervalMin = 1800;  // 30 min — between startup rolls
+        private const double StartupRollIntervalMax = 2700;  // 45 min
+        private const double StartupPhaseDuration   = 7200;  //  2 h — startup window
+
+        private static double _startupPhaseEndsAt = 0;
 
         // ── Hardcoded dungeon pool ────────────────────────────────────────────
         // Landblock    = upper-16-bit landblock ID (matches LandblockId.Landblock)
@@ -166,10 +175,10 @@ namespace ACE.Server.Managers
 
         public static void Initialize()
         {
-            // Roll the first dungeon 30–180 minutes after server start so players
-            // don't have to wait a full 12+ hours on a fresh boot.
-            _nextRollAt = Time.GetFutureUnixTime(ThreadSafeRandom.Next(1800f, 10800f));
-            log.Info($"HotDungeonManager: first roll scheduled in {TimeSpan.FromSeconds(_nextRollAt - Time.GetUnixTime()).GetFriendlyString()}.");
+            var now = Time.GetUnixTime();
+            _startupPhaseEndsAt = now + StartupPhaseDuration;
+            _nextRollAt = now + ThreadSafeRandom.Next((float)StartupFirstRollMin, (float)StartupFirstRollMax);
+            log.Info($"HotDungeonManager: startup phase active for 2 hours. First roll in ~{(int)(_nextRollAt - now) / 60} minutes.");
         }
 
         public static void Tick(double currentUnixTime)
@@ -246,7 +255,12 @@ namespace ACE.Server.Managers
 
         private static void ScheduleNextRoll(double currentUnixTime)
         {
-            var delay = ThreadSafeRandom.Next((float)MinRollIntervalSecs, (float)MaxRollIntervalSecs);
+            // During the startup window (first 2 h after boot), keep rolling quickly
+            // until MaxActive slots are filled. After that, use normal 12–36h intervals.
+            bool inStartup = currentUnixTime < _startupPhaseEndsAt && ActiveDungeons.Count < MaxActive;
+            double delay   = inStartup
+                ? ThreadSafeRandom.Next((float)StartupRollIntervalMin, (float)StartupRollIntervalMax)
+                : ThreadSafeRandom.Next((float)MinRollIntervalSecs,    (float)MaxRollIntervalSecs);
             _nextRollAt = currentUnixTime + delay;
         }
 
