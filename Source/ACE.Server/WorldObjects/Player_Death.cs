@@ -219,57 +219,57 @@ namespace ACE.Server.WorldObjects
 
                         switch (Location.Landblock)
                         {
-                            case 0xF76B:
-                            case 0xF76C:
-                            case 0xF86B:
-                                //Island LS
-                                pkPlayer.CompletePkQuestTask("PKKILL_ISLANDLS_3");
-                                break;
+                            //case 0xF76B:
+                            //case 0xF76C:
+                            //case 0xF86B:
+                            //    //Island LS
+                            //    pkPlayer.CompletePkQuestTask("PKKILL_ISLANDLS_3");
+                            //    break;
                             case 0x01C9:
                                 //Subway
                                 pkPlayer.CompletePkQuestTask("PKKILL_SUB_3");
                                 break;
-                            case 0x0007:
-                                //Town Network
-                                pkPlayer.CompletePkQuestTask("PKKILL_TN_3");
-                                break;
-                            case 0x5966:
-                                //VR Roots
-                                pkPlayer.CompletePkQuestTask("PKKILL_VRROOTS_3");
-                                break;
-                            case 0x00C8:
-                                //Island Shreths
-                                pkPlayer.CompletePkQuestTask("PKKILL_ISLANDSHRETHS_3");
-                                break;
-                            case 0x00AE:
-                                //Island Wasps
-                                pkPlayer.CompletePkQuestTask("PKKILL_ISLANDWASPS_3");
-                                break;
-                            case 0x00E1:
-                                //Island Mites
-                                pkPlayer.CompletePkQuestTask("PKKILL_ISLANDMITES_3");
-                                break;
-                            case 0x0174:
-                                //Island Golems
-                                pkPlayer.CompletePkQuestTask("PKKILL_ISLANDGOLEMS_3");
-                                break;
-                            case 0x7E04:
-                                //Island Rats
-                                pkPlayer.CompletePkQuestTask("PKKILL_ISLANDRATS_3");
-                                break;
-                            case 0x0026:
-                                //Island Drudges
-                                pkPlayer.CompletePkQuestTask("PKKILL_ISLANDDRUDGES_3");
-                                break;
-                            case 0x003F:
-                                //Island Dragons
-                                pkPlayer.CompletePkQuestTask("PKKILL_ISLANDDRAGONS_3");
-                                break;
-                            case 0x02F5:  //T9 Halls of Metos
-                            case 0x0105:  //T9 Black Spawn Den
-                            case 0x6147:  //T9 Mountain Citadel
-                                pkPlayer.CompletePkQuestTasks(PKQuests.PKQuests_KillT9);
-                                break;
+                            //case 0x0007:
+                            //    //Town Network
+                            //    pkPlayer.CompletePkQuestTask("PKKILL_TN_3");
+                            //    break;
+                            //case 0x5966:
+                            //    //VR Roots
+                            //    pkPlayer.CompletePkQuestTask("PKKILL_VRROOTS_3");
+                            //    break;
+                            //case 0x00C8:
+                            //    //Island Shreths
+                            //    pkPlayer.CompletePkQuestTask("PKKILL_ISLANDSHRETHS_3");
+                            //    break;
+                            //case 0x00AE:
+                            //    //Island Wasps
+                            //    pkPlayer.CompletePkQuestTask("PKKILL_ISLANDWASPS_3");
+                            //    break;
+                            //case 0x00E1:
+                            //    //Island Mites
+                            //    pkPlayer.CompletePkQuestTask("PKKILL_ISLANDMITES_3");
+                            //    break;
+                            //case 0x0174:
+                            //    //Island Golems
+                            //    pkPlayer.CompletePkQuestTask("PKKILL_ISLANDGOLEMS_3");
+                            //    break;
+                            //case 0x7E04:
+                            //    //Island Rats
+                            //    pkPlayer.CompletePkQuestTask("PKKILL_ISLANDRATS_3");
+                            //    break;
+                            //case 0x0026:
+                            //    //Island Drudges
+                            //    pkPlayer.CompletePkQuestTask("PKKILL_ISLANDDRUDGES_3");
+                            //    break;
+                            //case 0x003F:
+                            //    //Island Dragons
+                            //    pkPlayer.CompletePkQuestTask("PKKILL_ISLANDDRAGONS_3");
+                            //    break;
+                            //case 0x02F5:  //T9 Halls of Metos
+                            //case 0x0105:  //T9 Black Spawn Den
+                            //case 0x6147:  //T9 Mountain Citadel
+                            //    pkPlayer.CompletePkQuestTasks(PKQuests.PKQuests_KillT9);
+                            //    break;
                             default:
                                 break;
                         }
