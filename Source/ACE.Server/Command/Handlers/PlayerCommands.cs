@@ -2300,12 +2300,12 @@ namespace ACE.Server.Command.Handlers
         //    }
         //}
 
-        private static int CalculateRenameCost(int renameCount)
-        {
-            return renameCount == 0 ? 0
-                 : renameCount == 1 ? 200
-                 : Math.Min((int)(renameBaseCost * Math.Pow(1.35, renameCount - 1)), renameMaxCost);
-        }
+        //private static int CalculateRenameCost(int renameCount)
+        //{
+        //    return renameCount == 0 ? 0
+        //         : renameCount == 1 ? 200
+        //         : Math.Min((int)(renameBaseCost * Math.Pow(1.35, renameCount - 1)), renameMaxCost);
+        //}
 
         private const int titleBaseCost = 200;
         // buytitle <New Title>
