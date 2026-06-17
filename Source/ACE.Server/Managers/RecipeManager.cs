@@ -404,6 +404,11 @@ namespace ACE.Server.Managers
                 if (numAugs > 0)
                     floorMsg += $"\n{numAugs * 5} percent is due to your augmentation.";
 
+                if (player.NextTinkIsFoolproof && (recipe.IsTinkering() || recipe.IsImbuing()))
+                {
+                    floorMsg = "You have a 100% chance to succeed due to being filled with the essence of a tinkering tool";
+                }
+
                 msg = floorMsg;
 
                 if (PropertyManager.GetBool("craft_exact_msg").Item)
@@ -439,36 +444,33 @@ namespace ACE.Server.Managers
 
             var roll = ThreadSafeRandom.Next(0.0f, 1.0f);
             var success = roll < successChance;
-            log.Info($"Player = { player.Name}; Tool = { source.Name}; Target = { target.Name}; Chance = {successChance}; Roll = {roll}");
+            log.Info($"Player = { player.Name}; Tool = { source.Name}; Target = { target.Name}; Chance = {successChance}; Roll = {roll}");            
 
-            if (recipe.IsTinkering())
+            if (recipe.IsTinkering() || recipe.IsImbuing())
             {
+                if (player.NextTinkIsFoolproof)
+                {
+                    successChance = 1;
+                    success = true;
+                    player.NextTinkIsFoolproof = false;
+                }
+
+                if (recipe.IsImbuing())
+                {
+                    player.ImbueAttempts++;
+                    if (success) player.ImbueSuccesses++;
+                }
+
                 try
                 {
-                    var sourceName = System.Text.RegularExpressions.Regex.Replace(source.Name ?? "", @"\s*\(.*?\)\s*", "").Trim();
-                    DatabaseManager.Log.LogTinkeringEvent(
-                        (uint)player.Character.Id,
-                        player.Name,
-                        target.Biota.Id,
-                        (float)successChance,
-                        (float)roll,
-                        success,
-                        (uint)target.NumTimesTinkered,
-                        (uint)(target.Workmanship ?? 0),
-                        sourceName,
-                        (uint)(source.Workmanship ?? 0));
+                    var sourceName = Regex.Replace(source.NameWithMaterial, @" \(\d+\)$", "");
+                    new LogDatabase().LogTinkeringEvent(player.Character.Id, player.Name, target.Biota.Id, (float)successChance, (float)roll, success, (uint)target.NumTimesTinkered, (uint)(target.Workmanship ?? 0), sourceName, (uint)(source.Workmanship ?? 0));
                 }
                 catch (Exception ex)
                 {
-                    log.Error($"Exception logging tinkering event to log database. Ex: {ex}");
+                    log.Error($"Exception saving tinker log data to DB. Ex: {ex}");
                 }
-            }
-
-            if (recipe.IsImbuing())
-            {
-                player.ImbueAttempts++;
-                if (success) player.ImbueSuccesses++;
-            }
+            }            
 
             var modified = CreateDestroyItems(player, recipe, source, target, successChance, success);
 

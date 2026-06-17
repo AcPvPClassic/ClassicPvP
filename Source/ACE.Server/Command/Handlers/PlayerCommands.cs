@@ -2171,134 +2171,134 @@ namespace ACE.Server.Command.Handlers
             session.Player.FixStuckEquippedItemIcon(EquipMask.Shield);
         }
 
-        private const int renameBaseCost = 200;
-        private const int renameMaxCost = 20000;
-        // buyrename <New Name>
-        [CommandHandler("buyrename", AccessLevel.Player, CommandHandlerFlag.None, 1,
-            "Purchase a character rename. The first rename is free, second rename costs 200 PK trophies, and the cost of the 3rd rename and above grows exponentially, capped at 20k.",
-            "< New Name >")]
-        public static void HandleBuyRename(Session session, params string[] parameters)
-        {
-            if (!CheckPlayerCommandRateLimit(session))
-                return;
+        //private const int renameBaseCost = 200;
+        //private const int renameMaxCost = 20000;
+        //// buyrename <New Name>
+        //[CommandHandler("buyrename", AccessLevel.Player, CommandHandlerFlag.None, 1,
+        //    "Purchase a character rename. The first rename is free, second rename costs 200 PK trophies, and the cost of the 3rd rename and above grows exponentially, capped at 20k.",
+        //    "< New Name >")]
+        //public static void HandleBuyRename(Session session, params string[] parameters)
+        //{
+        //    if (!CheckPlayerCommandRateLimit(session))
+        //        return;
 
-            if(parameters.Length < 1)
-            {
-                CommandHandlerHelper.WriteOutputInfo(session, $"Invalid parameters: please provide a new character name. Usage: /BuyRename <NewCharacterName>", ChatMessageType.Broadcast);
-                return;
-            }
+        //    if(parameters.Length < 1)
+        //    {
+        //        CommandHandlerHelper.WriteOutputInfo(session, $"Invalid parameters: please provide a new character name. Usage: /BuyRename <NewCharacterName>", ChatMessageType.Broadcast);
+        //        return;
+        //    }
 
-            int renameCost = CalculateRenameCost(session.Player.CharacterRenameCount);
-            bool isFirstRenameUsed = session.Player.CharacterRenameCount > 0;
-            var numPkTrophiesInInventory = session.Player.GetNumInventoryItemsOfWCID(CustomWeenieId.PkTrophy);
-            if(isFirstRenameUsed && numPkTrophiesInInventory < renameCost)
-            {
-                CommandHandlerHelper.WriteOutputInfo(session, $"Your character has previously been renamed {session.Player.CharacterRenameCount} times. Renaming your character costs {renameCost} PK trophies. You don't have enough PK trophies in your inventory to cover the cost.", ChatMessageType.Broadcast);
-                return;
-            }
+        //    int renameCost = CalculateRenameCost(session.Player.CharacterRenameCount);
+        //    bool isFirstRenameUsed = session.Player.CharacterRenameCount > 0;
+        //    var numPkTrophiesInInventory = session.Player.GetNumInventoryItemsOfWCID(CustomWeenieId.PkTrophy);
+        //    if(isFirstRenameUsed && numPkTrophiesInInventory < renameCost)
+        //    {
+        //        CommandHandlerHelper.WriteOutputInfo(session, $"Your character has previously been renamed {session.Player.CharacterRenameCount} times. Renaming your character costs {renameCost} PK trophies. You don't have enough PK trophies in your inventory to cover the cost.", ChatMessageType.Broadcast);
+        //        return;
+        //    }
 
-            var newName = string.Join(" ", parameters).Trim();
-            var oldName = session.Player.Name;
+        //    var newName = string.Join(" ", parameters).Trim();
+        //    var oldName = session.Player.Name;
 
-            if (oldName.StartsWith("+"))
-                oldName = oldName.Substring(1);
-            if (newName.StartsWith("+"))
-                newName = newName.Substring(1);
+        //    if (oldName.StartsWith("+"))
+        //        oldName = oldName.Substring(1);
+        //    if (newName.StartsWith("+"))
+        //        newName = newName.Substring(1);
 
-            newName = newName.First().ToString().ToUpper() + newName.Substring(1);
+        //    newName = newName.First().ToString().ToUpper() + newName.Substring(1);
 
-            //Verify the new name is not in the taboo table
-            if (PropertyManager.GetBool("taboo_table").Item && DatManager.PortalDat.TabooTable.ContainsBadWord(newName.ToLowerInvariant()))
-            {
-                CommandHandlerHelper.WriteOutputInfo(session, $"Error, unable to rename your character to \"{newName}\" as that name is not allowed per the taboo table.", ChatMessageType.Broadcast);
-                return;
-            }
+        //    //Verify the new name is not in the taboo table
+        //    if (PropertyManager.GetBool("taboo_table").Item && DatManager.PortalDat.TabooTable.ContainsBadWord(newName.ToLowerInvariant()))
+        //    {
+        //        CommandHandlerHelper.WriteOutputInfo(session, $"Error, unable to rename your character to \"{newName}\" as that name is not allowed per the taboo table.", ChatMessageType.Broadcast);
+        //        return;
+        //    }
 
-            if (PropertyManager.GetBool("creature_name_check").Item && DatabaseManager.World.IsCreatureNameInWorldDatabase(newName))
-            {
-                CommandHandlerHelper.WriteOutputInfo(session, $"Error, unable to rename your character to \"{newName}\" as that name matches a creature name.", ChatMessageType.Broadcast);
-                return;
-            }
+        //    if (PropertyManager.GetBool("creature_name_check").Item && DatabaseManager.World.IsCreatureNameInWorldDatabase(newName))
+        //    {
+        //        CommandHandlerHelper.WriteOutputInfo(session, $"Error, unable to rename your character to \"{newName}\" as that name matches a creature name.", ChatMessageType.Broadcast);
+        //        return;
+        //    }
 
-            //Verify the new name has only alpha characters, apostrophies or dashes, and isn't more than 32 characters
-            if(newName.Length > 32)
-            {
-                CommandHandlerHelper.WriteOutputInfo(session, $"Error, unable to rename your character to \"{newName}\" as that name exceeds the maximum 32 character limit.", ChatMessageType.Broadcast);
-                return;
-            }
+        //    //Verify the new name has only alpha characters, apostrophies or dashes, and isn't more than 32 characters
+        //    if(newName.Length > 32)
+        //    {
+        //        CommandHandlerHelper.WriteOutputInfo(session, $"Error, unable to rename your character to \"{newName}\" as that name exceeds the maximum 32 character limit.", ChatMessageType.Broadcast);
+        //        return;
+        //    }
 
-            var hasInvalidChars = false;
-            var hasAtLeastOneLetter = false;
-            foreach(Char c in newName)
-            {
-                if(!Char.IsLetter(c) && c != '\'' && c != '-' && c != ' ')
-                {
-                    hasInvalidChars = true;
-                }
+        //    var hasInvalidChars = false;
+        //    var hasAtLeastOneLetter = false;
+        //    foreach(Char c in newName)
+        //    {
+        //        if(!Char.IsLetter(c) && c != '\'' && c != '-' && c != ' ')
+        //        {
+        //            hasInvalidChars = true;
+        //        }
 
-                if(Char.IsLetter(c))
-                {
-                    hasAtLeastOneLetter = true;
-                }
-            }
+        //        if(Char.IsLetter(c))
+        //        {
+        //            hasAtLeastOneLetter = true;
+        //        }
+        //    }
 
-            if (hasInvalidChars || !hasAtLeastOneLetter)
-            {
-                CommandHandlerHelper.WriteOutputInfo(session, $"Error, unable to rename your character to \"{newName}\" as that name contains invalid characters for a player name.  Player names may only contain characters A-Z, spaces, apostrophes or dashes and must contain at least one A-Z character.", ChatMessageType.Broadcast);
-                return;
-            }
+        //    if (hasInvalidChars || !hasAtLeastOneLetter)
+        //    {
+        //        CommandHandlerHelper.WriteOutputInfo(session, $"Error, unable to rename your character to \"{newName}\" as that name contains invalid characters for a player name.  Player names may only contain characters A-Z, spaces, apostrophes or dashes and must contain at least one A-Z character.", ChatMessageType.Broadcast);
+        //        return;
+        //    }
 
-            var onlinePlayer = PlayerManager.GetOnlinePlayer(oldName);
-            if (onlinePlayer != null)
-            {
-                DatabaseManager.Shard.IsCharacterNameAvailable(newName, isAvailable =>
-                {
-                    if (!isAvailable)
-                    {
-                        CommandHandlerHelper.WriteOutputInfo(session, $"Error, a player named \"{newName}\" already exists.", ChatMessageType.Broadcast);
-                        return;
-                    }
+        //    var onlinePlayer = PlayerManager.GetOnlinePlayer(oldName);
+        //    if (onlinePlayer != null)
+        //    {
+        //        DatabaseManager.Shard.IsCharacterNameAvailable(newName, isAvailable =>
+        //        {
+        //            if (!isAvailable)
+        //            {
+        //                CommandHandlerHelper.WriteOutputInfo(session, $"Error, a player named \"{newName}\" already exists.", ChatMessageType.Broadcast);
+        //                return;
+        //            }
 
-                    //Check if the player has sufficient funds to purchase the rename
-                    numPkTrophiesInInventory = session.Player.GetNumInventoryItemsOfWCID(CustomWeenieId.PkTrophy);
-                    if (isFirstRenameUsed && numPkTrophiesInInventory < renameCost)
-                    {
-                        CommandHandlerHelper.WriteOutputInfo(session, $"Your character has previously been renamed {session.Player.CharacterRenameCount} times. Renaming your character costs {renameCost} PK trophies. You don't have enough PK trophies in your inventory to cover the cost.", ChatMessageType.Broadcast);
-                        return;
-                    }
-                    else
-                    {
-                        if (isFirstRenameUsed)
-                        {
-                            if (session.Player.TryConsumeFromInventoryWithNetworking(CustomWeenieId.PkTrophy, renameCost))
-                            {
-                                CommandHandlerHelper.WriteOutputInfo(session, $"{renameCost} PK trophies have been removed from your inventory", ChatMessageType.Broadcast);
-                            }
-                            else
-                            {
-                                CommandHandlerHelper.WriteOutputInfo(session, $"Error: failed consuming {renameCost} PK trophies from your inventory. Please try again or contact an admin for support.", ChatMessageType.Broadcast);
+        //            //Check if the player has sufficient funds to purchase the rename
+        //            numPkTrophiesInInventory = session.Player.GetNumInventoryItemsOfWCID(CustomWeenieId.PkTrophy);
+        //            if (isFirstRenameUsed && numPkTrophiesInInventory < renameCost)
+        //            {
+        //                CommandHandlerHelper.WriteOutputInfo(session, $"Your character has previously been renamed {session.Player.CharacterRenameCount} times. Renaming your character costs {renameCost} PK trophies. You don't have enough PK trophies in your inventory to cover the cost.", ChatMessageType.Broadcast);
+        //                return;
+        //            }
+        //            else
+        //            {
+        //                if (isFirstRenameUsed)
+        //                {
+        //                    if (session.Player.TryConsumeFromInventoryWithNetworking(CustomWeenieId.PkTrophy, renameCost))
+        //                    {
+        //                        CommandHandlerHelper.WriteOutputInfo(session, $"{renameCost} PK trophies have been removed from your inventory", ChatMessageType.Broadcast);
+        //                    }
+        //                    else
+        //                    {
+        //                        CommandHandlerHelper.WriteOutputInfo(session, $"Error: failed consuming {renameCost} PK trophies from your inventory. Please try again or contact an admin for support.", ChatMessageType.Broadcast);
 
-                                //Log this failure to the audit log
-                                PlayerManager.BroadcastToAuditChannel(session.Player, $"Error: player {session.Player.Name} used /BuyRename command, and was verified to have enough PK trophies, but failed to consume the PK trophies with TryConsumeFromInventoryWithNetworking.");
-                                return;
-                            }
-                        }
-                    }
+        //                        //Log this failure to the audit log
+        //                        PlayerManager.BroadcastToAuditChannel(session.Player, $"Error: player {session.Player.Name} used /BuyRename command, and was verified to have enough PK trophies, but failed to consume the PK trophies with TryConsumeFromInventoryWithNetworking.");
+        //                        return;
+        //                    }
+        //                }
+        //            }
 
-                    onlinePlayer.Character.Name = newName;
-                    onlinePlayer.CharacterChangesDetected = true;
-                    onlinePlayer.Name = newName;
-                    onlinePlayer.CharacterRenameCount += 1;
-                    onlinePlayer.SavePlayerToDatabase();
+        //            onlinePlayer.Character.Name = newName;
+        //            onlinePlayer.CharacterChangesDetected = true;
+        //            onlinePlayer.Name = newName;
+        //            onlinePlayer.CharacterRenameCount += 1;
+        //            onlinePlayer.SavePlayerToDatabase();
 
-                    CommandHandlerHelper.WriteOutputInfo(session, $"Player named \"{oldName}\" renamed to \"{newName}\" successfully!", ChatMessageType.Broadcast);
+        //            CommandHandlerHelper.WriteOutputInfo(session, $"Player named \"{oldName}\" renamed to \"{newName}\" successfully!", ChatMessageType.Broadcast);
 
-                    PlayerManager.BroadcastToAuditChannel(session.Player, $"Player {oldName} used /BuyRename command to rename themselves to {newName} for a cost of {renameCost} PK Trophies.");
+        //            PlayerManager.BroadcastToAuditChannel(session.Player, $"Player {oldName} used /BuyRename command to rename themselves to {newName} for a cost of {renameCost} PK Trophies.");
 
-                    onlinePlayer.Session.LogOffPlayer();
-                });
-            }
-        }
+        //            onlinePlayer.Session.LogOffPlayer();
+        //        });
+        //    }
+        //}
 
         private static int CalculateRenameCost(int renameCount)
         {

@@ -1866,5 +1866,12 @@ namespace ACE.Server.WorldObjects
             get => GetProperty(PropertyFloat.BountyLastUsedNpcTimestamp);
             set { if (!value.HasValue) RemoveProperty(PropertyFloat.BountyLastUsedNpcTimestamp); else SetProperty(PropertyFloat.BountyLastUsedNpcTimestamp, value.Value); }
         }
+
+        /* Tinkering Tool morph gem */
+        public bool NextTinkIsFoolproof
+        {
+            get => GetProperty(PropertyBool.NextTinkIsFoolproof) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.NextTinkIsFoolproof); else SetProperty(PropertyBool.NextTinkIsFoolproof, value); }
+        }
     }
 }

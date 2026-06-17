@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using ACE.Common.Extensions;
+using ACE.Database;
 using ACE.DatLoader;
 using ACE.DatLoader.Entity;
 using ACE.Entity.Enum;
@@ -1096,109 +1097,7 @@ namespace ACE.Server.WorldObjects
                 });
                 actionChain.EnqueueChain();
             }
-        }
-
-        // -------------------------------------------------------------------------
-        // Ancient Bottle (WCID 490071) — XP Bottle
-        // -------------------------------------------------------------------------
-
-        private const uint   XpBottleWcid  = 490071;
-        private const long   XpBottleMaxXp = 100_000_000L; // 100 million XP cap per bottle
-
-        /// <summary>
-        /// Uses the Ancient Bottle, releasing stored PvP XP up to the player's current
-        /// cap headroom (lower of daily PvP budget and global rolling cap).
-        /// If only part of the bottle is consumed the remainder stays in the bottle.
-        /// The bottle is destroyed on full consumption.
-        /// </summary>
-        public void UseXpBottle(Gem bottle)
-        {
-            var bottleXp = bottle.ItemTotalXp ?? 0;
-            if (bottleXp <= 0)
-            {
-                Session.Network.EnqueueSend(new GameMessageSystemChat("The Ancient Bottle is empty.", ChatMessageType.Broadcast));
-                return;
-            }
-
-            long rollingCapXp = RollingLevelCapManager.GetCurrentXpCap();
-            if (rollingCapXp <= 0)
-            {
-                Session.Network.EnqueueSend(new GameMessageSystemChat("You cannot use the Ancient Bottle at this time.", ChatMessageType.Broadcast));
-                return;
-            }
-
-            var xpRemainingGlobal = rollingCapXp - (TotalExperience ?? 0);
-            if (xpRemainingGlobal <= 0)
-            {
-                Session.Network.EnqueueSend(new GameMessageSystemChat("You have reached the global XP cap and cannot absorb any experience from the Ancient Bottle right now.", ChatMessageType.Broadcast));
-                return;
-            }
-
-            var capDailyMaxPvpCat = CapDailyMaxPvpCat > 0
-                ? CapDailyMaxPvpCat
-                : (long)(rollingCapXp * PropertyManager.GetDouble("daily_pvp_xp_category_ratio").Item);
-            var pvpRemaining = Math.Max(0L, capDailyMaxPvpCat - CapPvpXp);
-            if (pvpRemaining <= 0)
-            {
-                Session.Network.EnqueueSend(new GameMessageSystemChat("You have reached your daily PvP XP cap and cannot absorb any experience from the Ancient Bottle right now.", ChatMessageType.Broadcast));
-                return;
-            }
-
-            // Grant the lesser of: what's in the bottle, daily PvP headroom, global headroom
-            var headroom   = Math.Min(pvpRemaining, xpRemainingGlobal);
-            var xpToGrant  = Math.Min(bottleXp, headroom);
-
-            // GrantXP with exactly the computed headroom — no overflow possible (pre-capped)
-            GrantXP(xpToGrant, XpType.PvP, ShareType.None);
-
-            var leftInBottle = bottleXp - xpToGrant;
-            if (leftInBottle <= 0)
-            {
-                Session.Network.EnqueueSend(new GameMessageSystemChat(
-                    $"You drink from the Ancient Bottle and absorb {xpToGrant:N0} experience. The bottle crumbles to dust.",
-                    ChatMessageType.Broadcast));
-                TryConsumeFromInventoryWithNetworking(bottle, 1);
-            }
-            else
-            {
-                bottle.ItemTotalXp = leftInBottle;
-                Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(bottle, PropertyInt64.ItemTotalXp, leftInBottle));
-                Session.Network.EnqueueSend(new GameMessageSystemChat(
-                    $"You drink from the Ancient Bottle and absorb {xpToGrant:N0} experience. The bottle still contains {leftInBottle:N0} experience.",
-                    ChatMessageType.Broadcast));
-            }
-        }
-
-        /// <summary>
-        /// Fills Ancient Bottles in the player's inventory with PvP XP that overflowed
-        /// past the daily PvP cap or global XP cap.  Excess beyond all bottle capacity is discarded.
-        /// </summary>
-        private void FillXpBottlesFromOverflow(long overflow)
-        {
-            if (overflow <= 0) return;
-
-            var bottles = GetInventoryItemsOfWCID(XpBottleWcid);
-            if (bottles == null || bottles.Count == 0) return;
-
-            long remaining = overflow;
-            foreach (var item in bottles)
-            {
-                if (remaining <= 0) break;
-
-                var current = item.ItemTotalXp ?? 0;
-                if (current >= XpBottleMaxXp) continue;
-
-                var space = XpBottleMaxXp - current;
-                var fill  = Math.Min(remaining, space);
-                item.ItemTotalXp = current + fill;
-                remaining -= fill;
-
-                Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(item, PropertyInt64.ItemTotalXp, item.ItemTotalXp.Value));
-                Session.Network.EnqueueSend(new GameMessageSystemChat(
-                    $"Your Ancient Bottle absorbed {fill:N0} overflow PvP experience. ({item.ItemTotalXp.Value:N0} / {XpBottleMaxXp:N0})",
-                    ChatMessageType.Broadcast));
-            }
-        }
+        }        
 
         /// <summary>
         /// Returns the multiplier to XP and Luminance from Trinkets and Augmentations

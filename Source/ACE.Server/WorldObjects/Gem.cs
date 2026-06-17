@@ -1,6 +1,7 @@
 using System;
 
 using ACE.Common;
+using ACE.Database;
 using ACE.Entity;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
@@ -159,12 +160,24 @@ namespace ACE.Server.WorldObjects
                     return;
             }
 
-            // XP Bottle — entirely custom handler; bypasses all standard gem logic
-            if (WeenieClassId == 490071)
+
+            //Custom Gems
+            switch(WeenieClassId)
             {
-                player.UseXpBottle(this);
-                return;
-            }
+                case CustomWeenieId.XpBottle:
+                    player.UseXpBottle(this);
+                    return;
+
+                case CustomWeenieId.SkillAttrResetGem:
+                    player.UseSkillAttrResetGem(this);
+                    return;
+
+                case CustomWeenieId.TinkeringTool:
+                    player.UseTinkeringTool(this);
+                    return;
+                default:
+                    break;
+            }            
 
             if (RareUsesTimer)
             {

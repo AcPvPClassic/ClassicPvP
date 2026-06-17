@@ -203,13 +203,7 @@ namespace ACE.Entity.Enum.Properties
         AiOmnidirectional                 = 9026,
         AiIncapableOfAnyMotion            = 9027,
         IsVendorGeneratedItem             = 9028,
-        BlockSpellExtraction              = 9029,
-
-        // Arena
-        IsArenaObserver                  = 9030,
-        IsPendingArenaObserver           = 9031,
-        HasArenaRareDmgBuff              = 9032,
-        HasArenaRareDmgReductionBuff     = 9033,
+        BlockSpellExtraction              = 9029,        
 
         // Split Arrows
         SplitArrows                      = 19017,
@@ -218,5 +212,14 @@ namespace ACE.Entity.Enum.Properties
         // Bounty Hunter system
         IsBountyHighPriorityTarget       = 19019,  // Set on a player who has been designated as a high priority bounty target via Writ of Pursuit
         IsBountyCompleted                = 19020,  // Legacy/unused; reserved for DB compat
+
+        //Tinkering Tool
+        NextTinkIsFoolproof              = 19021,
+
+        // Arena
+        IsArenaObserver = 19030,
+        IsPendingArenaObserver = 19031,
+        HasArenaRareDmgBuff = 19032,
+        HasArenaRareDmgReductionBuff = 19033,
     }
 }

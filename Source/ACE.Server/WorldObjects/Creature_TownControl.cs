@@ -457,17 +457,7 @@ namespace ACE.Server.WorldObjects
                                     ChatMessageType.Broadcast));
                             }
                         }
-                    }
-
-                    // Hera's Vault Key
-                    var heraKey = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.HeraKey);
-                    if (heraKey != null && player.TryCreateInInventoryWithNetworking(heraKey))
-                    {
-                        player.Session.Network.EnqueueSend(new GameMessageCreateObject(heraKey));
-                        player.Session.Network.EnqueueSend(new GameMessageSystemChat(
-                            $"You received a Hera's Vault Key for {(isAttackerVictory ? "attacking" : "defending")} {town.TownName}.",
-                            ChatMessageType.Broadcast));
-                    }
+                    }                    
 
                     // A Box — attackers get 1, defenders get 5
                     int boxCount = isAttackerVictory ? 1 : 5;

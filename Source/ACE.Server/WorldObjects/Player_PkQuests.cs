@@ -244,16 +244,16 @@ namespace ACE.Server.WorldObjects
                                 this.TryCreateInInventoryWithNetworking(phial);
                                 Session.Network.EnqueueSend(new GameMessageCreateObject(phial));
                                 break;
-                            case "HERA":
-                                msg = $"Reward: {rewardCount} Hera's Vault Key{(rewardCount > 1 ? "s" : "")}";
-                                Session.Network.EnqueueSend(new GameMessageSystemChat(msg, ChatMessageType.System));
-                                for (int i = 0; i < rewardCount; i++)
-                                {
-                                    var heraKey = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.HeraKey);
-                                    this.TryCreateInInventoryWithNetworking(heraKey);
-                                    Session.Network.EnqueueSend(new GameMessageCreateObject(heraKey));
-                                }
-                                break;
+                            //case "HERA":
+                            //    msg = $"Reward: {rewardCount} Hera's Vault Key{(rewardCount > 1 ? "s" : "")}";
+                            //    Session.Network.EnqueueSend(new GameMessageSystemChat(msg, ChatMessageType.System));
+                            //    for (int i = 0; i < rewardCount; i++)
+                            //    {
+                            //        var heraKey = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.HeraKey);
+                            //        this.TryCreateInInventoryWithNetworking(heraKey);
+                            //        Session.Network.EnqueueSend(new GameMessageCreateObject(heraKey));
+                            //    }
+                            //    break;
                             case "BOX":
                                 msg = $"Reward: {rewardCount} Box{(rewardCount > 1 ? "es" : "")}";
                                 Session.Network.EnqueueSend(new GameMessageSystemChat(msg, ChatMessageType.System));
@@ -264,14 +264,14 @@ namespace ACE.Server.WorldObjects
                                     Session.Network.EnqueueSend(new GameMessageCreateObject(box));
                                 }
                                 break;
-                            case "AMBER":
-                                msg = $"Reward: {rewardCount} Radiant Amber Crystal{(rewardCount > 1 ? "s" : "")}";
-                                Session.Network.EnqueueSend(new GameMessageSystemChat(msg, ChatMessageType.System));
-                                var amber = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.RadiantAmberCrystal);
-                                amber.SetStackSize(Math.Min(rewardCount, (int)amber.MaxStackSize));
-                                this.TryCreateInInventoryWithNetworking(amber);
-                                Session.Network.EnqueueSend(new GameMessageCreateObject(amber));
-                                break;
+                            //case "AMBER":
+                            //    msg = $"Reward: {rewardCount} Radiant Amber Crystal{(rewardCount > 1 ? "s" : "")}";
+                            //    Session.Network.EnqueueSend(new GameMessageSystemChat(msg, ChatMessageType.System));
+                            //    var amber = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.RadiantAmberCrystal);
+                            //    amber.SetStackSize(Math.Min(rewardCount, (int)amber.MaxStackSize));
+                            //    this.TryCreateInInventoryWithNetworking(amber);
+                            //    Session.Network.EnqueueSend(new GameMessageCreateObject(amber));
+                            //    break;
                             default:
                                 break;
                         }

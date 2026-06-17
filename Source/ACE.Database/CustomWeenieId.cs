@@ -10,9 +10,6 @@ namespace ACE.Database
         /// <summary>Darkbeat's Lost Storage Key (arena and PK quest reward)</summary>
         public const uint DarkbeatKey         = 480608;
 
-        /// <summary>Hera's Vault Key (Town Control reward)</summary>
-        public const uint HeraKey             = 490364;
-
         /// <summary>A Box (Hot Dungeon drop, Town Control and PK quest reward)</summary>
         public const uint ABox                = 510000;
 
@@ -22,7 +19,12 @@ namespace ACE.Database
         /// <summary>Phial of Bloody Tears (arena, Hot Dungeon and PK quest reward)</summary>
         public const uint PhialOfBloodyTears  = 1000003;
 
-        /// <summary>Radiant Amber Crystal (PK quest reward)</summary>
-        public const uint RadiantAmberCrystal = 1000005;
+        public const uint XpBottle = 490071;
+
+        public const uint TinkeringTool = 490298;
+
+        public const uint SkillAttrResetGem = 49090101;
+
+
     }
 }

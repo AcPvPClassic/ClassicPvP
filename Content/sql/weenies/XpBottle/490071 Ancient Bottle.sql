@@ -11,7 +11,9 @@ VALUES (490071,   1,    2048) /* ItemType - Gem */
      , (490071,  19,      20) /* Value */
      , (490071,  33,       1) /* Bonded - Bonded */
      , (490071,  93,    1044) /* PhysicsState - Ethereal, IgnoreCollisions, Gravity */
-     , (490071, 114,       1) /* Attuned - Attuned */;
+     , (490071, 114,       1) /* Attuned - Attuned */
+     , (490071, 319,       1) /* ItemMaxLevel - 1 level (full = ItemBaseXp) */
+     , (490071, 320,       1) /* ItemXpStyle - Fixed */;
 
 INSERT INTO `weenie_properties_bool` (`object_Id`, `type`, `value`)
 VALUES (490071,   1, False) /* Stuck */

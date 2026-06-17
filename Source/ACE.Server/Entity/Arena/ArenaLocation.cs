@@ -1379,47 +1379,35 @@ namespace ACE.Server.Entity
             log.Info($"ArenaLocation.InitializeArenaLocations()");
             var locList = new Dictionary<uint, ArenaLocation>();
 
-            var pklArena = new ArenaLocation();
-            pklArena.LandblockId = 0x0067;
-            pklArena.SupportedEventTypes = new List<string>() { "ffa", "group", "tugak" };
-            pklArena.ArenaName = "PKL Arena";
-            locList.Add(pklArena.LandblockId, pklArena);
+            var aCave = new ArenaLocation();
+            aCave.LandblockId = 0x018B;
+            aCave.SupportedEventTypes = new List<string>() { "1v1", "2v2", "ffa", "group", "tugak" };
+            aCave.ArenaName = "A Cave";
+            locList.Add(aCave.LandblockId, aCave);
 
-            var bindRealm = new ArenaLocation();
-            bindRealm.LandblockId = 0x007F;
-            bindRealm.SupportedEventTypes = new List<string>() { "1v1", "2v2", "tugak" };
-            bindRealm.ArenaName = "Binding Realm";
-            locList.Add(bindRealm.LandblockId, bindRealm);
+            //var pklArena = new ArenaLocation();
+            //pklArena.LandblockId = 0x0067;
+            //pklArena.SupportedEventTypes = new List<string>() { "ffa", "group", "tugak" };
+            //pklArena.ArenaName = "PKL Arena";
+            //locList.Add(pklArena.LandblockId, pklArena);            
 
-            var boneLair = new ArenaLocation();
-            boneLair.LandblockId = 0x0145;
-            boneLair.SupportedEventTypes = new List<string>() { "ffa", "group" };
-            boneLair.ArenaName = "Bone Lair";
-            locList.Add(boneLair.LandblockId, boneLair);
+            //var boneLair = new ArenaLocation();
+            //boneLair.LandblockId = 0x0145;
+            //boneLair.SupportedEventTypes = new List<string>() { "ffa", "group" };
+            //boneLair.ArenaName = "Bone Lair";
+            //locList.Add(boneLair.LandblockId, boneLair);
 
-            var galleyTower = new ArenaLocation();
-            galleyTower.LandblockId = 0x01AD;
-            galleyTower.SupportedEventTypes = new List<string>() { "ffa", "group" };
-            galleyTower.ArenaName = "Galley Tower";
-            locList.Add(galleyTower.LandblockId, galleyTower);
+            //var galleyTower = new ArenaLocation();
+            //galleyTower.LandblockId = 0x01AD;
+            //galleyTower.SupportedEventTypes = new List<string>() { "ffa", "group" };
+            //galleyTower.ArenaName = "Galley Tower";
+            //locList.Add(galleyTower.LandblockId, galleyTower);
 
-            var ypk = new ArenaLocation();
-            ypk.LandblockId = 0x02E3;
-            ypk.SupportedEventTypes = new List<string>() { "ffa", "group" };
-            ypk.ArenaName = "Yaraq PK Arena";
-            locList.Add(ypk.LandblockId, ypk);
-
-            var fowl = new ArenaLocation();
-            fowl.LandblockId = 0x596A;
-            fowl.SupportedEventTypes = new List<string>() { "1v1", "2v2", "ffa", "group", "tugak" };
-            fowl.ArenaName = "Fowl Basement";
-            locList.Add(fowl.LandblockId, fowl);
-
-            var oneTen = new ArenaLocation();
-            oneTen.LandblockId = 0x039D;
-            oneTen.SupportedEventTypes = new List<string>() { "1v1", "tugak" };
-            oneTen.ArenaName = "One Ten";
-            locList.Add(oneTen.LandblockId, oneTen);
+            //var ypk = new ArenaLocation();
+            //ypk.LandblockId = 0x02E3;
+            //ypk.SupportedEventTypes = new List<string>() { "ffa", "group" };
+            //ypk.ArenaName = "Yaraq PK Arena";
+            //locList.Add(ypk.LandblockId, ypk);            
 
             return locList;
         }
@@ -1433,13 +1421,14 @@ namespace ACE.Server.Entity
                 {
                     _arenaLandblocks = new List<uint>()
                     {
-                        0x0067, // PKL Arena
-                        0x007F, // Binding Realm
-                        0x0145, // Bone Lair
-                        0x01AD, // Dungeon Galley Tower
-                        0x02E3, // Yaraq PK Arena
-                        0x596A, // Fowl Basement
-                        0x039D, // One Ten
+                        0x018B, //A Cave
+                        //0x0067, // PKL Arena
+                        //0x007F, // Binding Realm
+                        //0x0145, // Bone Lair
+                        //0x01AD, // Dungeon Galley Tower
+                        //0x02E3, // Yaraq PK Arena
+                        //0x596A, // Fowl Basement
+                        //0x039D, // One Ten
                     };
                 }
                 return _arenaLandblocks;
@@ -1534,6 +1523,14 @@ namespace ACE.Server.Entity
                         new Position(0x039D02A4, 96.026833f, -53.870930f, 48.005001f, 0f, 0f, 0.449561f, -0.893250f),
                         new Position(0x039D02A4, 95.942345f, -45.941307f, 48.005001f, 0f, 0f, 0.924836f, -0.380366f),
                     });
+
+                    _arenaLocationStartingPositions.Add(0x018B, new List<Position>()
+                    {
+                        new Position(0x018B01A4, 57.098507f, -3.865624f, 0.005000f, 0f, 0f, -0.921203f, -0.389081f), // 0x018B01A4 [57.098507 -3.865624 0.005000] -0.389081 0.000000 0.000000 -0.921203
+                        new Position(0x018B0188, 42.685162f, -2.631094f, 0.005000f, 0f, 0f, -0.893269f, 0.449522f), // 0x018B0188 [42.685162 -2.631094 0.005000] 0.449522 0.000000 0.000000 -0.893269
+                        new Position(0x018B018A, 41.873562f, -17.906517f, 0.005000f, 0f, 0f, -0.379880f, 0.925036f), // 0x018B018A [41.873562 -17.906517 0.005000] 0.925036 0.000000 0.000000 -0.379880
+                        new Position(0x018B01A7, 58.693562f, -18.457191f, 0.005000f, 0f, 0f, 0.319989f, 0.947421f), // 0x018B01A7 [58.693562 -18.457191 0.005000] 0.947421 0.000000 0.000000 0.319989
+                    });//A Cave
                 }
 
                 return _arenaLocationStartingPositions;
