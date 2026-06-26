@@ -18,7 +18,6 @@ namespace ACE.Database
         public const string Cat_Tugak        = "tugak";
         public const string Cat_Group        = "group";
         public const string Cat_ArenaWins    = "arena-wins";
-        public const string Cat_ArenaKills   = "arena-kills";
         public const string Cat_ArenaMatches = "arena-matches";
         public const string Cat_Bounty       = "bounty";
         public const string Cat_PkKills      = "pk-kills";
@@ -30,7 +29,7 @@ namespace ACE.Database
         public static readonly IReadOnlyList<string> ScoredCategories = new[]
         {
             Cat_1v1, Cat_2v2, Cat_Ffa, Cat_Tugak, Cat_Group,
-            Cat_ArenaWins, Cat_ArenaKills, Cat_ArenaMatches,
+            Cat_ArenaWins, Cat_ArenaMatches,
             Cat_Bounty, Cat_PkKills, Cat_PkKd, Cat_PkStreak
         };
 
@@ -42,18 +41,17 @@ namespace ACE.Database
         public static readonly IReadOnlyDictionary<string, double> CategoryWeights =
             new Dictionary<string, double>
             {
-                [Cat_1v1]          = 3.0,   // Prestigious 1v1 format
-                [Cat_2v2]          = 2.5,
-                [Cat_PkKills]      = 2.5,   // Open-world PK activity
-                [Cat_Ffa]          = 2.0,
-                [Cat_Group]        = 2.0,
-                [Cat_PkKd]         = 2.0,
-                [Cat_Bounty]       = 2.0,   // Bounty system engagement
-                [Cat_Tugak]        = 1.5,
-                [Cat_PkStreak]     = 1.5,
-                [Cat_ArenaWins]    = 1.5,
-                [Cat_ArenaKills]   = 1.0,
-                [Cat_ArenaMatches] = 0.5,   // Participation metric, lowest weight
+                [Cat_PkKills]      = 2.5,
+                [Cat_PkStreak]     = 1.75,
+                [Cat_ArenaWins]    = 2.0,
+                [Cat_Bounty]       = 1.25,
+                [Cat_PkKd]         = 0.75,
+                [Cat_1v1]          = 1.0,
+                [Cat_2v2]          = 1.0,
+                [Cat_Group]        = 1.0,
+                [Cat_Ffa]          = 0.5,
+                [Cat_Tugak]        = 0.5,
+                [Cat_ArenaMatches] = 0.5,
             };
 
         /// <summary>
@@ -133,7 +131,6 @@ namespace ACE.Database
             Cat_Tugak        => "Tugak Arena",
             Cat_Group        => "Group Arena",
             Cat_ArenaWins    => "Arena Wins",
-            Cat_ArenaKills   => "Arena Kills",
             Cat_ArenaMatches => "Arena Matches",
             Cat_Bounty       => "Bounty Hunter",
             Cat_PkKills      => "PK Kills",
@@ -159,8 +156,6 @@ namespace ACE.Database
                 "group"                         => Cat_Group,
                 "arena-wins" or "arenawins"
                     or "wins"                   => Cat_ArenaWins,
-                "arena-kills" or "arenakills"
-                    or "slayer" or "arenaslayer" => Cat_ArenaKills,
                 "arena-matches" or "arenamatch"
                     or "matches" or "veteran"
                     or "arenavet"               => Cat_ArenaMatches,

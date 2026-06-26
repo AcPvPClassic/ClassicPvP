@@ -212,7 +212,6 @@ namespace ACE.Server.Managers
             _topCache.Remove(SeasonConfig.Cat_Tugak);
             _topCache.Remove(SeasonConfig.Cat_Group);
             _topCache.Remove(SeasonConfig.Cat_ArenaWins);
-            _topCache.Remove(SeasonConfig.Cat_ArenaKills);
             _topCache.Remove(SeasonConfig.Cat_ArenaMatches);
             _topCache.Remove(SeasonConfig.Cat_Overall);
         }
