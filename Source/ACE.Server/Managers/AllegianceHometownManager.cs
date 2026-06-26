@@ -161,6 +161,33 @@ namespace ACE.Server.Managers
         public static bool IsTownProtected(byte townId) =>
             _captureProtection.TryGetValue(townId, out var exp) && exp > DateTime.UtcNow;
 
+        /// <summary>
+        /// Returns a human-readable block reason if this monarch cannot attack the town due to
+        /// blacklist, protection, or cooldown. Returns null if no persistent block exists.
+        /// Does NOT modify any state.
+        /// </summary>
+        public static string GetAttackBlockReason(byte townId, uint attackerMonarchId)
+        {
+            if (!_towns.TryGetValue(townId, out var town)) return null;
+
+            if (_blacklist.Contains(attackerMonarchId))
+                return "Your allegiance has been suspended from hometown warfare.";
+
+            if (town.OwnerMonarchId == attackerMonarchId)
+                return null; // owner — handled separately by caller
+
+            if (IsTownProtected(townId))
+            {
+                var remaining = _captureProtection[townId] - DateTime.UtcNow;
+                return $"This town cannot be attacked for another {FormatTimeSpan(remaining)}.";
+            }
+
+            if (HasAttackerCooldown(attackerMonarchId, townId, out var cd))
+                return $"Your allegiance cannot attack {town.TownName} for another {FormatTimeSpan(cd)}.";
+
+            return null;
+        }
+
         // -----------------------------------------------------------------------
         // Cooldown checks
         // -----------------------------------------------------------------------

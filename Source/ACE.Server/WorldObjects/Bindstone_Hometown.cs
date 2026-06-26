@@ -80,9 +80,18 @@ namespace ACE.Server.WorldObjects
                 return;
             }
 
-            player.Session.Network.EnqueueSend(new GameMessageSystemChat(
-                $"{entry.TownName} is owned by {town.OwnerAllegianceName}. Gather 2 allies within 5m of the bind stone with no enemies on the landblock to start an assault.",
-                ChatMessageType.Magic));
+            var blockReason = AllegianceHometownManager.GetAttackBlockReason(entry.TownId, monarchId);
+            if (blockReason != null)
+            {
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat(
+                    $"{entry.TownName}: {blockReason}", ChatMessageType.Magic));
+            }
+            else
+            {
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat(
+                    $"{entry.TownName} is owned by {town.OwnerAllegianceName}. Gather 2 allies within 5m of the bind stone with no enemies on the landblock to start an assault.",
+                    ChatMessageType.Magic));
+            }
         }
 
         private void HandleSanctuaryUse(Player player)

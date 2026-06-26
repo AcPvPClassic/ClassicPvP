@@ -430,7 +430,7 @@ namespace ACE.Server.Entity
 
                 if (allegianceName == null) break;
 
-                if (Managers.AllegianceHometownManager.TryStartPhase1(registry.TownId, monarchId, allegianceName, out var failReason))
+                if (Managers.AllegianceHometownManager.TryStartPhase1(registry.TownId, monarchId, allegianceName, out _))
                 {
                     EnqueueBroadcast(null, false, null, null,
                         new Network.GameMessages.Messages.GameMessageSystemChat(
