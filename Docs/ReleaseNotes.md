@@ -360,20 +360,21 @@ ClassicPvP tracks a **Season leaderboard** across 12 scored categories spanning 
 #### Overall
 | Category | What It Ranks |
 |---|---|
-| **Season Champion** | Weighted rank-points across all 12 categories |
+| **Season Champion** | Weighted rank-points across all 11 categories |
 
 The Season Champion score gives more weight to categories that require skill and consistency. Categories are weighted as follows:
 
 | Category | Weight |
 |---|---|
-| 1v1 Arena | 3.0 |
-| 2v2 Arena, PK Kills | 2.5 each |
-| FFA Arena, Group Arena, K/D Ratio, Bounty Hunter | 2.0 each |
-| Tugak Arena, Kill Streak, Arena Wins | 1.5 each |
-| Arena Kills | 1.0 |
-| Arena Matches | 0.5 |
+| PK Kills | 2.5 |
+| Arena Wins | 2.0 |
+| Kill Streak | 1.75 |
+| Bounty Hunter | 1.25 |
+| 1v1 Arena, 2v2 Arena, Group Arena | 1.0 each |
+| K/D Ratio | 0.75 |
+| FFA Arena, Tugak Arena, Arena Matches | 0.5 each |
 
-For each category you are ranked in, you earn `max(0, 11 − rank)` rank-points, multiplied by the category's weight. Your Season Champion score is the total across all 13 categories.
+For each category you are ranked in, you earn `max(0, 11 − rank)` rank-points, multiplied by the category's weight. Your Season Champion score is the total across all 11 categories.
 
 ### Weekly Milestones
 
@@ -417,7 +418,6 @@ Rewards are **not delivered automatically** — you must claim them with `/seaso
 | `tugak` | Tugak Arena |
 | `group` | Group Arena |
 | `wins` | Arena Wins |
-| `slayer` | Arena Kills |
 | `matches`, `veteran` | Arena Matches |
 | `reaper`, `kills` | PK Kills |
 | `kd`, `ratio`, `precision` | K/D Ratio |
@@ -452,6 +452,69 @@ Each dungeon in the pool has a **level bracket** (minimum and maximum server lev
 | **PK Rewards** | When a PK kill occurs inside a Hot Dungeon between players of **different allegiances**, the victim's corpse will contain a **Phial of Bloody Tears** and **A Box**. |
 
 *This document will be updated as new systems and content are added. Stay tuned.*
+
+---
+
+## 🏘️ Allegiance Hometown Capture
+
+Allegiances can now conquer and hold **towns across Dereth** through a two-phase PvP assault system. The old single-hometown bindstone has been replaced entirely.
+
+### Owning Towns
+
+Any allegiance Seneschal or higher can walk up to a **Bind Stone** in an unowned town and use it to **claim the town for free**. Once claimed, the town becomes your allegiance's hometown and all members can recall there.
+
+- `/ah` — Recalls to a random town owned by your allegiance
+- `/ah <name>` — Recalls to a specific owned town (e.g. `/ah Arwic`)
+- `/towns` — Lists all 25 capturable towns and their current ownership status
+
+### Capturing an Enemy Town
+
+To take a town owned by a rival allegiance, use the Bind Stone to begin the assault.
+
+**Phase 1 — Perimeter Control (up to 60 minutes)**
+- At least **2 members** of the attacking allegiance must stand within **5 meters** of the Bind Stone simultaneously
+- Enemy PKs on the landblock interrupt progress and reset the timer
+- Hold the zone for **4 uninterrupted minutes** to trigger Phase 2
+- Failing to reach Phase 2 within 60 minutes announces a global failure and applies a **3-hour cooldown** on that town for your allegiance
+
+**Phase 2 — Destroy the Bind Stone (30 minutes)**
+- The Bind Stone becomes attackable — hit it with melee weapons to chip down its HP
+- Bind Stone HP scales with the current rolling level cap
+- Each kill on the defending allegiance in the combat zone deals **5% max HP** bonus damage to the Bind Stone
+- Each kill on the attacking allegiance in the combat zone **heals the Bind Stone** by 5% max HP
+- Destroy the Bind Stone within 30 minutes → **Attackers win**
+- Survive 30 minutes with the Bind Stone intact → **Defenders win**; the Bind Stone heals and becomes unattackable again
+
+Two allegiances cannot attack the same town simultaneously. An allegiance can maintain at most **2 active assaults** at once.
+
+### Cooldowns & Protection
+
+| Event | Cooldown |
+|---|---|
+| Phase 1 timeout (failed to reach Phase 2) | 3 hours — attacking allegiance only |
+| Phase 2 failure (Bind Stone survived) | 6 hours — attacking allegiance only |
+| Successful capture | 24 hours — new owner protected from attack (configurable) |
+
+### Rewards
+
+Winners (present on the landblock at the moment of resolution) receive:
+
+- **40–120 PK Trophies** split among eligible players
+- **10–30 MMDs** split among eligible players
+- **1 Phial of Bloody Tears** per player
+- **3 Darkbeat Keys** per player
+- **10% of XP to next level** per player
+
+The losing allegiance's PKs on the landblock are **smited** at the moment of resolution.
+
+### PK XP Bonuses
+
+| Condition | Bonus |
+|---|---|
+| +5% PK XP per town your allegiance owns | Passive, stacks, no cap |
+| Active conflict on the kill landblock (either phase) | 2× PK XP multiplier |
+
+Both bonuses apply simultaneously and stack with other multipliers (Hot Dungeon, etc.).
 
 ---
 
