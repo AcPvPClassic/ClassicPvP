@@ -366,78 +366,49 @@ namespace ACE.Server.Entity
             ACE.Server.Entity.AllegianceHometown.AllegianceHometownRegistry.TownEntry registry,
             ACE.Database.Models.Log.AllegianceHometownTown town)
         {
-            var bindstonePos  = registry.BindstonePosition;
+            var bindstonePos   = registry.BindstonePosition;
             var ownerMonarchId = town.OwnerMonarchId!.Value;
 
-            // Group PK players on the landblock by monarch ID
-            var nearByAllegiance = new Dictionary<uint, int>();  // monarchId → count within 5m
-            bool mixedAllegiances = false;
-            uint? candidateMonarchId = null;
-            string candidateName = null;
+            // Pass 1: count non-owner PKs near the bindstone per allegiance,
+            //         and track all non-owner allegiances present anywhere on the landblock.
+            var nearCount       = new Dictionary<uint, int>();    // monarchId → players within 5m
+            var allegianceNames = new Dictionary<uint, string>(); // monarchId → allegiance name
+            var allMonarchIds   = new System.Collections.Generic.HashSet<uint>(); // all non-owner allegiances on lb
 
             foreach (var player in GetPlayers())
             {
                 if (!player.IsPK) continue;
                 var monarchId = player.MonarchId ?? player.Guid.Full;
-                if (monarchId == ownerMonarchId) continue; // owner allegiance cannot attack themselves
+                if (monarchId == ownerMonarchId) continue;
+
+                allMonarchIds.Add(monarchId);
+
+                if (!allegianceNames.ContainsKey(monarchId))
+                    allegianceNames[monarchId] = player.Allegiance?.AllegianceName ?? player.Name;
 
                 if (player.Location.DistanceTo(bindstonePos) <= 5f)
                 {
-                    nearByAllegiance.TryGetValue(monarchId, out var c);
-                    nearByAllegiance[monarchId] = c + 1;
-                }
-                else
-                {
-                    // Non-owner PK elsewhere on landblock — counts as a second allegiance if different from the near group
-                    if (candidateMonarchId.HasValue && monarchId != candidateMonarchId.Value)
-                        mixedAllegiances = true;
-                }
-
-                if (candidateMonarchId == null)
-                {
-                    candidateMonarchId = monarchId;
-                    candidateName      = player.Allegiance?.AllegianceName ?? player.Name;
-                }
-                else if (monarchId != candidateMonarchId.Value)
-                {
-                    mixedAllegiances = true;
+                    nearCount.TryGetValue(monarchId, out var c);
+                    nearCount[monarchId] = c + 1;
                 }
             }
 
-            if (mixedAllegiances) return; // multiple non-owner allegiances present — don't auto-start
+            // Must be exactly one non-owner allegiance on the entire landblock
+            if (allMonarchIds.Count != 1) return;
 
-            // Find a qualifying allegiance (2+ within 5m)
-            foreach (var kvp in nearByAllegiance)
+            var attackerMonarchId   = allMonarchIds.First();
+            var attackerName        = allegianceNames[attackerMonarchId];
+
+            // Must have 2+ members within 5m of the bindstone
+            nearCount.TryGetValue(attackerMonarchId, out var nearPlayers);
+            if (nearPlayers < 2) return;
+
+            if (Managers.AllegianceHometownManager.TryStartPhase1(registry.TownId, attackerMonarchId, attackerName, out _))
             {
-                if (kvp.Value < 2) continue;
-                var monarchId = kvp.Key;
-
-                // Verify no other allegiance on the landblock
-                if (candidateMonarchId.HasValue && candidateMonarchId.Value != monarchId) continue;
-
-                // Find allegiance name
-                string allegianceName = null;
-                foreach (var player in GetPlayers())
-                {
-                    if (!player.IsPK) continue;
-                    var pid = player.MonarchId ?? player.Guid.Full;
-                    if (pid == monarchId)
-                    {
-                        allegianceName = player.Allegiance?.AllegianceName ?? player.Name;
-                        break;
-                    }
-                }
-
-                if (allegianceName == null) break;
-
-                if (Managers.AllegianceHometownManager.TryStartPhase1(registry.TownId, monarchId, allegianceName, out _))
-                {
-                    EnqueueBroadcast(null, false, null, null,
-                        new Network.GameMessages.Messages.GameMessageSystemChat(
-                            $"[{registry.TownName}] {allegianceName} has initiated a Phase 1 assault! Hold the bind stone for 1 minute.",
-                            ACE.Entity.Enum.ChatMessageType.WorldBroadcast));
-                }
-                break;
+                EnqueueBroadcast(null, false, null, null,
+                    new Network.GameMessages.Messages.GameMessageSystemChat(
+                        $"[{registry.TownName}] {attackerName} has initiated a Phase 1 assault! Hold the bind stone for 1 minute.",
+                        ACE.Entity.Enum.ChatMessageType.WorldBroadcast));
             }
         }
 
