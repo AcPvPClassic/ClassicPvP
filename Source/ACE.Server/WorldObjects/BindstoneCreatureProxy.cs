@@ -42,9 +42,12 @@ namespace ACE.Server.WorldObjects
             return GetDeathMessage(lastDamager, damageType, criticalHit);
         }
 
+        private bool _dieEntered = false;
+
         protected override void Die(DamageHistoryInfo lastDamager, DamageHistoryInfo topDamager)
         {
-            if (!IsAlive) return;
+            if (_dieEntered) return;
+            _dieEntered = true;
 
             UpdateVital(Health, 0);
 
