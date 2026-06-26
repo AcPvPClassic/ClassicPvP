@@ -603,14 +603,20 @@ namespace ACE.Server.Managers
         {
             if (_phase2CloakedBindstones.TryGetValue(townId, out var bs))
             {
+                bs.Visibility  = false;
                 bs.Cloaked     = (bool?)false;
                 bs.Ethereal    = (bool?)false;
                 bs.NoDraw      = (bool?)false;
-                bs.Visibility  = false;
                 bs.Attackable  = true;
                 bs.EnqueueBroadcastPhysicsState();
-                bs.EnqueueBroadcastUpdateObject();
+                // Send CreateObject so all nearby clients who lack it in their tracking get it back
+                bs.EnqueueBroadcast(false, new GameMessageCreateObject(bs));
                 _phase2CloakedBindstones.Remove(townId);
+
+                // Lift permaload so the landblock can unload normally when empty again
+                var lb = bs.CurrentLandblock;
+                if (lb != null)
+                    lb.Permaload = false;
             }
         }
 

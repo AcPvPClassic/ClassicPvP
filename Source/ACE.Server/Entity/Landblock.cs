@@ -443,11 +443,15 @@ namespace ACE.Server.Entity
 
         private void SpawnPhase2Proxy(Entity.AllegianceHometown.AllegianceHometownRegistry.TownEntry entry)
         {
+            // Permaload this landblock so it never goes dormant or unloads while the proxy is alive
+            Permaload = true;
+
             var proxy = WorldObjectFactory.CreateNewWorldObject(ACE.Database.CustomWeenieId.BindstoneCreatureProxy)
                         as WorldObjects.BindstoneCreatureProxy;
             if (proxy == null)
             {
                 log.Error($"[AllegianceHometown] Failed to create BindstoneCreatureProxy (wcid {ACE.Database.CustomWeenieId.BindstoneCreatureProxy}) for {entry.TownName}.");
+                Permaload = false;
                 return;
             }
 
@@ -458,7 +462,8 @@ namespace ACE.Server.Entity
             proxy.Health.StartingValue = maxHp;
             proxy.UpdateVital(proxy.Health, maxHp);
 
-            // Cloak the real bindstone so only the proxy is visible
+            // Cloak the real bindstone so only the proxy is visible.
+            // Must send DeleteObject after setting physics state so already-tracked clients remove it.
             var realBindstone = worldObjects.Values
                 .OfType<WorldObjects.Bindstone>()
                 .FirstOrDefault(b => b.WeenieType == ACE.Entity.Enum.WeenieType.AllegianceBindstone);
@@ -468,9 +473,9 @@ namespace ACE.Server.Entity
                 realBindstone.Cloaked    = (bool?)true;
                 realBindstone.Ethereal   = (bool?)true;
                 realBindstone.NoDraw     = (bool?)true;
-                realBindstone.Visibility = true;
                 realBindstone.EnqueueBroadcastPhysicsState();
-                realBindstone.EnqueueBroadcastUpdateObject();
+                realBindstone.EnqueueBroadcast(false, new Network.GameMessages.Messages.GameMessageDeleteObject(realBindstone));
+                realBindstone.Visibility = true;
                 Managers.AllegianceHometownManager.RegisterPhase2CloakedBindstone(entry.TownId, realBindstone);
             }
 
