@@ -335,12 +335,12 @@ namespace ACE.Server.Entity
                 {
                     _lastAhPhase1Broadcast = now;
 
-                    var secsRemaining = Math.Max(0, 240 - _ahPhase1AccumulatedSeconds);
+                    var secsRemaining = Math.Max(0, 60 - _ahPhase1AccumulatedSeconds);
                     string progressMsg;
                     if (enemyOnLandblock)
                     {
                         progressMsg = $"[{registry.TownName}] Phase 1 assault INTERRUPTED — clear all enemies from the landblock to resume. " +
-                                      $"Progress: {_ahPhase1AccumulatedSeconds:0}/{240}s";
+                                      $"Progress: {_ahPhase1AccumulatedSeconds:0}/{60}s";
                     }
                     else if (attackersNear >= 2)
                     {
@@ -349,7 +349,7 @@ namespace ACE.Server.Entity
                     else
                     {
                         progressMsg = $"[{registry.TownName}] Phase 1 assault paused — need at least 2 attackers within 5m of the Bind Stone. " +
-                                      $"Progress: {_ahPhase1AccumulatedSeconds:0}/{240}s";
+                                      $"Progress: {_ahPhase1AccumulatedSeconds:0}/{60}s";
                     }
 
                     EnqueueBroadcast(null, false, null, null,
@@ -434,7 +434,7 @@ namespace ACE.Server.Entity
                 {
                     EnqueueBroadcast(null, false, null, null,
                         new Network.GameMessages.Messages.GameMessageSystemChat(
-                            $"[{registry.TownName}] {allegianceName} has initiated a Phase 1 assault! Hold the bind stone for 4 minutes.",
+                            $"[{registry.TownName}] {allegianceName} has initiated a Phase 1 assault! Hold the bind stone for 1 minute.",
                             ACE.Entity.Enum.ChatMessageType.WorldBroadcast));
                 }
                 break;
@@ -455,8 +455,9 @@ namespace ACE.Server.Entity
                 return;
             }
 
-            proxy.TownId   = entry.TownId;
-            proxy.Location = new Position(entry.BindstonePosition);
+            proxy.TownId    = entry.TownId;
+            proxy.Location  = new Position(entry.BindstonePosition);
+            proxy.TimeToRot = -1; // Never decay — proxy is destroyed explicitly when Phase 2 ends
 
             var maxHp = (uint)Managers.AllegianceHometownManager.ComputeBindstoneHp();
             proxy.Health.StartingValue = maxHp;

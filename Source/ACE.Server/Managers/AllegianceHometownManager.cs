@@ -302,7 +302,7 @@ namespace ACE.Server.Managers
             if (attackersWithinRange >= 2)
             {
                 accumulatedSeconds += 5;
-                if (accumulatedSeconds >= 240) // 4 minutes
+                if (accumulatedSeconds >= 60) // 1 minute (testing)
                     return Phase1TickResult.PhaseComplete;
             }
 
