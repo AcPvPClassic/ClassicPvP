@@ -50,46 +50,44 @@ namespace ACE.Server.WorldObjects
                 return;
             }
 
-            // Phase 2 in progress — cannot use while proxy is alive
-            if (town.ConflictPhase == 2)
-            {
-                player.SendTransientError("The bind stone is currently under siege.");
-                return;
-            }
-
-            // Unowned town — free claim
+            // Unowned town — free claim via USE
             if (!town.OwnerMonarchId.HasValue)
             {
+                if (town.ConflictPhase != 0)
+                {
+                    player.SendTransientError("This town cannot be claimed right now.");
+                    return;
+                }
                 AllegianceHometownManager.ClaimTown(entry.TownId, monarchId, allegianceName);
                 player.Session.Network.EnqueueSend(new GameMessageSystemChat(
                     $"Your allegiance has claimed {entry.TownName}!", ChatMessageType.Magic));
                 return;
             }
 
-            // Owned by this allegiance
+            // Owned town — attacking is automatic; USE only shows status
             if (town.OwnerMonarchId == monarchId)
             {
                 player.Session.Network.EnqueueSend(new GameMessageSystemChat(
-                    $"Your allegiance already owns {entry.TownName}.", ChatMessageType.Magic));
+                    $"Your allegiance owns {entry.TownName}. Defend the bind stone against attackers.", ChatMessageType.Magic));
                 return;
             }
 
-            // Phase 1 already in progress
+            if (town.ConflictPhase == 2)
+            {
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat(
+                    $"{entry.TownName} is under siege! Attack the Bind Stone creature to capture it.", ChatMessageType.Magic));
+                return;
+            }
+
             if (town.ConflictPhase == 1)
             {
-                player.SendTransientError($"{entry.TownName} is already under attack.");
-                return;
-            }
-
-            // Attempt to start Phase 1
-            if (!AllegianceHometownManager.TryStartPhase1(entry.TownId, monarchId, allegianceName, out var failReason))
-            {
-                player.SendTransientError(failReason);
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat(
+                    $"{entry.TownName} is already under Phase 1 assault. Hold the bind stone with 2 allies to advance.", ChatMessageType.Magic));
                 return;
             }
 
             player.Session.Network.EnqueueSend(new GameMessageSystemChat(
-                $"Phase 1 assault on {entry.TownName} has begun! Hold this position with at least 2 allies for 4 minutes.",
+                $"{entry.TownName} is owned by {town.OwnerAllegianceName}. Gather 2 allies within 5m of the bind stone with no enemies on the landblock to start an assault.",
                 ChatMessageType.Magic));
         }
 

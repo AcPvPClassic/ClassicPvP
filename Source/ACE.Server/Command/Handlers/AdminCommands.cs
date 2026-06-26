@@ -6106,5 +6106,99 @@ namespace ACE.Server.Command.Handlers
         }
 
         #endregion Season Admin Commands
+
+        // ====================================================================
+        #region Allegiance Hometown Blacklist Admin Commands
+
+        [CommandHandler("ahhbl", AccessLevel.Sentinel, CommandHandlerFlag.None, 1,
+            "Manage the Allegiance Hometown warfare blacklist.",
+            "add <player> [reason] — ban that player's allegiance from attacking towns\n" +
+            "remove <player>       — remove ban\n" +
+            "list                  — list all banned allegiances")]
+        public static void HandleAhHbl(Session session, params string[] parameters)
+        {
+            if (parameters.Length < 1)
+            {
+                CommandHandlerHelper.WriteOutputInfo(session, "Usage: /ahhbl add <player> [reason] | remove <player> | list");
+                return;
+            }
+
+            var sub = parameters[0].ToLower();
+
+            switch (sub)
+            {
+                case "add":
+                {
+                    if (parameters.Length < 2)
+                    {
+                        CommandHandlerHelper.WriteOutputInfo(session, "Usage: /ahhbl add <player> [reason]");
+                        return;
+                    }
+                    var playerName = parameters[1];
+                    var target = Managers.PlayerManager.FindByName(playerName);
+                    if (target == null)
+                    {
+                        CommandHandlerHelper.WriteOutputInfo(session, $"Player '{playerName}' not found.");
+                        return;
+                    }
+                    var monarchId = target.MonarchId ?? target.Guid.Full;
+                    var allegianceName = (target as WorldObjects.Player)?.Allegiance?.AllegianceName ?? target.Name;
+                    var reason = parameters.Length >= 3 ? string.Join(" ", parameters, 2, parameters.Length - 2) : null;
+                    var addedBy = session?.Player?.Name ?? "Console";
+
+                    if (Managers.AllegianceHometownManager.AddBlacklist(monarchId, allegianceName, reason, addedBy))
+                        CommandHandlerHelper.WriteOutputInfo(session, $"Blacklisted allegiance '{allegianceName}' (monarchId={monarchId:X8}). They can no longer attack towns.");
+                    else
+                        CommandHandlerHelper.WriteOutputInfo(session, $"Allegiance '{allegianceName}' is already blacklisted.");
+                    break;
+                }
+
+                case "remove":
+                {
+                    if (parameters.Length < 2)
+                    {
+                        CommandHandlerHelper.WriteOutputInfo(session, "Usage: /ahhbl remove <player>");
+                        return;
+                    }
+                    var playerName = parameters[1];
+                    var target = Managers.PlayerManager.FindByName(playerName);
+                    if (target == null)
+                    {
+                        CommandHandlerHelper.WriteOutputInfo(session, $"Player '{playerName}' not found.");
+                        return;
+                    }
+                    var monarchId = target.MonarchId ?? target.Guid.Full;
+
+                    if (Managers.AllegianceHometownManager.RemoveBlacklist(monarchId))
+                        CommandHandlerHelper.WriteOutputInfo(session, $"Removed monarchId={monarchId:X8} from the hometown blacklist.");
+                    else
+                        CommandHandlerHelper.WriteOutputInfo(session, $"monarchId={monarchId:X8} was not blacklisted.");
+                    break;
+                }
+
+                case "list":
+                {
+                    var bl = Managers.AllegianceHometownManager.GetBlacklist();
+                    if (bl.Count == 0)
+                    {
+                        CommandHandlerHelper.WriteOutputInfo(session, "Hometown blacklist is empty.");
+                        return;
+                    }
+                    var sb = new System.Text.StringBuilder();
+                    sb.AppendLine($"Hometown blacklist ({bl.Count} entr{(bl.Count == 1 ? "y" : "ies")}):");
+                    foreach (var kvp in bl.Values)
+                        sb.AppendLine($"  {kvp.AllegianceName} (monarchId={kvp.MonarchId:X8}) — added by {kvp.AddedBy} on {kvp.AddedAt:yyyy-MM-dd}" +
+                                      (kvp.Reason != null ? $" — {kvp.Reason}" : ""));
+                    CommandHandlerHelper.WriteOutputInfo(session, sb.ToString());
+                    break;
+                }
+
+                default:
+                    CommandHandlerHelper.WriteOutputInfo(session, "Unknown sub-command. Use: add, remove, list");
+                    break;
+            }
+        }
+
+        #endregion Allegiance Hometown Blacklist Admin Commands
     }
 }

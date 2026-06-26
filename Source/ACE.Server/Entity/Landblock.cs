@@ -276,7 +276,13 @@ namespace ACE.Server.Entity
             if (registry == null) return;
 
             var town = Managers.AllegianceHometownManager.GetTown(registry.TownId);
-            if (town == null || town.ConflictPhase != 1) return;
+            if (town == null) return;
+
+            // Auto-start Phase 1 when an eligible allegiance gathers near the bindstone
+            if (town.ConflictPhase == 0 && town.OwnerMonarchId.HasValue)
+                TryAutoStartPhase1(registry, town);
+
+            if (town.ConflictPhase != 1) return;
 
             var attackerMonarchId = town.ConflictAttackerMonarchId!.Value;
 
@@ -356,6 +362,85 @@ namespace ACE.Server.Entity
             }
         }
 
+        private void TryAutoStartPhase1(
+            ACE.Server.Entity.AllegianceHometown.AllegianceHometownRegistry.TownEntry registry,
+            ACE.Database.Models.Log.AllegianceHometownTown town)
+        {
+            var bindstonePos  = registry.BindstonePosition;
+            var ownerMonarchId = town.OwnerMonarchId!.Value;
+
+            // Group PK players on the landblock by monarch ID
+            var nearByAllegiance = new Dictionary<uint, int>();  // monarchId → count within 5m
+            bool mixedAllegiances = false;
+            uint? candidateMonarchId = null;
+            string candidateName = null;
+
+            foreach (var player in GetPlayers())
+            {
+                if (!player.IsPK) continue;
+                var monarchId = player.MonarchId ?? player.Guid.Full;
+                if (monarchId == ownerMonarchId) continue; // owner allegiance cannot attack themselves
+
+                if (player.Location.DistanceTo(bindstonePos) <= 5f)
+                {
+                    nearByAllegiance.TryGetValue(monarchId, out var c);
+                    nearByAllegiance[monarchId] = c + 1;
+                }
+                else
+                {
+                    // Non-owner PK elsewhere on landblock — counts as a second allegiance if different from the near group
+                    if (candidateMonarchId.HasValue && monarchId != candidateMonarchId.Value)
+                        mixedAllegiances = true;
+                }
+
+                if (candidateMonarchId == null)
+                {
+                    candidateMonarchId = monarchId;
+                    candidateName      = player.Allegiance?.AllegianceName ?? player.Name;
+                }
+                else if (monarchId != candidateMonarchId.Value)
+                {
+                    mixedAllegiances = true;
+                }
+            }
+
+            if (mixedAllegiances) return; // multiple non-owner allegiances present — don't auto-start
+
+            // Find a qualifying allegiance (2+ within 5m)
+            foreach (var kvp in nearByAllegiance)
+            {
+                if (kvp.Value < 2) continue;
+                var monarchId = kvp.Key;
+
+                // Verify no other allegiance on the landblock
+                if (candidateMonarchId.HasValue && candidateMonarchId.Value != monarchId) continue;
+
+                // Find allegiance name
+                string allegianceName = null;
+                foreach (var player in GetPlayers())
+                {
+                    if (!player.IsPK) continue;
+                    var pid = player.MonarchId ?? player.Guid.Full;
+                    if (pid == monarchId)
+                    {
+                        allegianceName = player.Allegiance?.AllegianceName ?? player.Name;
+                        break;
+                    }
+                }
+
+                if (allegianceName == null) break;
+
+                if (Managers.AllegianceHometownManager.TryStartPhase1(registry.TownId, monarchId, allegianceName, out var failReason))
+                {
+                    EnqueueBroadcast(null, false, null, null,
+                        new Network.GameMessages.Messages.GameMessageSystemChat(
+                            $"[{registry.TownName}] {allegianceName} has initiated a Phase 1 assault! Hold the bind stone for 4 minutes.",
+                            ACE.Entity.Enum.ChatMessageType.WorldBroadcast));
+                }
+                break;
+            }
+        }
+
         private void SpawnPhase2Proxy(Entity.AllegianceHometown.AllegianceHometownRegistry.TownEntry entry)
         {
             var proxy = WorldObjectFactory.CreateNewWorldObject(ACE.Database.CustomWeenieId.BindstoneCreatureProxy)
@@ -372,6 +457,22 @@ namespace ACE.Server.Entity
             var maxHp = (uint)Managers.AllegianceHometownManager.ComputeBindstoneHp();
             proxy.Health.StartingValue = maxHp;
             proxy.UpdateVital(proxy.Health, maxHp);
+
+            // Cloak the real bindstone so only the proxy is visible
+            var realBindstone = worldObjects.Values
+                .OfType<WorldObjects.Bindstone>()
+                .FirstOrDefault(b => b.WeenieType == ACE.Entity.Enum.WeenieType.AllegianceBindstone);
+            if (realBindstone != null)
+            {
+                realBindstone.Attackable = false;
+                realBindstone.Cloaked    = (bool?)true;
+                realBindstone.Ethereal   = (bool?)true;
+                realBindstone.NoDraw     = (bool?)true;
+                realBindstone.Visibility = true;
+                realBindstone.EnqueueBroadcastPhysicsState();
+                realBindstone.EnqueueBroadcastUpdateObject();
+                Managers.AllegianceHometownManager.RegisterPhase2CloakedBindstone(entry.TownId, realBindstone);
+            }
 
             AddWorldObject(proxy);
             Managers.AllegianceHometownManager.RegisterPhase2Proxy(entry.TownId, proxy);

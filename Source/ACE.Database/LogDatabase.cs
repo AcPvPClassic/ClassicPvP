@@ -916,6 +916,60 @@ namespace ACE.Database
             }
         }
 
+        public List<AllegianceHometownBlacklist> GetAllAllegianceHometownBlacklist()
+        {
+            if (!IsConfigured) return new List<AllegianceHometownBlacklist>();
+            try
+            {
+                using (var context = new LogDbContext())
+                    return context.AllegianceHometownBlacklists.AsNoTracking().ToList();
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception in GetAllAllegianceHometownBlacklist. Ex: {ex}");
+            }
+            return new List<AllegianceHometownBlacklist>();
+        }
+
+        public void AddAllegianceHometownBlacklist(AllegianceHometownBlacklist entry)
+        {
+            if (!IsConfigured) return;
+            try
+            {
+                using (var context = new LogDbContext())
+                {
+                    if (!context.AllegianceHometownBlacklists.Any(x => x.MonarchId == entry.MonarchId))
+                        context.AllegianceHometownBlacklists.Add(entry);
+                    context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception in AddAllegianceHometownBlacklist for MonarchId={entry.MonarchId}. Ex: {ex}");
+            }
+        }
+
+        public void RemoveAllegianceHometownBlacklist(uint monarchId)
+        {
+            if (!IsConfigured) return;
+            try
+            {
+                using (var context = new LogDbContext())
+                {
+                    var rec = context.AllegianceHometownBlacklists.FirstOrDefault(x => x.MonarchId == monarchId);
+                    if (rec != null)
+                    {
+                        context.AllegianceHometownBlacklists.Remove(rec);
+                        context.SaveChanges();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception in RemoveAllegianceHometownBlacklist for MonarchId={monarchId}. Ex: {ex}");
+            }
+        }
+
         #endregion
 
         // ====================================================================

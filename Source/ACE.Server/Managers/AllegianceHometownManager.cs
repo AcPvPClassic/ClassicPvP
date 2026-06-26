@@ -48,6 +48,13 @@ namespace ACE.Server.Managers
         // town_id → active Phase 2 creature proxy world object
         private static readonly Dictionary<byte, BindstoneCreatureProxy> _phase2Proxies = new();
 
+        // town_id → real Bindstone WO cloaked during Phase 2
+        private static readonly Dictionary<byte, WorldObjects.Bindstone> _phase2CloakedBindstones = new();
+
+        // monarch IDs permanently banned from attacking towns
+        private static readonly System.Collections.Generic.HashSet<uint> _blacklist = new();
+        private static readonly System.Collections.Generic.Dictionary<uint, ACE.Database.Models.Log.AllegianceHometownBlacklist> _blacklistEntries = new();
+
         public const int MaxSimultaneousAttacks = 2;
 
         // -----------------------------------------------------------------------
@@ -65,6 +72,14 @@ namespace ACE.Server.Managers
                 _captureProtection.Clear();
                 _latestEventByTown.Clear();
                 _phase2Proxies.Clear();
+                _blacklist.Clear();
+                _blacklistEntries.Clear();
+
+                foreach (var bl in DatabaseManager.Log.GetAllAllegianceHometownBlacklist())
+                {
+                    _blacklist.Add(bl.MonarchId);
+                    _blacklistEntries[bl.MonarchId] = bl;
+                }
 
                 var rows = DatabaseManager.Log.GetAllAllegianceHometownTowns();
 
@@ -183,6 +198,13 @@ namespace ACE.Server.Managers
             if (!_towns.TryGetValue(townId, out var town))
             {
                 failReason = "Unknown town.";
+                return false;
+            }
+
+            // Blacklisted allegiances cannot attack
+            if (_blacklist.Contains(attackerMonarchId))
+            {
+                failReason = "Your allegiance has been suspended from hometown warfare.";
                 return false;
             }
 
@@ -350,6 +372,8 @@ namespace ACE.Server.Managers
 
             CloseLatestEvent(town.TownId, outcome: 0);
 
+            UncloakPhase2Bindstone(townId);
+
             // Capture rewards: attackers win, defenders smited
             DistributeRewards(townId, attackerMonarchId, prevOwnerId);
 
@@ -369,6 +393,8 @@ namespace ACE.Server.Managers
 
             // 6-hour cooldown on the attacking allegiance for this town
             _attackerCooldowns[(attackerMonarchId, town.TownId)] = DateTime.UtcNow.AddHours(6);
+
+            UncloakPhase2Bindstone(townId);
 
             // Defense rewards: defenders win, attackers smited
             var defenderMonarchId = town.OwnerMonarchId;
@@ -428,26 +454,31 @@ namespace ACE.Server.Managers
                 if (adjLb != null) allLbs.Add(adjLb);
             }
 
-            // Collect players from all zone landblocks
+            // Collect winner players from the town landblock + adjacent only (must be present for loot)
             var winnerPlayers = new System.Collections.Generic.List<Player>();
-            var loserPlayers  = new System.Collections.Generic.List<Player>();
 
             foreach (var lb in allLbs)
             {
                 foreach (var p in lb.GetPlayers())
                 {
                     if (!p.IsPK) continue;
-                    var monarchId = p.Allegiance?.MonarchId ?? p.Guid.Full;
+                    var monarchId = p.MonarchId ?? p.Guid.Full;
                     if (monarchId == winnerMonarchId)
                         winnerPlayers.Add(p);
-                    else if (loserMonarchId.HasValue && monarchId == loserMonarchId.Value)
-                        loserPlayers.Add(p);
                 }
             }
 
-            // Smite losers on main landblock + adjacent
-            foreach (var loser in loserPlayers)
-                loser.Smite(loser); // self-smite (instant kill via game death path)
+            // Smite ALL online members of the losing allegiance, wherever they are
+            if (loserMonarchId.HasValue)
+            {
+                foreach (var p in PlayerManager.GetAllOnline())
+                {
+                    if (!p.IsPK) continue;
+                    var monarchId = p.MonarchId ?? p.Guid.Full;
+                    if (monarchId == loserMonarchId.Value)
+                        p.Smite(p);
+                }
+            }
 
             if (winnerPlayers.Count == 0) return;
 
@@ -527,6 +558,60 @@ namespace ACE.Server.Managers
         {
             _phase2Proxies.TryGetValue(townId, out var proxy);
             return proxy;
+        }
+
+        // -----------------------------------------------------------------------
+        // Blacklist management
+        // -----------------------------------------------------------------------
+
+        public static bool IsBlacklisted(uint monarchId) => _blacklist.Contains(monarchId);
+
+        public static bool AddBlacklist(uint monarchId, string allegianceName, string reason, string addedBy)
+        {
+            if (_blacklist.Contains(monarchId)) return false;
+            var entry = new ACE.Database.Models.Log.AllegianceHometownBlacklist
+            {
+                MonarchId      = monarchId,
+                AllegianceName = allegianceName,
+                Reason         = reason,
+                AddedBy        = addedBy,
+                AddedAt        = DateTime.UtcNow
+            };
+            _blacklist.Add(monarchId);
+            _blacklistEntries[monarchId] = entry;
+            DatabaseManager.Log.AddAllegianceHometownBlacklist(entry);
+            return true;
+        }
+
+        public static bool RemoveBlacklist(uint monarchId)
+        {
+            if (!_blacklist.Remove(monarchId)) return false;
+            _blacklistEntries.Remove(monarchId);
+            DatabaseManager.Log.RemoveAllegianceHometownBlacklist(monarchId);
+            return true;
+        }
+
+        public static System.Collections.Generic.IReadOnlyDictionary<uint, ACE.Database.Models.Log.AllegianceHometownBlacklist> GetBlacklist()
+            => _blacklistEntries;
+
+        public static void RegisterPhase2CloakedBindstone(byte townId, WorldObjects.Bindstone bindstone)
+        {
+            _phase2CloakedBindstones[townId] = bindstone;
+        }
+
+        public static void UncloakPhase2Bindstone(byte townId)
+        {
+            if (_phase2CloakedBindstones.TryGetValue(townId, out var bs))
+            {
+                bs.Cloaked     = (bool?)false;
+                bs.Ethereal    = (bool?)false;
+                bs.NoDraw      = (bool?)false;
+                bs.Visibility  = false;
+                bs.Attackable  = true;
+                bs.EnqueueBroadcastPhysicsState();
+                bs.EnqueueBroadcastUpdateObject();
+                _phase2CloakedBindstones.Remove(townId);
+            }
         }
 
         // -----------------------------------------------------------------------

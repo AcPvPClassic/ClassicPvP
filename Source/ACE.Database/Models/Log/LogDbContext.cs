@@ -18,8 +18,9 @@ namespace ACE.Database.Models.Log
         public virtual DbSet<ArenaTeamStats> ArenaTeamStats { get; set; }
         public virtual DbSet<RareLog> RareLogs { get; set; }
         public virtual DbSet<StuckCharacterLog> StuckCharacterLogs { get; set; }
-        public virtual DbSet<AllegianceHometownTown>  AllegianceHometownTowns  { get; set; }
-        public virtual DbSet<AllegianceHometownEvent> AllegianceHometownEvents { get; set; }
+        public virtual DbSet<AllegianceHometownTown>       AllegianceHometownTowns      { get; set; }
+        public virtual DbSet<AllegianceHometownEvent>      AllegianceHometownEvents     { get; set; }
+        public virtual DbSet<AllegianceHometownBlacklist>  AllegianceHometownBlacklists { get; set; }
         public virtual DbSet<MovementViolationLog> MovementViolationLogs { get; set; }
 
         public virtual DbSet<SeasonCharacterStats>  SeasonCharacterStats   { get; set; }
@@ -255,6 +256,17 @@ namespace ACE.Database.Models.Log
                 entity.Property(e => e.Phase2StartTime).HasColumnName("phase2_start_time");
                 entity.Property(e => e.EventEndTime).HasColumnName("event_end_time");
                 entity.Property(e => e.Outcome).HasColumnName("outcome");
+            });
+
+            modelBuilder.Entity<AllegianceHometownBlacklist>(entity =>
+            {
+                entity.HasKey(e => e.MonarchId).HasName("PRIMARY");
+                entity.ToTable("allegiance_hometown_blacklist");
+                entity.Property(e => e.MonarchId).HasColumnName("monarch_id");
+                entity.Property(e => e.AllegianceName).HasColumnName("allegiance_name");
+                entity.Property(e => e.Reason).HasColumnName("reason");
+                entity.Property(e => e.AddedBy).HasColumnName("added_by");
+                entity.Property(e => e.AddedAt).HasColumnName("added_at");
             });
 
             modelBuilder.Entity<MovementViolationLog>(entity =>
