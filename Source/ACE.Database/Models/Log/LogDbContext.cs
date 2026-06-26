@@ -18,8 +18,8 @@ namespace ACE.Database.Models.Log
         public virtual DbSet<ArenaTeamStats> ArenaTeamStats { get; set; }
         public virtual DbSet<RareLog> RareLogs { get; set; }
         public virtual DbSet<StuckCharacterLog> StuckCharacterLogs { get; set; }
-        public virtual DbSet<TownControlTown> TownControlTowns { get; set; }
-        public virtual DbSet<TownControlEvent> TownControlEvents { get; set; }
+        public virtual DbSet<AllegianceHometownTown>  AllegianceHometownTowns  { get; set; }
+        public virtual DbSet<AllegianceHometownEvent> AllegianceHometownEvents { get; set; }
         public virtual DbSet<MovementViolationLog> MovementViolationLogs { get; set; }
 
         public virtual DbSet<SeasonCharacterStats>  SeasonCharacterStats   { get; set; }
@@ -225,36 +225,36 @@ namespace ACE.Database.Models.Log
                 entity.Property(e => e.CreatedAtUtc).HasColumnName("createdAtUtc");
             });
 
-            modelBuilder.Entity<TownControlTown>(entity =>
+            modelBuilder.Entity<AllegianceHometownTown>(entity =>
             {
                 entity.HasKey(e => e.TownId).HasName("PRIMARY");
-                entity.ToTable("town_control_town");
+                entity.ToTable("allegiance_hometown_town");
                 entity.Property(e => e.TownId).HasColumnName("town_id");
                 entity.Property(e => e.TownName).HasColumnName("town_name");
-                entity.Property(e => e.OwnerId).HasColumnName("owner_id");
-                entity.Property(e => e.IsInConflict).HasColumnName("is_in_conflict");
-                entity.Property(e => e.LastConflictStartTime).HasColumnName("last_conflict_start_time");
-                entity.Property(e => e.ConflictLength).HasColumnName("conflict_length");
-                entity.Property(e => e.ConflictRespiteLength).HasColumnName("conflict_respite_length");
-                entity.Property(e => e.AttackerAwardsIndividual).HasColumnName("attacker_awards_individual");
-                entity.Property(e => e.AttackerAwardsTotal).HasColumnName("attacker_awards_total");
-                entity.Property(e => e.DefenderAwardsIndividual).HasColumnName("defender_awards_individual");
-                entity.Property(e => e.DefenderAwardsTotal).HasColumnName("defender_awards_total");
+                entity.Property(e => e.OwnerMonarchId).HasColumnName("owner_monarch_id");
+                entity.Property(e => e.OwnerAllegianceName).HasColumnName("owner_allegiance_name");
+                entity.Property(e => e.CapturedAt).HasColumnName("captured_at");
+                entity.Property(e => e.ConflictPhase).HasColumnName("conflict_phase");
+                entity.Property(e => e.ConflictAttackerMonarchId).HasColumnName("conflict_attacker_monarch_id");
+                entity.Property(e => e.ConflictAttackerName).HasColumnName("conflict_attacker_name");
+                entity.Property(e => e.ConflictStartTime).HasColumnName("conflict_start_time");
+                entity.Property(e => e.Phase2StartTime).HasColumnName("phase2_start_time");
             });
 
-            modelBuilder.Entity<TownControlEvent>(entity =>
+            modelBuilder.Entity<AllegianceHometownEvent>(entity =>
             {
                 entity.HasKey(e => e.EventId).HasName("PRIMARY");
-                entity.ToTable("town_control_event");
+                entity.ToTable("allegiance_hometown_event");
                 entity.Property(e => e.EventId).HasColumnName("event_id");
                 entity.Property(e => e.TownId).HasColumnName("town_id");
+                entity.Property(e => e.AttackerMonarchId).HasColumnName("attacker_monarch_id");
+                entity.Property(e => e.AttackerAllegianceName).HasColumnName("attacker_allegiance_name");
+                entity.Property(e => e.DefenderMonarchId).HasColumnName("defender_monarch_id");
+                entity.Property(e => e.DefenderAllegianceName).HasColumnName("defender_allegiance_name");
                 entity.Property(e => e.EventStartTime).HasColumnName("event_start_time");
+                entity.Property(e => e.Phase2StartTime).HasColumnName("phase2_start_time");
                 entity.Property(e => e.EventEndTime).HasColumnName("event_end_time");
-                entity.Property(e => e.AttackerId).HasColumnName("attacker_id");
-                entity.Property(e => e.AttackerClanName).HasColumnName("attacker_clan_name");
-                entity.Property(e => e.DefenderId).HasColumnName("defender_id");
-                entity.Property(e => e.DefenderClanName).HasColumnName("defender_clan_name");
-                entity.Property(e => e.IsAttackSuccess).HasColumnName("is_attack_success");
+                entity.Property(e => e.Outcome).HasColumnName("outcome");
             });
 
             modelBuilder.Entity<MovementViolationLog>(entity =>

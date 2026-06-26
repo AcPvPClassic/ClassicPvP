@@ -360,7 +360,19 @@ namespace ACE.Server.WorldObjects
                 if (!VerifyRecallAllegianceHometown())
                     return;
 
-                Teleport(Allegiance.Sanctuary);
+                // Pick a random owned hometown; fall back to legacy Sanctuary if none owned
+                var monarchId = Allegiance?.MonarchId ?? Guid.Full;
+                var ownedIds  = ACE.Server.Managers.AllegianceHometownManager.GetOwnedTownIds(monarchId);
+                if (ownedIds.Count > 0)
+                {
+                    var ownedList = ownedIds.ToList();
+                    var idx   = Common.ThreadSafeRandom.Next(0, ownedList.Count - 1);
+                    var entry = ACE.Server.Entity.AllegianceHometown.AllegianceHometownRegistry.GetById(ownedList[idx]);
+                    if (entry != null) { Teleport(entry.BindstonePosition); return; }
+                }
+
+                if (Allegiance.Sanctuary != null)
+                    Teleport(Allegiance.Sanctuary);
             });
 
             actionChain.EnqueueChain();

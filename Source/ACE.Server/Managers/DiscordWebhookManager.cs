@@ -70,20 +70,6 @@ namespace ACE.Server.Managers
         }
 
         /// <summary>
-        /// Sends a Town Control conflict start/end announcement to the configured TC webhook.
-        /// PropertyManager key: <c>town_control_globals_webhook</c>
-        /// </summary>
-        public static void SendTownControl(string message)
-        {
-            if (string.IsNullOrWhiteSpace(message)) return;
-
-            var url = PropertyManager.GetString("town_control_globals_webhook").Item;
-            if (string.IsNullOrWhiteSpace(url)) return;
-
-            _ = SendAsync(url, SanitiseMessage(message));
-        }
-
-        /// <summary>
         /// Sends a movement anti-cheat violation alert to the configured movement violation webhook.
         /// PropertyManager key: <c>movement_violation_webhook</c>
         /// </summary>

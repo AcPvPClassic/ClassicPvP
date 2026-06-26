@@ -107,18 +107,19 @@ namespace ACE.Server.Entity
 
         private DateTime lastDatabaseSave = DateTime.MinValue;
 
-        // Town Control anomaly recovery fires every 30 seconds on TC landblocks
-        private static readonly TimeSpan tcRecoveryInterval = TimeSpan.FromSeconds(30);
-        private DateTime lastTcRecovery = DateTime.MinValue;
+        // Allegiance Hometown Phase 1 tick fires every 5 seconds on capturable-town landblocks
+        private static readonly TimeSpan ahPhase1TickInterval = TimeSpan.FromSeconds(5);
+        private DateTime lastAhPhase1Tick = DateTime.MinValue;
+        private double _ahPhase1AccumulatedSeconds;
 
-        private bool? _isTownControlLandblock;
-        public bool IsTownControlLandblock
+        private bool? _isAllegianceHometownLandblock;
+        public bool IsAllegianceHometownLandblock
         {
             get
             {
-                if (_isTownControlLandblock == null)
-                    _isTownControlLandblock = ACE.Server.Entity.TownControl.TownControlLandblocks.IsTownControlLandblock(Id.Landblock);
-                return _isTownControlLandblock.Value;
+                if (_isAllegianceHometownLandblock == null)
+                    _isAllegianceHometownLandblock = ACE.Server.Entity.AllegianceHometown.AllegianceHometownRegistry.IsTownLandblock(Id.Landblock);
+                return _isAllegianceHometownLandblock.Value;
             }
         }
 
@@ -268,21 +269,63 @@ namespace ACE.Server.Entity
             }));
         }
 
-        /// <summary>
-        /// Detects and corrects stale Town Control events that were never resolved by normal
-        /// Creature death/tick paths (e.g., server crash mid-conflict).
-        /// Calls TownControlManager.RecoverStaleEvent for each town mapped to this landblock.
-        /// </summary>
-        private void HandleTownControlRecovery()
+        private void HandleAllegianceHometownPhase1Tick()
         {
-            var townId = ACE.Server.Entity.TownControl.TownControlLandblocks.GetTownIdByLandblockId(Id.Landblock);
-            if (townId.HasValue)
+            var registry = ACE.Server.Entity.AllegianceHometown.AllegianceHometownRegistry.GetByLandblock(Id.Landblock);
+            if (registry == null) return;
+
+            var town = Managers.AllegianceHometownManager.GetTown(registry.TownId);
+            if (town == null || town.ConflictPhase != 1) return;
+
+            var attackerMonarchId = town.ConflictAttackerMonarchId!.Value;
+
+            // Count attacking allegiance members within 5m of bindstone
+            var bindstonePos = registry.BindstonePosition;
+            int attackersNear = 0;
+            bool enemyOnLandblock = false;
+
+            foreach (var player in GetPlayers())
             {
-                TownControlManager.RecoverStaleEvent(townId.Value, msg =>
+                if (!player.IsPK) continue;
+
+                var allegianceMonarchId = player.Allegiance?.MonarchId;
+                if (allegianceMonarchId == attackerMonarchId)
                 {
-                    if (PropertyManager.GetBool("town_control_enable_debug_log").Item)
-                        log.Warn(msg);
-                });
+                    if (player.Location.DistanceTo(bindstonePos) <= 5f)
+                        attackersNear++;
+                }
+                else
+                {
+                    enemyOnLandblock = true;
+                }
+            }
+
+            var result = Managers.AllegianceHometownManager.TickPhase1(
+                registry.TownId, attackersNear, enemyOnLandblock, ref _ahPhase1AccumulatedSeconds);
+
+            switch (result)
+            {
+                case Managers.Phase1TickResult.PhaseComplete:
+                    _ahPhase1AccumulatedSeconds = 0;
+                    Managers.AllegianceHometownManager.StartPhase2(registry.TownId);
+                    // Find the bindstone and activate Phase 2
+                    var bindstoneWo = worldObjects.Values
+                        .FirstOrDefault(w => w.WeenieClassId == 27547 && w is WorldObjects.Bindstone);
+                    if (bindstoneWo is WorldObjects.Bindstone bs)
+                    {
+                        var maxHp = Managers.AllegianceHometownManager.ComputeBindstoneHp();
+                        bs.ActivatePhase2(maxHp);
+                        Managers.AllegianceHometownManager.RegisterPhase2Bindstone(registry.TownId, bs);
+                    }
+                    break;
+
+                case Managers.Phase1TickResult.TimedOut:
+                    _ahPhase1AccumulatedSeconds = 0;
+                    break;
+
+                case Managers.Phase1TickResult.Interrupted:
+                    // Message sent inside TickPhase1; nothing further needed here
+                    break;
             }
         }
 
@@ -974,11 +1017,11 @@ namespace ACE.Server.Entity
             }
             ServerPerformanceMonitor.AddToCumulativeEvent(ServerPerformanceMonitor.CumulativeEventHistoryType.Landblock_Tick_Heartbeat, stopwatch.Elapsed.TotalSeconds);
 
-            // Town Control anomaly recovery — runs every 30 s on TC landblocks
-            if (IsTownControlLandblock && lastTcRecovery + tcRecoveryInterval <= DateTime.UtcNow)
+            // Allegiance Hometown Phase 1 tick — runs every 5 s on capturable-town landblocks
+            if (IsAllegianceHometownLandblock && lastAhPhase1Tick + ahPhase1TickInterval <= DateTime.UtcNow)
             {
-                lastTcRecovery = DateTime.UtcNow;
-                HandleTownControlRecovery();
+                lastAhPhase1Tick = DateTime.UtcNow;
+                HandleAllegianceHometownPhase1Tick();
             }
 
             // Database Save

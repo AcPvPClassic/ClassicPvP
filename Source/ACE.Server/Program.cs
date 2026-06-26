@@ -339,8 +339,8 @@ namespace ACE.Server
             log.Info("Loading pvp_dmg_mod presets...");
             Managers.RollingLevelCapManager.LoadPresets();
 
-            log.Info("Initializing TownControlManager...");
-            TownControlManager.Initialize();
+            log.Info("Initializing AllegianceHometownManager...");
+            Managers.AllegianceHometownManager.Initialize();
 
             // Free up memory before the server goes online. This can free up 6 GB+ on larger servers.
             log.Info("Forcing .net garbage collection...");

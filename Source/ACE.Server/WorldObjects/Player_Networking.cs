@@ -117,8 +117,6 @@ namespace ACE.Server.WorldObjects
             HandleAllegianceOnLogin();
             HandleHouseOnLogin();
 
-            // Sync Town Control ownership quest stamps with current server state
-            ValidateTownControlQuestStamps();
 
             // Let's take the opportinity to send an activity recommendation to the player.
             var recommendationChain = new ActionChain();

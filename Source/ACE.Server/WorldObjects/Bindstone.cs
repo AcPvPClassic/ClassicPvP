@@ -1,17 +1,12 @@
-using System;
-
 using ACE.Entity;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Entity.Models;
 using ACE.Server.Entity;
-using ACE.Server.Entity.Actions;
-using ACE.Server.Network.GameEvent.Events;
-using ACE.Server.Network.GameMessages.Messages;
 
 namespace ACE.Server.WorldObjects
 {
-    public class Bindstone : WorldObject
+    public partial class Bindstone : WorldObject
     {
         /// <summary>
         /// A new biota be created taking all of its values from weenie.
@@ -48,47 +43,8 @@ namespace ACE.Server.WorldObjects
             if (!(worldObject is Player player))
                 return;
 
-            // check if player is in an allegiance
-            if (player.Allegiance == null)
-            {
-                player.Session.Network.EnqueueSend(new GameEventWeenieError(player.Session, WeenieError.YouAreNotInAllegiance));
-                return;
-            }
-
-            if (player.AllegiancePermissionLevel < AllegiancePermissionLevel.Seneschal)
-            {
-                player.Session.Network.EnqueueSend(new GameEventWeenieError(player.Session, WeenieError.YouDoNotHaveAuthorityInAllegiance));
-                return;
-            }
-
-            var actionChain = new ActionChain();
-            if (player.CombatMode != CombatMode.NonCombat)
-            {
-                var stanceTime = player.SetCombatMode(CombatMode.NonCombat);
-                actionChain.AddDelaySeconds(stanceTime);
-
-                player.LastUseTime += stanceTime;
-            }
-
-            actionChain.AddAction(this, () => EnqueueBroadcastMotion(new Motion(MotionStance.NonCombat, MotionCommand.Twitch1)));
-
-            // player animation?
-            player.LastUseTime += player.EnqueueMotion(actionChain, MotionCommand.Sanctuary);
-
-            actionChain.AddAction(this, () =>
-            {
-                if (player.IsWithinUseRadiusOf(this))
-                {
-                    player.Allegiance.Sanctuary = new Position(player.Location);
-                    player.Allegiance.SaveBiotaToDatabase();
-
-                    player.Session.Network.EnqueueSend(new GameMessageSystemChat(GetProperty(PropertyString.UseMessage), ChatMessageType.Magic));
-                }
-                else
-                    player.Session.Network.EnqueueSend(new GameEventWeenieError(player.Session, WeenieError.YouHaveMovedTooFar));
-            });
-
-            actionChain.EnqueueChain();
+            // Dispatch to Allegiance Hometown logic for capturable bindstones
+            HandleHometownUse(player);
         }
     }
 }

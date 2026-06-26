@@ -53,8 +53,6 @@ namespace ACE.Server.WorldObjects
             if (!IsOnNoDeathXPLandblock)
                 OnDeath_GrantXP(HardcoreExtraXp);
 
-            if (IsTownControlBoss)
-                HandleTownControlBossDeath();
 
             return deathMessage;
         }

@@ -817,158 +817,103 @@ namespace ACE.Database
 
         #endregion
 
-        #region Town Control
+        #region Allegiance Hometown
 
-        public List<TownControlTown> GetAllTownControlTowns()
+        public List<AllegianceHometownTown> GetAllAllegianceHometownTowns()
         {
-            if (!IsConfigured) return new List<TownControlTown>();
+            if (!IsConfigured) return new List<AllegianceHometownTown>();
             try
             {
                 using (var context = new LogDbContext())
-                {
-                    return context.TownControlTowns.AsNoTracking().ToList();
-                }
+                    return context.AllegianceHometownTowns.AsNoTracking().ToList();
             }
             catch (Exception ex)
             {
-                log.Error($"Exception in GetAllTownControlTowns. Ex: {ex}");
+                log.Error($"Exception in GetAllAllegianceHometownTowns. Ex: {ex}");
             }
-            return new List<TownControlTown>();
+            return new List<AllegianceHometownTown>();
         }
 
-        public void UpdateTownControlTown(TownControlTown town)
+        public void UpdateAllegianceHometownTown(AllegianceHometownTown town)
         {
             if (!IsConfigured) return;
             try
             {
                 using (var context = new LogDbContext())
                 {
-                    var rec = context.TownControlTowns.FirstOrDefault(x => x.TownId == town.TownId);
+                    var rec = context.AllegianceHometownTowns.FirstOrDefault(x => x.TownId == town.TownId);
                     if (rec == null) return;
 
-                    rec.OwnerId                = town.OwnerId;
-                    rec.IsInConflict           = town.IsInConflict;
-                    rec.LastConflictStartTime  = town.LastConflictStartTime;
+                    rec.OwnerMonarchId             = town.OwnerMonarchId;
+                    rec.OwnerAllegianceName        = town.OwnerAllegianceName;
+                    rec.CapturedAt                 = town.CapturedAt;
+                    rec.ConflictPhase              = town.ConflictPhase;
+                    rec.ConflictAttackerMonarchId  = town.ConflictAttackerMonarchId;
+                    rec.ConflictAttackerName       = town.ConflictAttackerName;
+                    rec.ConflictStartTime          = town.ConflictStartTime;
+                    rec.Phase2StartTime            = town.Phase2StartTime;
 
                     context.SaveChanges();
                 }
             }
             catch (Exception ex)
             {
-                log.Error($"Exception in UpdateTownControlTown for TownId = {town.TownId}. Ex: {ex}");
+                log.Error($"Exception in UpdateAllegianceHometownTown for TownId={town.TownId}. Ex: {ex}");
             }
         }
 
-        /// <summary>
-        /// Inserts a new town_control_event row and returns the populated record (with auto-assigned EventId).
-        /// </summary>
-        public TownControlEvent StartTownControlEvent(ushort townId, uint attackerId, string attackerClanName,
-            uint? defenderId, string defenderClanName)
+        public AllegianceHometownEvent StartAllegianceHometownEvent(byte townId, uint attackerMonarchId,
+            string attackerAllegianceName, uint? defenderMonarchId, string defenderAllegianceName)
         {
             if (!IsConfigured) return null;
             try
             {
-                var tcEvent = new TownControlEvent
+                var evt = new AllegianceHometownEvent
                 {
-                    TownId           = townId,
-                    AttackerId       = attackerId,
-                    AttackerClanName = attackerClanName,
-                    DefenderId       = defenderId,
-                    DefenderClanName = defenderClanName,
-                    EventStartTime   = DateTime.UtcNow,
-                    EventEndTime     = null,
-                    IsAttackSuccess  = null
+                    TownId                  = townId,
+                    AttackerMonarchId       = attackerMonarchId,
+                    AttackerAllegianceName  = attackerAllegianceName,
+                    DefenderMonarchId       = defenderMonarchId,
+                    DefenderAllegianceName  = defenderAllegianceName,
+                    EventStartTime          = DateTime.UtcNow,
                 };
 
                 using (var context = new LogDbContext())
                 {
-                    context.TownControlEvents.Add(tcEvent);
+                    context.AllegianceHometownEvents.Add(evt);
                     context.SaveChanges();
                 }
 
-                return tcEvent;
+                return evt;
             }
             catch (Exception ex)
             {
-                log.Error($"Exception in StartTownControlEvent for TownId = {townId}. Ex: {ex}");
+                log.Error($"Exception in StartAllegianceHometownEvent for TownId={townId}. Ex: {ex}");
             }
             return null;
         }
 
-        public void UpdateTownControlEvent(TownControlEvent tcEvent)
+        public void UpdateAllegianceHometownEvent(AllegianceHometownEvent evt)
         {
             if (!IsConfigured) return;
             try
             {
                 using (var context = new LogDbContext())
                 {
-                    var rec = context.TownControlEvents.FirstOrDefault(x => x.EventId == tcEvent.EventId);
+                    var rec = context.AllegianceHometownEvents.FirstOrDefault(x => x.EventId == evt.EventId);
                     if (rec == null) return;
 
-                    rec.AttackerId       = tcEvent.AttackerId;
-                    rec.AttackerClanName = tcEvent.AttackerClanName;
-                    rec.DefenderId       = tcEvent.DefenderId;
-                    rec.DefenderClanName = tcEvent.DefenderClanName;
-                    rec.EventStartTime   = tcEvent.EventStartTime;
-                    rec.EventEndTime     = tcEvent.EventEndTime;
-                    rec.IsAttackSuccess  = tcEvent.IsAttackSuccess;
+                    rec.Phase2StartTime      = evt.Phase2StartTime;
+                    rec.EventEndTime         = evt.EventEndTime;
+                    rec.Outcome              = evt.Outcome;
 
                     context.SaveChanges();
                 }
             }
             catch (Exception ex)
             {
-                log.Error($"Exception in UpdateTownControlEvent for EventId = {tcEvent.EventId}. Ex: {ex}");
+                log.Error($"Exception in UpdateAllegianceHometownEvent for EventId={evt.EventId}. Ex: {ex}");
             }
-        }
-
-        /// <summary>
-        /// Returns the most recent event for a given town (by EventId descending), or null if none.
-        /// </summary>
-        public TownControlEvent GetLatestTownControlEventByTownId(ushort townId)
-        {
-            if (!IsConfigured) return null;
-            try
-            {
-                using (var context = new LogDbContext())
-                {
-                    return context.TownControlEvents
-                        .AsNoTracking()
-                        .Where(r => r.TownId == townId)
-                        .OrderByDescending(r => r.EventId)
-                        .FirstOrDefault();
-                }
-            }
-            catch (Exception ex)
-            {
-                log.Error($"Exception in GetLatestTownControlEventByTownId for TownId = {townId}. Ex: {ex}");
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Returns the most recent event for a given town where a specific allegiance was the attacker.
-        /// Used to enforce respite timers.
-        /// </summary>
-        public TownControlEvent GetLatestTownControlEventByAttacker(uint attackerId, ushort townId)
-        {
-            if (!IsConfigured) return null;
-            try
-            {
-                using (var context = new LogDbContext())
-                {
-                    return context.TownControlEvents
-                        .AsNoTracking()
-                        .Where(r => r.TownId == townId && r.AttackerId == attackerId)
-                        .OrderByDescending(r => r.EventId)
-                        .FirstOrDefault();
-                }
-            }
-            catch (Exception ex)
-            {
-                log.Error($"Exception in GetLatestTownControlEventByAttacker for AttackerId = {attackerId}, TownId = {townId}. Ex: {ex}");
-            }
-            return null;
         }
 
         #endregion
@@ -1120,9 +1065,6 @@ namespace ACE.Database
 
                     SeasonConfig.Cat_ArenaWins =>
                         GetTopArenaAggregate(context, "total_wins", count),
-
-                    SeasonConfig.Cat_ArenaKills =>
-                        GetTopArenaAggregate(context, "total_kills", count),
 
                     SeasonConfig.Cat_ArenaMatches =>
                         GetTopArenaAggregate(context, "total_matches", count),

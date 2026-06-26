@@ -94,7 +94,14 @@ namespace ACE.Server.WorldObjects
                 AccuracyLevel = accuracyLevel;  // verify
 
             // get world object of target guid
-            var target = CurrentLandblock?.GetObject(targetGuid) as Creature;
+            var targetWo = CurrentLandblock?.GetObject(targetGuid);
+            if (targetWo is Bindstone)
+            {
+                SendTransientError("You must use melee to attack the bind stone.");
+                OnAttackDone();
+                return;
+            }
+            var target = targetWo as Creature;
             if (target == null || target.Teleporting)
             {
                 //log.Warn($"{Name}.HandleActionTargetedMissileAttack({targetGuid:X8}, {AttackHeight}, {accuracyLevel}) - couldn't find creature target guid");

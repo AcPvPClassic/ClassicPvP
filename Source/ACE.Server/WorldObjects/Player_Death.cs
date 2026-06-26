@@ -182,10 +182,45 @@ namespace ACE.Server.WorldObjects
                         if (HotDungeonManager.IsHotDungeon(Location.LandblockId.Landblock, out var pkHotDungeon))
                             pvpXp = (long)Math.Round(pvpXp * pkHotDungeon.XpMultiplier);
 
+                        // Passive +5% PK XP per hometown owned by killer's allegiance (no cap)
+                        var killerMonarchId = pkPlayer.Allegiance?.MonarchId;
+                        if (killerMonarchId.HasValue)
+                        {
+                            var townCount = ACE.Server.Managers.AllegianceHometownManager.GetOwnedTownCount(killerMonarchId.Value);
+                            if (townCount > 0)
+                                pvpXp = (long)Math.Round(pvpXp * (1.0 + townCount * 0.05));
+                        }
+
+                        // 2× PK XP bonus for kills during an active hometown conflict (either phase)
+                        var killLandblock = Location?.LandblockId.Landblock ?? 0;
+                        var ahKillEntry = ACE.Server.Entity.AllegianceHometown.AllegianceHometownRegistry.GetByLandblock(killLandblock);
+                        if (ahKillEntry != null && ACE.Server.Managers.AllegianceHometownManager.IsInConflict(ahKillEntry.TownId))
+                            pvpXp = (long)Math.Round(pvpXp * 2.0);
+
                         if (pvpXp > 0)
                         {
                             pkPlayer._pkXpCooldowns[victimGuidFull] = now;
                             pkPlayer.GrantXP(pvpXp, XpType.PvP, ShareType.None, $"for defeating {Name}");
+                        }
+                    }
+                }
+
+                // Phase 2 hometown kill effect
+                var killedLandblock = Location?.LandblockId.Landblock ?? 0;
+                var ahEntry = ACE.Server.Entity.AllegianceHometown.AllegianceHometownRegistry.GetByLandblock(killedLandblock);
+                if (ahEntry != null)
+                {
+                    var ahTown = ACE.Server.Managers.AllegianceHometownManager.GetTown(ahEntry.TownId);
+                    if (ahTown?.ConflictPhase == 2)
+                    {
+                        var phase2Bindstone = ACE.Server.Managers.AllegianceHometownManager.GetPhase2Bindstone(ahEntry.TownId);
+                        if (phase2Bindstone != null)
+                        {
+                            var killerMonarchId = pkPlayer.Allegiance?.MonarchId;
+                            if (killerMonarchId == ahTown.ConflictAttackerMonarchId)
+                                phase2Bindstone.OnDefenderKilled(); // attacker killed defender → bindstone loses HP
+                            else
+                                phase2Bindstone.OnAttackerKilled(); // defender killed attacker → bindstone heals
                         }
                     }
                 }

@@ -727,10 +727,7 @@ namespace ACE.Server.Managers
                 ("bounty_allow_all_locations",       new Property<bool>(true,  "If true, bounty targets are valid at any location (no landblock restriction). Recommended for ClassicPvP.")),
                 ("bounty_allow_logged_out",          new Property<bool>(false, "If true, players who are logged out can still be bounty targets.")),
                 ("bounty_pk_timer_active_enabled",   new Property<bool>(true,  "If true, the PK timer is extended when a hunter is near their bounty target.")),
-                ("bounty_expirations_enabled",       new Property<bool>(true,  "If true, bounty contracts expire after bounty_expiration_time minutes.")),
-
-                // Town Control
-                ("town_control_enable_debug_log",    new Property<bool>(false, "When true, writes Town Control diagnostic messages to the server log"))
+                ("bounty_expirations_enabled",       new Property<bool>(true,  "If true, bounty contracts expire after bounty_expiration_time minutes."))
                 );
 
         public static readonly ReadOnlyDictionary<string, Property<long>> DefaultLongProperties =
@@ -788,6 +785,8 @@ namespace ACE.Server.Managers
 
         public static readonly ReadOnlyDictionary<string, Property<double>> DefaultDoubleProperties =
             DictOf(
+
+                ("ah_capture_protection_hours", new Property<double>(24.0, "Hours a freshly captured Allegiance Hometown town is protected from re-attack.")),
 
                 ("cantrip_drop_rate", new Property<double>(1.0, "Scales the chance for cantrips to drop in each tier. Defaults to 1.0, as per end of retail")),
                 ("cloak_cooldown_seconds", new Property<double>(5.0, "The number of seconds between possible cloak procs.")),
@@ -1315,9 +1314,6 @@ namespace ACE.Server.Managers
                 ("pk_kill_webhook",    new Property<string>("", "Discord webhook URL for PK and PKL kill broadcast messages")),
                 ("hot_dungeon_webhook", new Property<string>("", "Discord webhook URL for Hot Dungeon announcements")),
 
-                // Town Control
-                ("town_control_alleglist",     new Property<string>("", "Comma-separated list of monarch GUIDs (uint) whose allegiances are permitted to initiate Town Control conflicts")),
-                ("town_control_globals_webhook", new Property<string>("", "Discord webhook URL for Town Control global broadcast messages")),
                 ("movement_violation_webhook", new Property<string>("", "Discord webhook URL for movement anti-cheat violation alerts (all violation types: speed, geometry, jump, door ghost, script detection, etc.)"))
                 );
     }
