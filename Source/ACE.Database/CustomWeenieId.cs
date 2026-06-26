@@ -19,6 +19,9 @@ namespace ACE.Database
         /// <summary>Phial of Bloody Tears (arena, Hot Dungeon and PK quest reward)</summary>
         public const uint PhialOfBloodyTears  = 1000003;
 
+        /// <summary>Bind Stone creature proxy spawned during Phase 2 of Allegiance Hometown Capture</summary>
+        public const uint BindstoneCreatureProxy = 1000010;
+
         public const uint XpBottle = 490071;
 
         public const uint TinkeringTool = 490298;

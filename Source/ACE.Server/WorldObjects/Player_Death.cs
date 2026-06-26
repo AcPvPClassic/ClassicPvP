@@ -213,14 +213,14 @@ namespace ACE.Server.WorldObjects
                     var ahTown = ACE.Server.Managers.AllegianceHometownManager.GetTown(ahEntry.TownId);
                     if (ahTown?.ConflictPhase == 2)
                     {
-                        var phase2Bindstone = ACE.Server.Managers.AllegianceHometownManager.GetPhase2Bindstone(ahEntry.TownId);
-                        if (phase2Bindstone != null)
+                        var phase2Proxy = ACE.Server.Managers.AllegianceHometownManager.GetPhase2Proxy(ahEntry.TownId);
+                        if (phase2Proxy != null)
                         {
                             var killerMonarchId = pkPlayer.Allegiance?.MonarchId;
                             if (killerMonarchId == ahTown.ConflictAttackerMonarchId)
-                                phase2Bindstone.OnDefenderKilled(); // attacker killed defender → bindstone loses HP
+                                phase2Proxy.OnDefenderKilled();
                             else
-                                phase2Bindstone.OnAttackerKilled(); // defender killed attacker → bindstone heals
+                                phase2Proxy.OnAttackerKilled();
                         }
                     }
                 }

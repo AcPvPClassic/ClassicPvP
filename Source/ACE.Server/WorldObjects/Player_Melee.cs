@@ -21,7 +21,7 @@ namespace ACE.Server.WorldObjects
         /// <summary>
         /// The target this player is currently performing a melee attack on
         /// </summary>
-        public WorldObject MeleeTarget;
+        public Creature MeleeTarget;
 
         private float _powerLevel;
 
@@ -99,7 +99,7 @@ namespace ACE.Server.WorldObjects
                 PowerLevel = AttackQueue.Fetch();
 
             // already in melee loop?
-            if (Attacking || MeleeTarget != null && (MeleeTarget as Creature)?.IsAlive != false)
+            if (Attacking || MeleeTarget != null && MeleeTarget.IsAlive)
                 return;
 
             // get world object for target creature
@@ -115,40 +115,27 @@ namespace ACE.Server.WorldObjects
             var creatureTarget = target as Creature;
             if (creatureTarget == null)
             {
-                // Allow attacking Phase 2 hometown bindstones
-                if (target is Bindstone bindstoneTarget && bindstoneTarget.IsPhase2Active &&
-                    IsPK && Allegiance != null)
-                {
-                    MeleeTarget      = bindstoneTarget;
-                    AttackTarget     = bindstoneTarget;
-                    LastAttackTarget = bindstoneTarget;
-                }
-                else
-                {
-                    log.Warn($"{Name}.HandleActionTargetedMeleeAttack({targetGuid:X8}, {AttackHeight}, {powerLevel}) - target guid not creature");
-                    OnAttackDone();
-                    return;
-                }
+                log.Warn($"{Name}.HandleActionTargetedMeleeAttack({targetGuid:X8}, {AttackHeight}, {powerLevel}) - target guid not creature");
+                OnAttackDone();
+                return;
             }
-            else
+
+            if (!CanDamage(creatureTarget))
             {
-                if (!CanDamage(creatureTarget))
-                {
-                    SendTransientError($"You cannot attack {creatureTarget.Name}");
-                    OnAttackDone();
-                    return;
-                }
-
-                if (!creatureTarget.IsAlive)
-                {
-                    OnAttackDone();
-                    return;
-                }
-
-                MeleeTarget      = creatureTarget;
-                AttackTarget     = MeleeTarget;
-                LastAttackTarget = MeleeTarget;
+                SendTransientError($"You cannot attack {creatureTarget.Name}");
+                OnAttackDone();
+                return;
             }
+
+            if (!creatureTarget.IsAlive)
+            {
+                OnAttackDone();
+                return;
+            }
+
+            MeleeTarget      = creatureTarget;
+            AttackTarget     = MeleeTarget;
+            LastAttackTarget = MeleeTarget;
 
             // reset PrevMotionCommand / DualWieldAlternate each time button is clicked
             PrevMotionCommand = MotionCommand.Invalid;
@@ -171,19 +158,19 @@ namespace ACE.Server.WorldObjects
                         return;
                     }
 
-                    HandleActionTargetedMeleeAttack_Inner(target, attackSequence);
+                    HandleActionTargetedMeleeAttack_Inner(creatureTarget, attackSequence);
                 });
                 actionChain.EnqueueChain();
             }
             else
-                HandleActionTargetedMeleeAttack_Inner(target, attackSequence);
+                HandleActionTargetedMeleeAttack_Inner(creatureTarget, attackSequence);
         }
 
         public const float MeleeDistance  = 0.6f;
         public const float StickyDistance = 4.0f;
         public const float RepeatDistance = 16.0f;
 
-        public void HandleActionTargetedMeleeAttack_Inner(WorldObject target, int attackSequence)
+        public void HandleActionTargetedMeleeAttack_Inner(Creature target, int attackSequence)
         {
             var dist = GetCylinderDistance(target);
 
@@ -272,11 +259,7 @@ namespace ACE.Server.WorldObjects
             PhysicsObj.cancel_moveto();
 
             if (queueing)
-            {
-                var meleeCreatureTarget = meleeTarget as Creature;
-                if (meleeCreatureTarget != null)
-                    MoveToParams = new MoveToParams((success) => ManualMeleeCallback(meleeCreatureTarget), meleeTarget);
-            }
+                MoveToParams = new MoveToParams((success) => ManualMeleeCallback(meleeTarget), meleeTarget);
         }
 
         public void ManualMeleeCallback(Creature target)
@@ -305,7 +288,7 @@ namespace ACE.Server.WorldObjects
         /// <summary>
         /// Performs a player melee attack against a target
         /// </summary>
-        public void Attack(WorldObject target, int attackSequence, bool subsequent = false)
+        public void Attack(Creature target, int attackSequence, bool subsequent = false)
         {
             //log.Info($"{Name}.Attack({target.Name}, {attackSequence})");
 
@@ -327,18 +310,7 @@ namespace ACE.Server.WorldObjects
                 return;
             }
 
-            var creature = target as Creature;
-            if (creature == null)
-            {
-                // Phase 2 bindstone attack path
-                if (target is Bindstone bindstone && bindstone.IsPhase2Active)
-                {
-                    ExecuteBindstoneAttack(bindstone, attackSequence);
-                    return;
-                }
-                OnAttackDone();
-                return;
-            }
+            var creature = target;
             if (!creature.IsAlive)
             {
                 OnAttackDone();
@@ -523,70 +495,6 @@ namespace ACE.Server.WorldObjects
             });
 
             actionChain.EnqueueChain();
-
-            if (UnderLifestoneProtection)
-                LifestoneProtectionDispel();
-        }
-
-        /// <summary>
-        /// Simplified melee attack loop for Phase 2 hometown bindstones.
-        /// Reuses the swing animation but routes damage to <see cref="Bindstone.ReceiveAttack"/>.
-        /// </summary>
-        private void ExecuteBindstoneAttack(Bindstone bindstone, int attackSequence)
-        {
-            if (!bindstone.IsPhase2Active) { OnAttackDone(); return; }
-
-            var animLength = DoSwingMotion(bindstone, out var attackFrames);
-            if (animLength == 0) { OnAttackDone(); return; }
-
-            Attacking = true;
-
-            var staminaCost = GetAttackStamina(GetPowerRange());
-            UpdateVitalDelta(Stamina, -staminaCost);
-
-            var numStrikes = attackFrames.Count;
-            var prevTime   = 0.0f;
-            var chain      = new ActionChain();
-
-            for (var i = 0; i < numStrikes; i++)
-            {
-                chain.AddDelaySeconds(attackFrames[i].time * animLength - prevTime);
-                prevTime = attackFrames[i].time * animLength;
-
-                chain.AddAction(this, () =>
-                {
-                    if (!IsDead && bindstone.IsPhase2Active)
-                        bindstone.ReceiveAttack(this, PowerLevel);
-                });
-            }
-
-            chain.AddDelaySeconds(animLength - prevTime);
-            chain.AddAction(this, () =>
-            {
-                Attacking = false;
-
-                PowerLevel = AttackQueue.Fetch();
-                var nextRefillTime = PowerLevel;
-                NextRefillTime = DateTime.UtcNow.AddSeconds(nextRefillTime);
-
-                var dist = GetCylinderDistance(bindstone);
-
-                if (bindstone.IsPhase2Active && GetCharacterOption(CharacterOption.AutoRepeatAttacks) &&
-                    (dist <= MeleeDistance || dist <= StickyDistance && IsMeleeVisible(bindstone)) &&
-                    !IsBusy && !AttackCancelled)
-                {
-                    Session.Network.EnqueueSend(new GameEventAttackDone(Session));
-
-                    var nextAttack = new ActionChain();
-                    nextAttack.AddDelaySeconds(nextRefillTime);
-                    nextAttack.AddAction(this, () => ExecuteBindstoneAttack(bindstone, attackSequence));
-                    nextAttack.EnqueueChain();
-                }
-                else
-                    OnAttackDone();
-            });
-
-            chain.EnqueueChain();
 
             if (UnderLifestoneProtection)
                 LifestoneProtectionDispel();

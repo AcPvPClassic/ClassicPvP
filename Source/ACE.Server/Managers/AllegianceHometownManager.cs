@@ -45,8 +45,8 @@ namespace ACE.Server.Managers
         // latest event per town (for audit log cache)
         private static readonly Dictionary<byte, AllegianceHometownEvent> _latestEventByTown = new();
 
-        // town_id → active Phase 2 bindstone world object
-        private static readonly Dictionary<byte, Bindstone> _phase2Bindstones = new();
+        // town_id → active Phase 2 creature proxy world object
+        private static readonly Dictionary<byte, BindstoneCreatureProxy> _phase2Proxies = new();
 
         public const int MaxSimultaneousAttacks = 2;
 
@@ -64,7 +64,7 @@ namespace ACE.Server.Managers
                 _attackerCooldowns.Clear();
                 _captureProtection.Clear();
                 _latestEventByTown.Clear();
-                _phase2Bindstones.Clear();
+                _phase2Proxies.Clear();
 
                 var rows = DatabaseManager.Log.GetAllAllegianceHometownTowns();
 
@@ -510,36 +510,23 @@ namespace ACE.Server.Managers
         }
 
         // -----------------------------------------------------------------------
-        // Phase 2 bindstone registry
+        // Phase 2 creature proxy registry
         // -----------------------------------------------------------------------
 
-        public static void RegisterPhase2Bindstone(byte townId, Bindstone bindstone)
+        public static void RegisterPhase2Proxy(byte townId, BindstoneCreatureProxy proxy)
         {
-            _phase2Bindstones[townId] = bindstone;
+            _phase2Proxies[townId] = proxy;
         }
 
-        public static void UnregisterPhase2Bindstone(byte townId)
+        public static void UnregisterPhase2Proxy(byte townId)
         {
-            _phase2Bindstones.Remove(townId);
+            _phase2Proxies.Remove(townId);
         }
 
-        public static Bindstone GetPhase2Bindstone(byte townId)
+        public static BindstoneCreatureProxy GetPhase2Proxy(byte townId)
         {
-            _phase2Bindstones.TryGetValue(townId, out var bs);
-            return bs;
-        }
-
-        /// <summary>
-        /// Looks up the Phase 2 bindstone for a given bindstone world object instance.
-        /// Used to confirm the bindstone is currently registered for Phase 2.
-        /// </summary>
-        public static Bindstone GetPhase2Bindstone(Bindstone bindstone)
-        {
-            foreach (var kvp in _phase2Bindstones)
-            {
-                if (kvp.Value == bindstone) return kvp.Value;
-            }
-            return null;
+            _phase2Proxies.TryGetValue(townId, out var proxy);
+            return proxy;
         }
 
         // -----------------------------------------------------------------------

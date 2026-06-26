@@ -309,15 +309,7 @@ namespace ACE.Server.Entity
                 case Managers.Phase1TickResult.PhaseComplete:
                     _ahPhase1AccumulatedSeconds = 0;
                     Managers.AllegianceHometownManager.StartPhase2(registry.TownId);
-                    // Find the bindstone and activate Phase 2
-                    var bindstoneWo = worldObjects.Values
-                        .FirstOrDefault(w => w.WeenieClassId == 27547 && w is WorldObjects.Bindstone);
-                    if (bindstoneWo is WorldObjects.Bindstone bs)
-                    {
-                        var maxHp = Managers.AllegianceHometownManager.ComputeBindstoneHp();
-                        bs.ActivatePhase2(maxHp);
-                        Managers.AllegianceHometownManager.RegisterPhase2Bindstone(registry.TownId, bs);
-                    }
+                    SpawnPhase2Proxy(registry);
                     break;
 
                 case Managers.Phase1TickResult.TimedOut:
@@ -362,6 +354,29 @@ namespace ACE.Server.Entity
             {
                 _lastAhPhase1Broadcast = DateTime.MinValue;
             }
+        }
+
+        private void SpawnPhase2Proxy(Entity.AllegianceHometown.AllegianceHometownRegistry.TownEntry entry)
+        {
+            var proxy = WorldObjectFactory.CreateNewWorldObject(ACE.Database.CustomWeenieId.BindstoneCreatureProxy)
+                        as WorldObjects.BindstoneCreatureProxy;
+            if (proxy == null)
+            {
+                log.Error($"[AllegianceHometown] Failed to create BindstoneCreatureProxy (wcid {ACE.Database.CustomWeenieId.BindstoneCreatureProxy}) for {entry.TownName}.");
+                return;
+            }
+
+            proxy.TownId   = entry.TownId;
+            proxy.Location = new Position(entry.BindstonePosition);
+
+            var maxHp = (uint)Managers.AllegianceHometownManager.ComputeBindstoneHp();
+            proxy.Health.StartingValue = maxHp;
+            proxy.UpdateVital(proxy.Health, maxHp);
+
+            AddWorldObject(proxy);
+            Managers.AllegianceHometownManager.RegisterPhase2Proxy(entry.TownId, proxy);
+
+            log.Info($"[AllegianceHometown] Phase 2 proxy spawned for {entry.TownName} with {maxHp:N0} HP.");
         }
 
         public void RefreshExplorationMarkers(bool forceRefresh = false)

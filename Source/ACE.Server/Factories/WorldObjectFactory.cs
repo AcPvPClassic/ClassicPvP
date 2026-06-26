@@ -49,6 +49,8 @@ namespace ACE.Server.Factories
                 case WeenieType.Cow:
                     return new Cow(weenie, guid);
                 case WeenieType.Creature:
+                    if (weenie.WeenieClassId == CustomWeenieId.BindstoneCreatureProxy)
+                        return new BindstoneCreatureProxy(weenie, guid);
                     return new Creature(weenie, guid);
                 case WeenieType.Container:
                     return new Container(weenie, guid);
