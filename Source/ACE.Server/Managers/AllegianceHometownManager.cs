@@ -161,6 +161,11 @@ namespace ACE.Server.Managers
         public static bool IsTownProtected(byte townId) =>
             _captureProtection.TryGetValue(townId, out var exp) && exp > DateTime.UtcNow;
 
+        public static bool ClearTownProtection(byte townId)
+        {
+            return _captureProtection.Remove(townId);
+        }
+
         /// <summary>
         /// Returns a human-readable block reason if this monarch cannot attack the town due to
         /// blacklist, protection, or cooldown. Returns null if no persistent block exists.

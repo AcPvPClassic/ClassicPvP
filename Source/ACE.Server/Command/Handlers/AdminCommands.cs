@@ -6200,5 +6200,47 @@ namespace ACE.Server.Command.Handlers
         }
 
         #endregion Allegiance Hometown Blacklist Admin Commands
+
+        // ====================================================================
+        #region Allegiance Hometown Testing Admin Commands
+
+        [CommandHandler("ahunprotect", AccessLevel.Admin, CommandHandlerFlag.None, 0,
+            "Remove capture protection from a hometown so it can be attacked immediately.",
+            "<town name or part> — omit to list all protected towns")]
+        public static void HandleAhUnprotect(Session session, params string[] parameters)
+        {
+            var allTowns = Managers.AllegianceHometownManager.GetAllTowns();
+            var protected_ = allTowns.Where(t => Managers.AllegianceHometownManager.IsTownProtected(t.TownId)).ToList();
+
+            if (parameters.Length == 0)
+            {
+                if (protected_.Count == 0)
+                {
+                    CommandHandlerHelper.WriteOutputInfo(session, "No towns are currently under capture protection.");
+                    return;
+                }
+                var sb = new System.Text.StringBuilder();
+                sb.AppendLine("Protected towns:");
+                foreach (var t in protected_)
+                    sb.AppendLine($"  [{t.TownId}] {t.TownName} — owned by {t.OwnerAllegianceName ?? "none"}");
+                CommandHandlerHelper.WriteOutputInfo(session, sb.ToString());
+                return;
+            }
+
+            var search = string.Join(" ", parameters).ToLower();
+            var match  = allTowns.FirstOrDefault(t => t.TownName.ToLower().Contains(search));
+            if (match == null)
+            {
+                CommandHandlerHelper.WriteOutputInfo(session, $"No town found matching '{search}'.");
+                return;
+            }
+
+            if (Managers.AllegianceHometownManager.ClearTownProtection(match.TownId))
+                CommandHandlerHelper.WriteOutputInfo(session, $"Capture protection cleared for {match.TownName}. It can now be attacked.");
+            else
+                CommandHandlerHelper.WriteOutputInfo(session, $"{match.TownName} was not under capture protection.");
+        }
+
+        #endregion Allegiance Hometown Testing Admin Commands
     }
 }
