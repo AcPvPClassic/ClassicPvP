@@ -111,6 +111,7 @@ namespace ACE.Server.Entity
         private static readonly TimeSpan ahPhase1TickInterval = TimeSpan.FromSeconds(5);
         private DateTime lastAhPhase1Tick = DateTime.MinValue;
         private double _ahPhase1AccumulatedSeconds;
+        private DateTime _lastAhPhase1Broadcast = DateTime.MinValue;
 
         private bool? _isAllegianceHometownLandblock;
         public bool IsAllegianceHometownLandblock
@@ -326,6 +327,40 @@ namespace ACE.Server.Entity
                 case Managers.Phase1TickResult.Interrupted:
                     // Message sent inside TickPhase1; nothing further needed here
                     break;
+            }
+
+            // Broadcast progress to the local landblock once per minute while Phase 1 is active
+            if (result == Managers.Phase1TickResult.Progressing || result == Managers.Phase1TickResult.Interrupted)
+            {
+                var now = DateTime.UtcNow;
+                if ((now - _lastAhPhase1Broadcast).TotalSeconds >= 60)
+                {
+                    _lastAhPhase1Broadcast = now;
+
+                    var secsRemaining = Math.Max(0, 240 - _ahPhase1AccumulatedSeconds);
+                    string progressMsg;
+                    if (enemyOnLandblock)
+                    {
+                        progressMsg = $"[{registry.TownName}] Phase 1 assault INTERRUPTED — clear all enemies from the landblock to resume. " +
+                                      $"Progress: {_ahPhase1AccumulatedSeconds:0}/{240}s";
+                    }
+                    else if (attackersNear >= 2)
+                    {
+                        progressMsg = $"[{registry.TownName}] Phase 1 assault in progress — {secsRemaining:0}s until Phase 2.";
+                    }
+                    else
+                    {
+                        progressMsg = $"[{registry.TownName}] Phase 1 assault paused — need at least 2 attackers within 5m of the Bind Stone. " +
+                                      $"Progress: {_ahPhase1AccumulatedSeconds:0}/{240}s";
+                    }
+
+                    EnqueueBroadcast(null, false, null, null,
+                        new Network.GameMessages.Messages.GameMessageSystemChat(progressMsg, ACE.Entity.Enum.ChatMessageType.WorldBroadcast));
+                }
+            }
+            else
+            {
+                _lastAhPhase1Broadcast = DateTime.MinValue;
             }
         }
 

@@ -31,6 +31,8 @@ namespace ACE.Server.WorldObjects
 
         public bool IsPhase2Active => Attackable == true && BindstoneMaxHp > 0;
 
+        private DateTime _lastPhase2Broadcast = DateTime.MinValue;
+
         // -----------------------------------------------------------------------
         // Phase 1: ActOnUse dispatch
         // -----------------------------------------------------------------------
@@ -293,12 +295,35 @@ namespace ACE.Server.WorldObjects
                     if (town?.ConflictPhase == 2 && town.Phase2StartTime.HasValue)
                     {
                         var elapsed = DateTime.UtcNow - town.Phase2StartTime.Value;
-                        if (elapsed >= TimeSpan.FromMinutes(30))
+                        var phase2Duration = TimeSpan.FromMinutes(30);
+
+                        if (elapsed >= phase2Duration)
                         {
                             // Defender victory — bindstone survives
                             AllegianceHometownManager.HandleDefenderVictory(entry.TownId);
                             AllegianceHometownManager.UnregisterPhase2Bindstone(entry.TownId);
                             DeactivatePhase2();
+                        }
+                        else
+                        {
+                            // Global broadcast once per minute: town under attack, time left, HP%
+                            var now = DateTime.UtcNow;
+                            if ((now - _lastPhase2Broadcast).TotalSeconds >= 60)
+                            {
+                                _lastPhase2Broadcast = now;
+
+                                var remaining = phase2Duration - elapsed;
+                                var hpPct = BindstoneMaxHp > 0
+                                    ? (float)BindstoneCurrentHp / BindstoneMaxHp * 100f
+                                    : 0f;
+                                var timeStr = AllegianceHometownManager.FormatTimeSpan(remaining);
+
+                                PlayerManager.BroadcastToAll(
+                                    new Network.GameMessages.Messages.GameMessageSystemChat(
+                                        $"[{entry.TownName}] The Bind Stone is under attack by {town.ConflictAttackerName}! " +
+                                        $"Time remaining: {timeStr} — Bind Stone HP: {hpPct:0.0}%",
+                                        ACE.Entity.Enum.ChatMessageType.WorldBroadcast));
+                            }
                         }
                     }
                 }
