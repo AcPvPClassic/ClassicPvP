@@ -28,12 +28,6 @@ namespace ACE.Server.WorldObjects
                 return;
             }
 
-            if (player.AllegiancePermissionLevel < AllegiancePermissionLevel.Seneschal)
-            {
-                player.Session.Network.EnqueueSend(new GameEventWeenieError(player.Session, WeenieError.YouDoNotHaveAuthorityInAllegiance));
-                return;
-            }
-
             if (!player.IsPK)
             {
                 player.SendTransientError("Only Player Killers can claim or contest hometowns.");
