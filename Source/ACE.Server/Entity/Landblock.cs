@@ -300,7 +300,7 @@ namespace ACE.Server.Entity
             {
                 if (!player.IsPK) continue;
 
-                var allegianceMonarchId = player.Allegiance?.MonarchId;
+                var allegianceMonarchId = player.MonarchId ?? player.Guid.Full;
                 if (allegianceMonarchId == attackerMonarchId)
                 {
                     if (player.Location.DistanceTo(bindstonePos) <= 5f)
