@@ -287,12 +287,14 @@ namespace ACE.Server.Entity
 
             var attackerMonarchId = town.ConflictAttackerMonarchId!.Value;
 
-            // Count attacking allegiance members within 5m of bindstone
+            // Count attacking allegiance members within 5m of bindstone;
+            // detect enemies within 50m (main landblock + adjacents, since bindstones
+            // can sit on a landblock boundary).
             var bindstonePos = registry.BindstonePosition;
             int attackersNear = 0;
             bool enemyOnLandblock = false;
 
-            foreach (var player in GetPlayers())
+            foreach (var player in GetPlayersNearBindstone(bindstonePos, 50f))
             {
                 if (!player.IsPK) continue;
 
@@ -376,6 +378,31 @@ namespace ACE.Server.Entity
             }
         }
 
+        /// <summary>
+        /// Returns all players on this landblock and its adjacent landblocks
+        /// that are within <paramref name="maxDistance"/> meters of <paramref name="pos"/>.
+        /// Handles bindstones that sit on a landblock boundary.
+        /// </summary>
+        private IEnumerable<Player> GetPlayersNearBindstone(ACE.Entity.Position pos, float maxDistance)
+        {
+            foreach (var player in GetPlayers())
+            {
+                if (player.Location.DistanceTo(pos) <= maxDistance)
+                    yield return player;
+            }
+
+            foreach (var adjId in Managers.LandblockManager.GetAdjacentIDs(this))
+            {
+                var adjLb = Managers.LandblockManager.GetLandblock(adjId, false);
+                if (adjLb == null) continue;
+                foreach (var player in adjLb.GetPlayers())
+                {
+                    if (player.Location.DistanceTo(pos) <= maxDistance)
+                        yield return player;
+                }
+            }
+        }
+
         private void TryAutoStartPhase1(
             ACE.Server.Entity.AllegianceHometown.AllegianceHometownRegistry.TownEntry registry,
             ACE.Database.Models.Log.AllegianceHometownTown town)
@@ -389,7 +416,7 @@ namespace ACE.Server.Entity
             var allegianceNames = new Dictionary<uint, string>(); // monarchId → allegiance name
             var allMonarchIds   = new System.Collections.Generic.HashSet<uint>(); // all non-owner allegiances on lb
 
-            foreach (var player in GetPlayers())
+            foreach (var player in GetPlayersNearBindstone(bindstonePos, 50f))
             {
                 if (!player.IsPK) continue;
                 var monarchId = player.MonarchId ?? player.Guid.Full;
@@ -407,7 +434,7 @@ namespace ACE.Server.Entity
                 }
             }
 
-            // Must be exactly one non-owner allegiance on the entire landblock
+            // Must be exactly one non-owner allegiance within 50m of the bindstone
             if (allMonarchIds.Count != 1) return;
 
             var attackerMonarchId   = allMonarchIds.First();
