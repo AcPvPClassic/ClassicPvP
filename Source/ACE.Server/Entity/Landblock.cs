@@ -112,6 +112,7 @@ namespace ACE.Server.Entity
         private DateTime lastAhPhase1Tick = DateTime.MinValue;
         private double _ahPhase1AccumulatedSeconds;
         private DateTime _lastAhPhase1Broadcast = DateTime.MinValue;
+        private bool _phase1Interrupted = false;
 
         private bool? _isAllegianceHometownLandblock;
         public bool IsAllegianceHometownLandblock
@@ -314,16 +315,29 @@ namespace ACE.Server.Entity
             {
                 case Managers.Phase1TickResult.PhaseComplete:
                     _ahPhase1AccumulatedSeconds = 0;
+                    _phase1Interrupted = false;
                     Managers.AllegianceHometownManager.StartPhase2(registry.TownId);
                     SpawnPhase2Proxy(registry);
                     break;
 
                 case Managers.Phase1TickResult.TimedOut:
                     _ahPhase1AccumulatedSeconds = 0;
+                    _phase1Interrupted = false;
+                    break;
+
+                case Managers.Phase1TickResult.Progressing:
+                    _phase1Interrupted = false;
                     break;
 
                 case Managers.Phase1TickResult.Interrupted:
-                    // Message sent inside TickPhase1; nothing further needed here
+                    if (!_phase1Interrupted)
+                    {
+                        _phase1Interrupted = true;
+                        _lastAhPhase1Broadcast = DateTime.UtcNow;
+                        var interruptMsg = $"[{registry.TownName}] Phase 1 assault INTERRUPTED — an enemy has entered the area! Progress has been reset.";
+                        EnqueueBroadcast(null, false, null, null,
+                            new Network.GameMessages.Messages.GameMessageSystemChat(interruptMsg, ACE.Entity.Enum.ChatMessageType.WorldBroadcast));
+                    }
                     break;
             }
 
