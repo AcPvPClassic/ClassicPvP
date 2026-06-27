@@ -486,8 +486,9 @@ namespace ACE.Server.Managers
                 if (adjLb != null) allLbs.Add(adjLb);
             }
 
-            // Collect winner players from the town landblock + adjacent only (must be present for loot)
+            // Collect winner players within 100m of the bindstone (main + adjacent landblocks)
             var winnerPlayers = new System.Collections.Generic.List<Player>();
+            var bindstonePos  = entry.BindstonePosition;
 
             foreach (var lb in allLbs)
             {
@@ -495,7 +496,7 @@ namespace ACE.Server.Managers
                 {
                     if (!p.IsPK) continue;
                     var monarchId = p.MonarchId ?? p.Guid.Full;
-                    if (monarchId == winnerMonarchId)
+                    if (monarchId == winnerMonarchId && p.Location.DistanceTo(bindstonePos) <= 100f)
                         winnerPlayers.Add(p);
                 }
             }
