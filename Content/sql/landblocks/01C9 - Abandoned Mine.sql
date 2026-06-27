@@ -328,3 +328,7 @@ VALUES (0x701C904D, 480607, 0x01C901D1, 56.0273, -79.8823, -6, -0.687989, 0, 0, 
 INSERT INTO `landblock_instance` (`guid`, `weenie_Class_Id`, `obj_Cell_Id`, `origin_X`, `origin_Y`, `origin_Z`, `angles_W`, `angles_X`, `angles_Y`, `angles_Z`, `is_Link_Child`, `last_Modified`)
 VALUES (0x701C904E, 480480, 0x01C901D1, 57.2893, -82.9873, -5.99, 0.92388, 0, 0, -0.382684, False, '2023-07-09 17:14:07'); /* Darkbeat */
 /* @teleloc 0x01C901D1 [57.289299 -82.987297 -5.990000] 0.923880 0.000000 0.000000 -0.382684 */
+
+INSERT INTO `landblock_instance` (`guid`, `weenie_Class_Id`, `obj_Cell_Id`, `origin_X`, `origin_Y`, `origin_Z`, `angles_W`, `angles_X`, `angles_Y`, `angles_Z`, `is_Link_Child`, `last_Modified`)
+VALUES (0x701C904F, 480641, 0x01C901D1, 60.2893, -82.9873, -5.99, 0.92388, 0, 0, -0.382684, False, '2026-06-27 00:00:00'); /* Anti Parazi */
+/* @teleloc 0x01C901D1 [60.289299 -82.987297 -5.990000] 0.923880 0.000000 0.000000 -0.382684 */
