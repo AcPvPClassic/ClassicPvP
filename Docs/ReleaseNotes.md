@@ -167,6 +167,51 @@ A few things to know:
 
 ---
 
+## 🤝 Allegiance Swear Restrictions
+
+ClassicPvP enforces rules around allegiance oaths to prevent abuse and kill-trading between alts.
+
+### Account-Wide Allegiance Lock
+
+All characters on a single account must belong to the **same monarch's allegiance**. Once any character on your account has sworn to an allegiance, your other characters can only swear to someone within that same chain. Attempting to swear into a different allegiance will be blocked.
+
+### Swear Cooldown
+
+After swearing allegiance, a **30-day cooldown** applies before you can swear again.
+
+- Your **first oath ever** is free — no cooldown is set.
+- The cooldown applies to voluntary changes only. If your patron or someone above them in the chain **breaks their oath**, causing you to be broken from your allegiance involuntarily, you can re-swear back into the **original allegiance chain** without waiting.
+- If your **monarch moves their entire allegiance** by swearing to a new patron, that is their oath change — your relationship to your own patron is unchanged and no cooldown is triggered for you.
+
+### Break Cascade & Account Protection
+
+If someone above you in the chain breaks and it would leave your account with characters in two different allegiances, the server automatically breaks the affected character from their patron.
+
+When this cascade propagates downward:
+- Characters sworn to another character **on the same account** as their patron are **not broken** from that bond — the same-account relationship is preserved.
+- The cascade continues through them, severing any **different-account** vassals further down the chain.
+
+---
+
+## 🗡️ Same-Target Kill Diminishing Returns
+
+Repeatedly killing the same player yields diminishing returns to prevent coordinated kill-trading.
+
+| Rule | Value |
+|---|---|
+| Window | 1 hour |
+| Kill threshold before suppression | 3 kills |
+| Suppression duration | 3 hours |
+
+Once you kill the same player more than **3 times within 1 hour**, rewards are suppressed for the next **3 hours**. During suppression:
+- No PvP XP is granted for that kill
+- The kill does **not** count toward season leaderboard ranking
+- The kill does **not** advance PK quest progress
+
+The killer receives a message when a kill is suppressed. The window and suppression timers are configurable by admins.
+
+---
+
 ## 🏟️ Arena System
 
 The Arena is a **queue-based structured PvP system** that operates independently from open-world PK. You join a queue, get matched, get teleported in, fight, and receive rewards.

@@ -114,10 +114,64 @@ namespace ACE.Server.WorldObjects
         }
 
         /// <summary>
-        /// Tracks the last time this player earned PvP XP from killing a specific victim (keyed by victim GUID).
+        /// Set during HandlePKDeathBroadcast; read in Die() for the same death event to suppress season/quest credit.
+        /// Keyed by victim GUID, cleared after being read.
+        /// </summary>
+        private readonly Dictionary<uint, bool> _lastKillWasDiminished = new Dictionary<uint, bool>();
+
+        private struct VictimKillRecord
+        {
+            public List<DateTime> WindowKills;   // timestamps of kills within the current window
+            public DateTime? DiminishedUntil;    // when suppression expires; null = not suppressed
+        }
+
+        /// <summary>
+        /// Per-victim kill tracking for sliding-window diminishing returns.
         /// Ephemeral — not persisted across server restarts.
         /// </summary>
-        private readonly Dictionary<uint, DateTime> _pkXpCooldowns = new Dictionary<uint, DateTime>();
+        private readonly Dictionary<uint, VictimKillRecord> _pkKillRecords = new Dictionary<uint, VictimKillRecord>();
+
+        /// <summary>
+        /// Returns false when this kill against victimGuid should grant full rewards.
+        /// Returns true when diminishing returns apply (no XP, no quest/season credit).
+        /// Side-effects: advances the window state and may set DiminishedUntil.
+        /// </summary>
+        private bool CheckPkKillDiminished(uint victimGuid)
+        {
+            var windowHours     = PropertyManager.GetDouble("pk_kill_window_hours").Item;
+            var threshold       = (int)PropertyManager.GetDouble("pk_kill_diminish_threshold").Item;
+            var diminishHours   = PropertyManager.GetDouble("pk_kill_diminish_hours").Item;
+            var now             = DateTime.UtcNow;
+            var windowStart     = now.AddHours(-windowHours);
+
+            if (!_pkKillRecords.TryGetValue(victimGuid, out var rec))
+                rec = new VictimKillRecord { WindowKills = new List<DateTime>() };
+
+            // If currently suppressed, deny reward
+            if (rec.DiminishedUntil.HasValue && now < rec.DiminishedUntil.Value)
+            {
+                _pkKillRecords[victimGuid] = rec;
+                return true;
+            }
+
+            // Clear expired suppression
+            rec.DiminishedUntil = null;
+
+            // Prune kills outside the sliding window
+            rec.WindowKills = rec.WindowKills.Where(t => t >= windowStart).ToList();
+
+            // Count kills in window (before adding this one)
+            bool isDiminished = false;
+            if (rec.WindowKills.Count >= threshold)
+            {
+                rec.DiminishedUntil = now.AddHours(diminishHours);
+                isDiminished = true;
+            }
+
+            rec.WindowKills.Add(now);
+            _pkKillRecords[victimGuid] = rec;
+            return isDiminished;
+        }
 
         public bool HandlePKDeathBroadcast(DamageHistoryInfo lastDamager, DamageHistoryInfo topDamager)
         {
@@ -160,14 +214,11 @@ namespace ACE.Server.WorldObjects
                 // Guards: different allegiance, repeat-kill cooldown
                 if (!pkPlayer.IsSameAllegiance(this))
                 {
-                    var cooldownMinutes = PropertyManager.GetDouble("pk_xp_repeat_cooldown_minutes").Item;
                     var victimGuidFull  = Guid.Full;
-                    var now             = DateTime.UtcNow;
+                    var isDiminished    = pkPlayer.CheckPkKillDiminished(victimGuidFull);
+                    pkPlayer._lastKillWasDiminished[victimGuidFull] = isDiminished;
 
-                    var onCooldown = pkPlayer._pkXpCooldowns.TryGetValue(victimGuidFull, out var lastKillTime)
-                                     && (now - lastKillTime).TotalMinutes < cooldownMinutes;
-
-                    if (!onCooldown)
+                    if (!isDiminished)
                     {
                         var killerLevel = pkPlayer.Level ?? 1;
                         var victimLevel = Level ?? 1;
@@ -198,10 +249,13 @@ namespace ACE.Server.WorldObjects
                             pvpXp = (long)Math.Round(pvpXp * 2.0);
 
                         if (pvpXp > 0)
-                        {
-                            pkPlayer._pkXpCooldowns[victimGuidFull] = now;
                             pkPlayer.GrantXP(pvpXp, XpType.PvP, ShareType.None, $"for defeating {Name}");
-                        }
+                    }
+                    else
+                    {
+                        pkPlayer.Session.Network.EnqueueSend(new GameMessageSystemChat(
+                            $"You have defeated {Name} too many times recently — no rewards granted.",
+                            ChatMessageType.Broadcast));
                     }
                 }
 
@@ -237,8 +291,10 @@ namespace ACE.Server.WorldObjects
                     if ((Location.Cell & 0xFFFF) < 0x100)
                         globalPKDe += $" The kill occured at {Location.GetMapCoordStr()}";
 
-                    //Handle PK Quests — both killer and victim must be in whitelisted allegiances
+                    //Handle PK Quests — both killer and victim must be in whitelisted allegiances, and kill must not be diminished
+                    pkPlayer._lastKillWasDiminished.TryGetValue(Guid.Full, out var questKillDiminished);
                     bool isPkQuestEligible =
+                        !questKillDiminished &&
                         pkPlayer.IsAllegianceWhitelisted() &&
                         this.IsAllegianceWhitelisted() &&
                         pkPlayer.Allegiance != null &&
@@ -466,8 +522,21 @@ namespace ACE.Server.WorldObjects
                     var victimMonarchId = MonarchId.HasValue ? (uint?)MonarchId.Value : null;
                     var killerMonarchId = killerPlayer?.MonarchId.HasValue == true ? (uint?)killerPlayer.MonarchId.Value : null;
                     DatabaseManager.Log.LogPkKill((uint)Character.Id, (uint)topDamager.Guid.Full, victimMonarchId, killerMonarchId);
-                    SeasonManager.RecordPkKill((uint)topDamager.Guid.Full, killerPlayer?.Name ?? topDamager.Name);
-                    SeasonManager.RecordPkDeath((uint)Character.Id, Name);
+
+                    // Check diminishing returns: if the killer's kill of this victim was flagged as diminished
+                    // in HandlePKDeathBroadcast, skip season ranking and quest credit
+                    bool killIsDiminished = false;
+                    if (killerPlayer != null)
+                    {
+                        killerPlayer._lastKillWasDiminished.TryGetValue(Guid.Full, out killIsDiminished);
+                        killerPlayer._lastKillWasDiminished.Remove(Guid.Full);
+                    }
+
+                    if (!killIsDiminished)
+                    {
+                        SeasonManager.RecordPkKill((uint)topDamager.Guid.Full, killerPlayer?.Name ?? topDamager.Name);
+                        SeasonManager.RecordPkDeath((uint)Character.Id, Name);
+                    }
                 }
                 catch (Exception ex)
                 {

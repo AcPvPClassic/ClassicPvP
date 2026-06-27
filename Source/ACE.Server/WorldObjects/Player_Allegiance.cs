@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
+using ACE.Common;
 using ACE.Entity;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
@@ -51,6 +53,28 @@ namespace ACE.Server.WorldObjects
         }
 
         /// <summary>
+        /// Unix timestamp of the last time this character swore allegiance (first oath leaves this null).
+        /// Used to enforce the 30-day re-swear cooldown.
+        /// </summary>
+        public double? AllegianceSwearTimestamp
+        {
+            get => GetProperty(PropertyFloat.AllegianceSwearTimestamp);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.AllegianceSwearTimestamp); else SetProperty(PropertyFloat.AllegianceSwearTimestamp, value.Value); }
+        }
+
+        /// <summary>
+        /// When a character is force-broken from their allegiance due to a break cascade,
+        /// this stores the monarch GUID they were broken from. A re-swear into that same
+        /// monarch chain is permitted without consuming the cooldown.
+        /// Cleared on the next successful swear.
+        /// </summary>
+        public uint? AllegianceForcedBreakMonarchId
+        {
+            get => GetProperty(PropertyInstanceId.AllegianceForcedBreakMonarchId);
+            set { if (!value.HasValue) RemoveProperty(PropertyInstanceId.AllegianceForcedBreakMonarchId); else SetProperty(PropertyInstanceId.AllegianceForcedBreakMonarchId, value.Value); }
+        }
+
+        /// <summary>
         /// This flag indicates if a player can pass up allegiance XP
         /// </summary>
         public bool ExistedBeforeAllegianceXpChanges
@@ -92,6 +116,13 @@ namespace ACE.Server.WorldObjects
             UpdateProperty(PropertyInstanceId.Monarch, monarchGuid, true);
 
             ExistedBeforeAllegianceXpChanges = (patron.Level ?? 1) >= (Level ?? 1);
+
+            // Record when this swear happened. IsPledgable only checks the cooldown if this is non-null,
+            // so the first oath (when it was null) was free; subsequent oaths will be gated.
+            AllegianceSwearTimestamp = Time.GetUnixTime();
+
+            // Clear forced-break exemption now that the swear succeeded
+            AllegianceForcedBreakMonarchId = null;
 
             // handle special case: monarch swearing into another allegiance
             if (Allegiance != null && Allegiance.MonarchId == Guid.Full)
@@ -147,6 +178,10 @@ namespace ACE.Server.WorldObjects
             UpdateProperty(PropertyInstanceId.Monarch, monarchGuid, true);
 
             ExistedBeforeAllegianceXpChanges = (patron.Level ?? 1) >= (Level ?? 1);
+
+            // Record swear timestamp (first oath was free because timestamp was null in IsPledgable)
+            AllegianceSwearTimestamp = Time.GetUnixTime();
+            AllegianceForcedBreakMonarchId = null;
 
             // handle special case: monarch swearing into another allegiance
             if (Allegiance != null && Allegiance.MonarchId == Guid.Full)
@@ -221,6 +256,9 @@ namespace ACE.Server.WorldObjects
 
             log.DebugFormat("[ALLEGIANCE] {0} breaking allegiance to {1}", Name, target.Name);
 
+            // Capture the current monarch BEFORE the break so we can detect account conflicts after
+            var priorMonarchId = Allegiance?.MonarchId ?? 0;
+
             // target can be either patron or vassal
             var isPatron = PatronId == target.Guid.Full;
             var isVassal = target.PatronId == Guid.Full;
@@ -282,20 +320,32 @@ namespace ACE.Server.WorldObjects
 
             if (isVassal)
             {
-                // patron broke from vassal
+                // patron broke from vassal — target's subtree is now detached
                 CheckAllegianceHouse(target.Guid);
 
                 var vassalAllegiance = AllegianceManager.GetAllegiance(target);
                 if (vassalAllegiance != null)
+                {
                     vassalAllegiance.Monarch.Walk((node) => CheckAllegianceHouse(node.PlayerGuid), false);
+
+                    // Resolve any account conflicts created by the detached subtree
+                    if (priorMonarchId != 0)
+                        ResolveAccountConflictsAfterBreak(vassalAllegiance.Monarch, priorMonarchId);
+                }
             }
             else
             {
-                // vassal broke from patron
+                // vassal broke from patron — self's subtree is now detached
                 CheckAllegianceHouse(Guid);
 
                 if (AllegianceNode != null)
+                {
                     AllegianceNode.Walk((node) => CheckAllegianceHouse(node.PlayerGuid), false);
+
+                    // Resolve any account conflicts created by the detached subtree
+                    if (priorMonarchId != 0)
+                        ResolveAccountConflictsAfterBreak(AllegianceNode, priorMonarchId);
+                }
             }
 
             // refresh ui panel
@@ -445,6 +495,51 @@ namespace ACE.Server.WorldObjects
                 //Session.Network.EnqueueSend(new GameMessageSystemChat($"You cannot swear allegiance while owning a mansion.", ChatMessageType.Broadcast));
                 Session.Network.EnqueueSend(new GameEventWeenieError(Session, WeenieError.CannotSwearAllegianceWhileOwningMansion));
                 return false;
+            }
+
+            // Account-wide allegiance lock: all characters on this account must share the same monarch.
+            var targetMonarchId = target.MonarchId ?? target.Guid.Full;
+            var accountPlayers  = PlayerManager.GetAccountPlayers(Account.AccountId);
+            foreach (var kvp in accountPlayers)
+            {
+                var sibling = kvp.Value;
+                if (sibling.Guid == Guid) continue;
+
+                var siblingMonarchId = sibling.MonarchId;
+                if (!siblingMonarchId.HasValue) continue;
+
+                if (siblingMonarchId.Value != targetMonarchId)
+                {
+                    Session.Network.EnqueueSend(new GameMessageSystemChat(
+                        "Another character on your account is sworn to a different allegiance. All characters on an account must belong to the same allegiance.",
+                        ChatMessageType.Broadcast));
+                    return false;
+                }
+            }
+
+            // Swear cooldown: first oath (AllegianceSwearTimestamp == null) is always free.
+            // Subsequent oaths require waiting allegiance_swear_cooldown_days days,
+            // unless this player was force-broken from the same monarch chain (ForcedBreakMonarchId matches).
+            if (AllegianceSwearTimestamp.HasValue)
+            {
+                var cooldownDays   = PropertyManager.GetDouble("allegiance_swear_cooldown_days").Item;
+                var cooldownExpiry = DateTimeOffset.FromUnixTimeSeconds((long)AllegianceSwearTimestamp.Value).UtcDateTime.AddDays(cooldownDays);
+
+                if (DateTime.UtcNow < cooldownExpiry)
+                {
+                    bool exempt = AllegianceForcedBreakMonarchId.HasValue &&
+                                  AllegianceForcedBreakMonarchId.Value == targetMonarchId;
+
+                    if (!exempt)
+                    {
+                        var remaining = cooldownExpiry - DateTime.UtcNow;
+                        var days      = (int)Math.Ceiling(remaining.TotalDays);
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(
+                            $"You must wait {days} more day{(days == 1 ? "" : "s")} before swearing allegiance again.",
+                            ChatMessageType.Broadcast));
+                        return false;
+                    }
+                }
             }
 
             return true;
@@ -1523,6 +1618,83 @@ namespace ACE.Server.WorldObjects
             var onlinePlayer = PlayerManager.GetOnlinePlayer(player.Guid);
             if (onlinePlayer != null)
                 onlinePlayer.Session.Network.EnqueueSend(new GameMessageSystemChat("You have been booted from the allegiance!", ChatMessageType.Broadcast));
+        }
+
+        /// <summary>
+        /// After a voluntary break severs a subtree from its old monarch chain, checks whether any player
+        /// in that subtree now has an account sibling still in the original allegiance.  If so, that player
+        /// is force-broken from their patron (so the account cannot straddle two allegiances), and the break
+        /// cascades downward: same-account patron–vassal bonds are preserved but their sub-vassals on other
+        /// accounts are also severed.
+        /// </summary>
+        /// <param name="detachedRoot">Root node of the newly detached subtree.</param>
+        /// <param name="oldMonarchId">Monarch GUID that the detached tree just left.</param>
+        private static void ResolveAccountConflictsAfterBreak(AllegianceNode detachedRoot, uint oldMonarchId)
+        {
+            // Collect nodes that need to be force-broken (don't modify tree while walking)
+            var conflicted = new List<AllegianceNode>();
+
+            detachedRoot.Walk(node =>
+            {
+                var player = node.Player;
+                if (player?.Account == null) return;
+
+                var accountPlayers = PlayerManager.GetAccountPlayers(player.Account.AccountId);
+                bool hasConflict = accountPlayers.Values.Any(ap =>
+                    ap.Guid != player.Guid &&
+                    ap.MonarchId.HasValue &&
+                    ap.MonarchId.Value == oldMonarchId);
+
+                if (hasConflict && node.Patron != null)
+                    conflicted.Add(node);
+            });
+
+            foreach (var node in conflicted)
+            {
+                // Only process if the node is still in a state that needs breaking
+                // (an earlier iteration may have already detached an ancestor)
+                if (node.Patron == null) continue;
+
+                var patronPlayer = node.Patron.Player;
+                ForceBreakVassalCascade(node, patronPlayer, oldMonarchId);
+            }
+        }
+
+        /// <summary>
+        /// Force-breaks <paramref name="node"/> from <paramref name="directPatron"/>, stores the forced-break
+        /// monarch so the player can re-swear into the original chain cooldown-free, then cascades downward:
+        /// same-account bonds are preserved, different-account vassals are also severed.
+        /// </summary>
+        private static void ForceBreakVassalCascade(AllegianceNode node, IPlayer directPatron, uint priorMonarchId)
+        {
+            var player = node.Player;
+            if (player == null) return;
+
+            bool sameAccount = player.Account?.AccountId == directPatron.Account?.AccountId;
+
+            if (!sameAccount)
+            {
+                // Sever this vassal from their patron
+                player.PatronId = null;
+
+                var newMonarchId = node.HasVassals ? (uint?)player.Guid.Full : null;
+                player.UpdateProperty(PropertyInstanceId.Monarch, newMonarchId, true);
+
+                // Record the break so they can re-swear into the original chain without cooldown
+                player.SetProperty(PropertyFloat.AllegianceSwearTimestamp, Time.GetUnixTime());
+                player.SetProperty(PropertyInstanceId.AllegianceForcedBreakMonarchId, priorMonarchId);
+                player.SaveBiotaToDatabase();
+
+                var onlinePlayer = PlayerManager.GetOnlinePlayer(player.Guid);
+                onlinePlayer?.Session.Network.EnqueueSend(new GameMessageSystemChat(
+                    "You have been released from your allegiance because a member of your patron's chain broke their oath. " +
+                    "You may re-swear to your original allegiance without waiting.",
+                    ChatMessageType.Broadcast));
+            }
+
+            // Cascade to vassals regardless of whether we broke this node
+            foreach (var vassal in node.Vassals.Values.ToList())
+                ForceBreakVassalCascade(vassal, player, priorMonarchId);
         }
 
         public AllegiancePermissionLevel AllegiancePermissionLevel

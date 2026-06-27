@@ -71,6 +71,7 @@ namespace ACE.Entity.Enum.Properties
         PetOwner                         = 44,
         [Ephemeral]
         PetDevice                        = 45,
+        AllegianceForcedBreakMonarchId   = 46,
 
         /* Custom Properties */
         PCAPRecordedObjectIID            = 8000,

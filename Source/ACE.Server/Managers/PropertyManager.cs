@@ -1276,7 +1276,13 @@ namespace ACE.Server.Managers
 
                 // PK kill XP rewards
                 ("pk_xp_level_diff_decay",           new Property<double>(0.85, "Exponential decay factor applied per level the victim is below the killer when awarding PvP XP on a PK kill. e.g. 0.85 means each level gap multiplies the reward by 0.85.")),
-                ("pk_xp_repeat_cooldown_minutes",     new Property<double>(60.0, "Minutes before the same killer can earn PvP XP again from killing the same victim.")),
+                ("pk_xp_repeat_cooldown_minutes",     new Property<double>(60.0, "Legacy: minutes before the same killer can earn PvP XP again from killing the same victim. Superseded by the kill-window system below.")),
+                ("pk_kill_window_hours",              new Property<double>(1.0,  "Hours of sliding window used to count kills against the same victim before diminishing returns kick in.")),
+                ("pk_kill_diminish_threshold",        new Property<double>(3.0,  "Number of kills against the same victim within the window before rewards are suppressed.")),
+                ("pk_kill_diminish_hours",            new Property<double>(3.0,  "Hours the diminishing-returns suppression lasts once the threshold is exceeded.")),
+
+                // Allegiance swear cooldown
+                ("allegiance_swear_cooldown_days",   new Property<double>(30.0, "Days a player must wait before swearing allegiance again after a voluntary oath change. First oath is always free.")),
 
                 // Bounty Hunter system
                 ("bounty_last_location_duration",    new Property<double>(30.0,  "Seconds a hunter must wait before using the location finder on the same contract again.")),
