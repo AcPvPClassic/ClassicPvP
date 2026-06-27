@@ -202,4 +202,16 @@ VALUES  (480480, 2,   6046, 0, 93, 1.1, False) /* Greater Shadow Amuli Coat (660
 	, (480480, 4, 60000215,  -1, 0, 0, False) /* Writ of Pursuite for Shop */
      , (480480, 4, 490071,  -1, 0, 0, False) /* Ancient Bottle for Shop */
      , (480480, 4, 490298,  -1, 0, 0, False) /* Ancient Empyrean Tool for Shop */
-     , (480480, 4, 49090101,  -1, 0, 0, False) /* Skill and Attribute Reset Gem for Shop */;
+     , (480480, 4, 49090101,  -1, 0, 0, False) /* Skill and Attribute Reset Gem for Shop */
+     , (480480, 4, 490027,   -1, 0, 0, False) /* Workmanship Morph Gem for Shop */
+     , (480480, 4, 4200026,  -1, 0, 0, False) /* Arcane Lore Morph Gem for Shop */
+     , (480480, 4, 480484,   -1, 0, 0, False) /* Missile Defense Requirement Morph Gem for Shop */
+     , (480480, 4, 480483,   -1, 0, 0, False) /* Melee Requirement Morph Gem for Shop */
+     , (480480, 4, 480486,   -1, 0, 0, False) /* Imbue Altering Morph Gem for Shop */
+     , (480480, 4, 480485,   -1, 0, 0, False) /* Player Wield Requirement Morph Gem for Shop */
+     , (480480, 4, 480609,   -1, 0, 0, False) /* Level Requirement Removal Morph Gem for Shop */
+     , (480480, 4, 480639,   -1, 0, 0, False) /* Slayer Upgrade Morph Gem for Shop */
+     , (480480, 4, 490025,   -1, 0, 0, False) /* Impenetrability Morph Gem for Shop */
+     , (480480, 4, 490271,   -1, 0, 0, False) /* Empyrean Jeweler's Sawblade for Shop */
+     , (480480, 4, 490304,   -1, 0, 0, False) /* Oil of Creature Slaying for Shop */
+     , (480480, 4, 1548803,  -1, 0, 0, False) /* Empyrean Tuning Fork (Random Cantrip) for Shop */;
