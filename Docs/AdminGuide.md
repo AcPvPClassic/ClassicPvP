@@ -21,6 +21,7 @@ All server properties are stored in `shard_config` and are readable/writable at 
 13. [Anti-Cheat (Movement Enforcement)](#13-anti-cheat-movement-enforcement)
 14. [Bounty System](#14-bounty-system)
 15. [Admin Command Quick Reference](#15-admin-command-quick-reference)
+16. [Loot-to-Weenie Export](#16-loot-to-weenie-export)
 
 ---
 
@@ -562,6 +563,42 @@ HAVING peak >= 50 ORDER BY peak DESC;
 
 ---
 
+## 16. Loot-to-Weenie Export
+
+Captures a live loot-generated item and writes it out as a permanent weenie SQL file in the content folder. Use this to freeze an interesting or well-rolled item into a static weenie that can be spawned, placed as a vendor item, or given as a quest reward.
+
+### Usage
+
+1. ID the item in-game (`Alt+click` or use the Assessment skill on it).
+2. Run `@loot-to-weenie` as an admin.
+
+The last item you ID'd is used automatically — no argument needed.
+
+### What It Does
+
+- Verifies the item has an `ItemWorkmanship` property (confirms it is loot-generated, not a static world weenie).
+- Allocates the next available WCID in the custom range (≥ 1,000,000), queried live from the world database.
+- Copies all Biota properties (Int, Bool, Float, String, DID, AnimPart, Palette, TextureMap, SpellBook) into a new weenie template. Live-object instance references (owner GUID, wielder GUID, container GUID) are **excluded** — these have no meaning in a static weenie.
+- Exports the weenie as a `.sql` file into the content folder under the appropriate subfolder for the item's WeenieType/ItemType (e.g. `content/sql/weenies/MeleeWeapon/Sword/`).
+
+### After Export
+
+The SQL file is written to disk only — it is **not** automatically inserted into the world database. To make the weenie live:
+
+```sql
+SOURCE path/to/content/sql/weenies/.../filename.sql;
+```
+
+or import it via the ACE SQL import tooling, then restart or reload the weenie cache.
+
+### Notes
+
+- The command uses `CurrentAppraisalTarget`, which is the last item the admin's character appraised. If you've appraised multiple items in succession, only the most recent one is captured.
+- WCID assignment is based on `MAX(class_Id)` among all weenies with class_Id ≥ 1,000,000 at the time the command runs. If two admins run the command simultaneously, both will read the same max and produce conflicting WCIDs — coordinate accordingly.
+- The exported file name follows the standard convention: `{WCID} {Name} - {ClassName}.sql`.
+
+---
+
 ## 15. Admin Command Quick Reference
 
 ### Rolling Cap & XP
@@ -597,3 +634,9 @@ HAVING peak >= 50 ORDER BY peak DESC;
 | `/seasons forcemilestone` | Force a weekly milestone snapshot now |
 | `/seasons resetcache` | Flush all leaderboard caches |
 | `/seasons status` | Show season manager status |
+
+### Content
+
+| Command | Summary |
+|---|---|
+| `/loot-to-weenie` | Capture the last ID'd loot item as a weenie SQL file in the content folder |

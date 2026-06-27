@@ -229,6 +229,21 @@ namespace ACE.Database
             }
         }
 
+        public uint GetNextCustomClassId(uint minClassId = 1000000)
+        {
+            using (var context = new WorldDbContext())
+            {
+                context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+
+                var maxId = context.Weenie
+                    .Where(w => w.ClassId >= minClassId)
+                    .Select(w => (uint?)w.ClassId)
+                    .Max();
+
+                return (maxId ?? (minClassId - 1)) + 1;
+            }
+        }
+
         public Dictionary<uint, int> GetAllWeenieLevels(WorldDbContext context)
         {
             return context.Weenie

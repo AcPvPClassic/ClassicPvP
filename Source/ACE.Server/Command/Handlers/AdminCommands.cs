@@ -32,6 +32,7 @@ using ACE.Server.Network.Structure;
 using ACE.Server.WorldObjects;
 using ACE.Server.WorldObjects.Entity;
 using ACE.Server.Network.Handlers;
+using ACE.Server.Command.Handlers.Processors;
 
 using Position = ACE.Entity.Position;
 
@@ -6242,5 +6243,107 @@ namespace ACE.Server.Command.Handlers
         }
 
         #endregion Allegiance Hometown Testing Admin Commands
+
+        #region Loot to Weenie Export
+
+        [CommandHandler("loot-to-weenie", AccessLevel.Admin, CommandHandlerFlag.RequiresWorld, 0,
+            "Creates a weenie template from the last ID'd loot-generated item and exports it to SQL in the content folder.",
+            "@loot-to-weenie")]
+        public static void HandleLootToWeenie(Session session, params string[] parameters)
+        {
+            if (!session.Player.CurrentAppraisalTarget.HasValue)
+            {
+                CommandHandlerHelper.WriteOutputInfo(session, "No item has been ID'd yet. Please ID a loot item first.");
+                return;
+            }
+
+            var objectId = new ObjectGuid(session.Player.CurrentAppraisalTarget.Value);
+            var wo = session.Player.FindObject(objectId.Full, Player.SearchLocations.Everywhere);
+
+            if (wo == null)
+            {
+                CommandHandlerHelper.WriteOutputInfo(session, "Could not find the last ID'd item. It may no longer be accessible.");
+                return;
+            }
+
+            if (!wo.GetProperty(PropertyInt.ItemWorkmanship).HasValue)
+            {
+                CommandHandlerHelper.WriteOutputInfo(session, $"'{wo.Name}' does not have a Workmanship property and does not appear to be a loot-generated item.");
+                return;
+            }
+
+            var newWcid = DatabaseManager.World.GetNextCustomClassId();
+            var dbWeenie = BuildWeenieFromLootItem(wo, newWcid);
+
+            Processors.DeveloperContentCommands.ExportSQLWeenie(dbWeenie, session, withFolders: true);
+        }
+
+        private static ACE.Database.Models.World.Weenie BuildWeenieFromLootItem(WorldObject wo, uint wcid)
+        {
+            var name = wo.Name ?? "unknown";
+            var cleanName = Regex.Replace(name.ToLower(), @"[^a-z0-9]", "");
+            var className = $"ace{wcid}-{cleanName}";
+
+            var dbWeenie = new ACE.Database.Models.World.Weenie
+            {
+                ClassId = wcid,
+                ClassName = className,
+                Type = (int)wo.WeenieType,
+                LastModified = DateTime.UtcNow,
+            };
+
+            var biota = wo.Biota;
+            var rwLock = wo.BiotaDatabaseLock;
+
+            rwLock.EnterReadLock();
+            try
+            {
+                if (biota.PropertiesInt != null)
+                    foreach (var kvp in biota.PropertiesInt)
+                        dbWeenie.WeeniePropertiesInt.Add(new ACE.Database.Models.World.WeeniePropertiesInt { ObjectId = wcid, Type = (ushort)kvp.Key, Value = kvp.Value });
+
+                if (biota.PropertiesBool != null)
+                    foreach (var kvp in biota.PropertiesBool)
+                        dbWeenie.WeeniePropertiesBool.Add(new ACE.Database.Models.World.WeeniePropertiesBool { ObjectId = wcid, Type = (ushort)kvp.Key, Value = kvp.Value });
+
+                if (biota.PropertiesFloat != null)
+                    foreach (var kvp in biota.PropertiesFloat)
+                        dbWeenie.WeeniePropertiesFloat.Add(new ACE.Database.Models.World.WeeniePropertiesFloat { ObjectId = wcid, Type = (ushort)kvp.Key, Value = kvp.Value });
+
+                if (biota.PropertiesString != null)
+                    foreach (var kvp in biota.PropertiesString)
+                        dbWeenie.WeeniePropertiesString.Add(new ACE.Database.Models.World.WeeniePropertiesString { ObjectId = wcid, Type = (ushort)kvp.Key, Value = kvp.Value });
+
+                if (biota.PropertiesDID != null)
+                    foreach (var kvp in biota.PropertiesDID)
+                        dbWeenie.WeeniePropertiesDID.Add(new ACE.Database.Models.World.WeeniePropertiesDID { ObjectId = wcid, Type = (ushort)kvp.Key, Value = kvp.Value });
+
+                // IID properties (owner, wielder, container references) are intentionally excluded — they are live object GUIDs not valid in a weenie template.
+
+                if (biota.PropertiesAnimPart != null)
+                    foreach (var entry in biota.PropertiesAnimPart)
+                        dbWeenie.WeeniePropertiesAnimPart.Add(new ACE.Database.Models.World.WeeniePropertiesAnimPart { ObjectId = wcid, Index = entry.Index, AnimationId = entry.AnimationId });
+
+                if (biota.PropertiesPalette != null)
+                    foreach (var entry in biota.PropertiesPalette)
+                        dbWeenie.WeeniePropertiesPalette.Add(new ACE.Database.Models.World.WeeniePropertiesPalette { ObjectId = wcid, SubPaletteId = entry.SubPaletteId, Offset = entry.Offset, Length = entry.Length });
+
+                if (biota.PropertiesTextureMap != null)
+                    foreach (var entry in biota.PropertiesTextureMap)
+                        dbWeenie.WeeniePropertiesTextureMap.Add(new ACE.Database.Models.World.WeeniePropertiesTextureMap { ObjectId = wcid, Index = entry.PartIndex, OldId = entry.OldTexture, NewId = entry.NewTexture });
+
+                if (biota.PropertiesSpellBook != null)
+                    foreach (var kvp in biota.PropertiesSpellBook)
+                        dbWeenie.WeeniePropertiesSpellBook.Add(new ACE.Database.Models.World.WeeniePropertiesSpellBook { ObjectId = wcid, Spell = kvp.Key, Probability = kvp.Value });
+            }
+            finally
+            {
+                rwLock.ExitReadLock();
+            }
+
+            return dbWeenie;
+        }
+
+        #endregion Loot to Weenie Export
     }
 }
