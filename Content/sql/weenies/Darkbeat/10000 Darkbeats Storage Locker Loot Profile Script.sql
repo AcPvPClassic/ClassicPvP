@@ -22,7 +22,7 @@ INSERT INTO ace_world.treasure_death
 VALUES
 (  
   10000,
-  8,
+  6,
   0.975,
   19,
   0,

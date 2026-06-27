@@ -65,10 +65,10 @@ namespace ACE.Server.Factories
                 wo.ItemDifficulty = null;
             }
 
-            if (profile.Tier > 6 && armorType != TreasureArmorType.Society)
+            if (profile.Tier > 6 && armorType != TreasureArmorType.Society && Common.ConfigManager.Config.Server.WorldRuleset > Common.Ruleset.Infiltration)
                 TryRollEquipmentSet(wo, profile, roll);
 
-            if (roll != null && profile.Tier == 8)
+            if (roll != null && profile.Tier == 8 && Common.ConfigManager.Config.Server.WorldRuleset > Common.Ruleset.Infiltration)
                 TryMutateGearRating(wo, profile, roll);
 
             // item value
@@ -274,7 +274,7 @@ namespace ACE.Server.Factories
             // workmanship
             wo.Workmanship = WorkmanshipChance.Roll(profile.Tier, profile.LootQualityMod);
 
-            if (roll != null && profile.Tier == 8)
+            if (roll != null && profile.Tier == 8 && Common.ConfigManager.Config.Server.WorldRuleset > Common.Ruleset.Infiltration)
                 TryMutateGearRating(wo, profile, roll);
 
             // item value
