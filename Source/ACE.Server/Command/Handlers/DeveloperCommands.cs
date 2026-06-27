@@ -1170,7 +1170,16 @@ namespace ACE.Server.Command.Handlers
             }
 
             var schoolStr = parameters[parameters.Length - 2];
-            if (!Enum.TryParse(schoolStr, true, out MagicSchool school) || school == MagicSchool.None)
+            var school = schoolStr.ToLowerInvariant() switch
+            {
+                "war"      => MagicSchool.WarMagic,
+                "life"     => MagicSchool.LifeMagic,
+                "creature" => MagicSchool.CreatureEnchantment,
+                "item"     => MagicSchool.ItemEnchantment,
+                "void"     => MagicSchool.VoidMagic,
+                _          => MagicSchool.None,
+            };
+            if (school == MagicSchool.None)
             {
                 session.Network.EnqueueSend(new GameMessageSystemChat($"Unknown magic school '{schoolStr}'. Valid values: War, Life, Creature, Item, Void.", ChatMessageType.Broadcast));
                 return;
