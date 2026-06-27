@@ -34,7 +34,7 @@ namespace ACE.Server.WorldObjects
                 return;
             }
 
-            var monarchId     = player.Allegiance.MonarchId ?? player.Guid.Full;
+            var monarchId     = player.MonarchId ?? player.Guid.Full;
             var allegianceName = player.Allegiance.AllegianceName ?? player.Name;
             var town          = AllegianceHometownManager.GetTown(entry.TownId);
 

@@ -3147,7 +3147,7 @@ namespace ACE.Server.Command.Handlers
                 return;
             }
 
-            var monarchId = player.Allegiance.MonarchId ?? player.Guid.Full;
+            var monarchId = player.MonarchId ?? player.Guid.Full;
             var ownedTownIds = AllegianceHometownManager.GetOwnedTownIds(monarchId);
 
             if (ownedTownIds.Count == 0)
@@ -3233,7 +3233,7 @@ namespace ACE.Server.Command.Handlers
         public static void HandleTowns(Session session, params string[] parameters)
         {
             var player = session.Player;
-            var monarchId = player.Allegiance?.MonarchId ?? player.Guid.Full;
+            var monarchId = player.MonarchId ?? player.Guid.Full;
 
             var sb = new StringBuilder();
             sb.AppendLine("════════ Allegiance Hometowns ════════");
