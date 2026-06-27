@@ -29,7 +29,10 @@ namespace ACE.Server.WorldObjects
 
         private DateTime _lastPhase2Broadcast = DateTime.MinValue;
 
-        public BindstoneCreatureProxy(Weenie weenie, ObjectGuid guid) : base(weenie, guid) { }
+        public BindstoneCreatureProxy(Weenie weenie, ObjectGuid guid) : base(weenie, guid)
+        {
+            NoCorpse = true;
+        }
 
         // -----------------------------------------------------------------------
         // Death — trigger attacker victory instead of normal creature death
