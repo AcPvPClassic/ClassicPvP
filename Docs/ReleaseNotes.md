@@ -586,6 +586,32 @@ Both bonuses apply simultaneously and stack with other multipliers (Hot Dungeon,
 
 ---
 
+## 🛒 Darkbeat Vendor
+
+**Darkbeat** is a special vendor located in the Afterlife area. He accepts **Phials of Bloody Tears** as currency (not pyreals) and sells a variety of rare utility items.
+
+| Item | Cost (Phials) | Description |
+|------|--------------|-------------|
+| Ancient Bottle | 20 | Absorbs PvP XP overflow up to 100M. Bonded & Attuned. |
+| Ancient Empyrean Tool | 25 | Guarantees the next tinker will not fail. |
+| Skill and Attribute Reset Gem | 50 | Clears quest stamps for the Temple of Enlightenment and Temple of Forgetfulness, allowing you to re-access skill and attribute alteration. Each use costs an increasing number of PK Trophies (see below). Bonded & Attuned. |
+
+### Skill and Attribute Reset Gem — PK Trophy Cost
+
+Using the gem requires both the Phial purchase price **and** an additional PK Trophy cost paid at the time of use. The trophy cost scales exponentially with each use:
+
+| Use # | PK Trophies |
+|-------|-------------|
+| 1st | 100 |
+| 2nd | ~135 |
+| 3rd | ~182 |
+| 4th | ~246 |
+| 5th+ | Continues growing (~1.35× per use, capped at 10,000) |
+
+The gem is consumed on use. If you do not have enough PK Trophies in your inventory, the gem is not consumed and you are told the current cost.
+
+---
+
 ## 🔒 One-Account-Per-IP Enforcement
 
 ClassicPvP now enforces that each IP address can only be associated with one account, helping prevent account sharing while staying fair to players with dynamic IPs or VPN hiccups.

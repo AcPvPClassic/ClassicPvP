@@ -201,4 +201,5 @@ VALUES  (480480, 2,   6046, 0, 93, 1.1, False) /* Greater Shadow Amuli Coat (660
      , (480480, 4, 60000213,  -1, 0, 0, False) /* Bounty Purchase Token for Shop */
 	, (480480, 4, 60000215,  -1, 0, 0, False) /* Writ of Pursuite for Shop */
      , (480480, 4, 490071,  -1, 0, 0, False) /* Ancient Bottle for Shop */
-     , (480480, 4, 490298,  -1, 0, 0, False) /* Ancient Empyrean Tool for Shop */;
+     , (480480, 4, 490298,  -1, 0, 0, False) /* Ancient Empyrean Tool for Shop */
+     , (480480, 4, 49090101,  -1, 0, 0, False) /* Skill and Attribute Reset Gem for Shop */;

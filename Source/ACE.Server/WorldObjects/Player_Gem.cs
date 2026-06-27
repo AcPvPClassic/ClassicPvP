@@ -117,33 +117,56 @@ namespace ACE.Server.WorldObjects
 
         #endregion XP Bottle
 
+        private const int SkillAttrResetBaseCost = 100;
+        private const int SkillAttrResetMaxCost  = 10000;
+
+        private static int CalculateSkillAttrResetCost(int useCount)
+        {
+            if (useCount == 0) return SkillAttrResetBaseCost;
+            return Math.Min((int)(SkillAttrResetBaseCost * Math.Pow(1.35, useCount)), SkillAttrResetMaxCost);
+        }
+
         public void UseSkillAttrResetGem(Gem gem)
         {
-            string playerMsg = "";
-
-            //Check if the player has any of the following quest stamps
-            //if they do, clear the quests and consume the gem
-            //if they don't have any, don't use the gem because there's nothing to clear
-            //SkillAlterationGemPickedUp
-            //AttributeLoweringGemPickedUp
-            //AttributeRaisingGemPickedUp
-            if(this.QuestManager.CanSolve("SkillAlterationGemPickedUp") && this.QuestManager.CanSolve("AttributeLoweringGemPickedUp") && this.QuestManager.CanSolve("AttributeRaisingGemPickedUp"))
+            if (this.QuestManager.CanSolve("SkillAlterationGemPickedUp") &&
+                this.QuestManager.CanSolve("AttributeLoweringGemPickedUp") &&
+                this.QuestManager.CanSolve("AttributeRaisingGemPickedUp"))
             {
-                playerMsg = $"You are already able to alter your skills and attributes without the help of a {gem.Name}. Seek the Temple of Enlightenment or Temple of Forgetfulness.";
-                this.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
+                this.Session.Network.EnqueueSend(new GameMessageSystemChat(
+                    $"You are already able to alter your skills and attributes without the help of a {gem.Name}. Seek the Temple of Enlightenment or Temple of Forgetfulness.",
+                    ChatMessageType.Broadcast));
                 return;
             }
-            else
+
+            int useCount  = this.QuestManager.GetCurrentSolves("SkillAttrResetGemUsed");
+            int trophyCost = CalculateSkillAttrResetCost(useCount);
+            int trophiesHeld = this.GetNumInventoryItemsOfWCID(CustomWeenieId.PkTrophy);
+
+            if (trophiesHeld < trophyCost)
             {
-                //Todo - track how many resets the player has used and charge an increasing number of PK trophies while using the gem
-                this.QuestManager.Erase("SkillAlterationGemPickedUp");
-                this.QuestManager.Erase("AttributeLoweringGemPickedUp");
-                this.QuestManager.Erase("AttributeRaisingGemPickedUp");
-                playerMsg = $"The {gem.Name} has cleared your quest stamps for the Temple of Enlightenment and Temple of Forgetfulness.";
-                this.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-                this.TryConsumeFromInventoryWithNetworking(gem, 1);
+                this.Session.Network.EnqueueSend(new GameMessageSystemChat(
+                    $"Using the {gem.Name} costs {trophyCost} PK Trophies (this is use #{useCount + 1}). You have {trophiesHeld} PK Trophies.",
+                    ChatMessageType.Broadcast));
                 return;
-            }            
+            }
+
+            if (!this.TryConsumeFromInventoryWithNetworking(CustomWeenieId.PkTrophy, trophyCost))
+            {
+                this.Session.Network.EnqueueSend(new GameMessageSystemChat(
+                    $"Failed to consume PK Trophies. Please try again or contact an admin.",
+                    ChatMessageType.Broadcast));
+                return;
+            }
+
+            this.QuestManager.Erase("SkillAlterationGemPickedUp");
+            this.QuestManager.Erase("AttributeLoweringGemPickedUp");
+            this.QuestManager.Erase("AttributeRaisingGemPickedUp");
+            this.QuestManager.Increment("SkillAttrResetGemUsed");
+
+            this.Session.Network.EnqueueSend(new GameMessageSystemChat(
+                $"The {gem.Name} has cleared your quest stamps for the Temple of Enlightenment and Temple of Forgetfulness. {trophyCost} PK Trophies have been consumed.",
+                ChatMessageType.Broadcast));
+            this.TryConsumeFromInventoryWithNetworking(gem, 1);
         }
 
         public void UseTinkeringTool(Gem gem)
