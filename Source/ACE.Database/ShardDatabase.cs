@@ -488,14 +488,12 @@ namespace ACE.Database
         {
             using (var context = new ShardDbContext())
             {
-                var existingBiota = context.Biota
-                    .AsNoTracking()
-                    .FirstOrDefault(r => r.Id == id);
-
-                if (existingBiota == null)
-                    return true;
-
-                context.Biota.Remove(existingBiota);
+                // Attach a stub entity so EF issues DELETE without a prior SELECT.
+                // If the row does not exist, SaveChanges returns 0 rows affected without throwing
+                // (no concurrency token on Biota), matching the previous "not found → return true" behaviour.
+                var stub = new Biota { Id = id };
+                context.Biota.Attach(stub);
+                context.Entry(stub).State = EntityState.Deleted;
 
                 Exception firstException = null;
                 retry:

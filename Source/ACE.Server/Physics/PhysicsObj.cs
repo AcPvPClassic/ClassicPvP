@@ -2795,7 +2795,7 @@ namespace ACE.Server.Physics
 
             // get the difference between current and previous visible
             //var newlyVisible = visibleObjects.Except(ObjMaint.VisibleObjects.Values).ToList();
-            var newlyOccluded = ObjMaint.GetVisibleObjectsValues().Except(visibleObjects).ToList();
+            var newlyOccluded = ObjMaint.GetNewlyOccludedObjects(visibleObjects);
             //Console.WriteLine("Newly visible objects: " + newlyVisible.Count);
             //Console.WriteLine("Newly occluded objects: " + newlyOccluded.Count);
             //foreach (var obj in newlyOccluded)
@@ -4457,6 +4457,7 @@ namespace ACE.Server.Physics
                     {
                         // Assume all-players until proven otherwise; a non-empty list is required.
                         var allBlockersArePlayers = fullTransition.CollisionInfo.CollideObject.Count > 0;
+                        var utcNow = DateTime.UtcNow;
                         foreach (var colObj in fullTransition.CollisionInfo.CollideObject)
                         {
                             var wo = colObj?.WeenieObj?.WorldObject;
@@ -4474,7 +4475,7 @@ namespace ACE.Server.Physics
                             // Note: Player : Creature, so this also fires for a recently-logged-in player;
                             // allBlockersArePlayers remains true in that case (checked separately below).
                             if (wo is Creature creature && !creature.IsDead
-                                && (DateTime.UtcNow - creature.SpawnTimestamp).TotalSeconds < 5.0)
+                                && (utcNow - creature.SpawnTimestamp).TotalSeconds < 5.0)
                                 LastTransitionHitNewCreature = true;
 
                             // Any non-Player object (door, creature, unknown) disqualifies the bypass.

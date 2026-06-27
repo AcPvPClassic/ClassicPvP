@@ -860,6 +860,11 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public void ProcessItemsForPurchase(Player player, Dictionary<uint, WorldObject> items)
         {
+            // Collect biota IDs for resellable items so we can issue one batched DB remove
+            // instead of one queue task per item (the serialized DB queue is a bottleneck
+            // when selling large stacks of gear simultaneously).
+            var biotaIdsToRemove = new List<uint>(items.Count);
+
             foreach (var item in items.Values)
             {
                 var resellItem = true;
@@ -903,10 +908,12 @@ namespace ACE.Server.WorldObjects
                         // is it still marked as consumed in guid manager, and not marked as freed here?
                         // if player repurchases item sometime later, we must ensure the guid is still marked as consumed for re-add
 
-                        // remove object from shard db, but keep a reference to it in memory
-                        // for DestroyOnSell items, these will effectively be destroyed immediately
-                        // for other items, if a player re-purchases, it will be added to the shard db again
-                        item.RemoveBiotaFromDatabase();
+                        // Stage the per-item cleanup (flags, timestamps) without enqueuing a DB task yet.
+                        // We collect all IDs and issue one batched remove after the loop.
+                        var needsDbRemove = item.BiotaOriginatedFromOrHasBeenSavedToDatabase();
+                        item.RemoveBiotaFromDatabase(enqueueRemove: false);
+                        if (needsDbRemove)
+                            biotaIdsToRemove.Add(item.Biota.Id);
                     }
                 }
                 else
@@ -914,6 +921,10 @@ namespace ACE.Server.WorldObjects
 
                 NumItemsBought++;
             }
+
+            // Issue all resellable-item deletes as a single batched queue entry.
+            if (biotaIdsToRemove.Count > 0)
+                DatabaseManager.Shard.RemoveBiotasInParallel(biotaIdsToRemove, null, null);
 
             ApproachVendor(player, VendorType.Sell);
         }

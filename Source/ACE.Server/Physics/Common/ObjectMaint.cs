@@ -305,6 +305,31 @@ namespace ACE.Server.Physics.Common
             }
         }
 
+        /// <summary>
+        /// Returns objects currently in VisibleObjects that are absent from <paramref name="currentVisibleObjects"/>.
+        /// The set-difference is computed inside the read lock, eliminating the snapshot allocation that
+        /// <c>GetVisibleObjectsValues().Except(currentVisibleObjects)</c> would otherwise require.
+        /// </summary>
+        public List<PhysicsObj> GetNewlyOccludedObjects(List<PhysicsObj> currentVisibleObjects)
+        {
+            var currentSet = new HashSet<PhysicsObj>(currentVisibleObjects);
+            rwLock.EnterReadLock();
+            try
+            {
+                var result = new List<PhysicsObj>();
+                foreach (var obj in VisibleObjects.Values)
+                {
+                    if (!currentSet.Contains(obj))
+                        result.Add(obj);
+                }
+                return result;
+            }
+            finally
+            {
+                rwLock.ExitReadLock();
+            }
+        }
+
         public List<PhysicsObj> GetVisibleObjectsValuesWhere(Func<PhysicsObj, bool> predicate)
         {
             rwLock.EnterReadLock();
@@ -364,7 +389,14 @@ namespace ACE.Server.Physics.Common
                 // and envcells seen from outside (all buildings)
                 var visibleObjs = PhysicsObj.CurLandblock.GetServerObjects(true);
 
-                return ApplyFilter(visibleObjs, type).Where(i => i.ID != PhysicsObj.ID && (!(i.CurCell is EnvCell indoors) || indoors.SeenOutside)).ToList();
+                var selfId = PhysicsObj.ID;
+                var outdoorResults = new List<PhysicsObj>();
+                foreach (var obj in ApplyFilter(visibleObjs, type))
+                {
+                    if (obj.ID != selfId && (!(obj.CurCell is EnvCell outdoorIndoors) || outdoorIndoors.SeenOutside))
+                        outdoorResults.Add(obj);
+                }
+                return outdoorResults;
             }
             finally
             {
@@ -397,7 +429,15 @@ namespace ACE.Server.Physics.Common
                 visibleObjs.AddRange(outsideObjs);
             }
 
-            return ApplyFilter(visibleObjs, type).Where(i => !i.DatObject && i.ID != PhysicsObj.ID).Distinct().ToList();
+            var selfId = PhysicsObj.ID;
+            var seen = new HashSet<PhysicsObj>();
+            var results = new List<PhysicsObj>();
+            foreach (var obj in ApplyFilter(visibleObjs, type))
+            {
+                if (!obj.DatObject && obj.ID != selfId && seen.Add(obj))
+                    results.Add(obj);
+            }
+            return results;
         }
 
         public enum VisibleObjectType
@@ -816,14 +856,14 @@ namespace ACE.Server.Physics.Common
         {
             //Console.WriteLine($"{PhysicsObj.Name} ({PhysicsObj.ID:X8}).ObjectMaint.RemoveKnownPlayer({obj.Name})");
 
-            rwLock.EnterReadLock();
+            rwLock.EnterWriteLock();
             try
             {
                 return KnownPlayers.Remove(obj.ID, out _);
             }
             finally
             {
-                rwLock.ExitReadLock();
+                rwLock.ExitWriteLock();
             }
         }
 
