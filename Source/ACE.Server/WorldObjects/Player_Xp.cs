@@ -1046,7 +1046,7 @@ namespace ACE.Server.WorldObjects
         /// <summary>
         /// Raise the available XP by a percentage of the current level XP or a maximum
         /// </summary>
-        public void GrantLevelProportionalXp(double percent, long min, long max)
+        public void GrantLevelProportionalXp(double percent, long min, long max, XpType xpType = XpType.Quest)
         {
             var nextLevelXP = GetXPBetweenLevels(Level.Value, Level.Value + 1);
 
@@ -1059,7 +1059,7 @@ namespace ACE.Server.WorldObjects
                 scaledXP = Math.Max(scaledXP, min);
 
             // apply xp modifiers?
-            EarnXP(scaledXP, XpType.Quest, Level, null, 0, null, ShareType.Allegiance);
+            EarnXP(scaledXP, xpType, Level, null, 0, null, ShareType.Allegiance);
         }
 
         /// <summary>
