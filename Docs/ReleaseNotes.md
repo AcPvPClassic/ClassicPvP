@@ -167,6 +167,14 @@ A few things to know:
 
 ---
 
+## 👥 Swearing Allegiance to Same-Account Characters
+
+You can swear allegiance to another character on your own account using the `/OfflineSwear <CharacterName>` command. Because you cannot have two characters logged in simultaneously, the target must be offline.
+
+All normal allegiance rules apply — the target must be higher or equal level, must not already be your vassal, and the account-wide allegiance lock still applies (both characters must end up in the same monarch's chain).
+
+---
+
 ## 🤝 Allegiance Swear Restrictions
 
 ClassicPvP enforces rules around allegiance oaths to prevent abuse and kill-trading between alts.
