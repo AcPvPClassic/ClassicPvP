@@ -624,9 +624,9 @@ The gem is consumed on use. If you do not have enough PK Trophies in your invent
 
 ---
 
-## 📦 Mystery Box Loot Overhaul
+## 📦 Mystery Boxes
 
-The Common, Rare, and Mythic Mystery Boxes have been significantly expanded with new loot.
+The Common, Rare, and Mythic Mystery Boxes each contain a weighted loot table of currencies, salvage, and morph gems.
 
 ### Common Mystery Box
 
@@ -648,8 +648,6 @@ The Common, Rare, and Mythic Mystery Boxes have been significantly expanded with
 | MMDs ×5 | ~7.9% |
 | PK Trophies ×10 | ~7.9% |
 | Bounty Purchase Token | ~7.9% |
-
-The three Foolproof gem rewards (Sunstone, Black Opal, Fire Opal) have been removed.
 
 ### Rare Mystery Box
 
@@ -676,7 +674,7 @@ The three Foolproof gem rewards (Sunstone, Black Opal, Fire Opal) have been remo
 | MMDs ×20 | ~6.4% |
 | PK Trophies ×100 | ~6.4% |
 
-All salvage bags are full WS10 bags (100 units). The five requirement-altering morph gems appear here at higher rates (~6.4%) than in the Common Box (~2.6%).
+All salvage bags are full WS10 bags (100 units).
 
 ### Mythic Mystery Box
 
