@@ -1,4 +1,4 @@
-﻿using ACE.Common;
+using ACE.Common;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Entity.Models;
@@ -50,79 +50,6 @@ namespace ACE.Server.Entity
         //public const uint MorphGemMeleeCleave      = 490512;
         //public const uint MorphGemMinValue         = 20000;
         #endregion Morph Gem Weenie IDs
-
-        #region Rare/Cantrip Morph Gem Weenie IDs
-        /*
-        public const uint MorphGemRuneofAcidBane                         = 30112;
-        public const uint MorphGemIdeographofAcidProtection              = 30113;
-        public const uint MorphGemHieroglyphofAlchemyMastery             = 30114;
-        public const uint MorphGemHieroglyphofArcaneEnlightenment        = 30115;
-        public const uint MorphGemIdeographofArmor                       = 30116;
-        public const uint MorphGemHieroglyphofArmorTinkeringExpertise    = 30117;
-        public const uint MorphGemHieroglyphofMonsterAttunement          = 30118;
-        public const uint MorphGemHieroglyphofPersonAttunement           = 30119;
-        public const uint MorphGemHieroglyphofLightWeaponMastery         = 30120;
-        public const uint MorphGemRuneofBladeBane                        = 30121;
-        public const uint MorphGemRuneofBloodDrinker                     = 30122;
-        public const uint MorphGemRuneofBludgeonBane                     = 30123;
-        public const uint MorphGemIdeographofBludgeoningProtection       = 30124;
-        public const uint MorphGemHieroglyphofMissileWeaponMastery       = 30125;
-        public const uint MorphGemHieroglyphofCookingMastery             = 30126;
-        public const uint MorphGemPictographofCoordination               = 30127;
-        public const uint MorphGemHieroglyphofCreatureEnchantmentMastery = 30128;
-        public const uint MorphGemHieroglyphofFinesseWeaponMastery       = 30130;
-        public const uint MorphGemHieroglyphofDeceptionMastery           = 30131;
-        public const uint MorphGemRuneofDefender                         = 30132;
-        public const uint MorphGemPictographofEndurance                  = 30134;
-        public const uint MorphGemIdeographofFireProtection              = 30135;
-        public const uint MorphGemRuneofFlameBane                        = 30136;
-        public const uint MorphGemHieroglyphofFletchingMastery           = 30137;
-        public const uint MorphGemPictographofFocus                      = 30138;
-        public const uint MorphGemRuneofFrostBane                        = 30139;
-        public const uint MorphGemIdeographofFrostProtection             = 30140;
-        public const uint MorphGemHieroglyphofHealingMastery             = 30141;
-        public const uint MorphGemIdeographofRegeneration                = 30142;
-        public const uint MorphGemRuneofHeartSeeker                      = 30143;
-        public const uint MorphGemRuneofHermeticLink                     = 30144;
-        public const uint MorphGemRuneofImpenetrability                  = 30145;
-        public const uint MorphGemHieroglyphofItemEnchantmentMastery     = 30146;
-        public const uint MorphGemHieroglyphofItemTinkeringExpertise     = 30147;
-        public const uint MorphGemHieroglyphofJumpingMastery             = 30148;
-        public const uint MorphGemHieroglyphofLeadershipMastery          = 30149;
-        public const uint MorphGemHieroglyphofLifeMagicMastery           = 30150;
-        public const uint MorphGemRuneofLightningBane                    = 30152;
-        public const uint MorphGemIdeographofLightningProtection         = 30153;
-        public const uint MorphGemHieroglyphofLockpickMastery            = 30154;
-        public const uint MorphGemHieroglyphofFealtyMastery              = 30155;
-        public const uint MorphGemHieroglyphofMagicResistance            = 30157;
-        public const uint MorphGemHieroglyphofMagicItemTinkeringExpertise = 30158;
-        public const uint MorphGemHieroglyphofManaConversionMastery      = 30159;
-        public const uint MorphGemIdeographofBattlemagesBlessing         = 30160;
-        public const uint MorphGemHieroglyphofInvulnerability            = 30161;
-        public const uint MorphGemHieroglyphofImpregnability             = 30162;
-        public const uint MorphGemRuneofPierceBane                       = 30163;
-        public const uint MorphGemIdeographofPiercingProtection          = 30164;
-        public const uint MorphGemPictographofQuickness                  = 30166;
-        public const uint MorphGemHieroglyphofSprint                     = 30167;
-        public const uint MorphGemPictographofWillpower                  = 30168;
-        public const uint MorphGemIdeographofBladeProtection             = 30169;
-        public const uint MorphGemRuneofSpiritDrinker                    = 30171;
-        public const uint MorphGemIdeographofRevitalization              = 30173;
-        public const uint MorphGemPictographofStrength                   = 30174;
-        public const uint MorphGemRuneofSwiftKiller                      = 30175;
-        public const uint MorphGemHieroglyphofHeavyWeaponMastery         = 30176;
-        public const uint MorphGemHieroglyphofWarMagicMastery            = 30179;
-        public const uint MorphGemHieroglyphofWeaponTinkeringExpertise   = 30180;
-        public const uint MorphGemHieroglyphofDirtyFightingMastery       = 45361;
-        public const uint MorphGemHieroglyphofDualWieldMastery           = 45362;
-        public const uint MorphGemHieroglyphofRecklessnessMastery        = 45363;
-        public const uint MorphGemHieroglyphofShieldMastery              = 45364;
-        public const uint MorphGemHieroglyphofSneakAttackMastery         = 45365;
-        public const uint MorphGemHieroglyphofVoidMagicMastery           = 70001;
-        public const uint MorphGemHieroglyphofTwoHandedWeaponsMastery    = 70002;
-        public const uint MorphGemHieroglyphofSummoningMastery           = 70003;
-        */
-        #endregion Rare/Cantrip Morph Gem IDs
 
         public static HashSet<uint> MorphGems = new HashSet<uint>()
         {
@@ -259,19 +186,11 @@ namespace ACE.Server.Entity
                             player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
                             return;
                         }
-
-                        var workRandom = ThreadSafeRandom.Next(1, 10);
-                        var workChange = (currentItemWork.Value - workRandom);
-
-                        player.UpdateProperty(target, PropertyInt.ItemWorkmanship, workRandom);
+                        
+                        player.UpdateProperty(target, PropertyInt.ItemWorkmanship, Math.Max(1, currentItemWork.Value - 1));
                         AddMorphGemLog(target, MorphGemRandomWorkmanship);
 
-                        if (workChange < 0)
-                            playerMsg = $"The Morph Gem backfired. Your item's workmanship has increased by {-workChange}";
-                        else if (workChange == 0)
-                            playerMsg = $"The Morph Gem shatters against your {target.NameWithMaterial} and leaves it unchanged. Could be worse.";
-                        else
-                            playerMsg = $"You apply the Morph Gem skillfully and have reduced the workmanship of your {target.NameWithMaterial} by {workChange}";
+                        playerMsg = $"You apply the Morph Gem skillfully and have reduced the workmanship of your {target.NameWithMaterial} to {currentItemWork.Value - 1}.";
 
                         player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
                         break;
@@ -288,9 +207,8 @@ namespace ACE.Server.Entity
                             player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
                             return;
                         }
-
-                        var arcaneRoll = ThreadSafeRandom.Next(0, 99);
-                        var arcaneChange = arcaneRoll > 9 ? -25 : 50;
+                    
+                        var arcaneChange = ThreadSafeRandom.Next(-25, 20);
                         var newArcane = currentItemArcane.Value + arcaneChange;
 
                         if (newArcane < 1)
@@ -554,60 +472,26 @@ namespace ACE.Server.Entity
                             player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
                             return;
                         }
+                        
+                        playerMsg = "You successfully apply the morph gem and have added {0} Impenetrability cantrip to your {1}";
 
-                        var success = true;
-
-                        if (success)
+                        var spellId = 0;
+                        var impenLevel = ThreadSafeRandom.Next(0, 99);
+                        if (impenLevel < 97)
                         {
-                            playerMsg = "You successfully apply the morph gem and have added {0} Impenetrability cantrip to your {1}";
-
-                            var spellId = 0;
-                            var impenLevel = ThreadSafeRandom.Next(0, 99);
-                            if (impenLevel < 40)
-                            {
-                                spellId = 2604;
-                                playerMsg = String.Format(playerMsg, "a Minor", target.Name);
-                            }
-                            else if (impenLevel < 70)
-                            {
-                                spellId = 2592;
-                                playerMsg = String.Format(playerMsg, "a Major", target.Name);
-                            }
-                            else if (impenLevel < 97)
-                            {
-                                spellId = 4667;
-                                playerMsg = String.Format(playerMsg, "an Epic", target.Name);
-                            }
-                            else
-                            {
-                                spellId = 6095;
-                                playerMsg = String.Format(playerMsg, "a Legendary", target.Name);
-                            }
-
-                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-                            target.Biota.GetOrAddKnownSpell(spellId, target.BiotaDatabaseLock, out _);
-                            AddMorphGemLog(target, MorphGemImpen);
+                            spellId = 2604;
+                            playerMsg = String.Format(playerMsg, "a Minor", target.Name);
                         }
                         else
                         {
-                            if (target.OwnerId == player.Guid.Full || player.GetInventoryItem(target.Guid) != null)
-                            {
-                                if (!player.TryConsumeFromInventoryWithNetworking(target))
-                                    log.Warn($"MorphGem.ApplyMorphGem failed to consume target item for Impen. Player = {player.Name}, Target = {target.Name}");
-                            }
-                            else if (target.WielderId == player.Guid.Full)
-                            {
-                                if (!player.TryDequipObjectWithNetworking(target.Guid, out _, Player.DequipObjectAction.ConsumeItem))
-                                    log.Warn($"MorphGem.ApplyMorphGem failed to consume target item for Impen. Player = {player.Name}, Target = {target.Name}");
-                            }
-                            else
-                            {
-                                target.Destroy();
-                            }
+                            spellId = 2592;
+                            playerMsg = String.Format(playerMsg, "a Major", target.Name);
+                        }                            
 
-                            var destroyMessage = new GameMessageSystemChat($"The morph gem fails to apply and has destroyed your {target.Name}", ChatMessageType.Craft);
-                            player.Session.Network.EnqueueSend(destroyMessage);
-                        }
+                        player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
+                        target.Biota.GetOrAddKnownSpell(spellId, target.BiotaDatabaseLock, out _);
+                        AddMorphGemLog(target, MorphGemImpen);
+                        
                         break;
 
                     #endregion MorphGemImpen
@@ -1113,16 +997,16 @@ namespace ACE.Server.Entity
                             return;
                         }
 
-                        var itemLegendaries = target.LegendaryCantrips;
-                        if (itemLegendaries == null || itemLegendaries.Count < 1)
+                        var itemMajors = target.MajorCantrips;
+                        if (itemMajors == null || itemMajors.Count < 1)
                         {
                             player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
-                            player.Session.Network.EnqueueSend(new GameMessageSystemChat("The target item has no legendary cantrips to randomize", ChatMessageType.Broadcast));
+                            player.Session.Network.EnqueueSend(new GameMessageSystemChat("The target item has no Major cantrips to randomize", ChatMessageType.Broadcast));
                             return;
                         }
 
-                        List<int> newLegendaryList = new List<int>();
-                        foreach (var currLegendary in itemLegendaries)
+                        List<int> newMajorList = new List<int>();
+                        foreach (var currMajor in itemMajors)
                         {
                             var counter = 0;
                             while (counter < 20)
@@ -1134,12 +1018,12 @@ namespace ACE.Server.Entity
 
                                 List<SpellId> progression = SpellLevelProgression.GetSpellLevels(newCantrip);
 
-                                if (progression != null && progression.Count >= 4)
+                                if (progression != null && progression.Count >= 2)
                                 {
-                                    int newLegendarySpellId = (int)progression[3];
-                                    if (newLegendarySpellId != currLegendary.Key && !newLegendaryList.Contains(newLegendarySpellId))
+                                    int newMajorSpellId = (int)progression[1];
+                                    if (newMajorSpellId != currMajor.Key && !newMajorList.Contains(newMajorSpellId))
                                     {
-                                        newLegendaryList.Add(newLegendarySpellId);
+                                        newMajorList.Add(newMajorSpellId);
                                         break;
                                     }
                                 }
@@ -1147,30 +1031,30 @@ namespace ACE.Server.Entity
                             }
                         }
 
-                        if (newLegendaryList.Count > 1)
+                        if (newMajorList.Count > 1)
                         {
-                            var legRandom = new Random();
-                            var legRandomRoll = legRandom.Next(0, int.MaxValue);
-                            if (legRandomRoll % 15 == 0 && newLegendaryList.Count > 0)
-                                newLegendaryList.RemoveAt(0);
+                            var majRandom = new Random();
+                            var majRandomRoll = majRandom.Next(0, int.MaxValue);
+                            if (majRandomRoll % 15 == 0 && newMajorList.Count > 0)
+                                newMajorList.RemoveAt(0);
                         }
 
-                        if (newLegendaryList.Count < 4)
+                        if (newMajorList.Count < 4)
                         {
-                            var legRandom = new Random();
-                            var legRandomRoll = legRandom.Next(0, int.MaxValue);
-                            if (legRandomRoll % 10 == 0 && newLegendaryList.Count > 0)
+                            var majRandom = new Random();
+                            var majRandomRoll = majRandom.Next(0, int.MaxValue);
+                            if (majRandomRoll % 10 == 0 && newMajorList.Count > 0)
                             {
                                 while (true)
                                 {
                                     SpellId newCantrip = ArmorCantrips.Roll(target.IsShield);
                                     List<SpellId> progression = SpellLevelProgression.GetSpellLevels(newCantrip);
-                                    if (progression != null && progression.Count >= 4)
+                                    if (progression != null && progression.Count >= 2)
                                     {
-                                        int newLegendarySpellId = (int)progression[3];
-                                        if (!newLegendaryList.Contains(newLegendarySpellId))
+                                        int newMajorSpellId = (int)progression[1];
+                                        if (!newMajorList.Contains(newMajorSpellId))
                                         {
-                                            newLegendaryList.Add(newLegendarySpellId);
+                                            newMajorList.Add(newMajorSpellId);
                                             break;
                                         }
                                     }
@@ -1183,40 +1067,40 @@ namespace ACE.Server.Entity
                         {
                             var impenRandom = new Random();
                             var impenRoll = impenRandom.Next(0, int.MaxValue);
-                            if (impenRoll % 7 == 0 && !newLegendaryList.Contains(6095))
+                            if (impenRoll % 7 == 0 && !newMajorList.Contains(2591))
                             {
-                                if (newLegendaryList.Count < 4)
-                                    newLegendaryList.Add(6095);
+                                if (newMajorList.Count < 4)
+                                    newMajorList.Add(2591);
                                 else
-                                    newLegendaryList[0] = 6095;
+                                    newMajorList[0] = 2591;
 
                                 cantripImpenSuccess = true;
                             }
                         }
 
                         string removedSpellList = "";
-                        int removedLegNum = 0;
-                        foreach (var spell in itemLegendaries)
+                        int removedMajorNum = 0;
+                        foreach (var spell in itemMajors)
                         {
                             target.Biota.TryRemoveKnownSpell(spell.Key, target.BiotaDatabaseLock);
-                            removedLegNum++;
-                            if (removedLegNum == 1)
+                            removedMajorNum++;
+                            if (removedMajorNum == 1)
                                 removedSpellList = $"{new Spell(spell.Key, true).Name}";
-                            else if (removedLegNum == itemLegendaries.Count)
+                            else if (removedMajorNum == itemMajors.Count)
                                 removedSpellList += $" and {new Spell(spell.Key, true).Name}";
                             else
                                 removedSpellList += $", {new Spell(spell.Key, true).Name}";
                         }
 
                         string addedSpellList = "";
-                        int addedLegNum = 0;
-                        foreach (var cantripSpellId in newLegendaryList)
+                        int addedMajorNum = 0;
+                        foreach (var cantripSpellId in newMajorList)
                         {
                             target.Biota.GetOrAddKnownSpell(cantripSpellId, target.BiotaDatabaseLock, out _);
-                            addedLegNum++;
-                            if (addedLegNum == 1)
+                            addedMajorNum++;
+                            if (addedMajorNum == 1)
                                 addedSpellList = $"{new Spell(cantripSpellId, true).Name}";
-                            else if (addedLegNum == newLegendaryList.Count)
+                            else if (addedMajorNum == newMajorList.Count)
                                 addedSpellList += $" and {new Spell(cantripSpellId, true).Name}";
                             else
                                 addedSpellList += $", {new Spell(cantripSpellId, true).Name}";
@@ -1224,7 +1108,7 @@ namespace ACE.Server.Entity
 
                         string cantripImpenMessage = cantripImpenSuccess ? "\n\nYour armor also somehow looks tougher, like it might have once been worn by some kind of tough guy and his tough guy essence sort of rubbed off on it and now it's more tough than it was before." : "";
 
-                        string randomizeResultMsg = $"Staring into the morph gem intently, your head swims at the chaos within it.  As you slump to the ground you scream in silence at the realization that eternity is boundless and upon you; upon us all.  You smash the morph gem hard against your armor and it explodes into everything and nothing.  Washed away are the legendary enchantments that once took hold.\n\nThe spells {removedSpellList} are no longer.\n\nIn their place, the spells {addedSpellList} have been cast upon your armor.{cantripImpenMessage}";
+                        string randomizeResultMsg = $"Staring into the morph gem intently, your head swims at the chaos within it.  As you slump to the ground you scream in silence at the realization that eternity is boundless and upon you; upon us all.  You smash the morph gem hard against your armor and it explodes into everything and nothing.  Washed away are the Major enchantments that once took hold.\n\nThe spells {removedSpellList} are no longer.\n\nIn their place, the spells {addedSpellList} have been cast upon your armor.{cantripImpenMessage}";
                         player.Session.Network.EnqueueSend(new GameMessageSystemChat(randomizeResultMsg, ChatMessageType.Broadcast));
                         AddMorphGemLog(target, MorphGemRandomCantrip);
                         break;
@@ -1376,448 +1260,6 @@ namespace ACE.Server.Entity
 //                        AddMorphGemLog(target, 490512); // MorphGemMeleeCleave
 //                        break;
                     #endregion MorphGemMeleeCleave
-
-                    #region Rare Cantrip Morph Gems
-//                    case 30112: // MorphGemRuneofAcidBane
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6088, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemIdeographofAcidProtection:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6080, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofAlchemyMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6040, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofArcaneEnlightenment:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6041, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemIdeographofArmor:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6102, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofArmorTinkeringExpertise:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6042, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofMonsterAttunement:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6065, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofPersonAttunement:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6066, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofLightWeaponMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6043, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemRuneofBladeBane:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6097, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemRuneofBloodDrinker:
-//
-//                        if (target as MeleeWeapon == null && !target.IsRanged)
-//                        {
-//                            playerMsg = "This gem can only be used on melee or missile weapons";
-//                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
-//                            return;
-//                        }
-//
-//                        if (targetItemSpells == null || targetItemSpells.Count < 1)
-//                        {
-//                            playerMsg = "The gem can only be applied to magical items";
-//                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
-//                            return;
-//                        }
-//                        else if (targetItemSpells.Contains(6089))
-//                        {
-//                            playerMsg = "Your target item already has Legendary Blood Thirst on it, you cannot add it twice";
-//                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
-//                            return;
-//                        }
-//
-//                        RemoveAllCantripsInProgression(target, 6089);
-//                        target.Biota.GetOrAddKnownSpell(6089, target.BiotaDatabaseLock, out _);
-//                        playerMsg = $"With a steady hand you skillfully apply the morph gem to your {target.NameWithMaterial} and have successfully added the spell Legendary Blood Thirst";
-//                        player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                        AddMorphGemLog(target, MorphGemRuneofBloodDrinker);
-//                        break;
-//
-//                    case MorphGemRuneofBludgeonBane:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6090, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemIdeographofBludgeoningProtection:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6081, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofMissileWeaponMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6044, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofCookingMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6045, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemPictographofCoordination:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6103, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofCreatureEnchantmentMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6046, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofFinesseWeaponMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6047, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofDeceptionMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6048, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemRuneofDefender:
-//
-//                        if (target as MeleeWeapon == null && !target.IsCaster && !target.IsRanged)
-//                        {
-//                            playerMsg = "This gem can only be used on weapons or magic casters";
-//                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
-//                            return;
-//                        }
-//
-//                        if (targetItemSpells == null || targetItemSpells.Count < 1)
-//                        {
-//                            playerMsg = "The gem can only be applied to magical items";
-//                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
-//                            return;
-//                        }
-//                        else if (targetItemSpells.Contains(6091))
-//                        {
-//                            playerMsg = "Your target item already has Legendary Defender on it, you cannot add it twice";
-//                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
-//                            return;
-//                        }
-//
-//                        RemoveAllCantripsInProgression(target, 6091);
-//                        target.Biota.GetOrAddKnownSpell(6091, target.BiotaDatabaseLock, out _);
-//                        playerMsg = $"With a steady hand you skillfully apply the morph gem to your {target.NameWithMaterial} and have successfully added the spell Legendary Defender";
-//                        player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                        AddMorphGemLog(target, MorphGemRuneofDefender);
-//                        break;
-//
-//                    case MorphGemPictographofEndurance:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6104, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemIdeographofFireProtection:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6082, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemRuneofFlameBane:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6092, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofFletchingMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6052, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemPictographofFocus:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6105, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemRuneofFrostBane:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6093, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemIdeographofFrostProtection:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6083, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofHealingMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6053, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemIdeographofRegeneration:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6077, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemRuneofHeartSeeker:
-//
-//                        if (target as MeleeWeapon == null)
-//                        {
-//                            playerMsg = "This gem can only be used on melee weapons";
-//                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
-//                            return;
-//                        }
-//
-//                        if (targetItemSpells == null || targetItemSpells.Count < 1)
-//                        {
-//                            playerMsg = "The gem can only be applied to magical items";
-//                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
-//                            return;
-//                        }
-//                        else if (targetItemSpells.Contains(6094))
-//                        {
-//                            playerMsg = "Your target item already has Legendary Heart Thirst on it, you cannot add it twice";
-//                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
-//                            return;
-//                        }
-//
-//                        RemoveAllCantripsInProgression(target, 6094);
-//                        target.Biota.GetOrAddKnownSpell(6094, target.BiotaDatabaseLock, out _);
-//                        playerMsg = $"With a steady hand you skillfully apply the morph gem to your {target.NameWithMaterial} and have successfully added the spell Legendary Heart Thirst";
-//                        player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                        AddMorphGemLog(target, MorphGemRuneofHeartSeeker);
-//                        break;
-//
-//                    case MorphGemRuneofHermeticLink:
-//
-//                        if (target as Caster == null)
-//                        {
-//                            playerMsg = "This gem can only be used on magic casters";
-//                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
-//                            return;
-//                        }
-//
-//                        if (targetItemSpells == null || targetItemSpells.Count < 1)
-//                        {
-//                            playerMsg = "The gem can only be applied to magical items";
-//                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
-//                            return;
-//                        }
-//                        else if (targetItemSpells.Contains(6087))
-//                        {
-//                            playerMsg = "Your target item already has Legendary Hermetic Link on it, you cannot add it twice";
-//                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
-//                            return;
-//                        }
-//
-//                        RemoveAllCantripsInProgression(target, 6087);
-//                        target.Biota.GetOrAddKnownSpell(6087, target.BiotaDatabaseLock, out _);
-//                        playerMsg = $"With a steady hand you skillfully apply the morph gem to your {target.NameWithMaterial} and have successfully added the spell Legendary Hermetic Link";
-//                        player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                        AddMorphGemLog(target, MorphGemRuneofHermeticLink);
-//                        break;
-//
-//                    case MorphGemRuneofImpenetrability:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6095, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofItemEnchantmentMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6056, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofItemTinkeringExpertise:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6057, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofJumpingMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6058, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofLeadershipMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6059, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofLifeMagicMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6060, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemRuneofLightningBane:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6099, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemIdeographofLightningProtection:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6079, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofLockpickMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6061, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofFealtyMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6051, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofMagicResistance:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6063, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofMagicItemTinkeringExpertise:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6062, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofManaConversionMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6064, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemIdeographofBattlemagesBlessing:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6078, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofInvulnerability:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6055, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofImpregnability:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6054, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemRuneofPierceBane:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6096, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemIdeographofPiercingProtection:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6084, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemPictographofQuickness:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6106, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofSprint:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6071, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemPictographofWillpower:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6101, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemIdeographofBladeProtection:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6085, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemRuneofSpiritDrinker:
-//
-//                        if (target as Caster == null)
-//                        {
-//                            playerMsg = "This gem can only be used on magic casters";
-//                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
-//                            return;
-//                        }
-//
-//                        if (targetItemSpells == null || targetItemSpells.Count < 1)
-//                        {
-//                            playerMsg = "The gem can only be applied to magical items";
-//                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
-//                            return;
-//                        }
-//                        else if (targetItemSpells.Contains(6098))
-//                        {
-//                            playerMsg = "Your target item already has Legendary Spirit Thirst on it, you cannot add it twice";
-//                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
-//                            return;
-//                        }
-//
-//                        RemoveAllCantripsInProgression(target, 6098);
-//                        target.Biota.GetOrAddKnownSpell(6098, target.BiotaDatabaseLock, out _);
-//                        playerMsg = $"With a steady hand you skillfully apply the morph gem to your {target.NameWithMaterial} and have successfully added the spell Legendary Spirit Thirst";
-//                        player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                        AddMorphGemLog(target, MorphGemRuneofSpiritDrinker);
-//                        break;
-//
-//                    case MorphGemIdeographofRevitalization:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6076, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemPictographofStrength:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6107, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemRuneofSwiftKiller:
-//
-//                        if (target as MeleeWeapon == null && !target.IsBow && !target.IsThrownWeapon)
-//                        {
-//                            playerMsg = "This gem can only be used on melee or missile weapons";
-//                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
-//                            return;
-//                        }
-//
-//                        if (targetItemSpells == null || targetItemSpells.Count < 1)
-//                        {
-//                            playerMsg = "The gem can only be applied to magical items";
-//                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
-//                            return;
-//                        }
-//                        else if (targetItemSpells.Contains(6100))
-//                        {
-//                            playerMsg = "Your target item already has Legendary Swift Hunter on it, you cannot add it twice";
-//                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
-//                            return;
-//                        }
-//
-//                        RemoveAllCantripsInProgression(target, 6100);
-//                        target.Biota.GetOrAddKnownSpell(6100, target.BiotaDatabaseLock, out _);
-//                        playerMsg = $"With a steady hand you skillfully apply the morph gem to your {target.NameWithMaterial} and have successfully added the spell Legendary Swift Hunter";
-//                        player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-//                        AddMorphGemLog(target, MorphGemRuneofSwiftKiller);
-//                        break;
-//
-//                    case MorphGemHieroglyphofHeavyWeaponMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6072, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofWarMagicMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6075, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofWeaponTinkeringExpertise:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6039, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofDirtyFightingMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6049, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofDualWieldMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6050, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofRecklessnessMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6067, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofShieldMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6069, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofSneakAttackMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6070, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofVoidMagicMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6074, targetItemSpells)) return;
-//                        break;
-//
-//                    case MorphGemHieroglyphofTwoHandedWeaponsMastery:
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6073, targetItemSpells)) return;
-//                        break;
-//
-//                    case 70003: // MorphGemHieroglyphofSummoningMastery
-//                        if (!ApplyMorphGem_RareLegendaryCantrip(player, source, target, 6125, targetItemSpells)) return;
-//                        break;
-                    #endregion Rare Cantrip Morph Gems
 
                     default:
                         player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);

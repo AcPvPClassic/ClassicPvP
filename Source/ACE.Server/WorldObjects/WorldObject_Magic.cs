@@ -2378,6 +2378,16 @@ namespace ACE.Server.WorldObjects
         }
 
         /// <summary>
+        /// Returns the minor cantrips from this item's spellbook
+        /// </summary>
+        public Dictionary<int, float /* probability */> MinorCantrips => Biota.GetMatchingSpells(LootGenerationFactory.MinorCantrips, BiotaDatabaseLock);
+
+        /// <summary>
+        /// Returns the major cantrips from this item's spellbook
+        /// </summary>
+        public Dictionary<int, float /* probability */> MajorCantrips => Biota.GetMatchingSpells(LootGenerationFactory.MajorCantrips, BiotaDatabaseLock);
+
+        /// <summary>
         /// Returns the epic cantrips from this item's spellbook
         /// </summary>
         public Dictionary<int, float /* probability */> EpicCantrips => Biota.GetMatchingSpells(LootGenerationFactory.EpicCantrips, BiotaDatabaseLock);
