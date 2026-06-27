@@ -461,7 +461,7 @@ Allegiances can now conquer and hold **towns across Dereth** through a two-phase
 
 ### Owning Towns
 
-Any allegiance Seneschal or higher can walk up to a **Bind Stone** in an unowned town and use it to **claim the town for free**. Once claimed, the town becomes your allegiance's hometown and all members can recall there.
+Any allegiance member can walk up to a **Bind Stone** in an unowned town and use it to **claim the town for free**. Once claimed, the town becomes your allegiance's hometown and all members can recall there.
 
 - `/ah` — Recalls to a random town owned by your allegiance
 - `/ah <name>` — Recalls to a specific owned town (e.g. `/ah Arwic`)
@@ -472,7 +472,7 @@ Any allegiance Seneschal or higher can walk up to a **Bind Stone** in an unowned
 To take a town owned by a rival allegiance, use the Bind Stone to begin the assault.
 
 **Phase 1 — Perimeter Control (up to 60 minutes)**
-- At least **2 members** of the attacking allegiance must stand within **5 meters** of the Bind Stone simultaneously
+- Phase 1 begins **automatically** when at least **2 members** of a single attacking allegiance are within **5 meters** of the Bind Stone and no other enemy allegiances are on the landblock — no player action required
 - Enemy PKs on the landblock interrupt progress and reset the timer
 - Hold the zone for **4 uninterrupted minutes** to trigger Phase 2
 - Failing to reach Phase 2 within 60 minutes announces a global failure and applies a **3-hour cooldown** on that town for your allegiance
@@ -497,7 +497,7 @@ Two allegiances cannot attack the same town simultaneously. An allegiance can ma
 
 ### Rewards
 
-Winners (present on the landblock at the moment of resolution) receive:
+Winners within **100 meters of the Bind Stone** (on the town landblock or an adjacent one) at the moment of resolution receive:
 
 - **40–120 PK Trophies** split among eligible players
 - **10–30 MMDs** split among eligible players
@@ -505,7 +505,22 @@ Winners (present on the landblock at the moment of resolution) receive:
 - **3 Darkbeat Keys** per player
 - **10% of XP to next level** per player
 
-The losing allegiance's PKs on the landblock are **smited** at the moment of resolution.
+The losing allegiance's online PKs are **smited** at the moment of resolution, wherever they are in the world.
+
+### Using the Bind Stone
+
+Clicking (using) the Bind Stone at any time gives you a status message:
+- **Unowned town** — instantly claims it for your allegiance
+- **Your town** — confirms ownership and prompts you to defend
+- **Enemy town, Phase 1 active** — informs you that an assault is already in progress
+- **Enemy town, Phase 2 active** — informs you that the Bind Stone creature is under attack
+- **Enemy town, no active assault** — shows any cooldown or blacklist block reason, or tells you the gather requirements to trigger Phase 1
+
+During **Phase 2**, the real Bind Stone becomes invisible (cloaked) and an attackable **Bind Stone creature** appears in its place. Destroying the creature ends Phase 2 and awards the town to the attackers. If the creature survives the 30-minute timer the town remains with the defenders.
+
+### Allegiance Blacklist
+
+Server admins can suspend an allegiance from participating in hometown warfare via the blacklist. Blacklisted allegiances cannot initiate Phase 1 and are informed when they attempt to do so.
 
 ### PK XP Bonuses
 
