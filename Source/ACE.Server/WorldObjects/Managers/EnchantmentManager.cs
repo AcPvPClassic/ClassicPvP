@@ -202,6 +202,9 @@ namespace ACE.Server.WorldObjects.Managers
                 var duration = spell.Duration;
                 if (caster is Player player && player.AugmentationIncreasedSpellDuration > 0 && !isWeaponSpell && spell.DotDuration == 0)
                     duration *= 1.0f + player.AugmentationIncreasedSpellDuration * 0.2f;
+                var globalDurationModRefresh = PropertyManager.GetDouble("positive_spell_duration_modifier").Item;
+                if (globalDurationModRefresh != 1.0 && spell.IsBeneficial && duration > 0)
+                    duration = (float)Math.Ceiling(duration * globalDurationModRefresh);
 
                 var timeRemaining = refreshSpell.Duration + refreshSpell.StartTime;
 
@@ -253,6 +256,10 @@ namespace ACE.Server.WorldObjects.Managers
                     entry.StartTime = 0;
                 }
             }
+
+            var globalDurationMod = PropertyManager.GetDouble("positive_spell_duration_modifier").Item;
+            if (globalDurationMod != 1.0 && spell.IsBeneficial && entry.Duration > 0)
+                entry.Duration = Math.Ceiling(entry.Duration * globalDurationMod);
 
             if (caster == null)
                 entry.CasterObjectId = WorldObject.Guid.Full;

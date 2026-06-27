@@ -629,6 +629,22 @@ The target must be online. Spells are added silently (no purple particle effect 
 
 > **Note:** For Infiltration ruleset, levels 1–7 are the valid range. Level 8 exists in the enum but no Infiltration spells are defined at that tier.
 
+### Beneficial Spell Duration Modifier
+
+A server-wide multiplier that scales the duration of all beneficial spells at cast time. Useful for extending buff uptime during events or seasons without modifying individual spell data.
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `positive_spell_duration_modifier` | double | `1.0` | Multiplier on beneficial spell duration. Result is rounded up to the nearest second. `1.5` = 50% longer, `2.0` = double. |
+
+Applies to newly cast spells and refreshed spells (re-casting while the buff is still active). Does **not** affect damage-over-time spells, weapon spells cast during combat, or item enchantments applied at equip time.
+
+Changes take effect on the next cast — already-active enchantments are not retroactively adjusted.
+
+```
+/modifydouble positive_spell_duration_modifier 1.5
+```
+
 ---
 
 ## 15. Admin Command Quick Reference
