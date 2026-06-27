@@ -624,6 +624,74 @@ The gem is consumed on use. If you do not have enough PK Trophies in your invent
 
 ---
 
+## 📦 Mystery Box Loot Overhaul
+
+The Common, Rare, and Mythic Mystery Boxes have been significantly expanded with new loot.
+
+### Common Mystery Box
+
+| Item | Chance |
+|------|--------|
+| Workmanship Morph Gem | ~2.6% |
+| Missile Defense Requirement Morph Gem | ~2.6% |
+| Melee Requirement Morph Gem | ~2.6% |
+| Player Wield Requirement Morph Gem | ~2.6% |
+| Level Requirement Removal Morph Gem | ~2.6% |
+| Darkbeat's Lost Storage Key | ~7.9% |
+| Arcane Lore Morph Gem | ~7.9% |
+| Steel Salvage (WS10, 100 units) | ~7.9% |
+| Granite Salvage (WS10, 100 units) | ~7.9% |
+| Iron Salvage (WS10, 100 units) | ~7.9% |
+| Green Garnet Salvage (WS10, 100 units) | ~7.9% |
+| Opal Salvage (WS10, 100 units) | ~7.9% |
+| Rare Mystery Box | ~7.9% |
+| MMDs ×5 | ~7.9% |
+| PK Trophies ×10 | ~7.9% |
+| Bounty Purchase Token | ~7.9% |
+
+The three Foolproof gem rewards (Sunstone, Black Opal, Fire Opal) have been removed.
+
+### Rare Mystery Box
+
+| Item | Chance |
+|------|--------|
+| Ancient Bottle (XP Bottle) | ~2.1% |
+| Workmanship Morph Gem | ~6.4% |
+| Missile Defense Requirement Morph Gem | ~6.4% |
+| Melee Requirement Morph Gem | ~6.4% |
+| Player Wield Requirement Morph Gem | ~6.4% |
+| Level Requirement Removal Morph Gem | ~6.4% |
+| Sunstone Salvage WS10 — Bludgeoning Rend | ~4.3% |
+| Red Garnet Salvage WS10 — Slashing Rend | ~4.3% |
+| Black Garnet Salvage WS10 — Piercing Rend/Imbue | ~4.3% |
+| Imperial Topaz Salvage WS10 — Lightning Rend/Imbue | ~4.3% |
+| Jet Salvage WS10 — Nether Rend/Imbue | ~4.3% |
+| Aquamarine Salvage WS10 — Cold Imbue | ~4.3% |
+| White Sapphire Salvage WS10 — Cold/Bludgeon Imbue | ~4.3% |
+| Emerald Salvage WS10 — Acid Imbue/Rend | ~4.3% |
+| Fire Opal Salvage WS10 — Fire Imbue | ~4.3% |
+| Black Opal Salvage WS10 — Bludgeon/Nether Imbue | ~4.3% |
+| Bloodstone Salvage WS10 — Crippling Blow | ~4.3% |
+| Mythic Mystery Box | ~6.4% |
+| MMDs ×20 | ~6.4% |
+| PK Trophies ×100 | ~6.4% |
+
+All salvage bags are full WS10 bags (100 units). The five requirement-altering morph gems appear here at higher rates (~6.4%) than in the Common Box (~2.6%).
+
+### Mythic Mystery Box
+
+| Item | Chance |
+|------|--------|
+| Ancient Bottle (XP Bottle) | ~5.3% |
+| Impenetrability Morph Gem | ~15.8% |
+| Slayer Upgrade Morph Gem | ~15.8% |
+| Skill and Attribute Reset Gem | ~15.8% |
+| Imbue Altering Morph Gem | ~15.8% |
+| MMDs ×50 | ~15.8% |
+| PK Trophies ×1000 | ~15.8% |
+
+---
+
 ## 🔒 One-Account-Per-IP Enforcement
 
 ClassicPvP now enforces that each IP address can only be associated with one account, helping prevent account sharing while staying fair to players with dynamic IPs or VPN hiccups.
