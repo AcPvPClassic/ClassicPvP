@@ -6247,8 +6247,8 @@ namespace ACE.Server.Command.Handlers
         #region Loot to Weenie Export
 
         [CommandHandler("loot-to-weenie", AccessLevel.Admin, CommandHandlerFlag.RequiresWorld, 0,
-            "Creates a weenie template from the last ID'd loot-generated item and exports it to SQL in the content folder.",
-            "@loot-to-weenie")]
+            "Creates a weenie template from the last ID'd loot-generated item and exports it to SQL in the content folder. Pass a WCID to overwrite an existing weenie.",
+            "@loot-to-weenie [wcid]")]
         public static void HandleLootToWeenie(Session session, params string[] parameters)
         {
             if (!session.Player.CurrentAppraisalTarget.HasValue)
@@ -6272,11 +6272,36 @@ namespace ACE.Server.Command.Handlers
                 return;
             }
 
-            var newWcid = DatabaseManager.World.GetNextCustomClassId();
+            uint newWcid;
+            if (parameters.Length > 0 && uint.TryParse(parameters[0], out var specifiedWcid))
+            {
+                newWcid = specifiedWcid;
+                DeleteExistingWeenieFiles(newWcid);
+            }
+            else
+            {
+                newWcid = DatabaseManager.World.GetNextCustomClassId();
+            }
+
             var dbWeenie = BuildWeenieFromLootItem(wo, newWcid);
 
             Processors.DeveloperContentCommands.ExportSQLWeenie(dbWeenie, session, withFolders: true);
             Processors.DeveloperContentCommands.ImportSQLWeenie(session, newWcid.ToString(), withFolders: true);
+        }
+
+        private static void DeleteExistingWeenieFiles(uint wcid)
+        {
+            var contentFolder = PropertyManager.GetString("content_folder").Item;
+            if (contentFolder.StartsWith("."))
+                contentFolder = Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + contentFolder;
+
+            var weeniesDir = Path.Combine(contentFolder, "sql", "weenies");
+            if (!Directory.Exists(weeniesDir))
+                return;
+
+            // Pattern uses a space after the WCID to avoid matching e.g. 1000011 when searching for 100001
+            foreach (var file in Directory.GetFiles(weeniesDir, $"{wcid} *.sql", SearchOption.AllDirectories))
+                File.Delete(file);
         }
 
         private static ACE.Database.Models.World.Weenie BuildWeenieFromLootItem(WorldObject wo, uint wcid)

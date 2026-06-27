@@ -573,7 +573,12 @@ Captures a live loot-generated item and writes it out as a permanent weenie SQL 
 1. ID the item in-game (`Alt+click` or use the Assessment skill on it).
 2. Run `@loot-to-weenie` as an admin.
 
-The last item you ID'd is used automatically — no argument needed.
+```
+@loot-to-weenie           — allocates the next available WCID (≥ 1,000,000)
+@loot-to-weenie <wcid>    — writes to the given WCID, overwriting any existing file
+```
+
+The last item you appraised is always used as the source.
 
 ### What It Does
 
@@ -584,7 +589,9 @@ The last item you ID'd is used automatically — no argument needed.
 
 ### After Export
 
-The SQL file is written to disk and immediately imported into the world database. The weenie cache is cleared and reloaded, so the new WCID is live without a restart. No further action is required.
+The SQL file is written to disk and immediately imported into the world database. The weenie cache is cleared and reloaded, so the result is live without a restart. No further action is required.
+
+When a WCID is passed explicitly, any existing SQL file(s) for that WCID are deleted from the content folder before the new file is written, so stale files from a previous item name do not accumulate.
 
 ### Notes
 
