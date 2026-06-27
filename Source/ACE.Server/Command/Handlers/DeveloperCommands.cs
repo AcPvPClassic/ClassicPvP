@@ -1155,6 +1155,48 @@ namespace ACE.Server.Command.Handlers
             }
         }
 
+        // grantschoolspells <player> <school> <level>
+        [CommandHandler("grantschoolspells", AccessLevel.Developer, CommandHandlerFlag.RequiresWorld, 3,
+            "Grants all spells of a specific school and level to a target player.",
+            "<player name> <school: War|Life|Creature|Item|Void> <spell level: 1-8>")]
+        public static void HandleGrantSchoolSpells(Session session, params string[] parameters)
+        {
+            // Last parameter is level, second-to-last is school, everything before is the player name.
+            // Usage: @grantschoolspells Player Name War 7
+            if (!uint.TryParse(parameters[parameters.Length - 1], out var spellLevel) || spellLevel < 1 || spellLevel > 8)
+            {
+                session.Network.EnqueueSend(new GameMessageSystemChat("Invalid spell level. Must be 1-8.", ChatMessageType.Broadcast));
+                return;
+            }
+
+            var schoolStr = parameters[parameters.Length - 2];
+            if (!Enum.TryParse(schoolStr, true, out MagicSchool school) || school == MagicSchool.None)
+            {
+                session.Network.EnqueueSend(new GameMessageSystemChat($"Unknown magic school '{schoolStr}'. Valid values: War, Life, Creature, Item, Void.", ChatMessageType.Broadcast));
+                return;
+            }
+
+            var playerName = string.Join(" ", parameters, 0, parameters.Length - 2);
+            var target = PlayerManager.FindByName(playerName, out bool isOnline);
+
+            if (target == null)
+            {
+                session.Network.EnqueueSend(new GameMessageSystemChat($"Player '{playerName}' not found.", ChatMessageType.Broadcast));
+                return;
+            }
+
+            if (!isOnline)
+            {
+                session.Network.EnqueueSend(new GameMessageSystemChat($"Player '{playerName}' is not online.", ChatMessageType.Broadcast));
+                return;
+            }
+
+            var onlinePlayer = target as Player;
+            onlinePlayer.LearnSpellsInBulk(school, spellLevel);
+
+            session.Network.EnqueueSend(new GameMessageSystemChat($"Granted {school} level {spellLevel} spells to {onlinePlayer.Name}.", ChatMessageType.Broadcast));
+        }
+
         /// <summary>
         /// Debug console command to test the GetSpellFormula function.
         /// </summary>

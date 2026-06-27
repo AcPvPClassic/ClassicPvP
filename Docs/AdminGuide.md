@@ -22,6 +22,7 @@ All server properties are stored in `shard_config` and are readable/writable at 
 14. [Bounty System](#14-bounty-system)
 15. [Admin Command Quick Reference](#15-admin-command-quick-reference)
 16. [Loot-to-Weenie Export](#16-loot-to-weenie-export)
+17. [Spell Management](#17-spell-management)
 
 ---
 
@@ -599,6 +600,36 @@ or import it via the ACE SQL import tooling, then restart or reload the weenie c
 
 ---
 
+## 17. Spell Management
+
+### Grant School Spells
+
+Grants all spells of a specific magic school and level to an online target player.
+
+```
+@grantschoolspells <player name> <school> <level>
+```
+
+| Argument | Valid Values |
+|---|---|
+| `player name` | Any online character name (multi-word names supported) |
+| `school` | `War`, `Life`, `Creature`, `Item`, `Void` (case-insensitive) |
+| `level` | `1` – `8` |
+
+**Examples:**
+
+```
+@grantschoolspells Jimmy War 7
+@grantschoolspells Jimmy Life 6
+@grantschoolspells Some Player Creature 5
+```
+
+The target must be online. Spells are added silently (no purple particle effect per spell) but the player's spellbook updates immediately. Already-known spells are skipped.
+
+> **Note:** For Infiltration ruleset, levels 1–7 are the valid range. Level 8 exists in the enum but no Infiltration spells are defined at that tier.
+
+---
+
 ## 15. Admin Command Quick Reference
 
 ### Rolling Cap & XP
@@ -634,6 +665,12 @@ or import it via the ACE SQL import tooling, then restart or reload the weenie c
 | `/seasons forcemilestone` | Force a weekly milestone snapshot now |
 | `/seasons resetcache` | Flush all leaderboard caches |
 | `/seasons status` | Show season manager status |
+
+### Spells
+
+| Command | Summary |
+|---|---|
+| `@grantschoolspells <player> <school> <level>` | Grant all spells of a school+level to an online player |
 
 ### Content
 
