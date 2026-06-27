@@ -590,6 +590,26 @@ Both bonuses apply simultaneously and stack with other multipliers (Hot Dungeon,
 
 **Darkbeat** is a special vendor located in the Afterlife area. He accepts **Phials of Bloody Tears** as currency (not pyreals) and sells a variety of rare utility items.
 
+### Darkbeat's Storage Locker
+
+The Storage Locker is a locked chest that always contains one tier-8 loot item and one randomly selected item from the table below. Darkbeat's Golem Drawing is always present and permanent (it does not leave when picked up — it regenerates).
+
+The chest has a ~10% chance to contain a full WS10 (100-unit) salvage bag, evenly distributed across 11 salvage types (~0.91% each):
+
+| Salvage | Use |
+|---------|-----|
+| Sunstone | Bludgeoning Rend |
+| Red Garnet | Slashing Rend |
+| Black Garnet | Piercing Rend/Imbue |
+| Imperial Topaz | Lightning Rend/Imbue |
+| Jet | Nether Rend/Imbue |
+| Aquamarine | Cold Imbue |
+| White Sapphire | Cold/Bludgeon Imbue |
+| Emerald | Acid Imbue/Rend |
+| Fire Opal | Fire Imbue |
+| Black Opal | Bludgeon/Nether Imbue |
+| Bloodstone | Crippling Blow |
+
 | Item | Cost (Phials) | Description |
 |------|--------------|-------------|
 | Ancient Bottle | 20 | Absorbs PvP XP overflow up to 100M. Bonded & Attuned. |
