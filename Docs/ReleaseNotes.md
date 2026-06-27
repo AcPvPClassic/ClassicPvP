@@ -594,7 +594,19 @@ Both bonuses apply simultaneously and stack with other multipliers (Hot Dungeon,
 |------|--------------|-------------|
 | Ancient Bottle | 20 | Absorbs PvP XP overflow up to 100M. Bonded & Attuned. |
 | Ancient Empyrean Tool | 25 | Guarantees the next tinker will not fail. |
-| Skill and Attribute Reset Gem | 50 | Clears quest stamps for the Temple of Enlightenment and Temple of Forgetfulness, allowing you to re-access skill and attribute alteration. Each use costs an increasing number of PK Trophies (see below). Bonded & Attuned. |
+| Skill and Attribute Reset Gem | 50 | Clears quest stamps for the Temple of Enlightenment and Temple of Forgetfulness. Each use costs an escalating number of PK Trophies (see below). Bonded & Attuned. |
+| Workmanship Morph Gem | 25 | Randomizes the Workmanship of a loot item (1–10). |
+| Arcane Lore Morph Gem | 25 | 90% chance to reduce Arcane Lore requirement by 25; 10% chance to increase it by 50. |
+| Missile Defense Requirement Morph Gem | 25 | Removes the Missile Defense activation requirement from an item. |
+| Melee Defense Requirement Morph Gem | 25 | Removes the Melee Defense activation requirement from an item. |
+| Imbue Altering Morph Gem | 25 | Randomizes a weapon's imbue between Crippling Blow, Armor Rending, and Critical Strike. |
+| Player Wield Requirement Morph Gem | 25 | Removes the wield restriction binding an item to a specific player. |
+| Level Requirement Removal Morph Gem | 25 | Removes the level requirement from armor or jewelry (cannot be used on weapons). |
+| Slayer Upgrade Morph Gem | 25 | Upgrades an existing slayer damage bonus to 1.8 on weapons that rolled a slayer via the tinkering lottery. |
+| Impenetrability Morph Gem | 25 | Adds a random Impenetrability cantrip (Minor / Major / Epic / Legendary) to magical armor. |
+| Empyrean Jeweler's Sawblade | 25 | Randomizes the slot of a ring, bracelet, or necklace between finger, wrist, and neck. |
+| Oil of Creature Slaying | 25 | Adds a random slayer (1.8 damage bonus) to a weapon or magic caster that does not already have one. |
+| Empyrean Tuning Fork | 25 | Randomizes the legendary cantrips on armor, jewelry, or shields that already have legendaries. One use per item. |
 
 ### Skill and Attribute Reset Gem — PK Trophy Cost
 
