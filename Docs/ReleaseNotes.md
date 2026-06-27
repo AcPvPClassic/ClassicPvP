@@ -525,8 +525,8 @@ Any allegiance member can walk up to a **Bind Stone** in an unowned town and use
 To take a town owned by a rival allegiance, use the Bind Stone to begin the assault.
 
 **Phase 1 — Perimeter Control (up to 60 minutes)**
-- Phase 1 begins **automatically** when at least **2 members** of a single attacking allegiance are within **5 meters** of the Bind Stone and no other enemy allegiances are on the landblock — no player action required
-- Enemy PKs on the landblock interrupt progress and reset the timer
+- Phase 1 begins **automatically** when at least **2 members** of a single attacking allegiance are within **5 meters** of the Bind Stone and no other enemy allegiances are within **50 meters** — no player action required
+- If an enemy PK enters within 50 meters, a warning is broadcast. If they remain for **30 continuous seconds**, Phase 1 progress resets. Leaving the area before 30 seconds have passed cancels the threat with no penalty.
 - Hold the zone for **4 uninterrupted minutes** to trigger Phase 2
 - Failing to reach Phase 2 within 60 minutes announces a global failure and applies a **3-hour cooldown** on that town for your allegiance
 
