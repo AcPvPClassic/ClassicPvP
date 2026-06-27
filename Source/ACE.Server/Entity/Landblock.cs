@@ -113,6 +113,8 @@ namespace ACE.Server.Entity
         private double _ahPhase1AccumulatedSeconds;
         private DateTime _lastAhPhase1Broadcast = DateTime.MinValue;
         private bool _phase1Interrupted = false;
+        private double _phase1EnemyPresenceSeconds = 0; // accumulates while an enemy is within 50m
+        private const double Phase1EnemyGraceSeconds = 30;
 
         private bool? _isAllegianceHometownLandblock;
         public bool IsAllegianceHometownLandblock
@@ -292,7 +294,7 @@ namespace ACE.Server.Entity
             // can sit on a landblock boundary).
             var bindstonePos = registry.BindstonePosition;
             int attackersNear = 0;
-            bool enemyOnLandblock = false;
+            bool rawEnemyPresent = false;
 
             foreach (var player in GetPlayersNearBindstone(bindstonePos, 50f))
             {
@@ -306,18 +308,42 @@ namespace ACE.Server.Entity
                 }
                 else
                 {
-                    enemyOnLandblock = true;
+                    rawEnemyPresent = true;
                 }
             }
 
+            // Accumulate enemy presence time; only interrupt once the grace period expires.
+            // An enemy must remain within 50m for 30 continuous seconds to reset progress.
+            bool wasEnemyPresent = _phase1EnemyPresenceSeconds > 0;
+            if (rawEnemyPresent)
+            {
+                _phase1EnemyPresenceSeconds += 5; // tick interval
+
+                // Warn on first detection (before the grace period expires)
+                if (!wasEnemyPresent)
+                {
+                    var warnMsg = $"[{registry.TownName}] An enemy has entered the assault area! " +
+                                  $"They must leave within {Phase1EnemyGraceSeconds:0}s or Phase 1 progress will be reset.";
+                    EnqueueBroadcast(null, false, null, null,
+                        new Network.GameMessages.Messages.GameMessageSystemChat(warnMsg, ACE.Entity.Enum.ChatMessageType.WorldBroadcast));
+                }
+            }
+            else
+            {
+                _phase1EnemyPresenceSeconds = 0;
+            }
+
+            bool enemyInterrupt = _phase1EnemyPresenceSeconds >= Phase1EnemyGraceSeconds;
+
             var result = Managers.AllegianceHometownManager.TickPhase1(
-                registry.TownId, attackersNear, enemyOnLandblock, ref _ahPhase1AccumulatedSeconds);
+                registry.TownId, attackersNear, enemyInterrupt, ref _ahPhase1AccumulatedSeconds);
 
             switch (result)
             {
                 case Managers.Phase1TickResult.PhaseComplete:
                     _ahPhase1AccumulatedSeconds = 0;
                     _phase1Interrupted = false;
+                    _phase1EnemyPresenceSeconds = 0;
                     Managers.AllegianceHometownManager.StartPhase2(registry.TownId);
                     SpawnPhase2Proxy(registry);
                     break;
@@ -325,6 +351,7 @@ namespace ACE.Server.Entity
                 case Managers.Phase1TickResult.TimedOut:
                     _ahPhase1AccumulatedSeconds = 0;
                     _phase1Interrupted = false;
+                    _phase1EnemyPresenceSeconds = 0;
                     break;
 
                 case Managers.Phase1TickResult.Progressing:
@@ -335,8 +362,9 @@ namespace ACE.Server.Entity
                     if (!_phase1Interrupted)
                     {
                         _phase1Interrupted = true;
+                        _phase1EnemyPresenceSeconds = 0; // reset so the grace period starts fresh next time
                         _lastAhPhase1Broadcast = DateTime.UtcNow;
-                        var interruptMsg = $"[{registry.TownName}] Phase 1 assault INTERRUPTED — an enemy has entered the area! Progress has been reset.";
+                        var interruptMsg = $"[{registry.TownName}] Phase 1 assault INTERRUPTED — an enemy remained in the area for {Phase1EnemyGraceSeconds:0}s. Progress has been reset.";
                         EnqueueBroadcast(null, false, null, null,
                             new Network.GameMessages.Messages.GameMessageSystemChat(interruptMsg, ACE.Entity.Enum.ChatMessageType.WorldBroadcast));
                     }
@@ -353,9 +381,10 @@ namespace ACE.Server.Entity
 
                     var secsRemaining = Math.Max(0, 60 - _ahPhase1AccumulatedSeconds);
                     string progressMsg;
-                    if (enemyOnLandblock)
+                    if (rawEnemyPresent)
                     {
-                        progressMsg = $"[{registry.TownName}] Phase 1 assault INTERRUPTED — clear all enemies from the landblock to resume. " +
+                        var graceRemaining = Math.Max(0, Phase1EnemyGraceSeconds - _phase1EnemyPresenceSeconds);
+                        progressMsg = $"[{registry.TownName}] Phase 1 assault — enemy in area! {graceRemaining:0}s until progress resets. " +
                                       $"Progress: {_ahPhase1AccumulatedSeconds:0}/{60}s";
                     }
                     else if (attackersNear >= 2)
