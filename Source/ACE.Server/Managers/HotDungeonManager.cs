@@ -72,101 +72,105 @@ namespace ACE.Server.Managers
             new HotDungeonEntry { Landblock = 0x01D9, Name = "A Red Rat Lair",                 MinLevel =  1, MaxLevel =  35, XpMultiplier = 4.5f, BoxDropChance = 0.03f },
             new HotDungeonEntry { Landblock = 0x01F6, Name = "Holtburg Dungeon",               MinLevel =  1, MaxLevel =  35, XpMultiplier = 3.5f, BoxDropChance = 0.03f },
 
-            new HotDungeonEntry { Landblock = 0x01D7, Name = "Sylsfear",                       MinLevel = 10, MaxLevel =  40, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
+            // Moderate density, linear layouts — standard mid-tier
+            new HotDungeonEntry { Landblock = 0x01D7, Name = "Sylsfear",                       MinLevel = 10, MaxLevel =  40, XpMultiplier = 2.5f, BoxDropChance = 0.006f },
             new HotDungeonEntry { Landblock = 0x013B, Name = "Folthid Cellar",                 MinLevel = 10, MaxLevel =  40, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x01CC, Name = "Halls of the Helm",              MinLevel = 10, MaxLevel =  40, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x01B4, Name = "Golem Burial Ground",            MinLevel = 10, MaxLevel =  40, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x017A, Name = "Banderling Hovel",               MinLevel = 10, MaxLevel =  40, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x5643, Name = "Gromnie Clan Training Camp",     MinLevel = 10, MaxLevel =  40, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
+            new HotDungeonEntry { Landblock = 0x01CC, Name = "Halls of the Helm",              MinLevel = 10, MaxLevel =  40, XpMultiplier = 3.0f, BoxDropChance = 0.007f },
+            new HotDungeonEntry { Landblock = 0x01B4, Name = "Golem Burial Ground",            MinLevel = 10, MaxLevel =  40, XpMultiplier = 3.0f, BoxDropChance = 0.005f }, // golems slow to kill
+            new HotDungeonEntry { Landblock = 0x017A, Name = "Banderling Hovel",               MinLevel = 10, MaxLevel =  40, XpMultiplier = 2.5f, BoxDropChance = 0.007f },
+            new HotDungeonEntry { Landblock = 0x5643, Name = "Gromnie Clan Training Camp",     MinLevel = 10, MaxLevel =  40, XpMultiplier = 2.5f, BoxDropChance = 0.006f },
 
-            new HotDungeonEntry { Landblock = 0x5B46, Name = "Tusker Cave",                    MinLevel = 12, MaxLevel =  40, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x5C47, Name = "Tusker Grotto",                  MinLevel = 12, MaxLevel =  40, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
+            // Tusker caves — dense packs, fast kills
+            new HotDungeonEntry { Landblock = 0x5B46, Name = "Tusker Cave",                    MinLevel = 12, MaxLevel =  40, XpMultiplier = 2.0f, BoxDropChance = 0.008f },
+            new HotDungeonEntry { Landblock = 0x5C47, Name = "Tusker Grotto",                  MinLevel = 12, MaxLevel =  40, XpMultiplier = 2.0f, BoxDropChance = 0.008f },
 
             new HotDungeonEntry { Landblock = 0x0188, Name = "Mines of Despair",               MinLevel = 14, MaxLevel =  40, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
 
-            new HotDungeonEntry { Landblock = 0x02F4, Name = "Halls of Metos",                 MinLevel = 15, MaxLevel =  60, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
+            // Large multi-room dungeons with varied mob types
+            new HotDungeonEntry { Landblock = 0x02F4, Name = "Halls of Metos",                 MinLevel = 15, MaxLevel =  60, XpMultiplier = 2.5f, BoxDropChance = 0.006f },
             new HotDungeonEntry { Landblock = 0x01C1, Name = "Tumerok Mine",                   MinLevel = 15, MaxLevel =  60, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x018D, Name = "Olthoi Tunnels",                 MinLevel = 15, MaxLevel =  60, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x5C43, Name = "Tusker Cavern",                  MinLevel = 15, MaxLevel =  60, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x0140, Name = "Virindi Fort",                   MinLevel = 15, MaxLevel =  60, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
+            new HotDungeonEntry { Landblock = 0x018D, Name = "Olthoi Tunnels",                 MinLevel = 15, MaxLevel =  60, XpMultiplier = 2.0f, BoxDropChance = 0.009f }, // dense olthoi corridors
+            new HotDungeonEntry { Landblock = 0x5C43, Name = "Tusker Cavern",                  MinLevel = 15, MaxLevel =  60, XpMultiplier = 2.0f, BoxDropChance = 0.008f }, // dense tusker
+            new HotDungeonEntry { Landblock = 0x0140, Name = "Virindi Fort",                   MinLevel = 15, MaxLevel =  60, XpMultiplier = 3.0f, BoxDropChance = 0.005f }, // spread out rooms, virindi tough
             new HotDungeonEntry { Landblock = 0x01A2, Name = "Swamp Temple",                   MinLevel = 15, MaxLevel =  60, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x01AA, Name = "Lair of Death",                  MinLevel = 15, MaxLevel =  60, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
+            new HotDungeonEntry { Landblock = 0x01AA, Name = "Lair of Death",                  MinLevel = 15, MaxLevel =  60, XpMultiplier = 3.0f, BoxDropChance = 0.006f },
 
-            new HotDungeonEntry { Landblock = 0x01A9, Name = "Ancient Lighthouse",             MinLevel = 18, MaxLevel =  60, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
+            // Ancient Lighthouse — very sparse, long vertical layout
+            new HotDungeonEntry { Landblock = 0x01A9, Name = "Ancient Lighthouse",             MinLevel = 18, MaxLevel =  60, XpMultiplier = 3.5f, BoxDropChance = 0.004f },
 
-            new HotDungeonEntry { Landblock = 0x02DB, Name = "Fenmalain Vestibule",            MinLevel = 20, MaxLevel =  60, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x5772, Name = "Olthoi Brood Hive",              MinLevel = 20, MaxLevel =  60, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x0105, Name = "Black Spawn Den",                MinLevel = 20, MaxLevel =  70, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x5E45, Name = "Black Death Catacombs",          MinLevel = 20, MaxLevel =  70, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x02FD, Name = "Olthoi Horde Nest",              MinLevel = 20, MaxLevel =  70, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x5D4A, Name = "Olthoi Chasm",                   MinLevel = 20, MaxLevel =  70, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x01A6, Name = "Disaster Maze",                  MinLevel = 20, MaxLevel =  70, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x0290, Name = "Stable Rift",                    MinLevel = 20, MaxLevel =  70, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x5C45, Name = "Tusker Abode",                   MinLevel = 20, MaxLevel =  70, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x01BE, Name = "Tumerok Fortress",               MinLevel = 20, MaxLevel =  70, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x0138, Name = "Lost City of Frore",             MinLevel = 20, MaxLevel =  70, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
+            new HotDungeonEntry { Landblock = 0x02DB, Name = "Fenmalain Vestibule",            MinLevel = 20, MaxLevel =  60, XpMultiplier = 2.5f, BoxDropChance = 0.006f },
+            new HotDungeonEntry { Landblock = 0x5772, Name = "Olthoi Brood Hive",              MinLevel = 20, MaxLevel =  60, XpMultiplier = 2.0f, BoxDropChance = 0.010f }, // hive = very dense
+            new HotDungeonEntry { Landblock = 0x0105, Name = "Black Spawn Den",                MinLevel = 20, MaxLevel =  70, XpMultiplier = 3.0f, BoxDropChance = 0.005f }, // scattered spawns
+            new HotDungeonEntry { Landblock = 0x5E45, Name = "Black Death Catacombs",          MinLevel = 20, MaxLevel =  70, XpMultiplier = 2.5f, BoxDropChance = 0.007f },
+            new HotDungeonEntry { Landblock = 0x02FD, Name = "Olthoi Horde Nest",              MinLevel = 20, MaxLevel =  70, XpMultiplier = 2.0f, BoxDropChance = 0.010f }, // very dense olthoi
+            new HotDungeonEntry { Landblock = 0x5D4A, Name = "Olthoi Chasm",                   MinLevel = 20, MaxLevel =  70, XpMultiplier = 2.0f, BoxDropChance = 0.009f }, // dense
+            new HotDungeonEntry { Landblock = 0x01A6, Name = "Disaster Maze",                  MinLevel = 20, MaxLevel =  70, XpMultiplier = 3.5f, BoxDropChance = 0.004f }, // maze = slow navigation
+            new HotDungeonEntry { Landblock = 0x0290, Name = "Stable Rift",                    MinLevel = 20, MaxLevel =  70, XpMultiplier = 3.0f, BoxDropChance = 0.006f },
+            new HotDungeonEntry { Landblock = 0x5C45, Name = "Tusker Abode",                   MinLevel = 20, MaxLevel =  70, XpMultiplier = 2.0f, BoxDropChance = 0.008f }, // dense tusker
+            new HotDungeonEntry { Landblock = 0x01BE, Name = "Tumerok Fortress",               MinLevel = 20, MaxLevel =  70, XpMultiplier = 2.5f, BoxDropChance = 0.006f },
+            new HotDungeonEntry { Landblock = 0x0138, Name = "Lost City of Frore",             MinLevel = 20, MaxLevel =  70, XpMultiplier = 3.0f, BoxDropChance = 0.005f }, // large open city, spread out
 
             new HotDungeonEntry { Landblock = 0x02A9, Name = "Hieromancers' Halls",            MinLevel = 20, MaxLevel = 275, XpMultiplier = 4.0f, BoxDropChance = 0.02f  },
 
-            new HotDungeonEntry { Landblock = 0x03A1, Name = "Singular Pyreal Repository",     MinLevel = 25, MaxLevel =  70, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x5B47, Name = "Tusker Habitat",                 MinLevel = 25, MaxLevel =  70, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x0109, Name = "Dungeon of Corpses",             MinLevel = 25, MaxLevel =  70, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
+            new HotDungeonEntry { Landblock = 0x03A1, Name = "Singular Pyreal Repository",     MinLevel = 25, MaxLevel =  70, XpMultiplier = 3.5f, BoxDropChance = 0.004f }, // sparse repository
+            new HotDungeonEntry { Landblock = 0x5B47, Name = "Tusker Habitat",                 MinLevel = 25, MaxLevel =  70, XpMultiplier = 2.0f, BoxDropChance = 0.008f }, // dense tusker
+            new HotDungeonEntry { Landblock = 0x0109, Name = "Dungeon of Corpses",             MinLevel = 25, MaxLevel =  70, XpMultiplier = 3.0f, BoxDropChance = 0.006f },
 
-            new HotDungeonEntry { Landblock = 0x5B4A, Name = "Tusker Quarters",                MinLevel = 30, MaxLevel =  70, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x0179, Name = "Umbral Hall",                    MinLevel = 30, MaxLevel =  70, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x02C9, Name = "Sotiris Dungeon",                MinLevel = 30, MaxLevel =  70, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
+            new HotDungeonEntry { Landblock = 0x5B4A, Name = "Tusker Quarters",                MinLevel = 30, MaxLevel =  70, XpMultiplier = 2.0f, BoxDropChance = 0.008f }, // dense tusker
+            new HotDungeonEntry { Landblock = 0x0179, Name = "Umbral Hall",                    MinLevel = 30, MaxLevel =  70, XpMultiplier = 3.0f, BoxDropChance = 0.006f },
+            new HotDungeonEntry { Landblock = 0x02C9, Name = "Sotiris Dungeon",                MinLevel = 30, MaxLevel =  70, XpMultiplier = 2.5f, BoxDropChance = 0.006f },
 
-            new HotDungeonEntry { Landblock = 0x02A1, Name = "Panopticon",                     MinLevel = 32, MaxLevel =  70, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x03A0, Name = "Singular Chorizite Repository",  MinLevel = 35, MaxLevel =  70, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x01F8, Name = "Mite Maze",                      MinLevel = 35, MaxLevel =  70, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
+            new HotDungeonEntry { Landblock = 0x02A1, Name = "Panopticon",                     MinLevel = 32, MaxLevel =  70, XpMultiplier = 3.0f, BoxDropChance = 0.005f }, // scattered rooms
+            new HotDungeonEntry { Landblock = 0x03A0, Name = "Singular Chorizite Repository",  MinLevel = 35, MaxLevel =  70, XpMultiplier = 3.5f, BoxDropChance = 0.004f }, // sparse repository
+            new HotDungeonEntry { Landblock = 0x01F8, Name = "Mite Maze",                      MinLevel = 35, MaxLevel =  70, XpMultiplier = 2.0f, BoxDropChance = 0.009f }, // mites are extremely dense
 
-            new HotDungeonEntry { Landblock = 0x027C, Name = "Ancient Empyrean Grotto",        MinLevel = 40, MaxLevel =  90, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x6346, Name = "Matron Hive South",              MinLevel = 40, MaxLevel =  90, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x02DC, Name = "Caulnalain Vestibule",           MinLevel = 40, MaxLevel =  90, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x5E4A, Name = "Olthoi Brood Hive",              MinLevel = 40, MaxLevel =  90, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x5A48, Name = "Tusker Barracks",                MinLevel = 40, MaxLevel =  90, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x017D, Name = "Hidden Entrance",                MinLevel = 40, MaxLevel =  90, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x017B, Name = "Watery Grotto",                  MinLevel = 40, MaxLevel =  90, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
+            new HotDungeonEntry { Landblock = 0x027C, Name = "Ancient Empyrean Grotto",        MinLevel = 40, MaxLevel =  90, XpMultiplier = 3.0f, BoxDropChance = 0.005f }, // sparse ancient content
+            new HotDungeonEntry { Landblock = 0x6346, Name = "Matron Hive South",              MinLevel = 40, MaxLevel =  90, XpMultiplier = 2.0f, BoxDropChance = 0.010f }, // hive = very dense
+            new HotDungeonEntry { Landblock = 0x02DC, Name = "Caulnalain Vestibule",           MinLevel = 40, MaxLevel =  90, XpMultiplier = 2.5f, BoxDropChance = 0.007f },
+            new HotDungeonEntry { Landblock = 0x5E4A, Name = "Olthoi Brood Hive",              MinLevel = 40, MaxLevel =  90, XpMultiplier = 2.0f, BoxDropChance = 0.010f }, // hive = very dense
+            new HotDungeonEntry { Landblock = 0x5A48, Name = "Tusker Barracks",                MinLevel = 40, MaxLevel =  90, XpMultiplier = 2.0f, BoxDropChance = 0.008f }, // dense tusker
+            new HotDungeonEntry { Landblock = 0x017D, Name = "Hidden Entrance",                MinLevel = 40, MaxLevel =  90, XpMultiplier = 3.0f, BoxDropChance = 0.005f },
+            new HotDungeonEntry { Landblock = 0x017B, Name = "Watery Grotto",                  MinLevel = 40, MaxLevel =  90, XpMultiplier = 2.5f, BoxDropChance = 0.006f },
 
-            new HotDungeonEntry { Landblock = 0x5A4A, Name = "Tusker Pits",                    MinLevel = 45, MaxLevel = 120, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x5D46, Name = "Vengeance Caverns",              MinLevel = 45, MaxLevel = 120, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
+            new HotDungeonEntry { Landblock = 0x5A4A, Name = "Tusker Pits",                    MinLevel = 45, MaxLevel = 120, XpMultiplier = 2.0f, BoxDropChance = 0.009f }, // dense arena-style tusker
+            new HotDungeonEntry { Landblock = 0x5D46, Name = "Vengeance Caverns",              MinLevel = 45, MaxLevel = 120, XpMultiplier = 2.5f, BoxDropChance = 0.007f },
 
-            new HotDungeonEntry { Landblock = 0x0291, Name = "Singularity Bore",               MinLevel = 50, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x027D, Name = "Lair of the Eviscerators",       MinLevel = 50, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x5F46, Name = "Heart of Innocence",             MinLevel = 50, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
+            new HotDungeonEntry { Landblock = 0x0291, Name = "Singularity Bore",               MinLevel = 50, MaxLevel = 275, XpMultiplier = 1.5f, BoxDropChance = 0.012f }, // famously dense virindi tubes
+            new HotDungeonEntry { Landblock = 0x027D, Name = "Lair of the Eviscerators",       MinLevel = 50, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.007f },
+            new HotDungeonEntry { Landblock = 0x5F46, Name = "Heart of Innocence",             MinLevel = 50, MaxLevel = 275, XpMultiplier = 3.0f, BoxDropChance = 0.006f },
 
-            new HotDungeonEntry { Landblock = 0x6248, Name = "Renegade Fortress",              MinLevel = 60, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x604A, Name = "Sclavus Temple",                 MinLevel = 60, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x02E0, Name = "Shendolain Vestibule",           MinLevel = 60, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x5B48, Name = "Tusker Holding",                 MinLevel = 60, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x01A3, Name = "The Pit",                        MinLevel = 60, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x624A, Name = "Burun Cavern",                   MinLevel = 60, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x6147, Name = "Mountain Citadel",               MinLevel = 60, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
+            new HotDungeonEntry { Landblock = 0x6248, Name = "Renegade Fortress",              MinLevel = 60, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.007f },
+            new HotDungeonEntry { Landblock = 0x604A, Name = "Sclavus Temple",                 MinLevel = 60, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.006f },
+            new HotDungeonEntry { Landblock = 0x02E0, Name = "Shendolain Vestibule",           MinLevel = 60, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.007f },
+            new HotDungeonEntry { Landblock = 0x5B48, Name = "Tusker Holding",                 MinLevel = 60, MaxLevel = 275, XpMultiplier = 2.0f, BoxDropChance = 0.008f }, // dense tusker
+            new HotDungeonEntry { Landblock = 0x01A3, Name = "The Pit",                        MinLevel = 60, MaxLevel = 275, XpMultiplier = 2.0f, BoxDropChance = 0.010f }, // very dense, tight corridors
+            new HotDungeonEntry { Landblock = 0x624A, Name = "Burun Cavern",                   MinLevel = 60, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.007f },
+            new HotDungeonEntry { Landblock = 0x6147, Name = "Mountain Citadel",               MinLevel = 60, MaxLevel = 275, XpMultiplier = 3.0f, BoxDropChance = 0.005f }, // multi-level, spread out
 
-            new HotDungeonEntry { Landblock = 0x6678, Name = "Olthoi Warrior Nest",            MinLevel = 70, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x5D45, Name = "Tusker Tunnels",                 MinLevel = 70, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x0005, Name = "Southern Power Forge",           MinLevel = 70, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
+            new HotDungeonEntry { Landblock = 0x6678, Name = "Olthoi Warrior Nest",            MinLevel = 70, MaxLevel = 275, XpMultiplier = 2.0f, BoxDropChance = 0.010f }, // dense warrior olthoi
+            new HotDungeonEntry { Landblock = 0x5D45, Name = "Tusker Tunnels",                 MinLevel = 70, MaxLevel = 275, XpMultiplier = 2.0f, BoxDropChance = 0.008f }, // dense tusker
+            new HotDungeonEntry { Landblock = 0x0005, Name = "Southern Power Forge",           MinLevel = 70, MaxLevel = 275, XpMultiplier = 3.0f, BoxDropChance = 0.005f }, // sparse forge layout
 
-            new HotDungeonEntry { Landblock = 0x594D, Name = "Ancient Temple",                 MinLevel = 80, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x01E4, Name = "North Glenden Prison",           MinLevel = 80, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x5D4D, Name = "Cavernous Olthoi Chasm",         MinLevel = 80, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x5F48, Name = "Hidden Cavern",                  MinLevel = 80, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x5A49, Name = "Tusker Honeycombs",              MinLevel = 80, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x667A, Name = "Mutilator Tunnels",              MinLevel = 80, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x0010, Name = "War Room",                       MinLevel = 80, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x0003, Name = "Niffis Fighting Pits",           MinLevel = 80, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
+            new HotDungeonEntry { Landblock = 0x594D, Name = "Ancient Temple",                 MinLevel = 80, MaxLevel = 275, XpMultiplier = 3.0f, BoxDropChance = 0.005f }, // large open rooms
+            new HotDungeonEntry { Landblock = 0x01E4, Name = "North Glenden Prison",           MinLevel = 80, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.007f },
+            new HotDungeonEntry { Landblock = 0x5D4D, Name = "Cavernous Olthoi Chasm",         MinLevel = 80, MaxLevel = 275, XpMultiplier = 2.0f, BoxDropChance = 0.010f }, // very dense olthoi
+            new HotDungeonEntry { Landblock = 0x5F48, Name = "Hidden Cavern",                  MinLevel = 80, MaxLevel = 275, XpMultiplier = 3.0f, BoxDropChance = 0.005f }, // sparse hidden layout
+            new HotDungeonEntry { Landblock = 0x5A49, Name = "Tusker Honeycombs",              MinLevel = 80, MaxLevel = 275, XpMultiplier = 2.0f, BoxDropChance = 0.009f }, // dense honeycomb tusker
+            new HotDungeonEntry { Landblock = 0x667A, Name = "Mutilator Tunnels",              MinLevel = 80, MaxLevel = 275, XpMultiplier = 2.0f, BoxDropChance = 0.009f }, // tight tunnel density
+            new HotDungeonEntry { Landblock = 0x0010, Name = "War Room",                       MinLevel = 80, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.007f },
+            new HotDungeonEntry { Landblock = 0x0003, Name = "Niffis Fighting Pits",           MinLevel = 80, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.007f },
 
-            new HotDungeonEntry { Landblock = 0x5849, Name = "Tusker Assault",                 MinLevel = 85, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
+            new HotDungeonEntry { Landblock = 0x5849, Name = "Tusker Assault",                 MinLevel = 85, MaxLevel = 275, XpMultiplier = 2.0f, BoxDropChance = 0.009f }, // dense assault-style
 
-            new HotDungeonEntry { Landblock = 0x6145, Name = "Matron Hive West",               MinLevel = 90, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x6548, Name = "The Orphanage",                  MinLevel = 90, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
+            new HotDungeonEntry { Landblock = 0x6145, Name = "Matron Hive West",               MinLevel = 90, MaxLevel = 275, XpMultiplier = 2.0f, BoxDropChance = 0.010f }, // hive = very dense
+            new HotDungeonEntry { Landblock = 0x6548, Name = "The Orphanage",                  MinLevel = 90, MaxLevel = 275, XpMultiplier = 3.0f, BoxDropChance = 0.005f }, // spread out layout
 
-            new HotDungeonEntry { Landblock = 0x0110, Name = "Nexus",                          MinLevel = 100, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x5949, Name = "Tusker Lacuna",                  MinLevel = 100, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x0017, Name = "Vile Sanctuary",                 MinLevel = 100, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
-            new HotDungeonEntry { Landblock = 0x0023, Name = "Sezzherei's Lair",               MinLevel = 100, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
+            new HotDungeonEntry { Landblock = 0x0110, Name = "Nexus",                          MinLevel = 100, MaxLevel = 275, XpMultiplier = 1.5f, BoxDropChance = 0.012f }, // extremely dense virindi
+            new HotDungeonEntry { Landblock = 0x5949, Name = "Tusker Lacuna",                  MinLevel = 100, MaxLevel = 275, XpMultiplier = 2.0f, BoxDropChance = 0.009f }, // dense high-tier tusker
+            new HotDungeonEntry { Landblock = 0x0017, Name = "Vile Sanctuary",                 MinLevel = 100, MaxLevel = 275, XpMultiplier = 3.0f, BoxDropChance = 0.005f }, // boss-focused, sparse
+            new HotDungeonEntry { Landblock = 0x0023, Name = "Sezzherei's Lair",               MinLevel = 100, MaxLevel = 275, XpMultiplier = 3.0f, BoxDropChance = 0.005f }, // boss-focused, sparse
 
-            new HotDungeonEntry { Landblock = 0x6245, Name = "Matron Hive East",               MinLevel = 120, MaxLevel = 275, XpMultiplier = 2.5f, BoxDropChance = 0.005f },
+            new HotDungeonEntry { Landblock = 0x6245, Name = "Matron Hive East",               MinLevel = 120, MaxLevel = 275, XpMultiplier = 2.0f, BoxDropChance = 0.010f }, // hive = very dense
         };
 
         public static List<ActiveHotDungeon> ActiveDungeons { get; } = new List<ActiveHotDungeon>();
