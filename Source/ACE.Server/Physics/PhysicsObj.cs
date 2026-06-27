@@ -86,6 +86,22 @@ namespace ACE.Server.Physics
         /// </summary>
         public bool LastTransitionHitNewCreature;
 
+        /// <summary>
+        /// Set by <see cref="update_object_server_new"/> after each call.
+        /// True when the transition was blocked exclusively by one or more other <see cref="Player"/>
+        /// objects and nothing else (no geometry, no closed door, no non-player creature).
+        /// </summary>
+        public bool LastTransitionBlockedByPlayerOnly;
+
+        /// <summary>
+        /// Unix timestamp after which the next player-only collision block is enforced.
+        /// Set to <c>now + 0.5s</c> each time a player-only block is silently accepted
+        /// (the free-pass window).  Within the window, subsequent player-only blocks are
+        /// enforced normally so a stationary body-blocker still stops the moving player.
+        /// Resets naturally when real time advances past the stored value.
+        /// </summary>
+        public double PlayerCollisionCooldownUntil;
+
         public double UpdateTime;
         public Vector3 Velocity;
         public Vector3 Acceleration;
@@ -4433,27 +4449,42 @@ namespace ACE.Server.Physics
                         && !_blockedByDynamicObjects;
 
                     // Anti-cheat (Options K & N): scan the collision list for specific object types.
-                    LastTransitionHitClosedDoor   = false;
-                    LastTransitionHitNewCreature  = false;
+                    // Also determines whether every dynamic blocker is a Player (player-desync bypass).
+                    LastTransitionHitClosedDoor       = false;
+                    LastTransitionHitNewCreature      = false;
+                    LastTransitionBlockedByPlayerOnly = false;
                     if (fullTransition != null && !valid)
                     {
+                        // Assume all-players until proven otherwise; a non-empty list is required.
+                        var allBlockersArePlayers = fullTransition.CollisionInfo.CollideObject.Count > 0;
                         foreach (var colObj in fullTransition.CollisionInfo.CollideObject)
                         {
                             var wo = colObj?.WeenieObj?.WorldObject;
-                            if (wo == null) continue;
+                            if (wo == null)
+                            {
+                                allBlockersArePlayers = false; // unclassifiable — conservative
+                                continue;
+                            }
 
                             // Option N: closed door the player passed through.
                             if (wo is Door door && !door.IsOpen)
                                 LastTransitionHitClosedDoor = true;
 
                             // Option K: creature that spawned within the last 5 seconds (ghost window).
+                            // Note: Player : Creature, so this also fires for a recently-logged-in player;
+                            // allBlockersArePlayers remains true in that case (checked separately below).
                             if (wo is Creature creature && !creature.IsDead
                                 && (DateTime.UtcNow - creature.SpawnTimestamp).TotalSeconds < 5.0)
                                 LastTransitionHitNewCreature = true;
 
+                            // Any non-Player object (door, creature, unknown) disqualifies the bypass.
+                            if (!(wo is Player))
+                                allBlockersArePlayers = false;
+
                             if (LastTransitionHitClosedDoor && LastTransitionHitNewCreature)
-                                break; // both flags set, no need to continue
+                                break; // both flags set; allBlockersArePlayers already false at this point
                         }
+                        LastTransitionBlockedByPlayerOnly = allBlockersArePlayers;
                     }
 
                     if (valid || forcePos || player?.GodState != null)
@@ -4471,13 +4502,37 @@ namespace ACE.Server.Physics
                     }
                     else if (dist > 0.1)
                     {
-                        WeenieObj.WorldObject.Location = new ACE.Entity.Position(Position.ObjCellID, Position.Frame.Origin, Position.Frame.Orientation);
-                        WeenieObj.WorldObject.Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
-                        WeenieObj.WorldObject.SendUpdatePosition();
-                        success = false;
-
-                        //if (player != null)
-                        //    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"Force position - distance: {dist.ToString("0.00")} Transit was null: {transit == null}", ChatMessageType.Broadcast));
+                        if (LastTransitionBlockedByPlayerOnly)
+                        {
+                            var now = PhysicsTimer.CurrentTime;
+                            if (now >= PlayerCollisionCooldownUntil)
+                            {
+                                // First player-only block (or cooldown has expired): accept the position
+                                // and arm a 500 ms enforcement window.  Desync events are almost always
+                                // one-shot — the blocking player's server position resolves before the
+                                // cooldown fires — so no rubber-band is ever sent.  A deliberate
+                                // body-blocker keeps the player in their collision sphere past the
+                                // window, and the very next packet in the enforcement window is blocked.
+                                set_current_pos(RequestPos);
+                                PlayerCollisionCooldownUntil = now + 0.5;
+                            }
+                            else
+                            {
+                                // Within the enforcement window: block is persistent (not transient
+                                // desync), so treat it like any other collision — rubber-band the mover.
+                                WeenieObj.WorldObject.Location = new ACE.Entity.Position(Position.ObjCellID, Position.Frame.Origin, Position.Frame.Orientation);
+                                WeenieObj.WorldObject.Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
+                                WeenieObj.WorldObject.SendUpdatePosition();
+                                success = false;
+                            }
+                        }
+                        else
+                        {
+                            WeenieObj.WorldObject.Location = new ACE.Entity.Position(Position.ObjCellID, Position.Frame.Origin, Position.Frame.Orientation);
+                            WeenieObj.WorldObject.Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
+                            WeenieObj.WorldObject.SendUpdatePosition();
+                            success = false;
+                        }
                     }
                 }
             }
