@@ -83,15 +83,7 @@ namespace ACE.Server.Managers
         public static void SendMovementViolation(string violationType, string playerName, string accountName,
             float observed, float allowed, float suspicionScore, string location)
         {
-            var url = PropertyManager.GetString("movement_violation_webhook").Item;
-            if (string.IsNullOrWhiteSpace(url)) return;
-
-            var message = $"[AntiCheat] **{SanitiseMessage(violationType)}** | "
-                        + $"{SanitiseMessage(playerName)} ({SanitiseMessage(accountName)}) | "
-                        + $"Observed: {observed:0.000} | Allowed: {allowed:0.000} | "
-                        + $"Suspicion: {suspicionScore:0.0} | {SanitiseMessage(location)}";
-
-            _ = SendAsync(url, message);
+            // Anti-cheat webhook broadcasting disabled
         }
 
         /// <summary>
