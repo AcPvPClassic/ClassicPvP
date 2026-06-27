@@ -584,18 +584,12 @@ The last item you ID'd is used automatically — no argument needed.
 
 ### After Export
 
-The SQL file is written to disk only — it is **not** automatically inserted into the world database. To make the weenie live:
-
-```sql
-SOURCE path/to/content/sql/weenies/.../filename.sql;
-```
-
-or import it via the ACE SQL import tooling, then restart or reload the weenie cache.
+The SQL file is written to disk and immediately imported into the world database. The weenie cache is cleared and reloaded, so the new WCID is live without a restart. No further action is required.
 
 ### Notes
 
 - The command uses `CurrentAppraisalTarget`, which is the last item the admin's character appraised. If you've appraised multiple items in succession, only the most recent one is captured.
-- WCID assignment is based on `MAX(class_Id)` among all weenies with class_Id ≥ 1,000,000 at the time the command runs. If two admins run the command simultaneously, both will read the same max and produce conflicting WCIDs — coordinate accordingly.
+- WCID assignment is based on `MAX(class_Id)` among all weenies with class_Id ≥ 1,000,000 at the time the command runs. Because the weenie is imported immediately after export, successive uses of the command will always increment correctly. If two admins run the command at exactly the same moment, both may read the same max before either import completes — coordinate accordingly.
 - The exported file name follows the standard convention: `{WCID} {Name} - {ClassName}.sql`.
 
 ---

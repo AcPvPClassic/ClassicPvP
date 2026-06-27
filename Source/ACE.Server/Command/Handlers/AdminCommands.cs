@@ -6276,6 +6276,7 @@ namespace ACE.Server.Command.Handlers
             var dbWeenie = BuildWeenieFromLootItem(wo, newWcid);
 
             Processors.DeveloperContentCommands.ExportSQLWeenie(dbWeenie, session, withFolders: true);
+            Processors.DeveloperContentCommands.ImportSQLWeenie(session, newWcid.ToString(), withFolders: true);
         }
 
         private static ACE.Database.Models.World.Weenie BuildWeenieFromLootItem(WorldObject wo, uint wcid)
