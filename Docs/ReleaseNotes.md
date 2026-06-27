@@ -728,13 +728,14 @@ All salvage bags are full WS10 bags (100 units).
 
 | Item | Chance |
 |------|--------|
-| Ancient Bottle (XP Bottle) | ~5.3% |
-| Impenetrability Morph Gem | ~15.8% |
-| Slayer Upgrade Morph Gem | ~15.8% |
-| Skill and Attribute Reset Gem | ~15.8% |
-| Imbue Altering Morph Gem | ~15.8% |
-| MMDs ×50 | ~15.8% |
-| PK Trophies ×1000 | ~15.8% |
+| Ancient Bottle (XP Bottle) | ~5.0% |
+| Impenetrability Morph Gem | ~15.0% |
+| Slayer Upgrade Morph Gem | ~15.0% |
+| Skill and Attribute Reset Gem | ~15.0% |
+| Imbue Altering Morph Gem | ~15.0% |
+| MMDs ×50 | ~15.0% |
+| PK Trophies ×1000 | ~15.0% |
+| Shimmering Skeleton Key | ~5.0% |
 
 ---
 
