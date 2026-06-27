@@ -1972,12 +1972,6 @@ namespace ACE.Server.Command.Handlers
         [CommandHandler("OfflineSwear", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, 1, "Swear allegiance to an offline character on the same account.", "OfflineSwear <PatronName>")]
         public static void HandleOfflineSwear(Session session, params string[] parameters)
         {
-            if (Common.ConfigManager.Config.Server.WorldRuleset != Common.Ruleset.CustomDM)
-            {
-                session.Network.EnqueueSend(new GameMessageSystemChat($"Unknown command: OfflineSwear", ChatMessageType.Help));
-                return;
-            }
-
             var patronName = string.Join(" ", parameters);
 
             var onlinePlayer = PlayerManager.GetOnlinePlayer(patronName);
