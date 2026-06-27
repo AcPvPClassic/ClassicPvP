@@ -2912,21 +2912,47 @@ namespace ACE.Server.Command.Handlers
             var xpModifier = PropertyManager.GetDouble("xp_modifier").Item;
             sb.AppendLine($"  XP Rate:     {xpModifier:F2}x");
 
-            // Per-category XP budgets — use same fallback as enforcement code for
-            // players who haven't yet triggered a bucket reset this window.
+            // Per-category XP budgets.
+            // If the rolling cap has advanced since the player's last XP award the lazy
+            // reset inside UpdateXpAndLevel hasn't fired yet — the stored bucket values
+            // are stale.  Detect this and project what the budgets will look like after
+            // the reset so players don't see a falsely-exhausted display.
             double monsterRatio = PropertyManager.GetDouble("daily_monster_xp_category_ratio").Item;
             double questRatio   = PropertyManager.GetDouble("daily_quest_xp_category_ratio").Item;
             double pvpRatio     = PropertyManager.GetDouble("daily_pvp_xp_category_ratio").Item;
 
-            long monsterBudget = player.CapDailyMaxMonsterCat > 0 ? player.CapDailyMaxMonsterCat : (long)(xpCap * monsterRatio);
-            long questBudget   = player.CapDailyMaxQuestCat   > 0 ? player.CapDailyMaxQuestCat   : (long)(xpCap * questRatio);
-            long pvpBudget     = player.CapDailyMaxPvpCat     > 0 ? player.CapDailyMaxPvpCat     : (long)(xpCap * pvpRatio);
+            bool pendingReset = xpCap > 0 && player.CapPreviousXpCap != xpCap;
+
+            long monsterUsed, questUsed, pvpUsed;
+            long monsterBudget, questBudget, pvpBudget;
+
+            if (pendingReset)
+            {
+                // Buckets will be zeroed and new budgets computed on the next XP award.
+                monsterUsed = questUsed = pvpUsed = 0;
+                long xpRemainingAtReset = Math.Max(0L, xpCap - (player.TotalExperience ?? 0));
+                monsterBudget = xpRemainingAtReset > 0 ? (long)(xpRemainingAtReset * monsterRatio) : (long)(xpCap * monsterRatio);
+                questBudget   = xpRemainingAtReset > 0 ? (long)(xpRemainingAtReset * questRatio)   : (long)(xpCap * questRatio);
+                pvpBudget     = xpRemainingAtReset > 0 ? (long)(xpRemainingAtReset * pvpRatio)     : (long)(xpCap * pvpRatio);
+            }
+            else
+            {
+                monsterUsed   = player.CapMonsterXp;
+                questUsed     = player.CapQuestXp;
+                pvpUsed       = player.CapPvpXp;
+                monsterBudget = player.CapDailyMaxMonsterCat > 0 ? player.CapDailyMaxMonsterCat : (long)(xpCap * monsterRatio);
+                questBudget   = player.CapDailyMaxQuestCat   > 0 ? player.CapDailyMaxQuestCat   : (long)(xpCap * questRatio);
+                pvpBudget     = player.CapDailyMaxPvpCat     > 0 ? player.CapDailyMaxPvpCat     : (long)(xpCap * pvpRatio);
+            }
 
             sb.AppendLine();
-            sb.AppendLine("  XP Budgets (reset each time cap advances):");
-            sb.AppendLine(FormatSeasonBudgetLine("  Monster", player.CapMonsterXp, monsterBudget));
-            sb.AppendLine(FormatSeasonBudgetLine("  Quest  ", player.CapQuestXp,   questBudget));
-            sb.AppendLine(FormatSeasonBudgetLine("  PK     ", player.CapPvpXp,     pvpBudget));
+            if (pendingReset)
+                sb.AppendLine("  XP Budgets (pending reset — will apply on next XP award):");
+            else
+                sb.AppendLine("  XP Budgets (reset each time cap advances):");
+            sb.AppendLine(FormatSeasonBudgetLine("  Monster", monsterUsed, monsterBudget));
+            sb.AppendLine(FormatSeasonBudgetLine("  Quest  ", questUsed,   questBudget));
+            sb.AppendLine(FormatSeasonBudgetLine("  PK     ", pvpUsed,     pvpBudget));
             sb.Append("-----------------------------");
 
             CommandHandlerHelper.WriteOutputInfo(session, sb.ToString());
