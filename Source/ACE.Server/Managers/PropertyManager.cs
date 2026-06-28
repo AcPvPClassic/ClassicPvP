@@ -1271,9 +1271,9 @@ namespace ACE.Server.Managers
 
                 // Rolling Level Cap — per-category XP ratios
                 ("daily_xp_category_ratio", new Property<double>(0.70, "[Deprecated] Superseded by daily_quest_xp_category_ratio and daily_monster_xp_category_ratio. Kept so existing DB rows do not error.")),
-                ("daily_quest_xp_category_ratio",   new Property<double>(0.70, "Rolling cap: maximum fraction of a player's remaining cap XP that the Quest category (quests, emotes, exploration) can absorb in one cap period.")),
-                ("daily_monster_xp_category_ratio",  new Property<double>(0.70, "Rolling cap: maximum fraction of a player's remaining cap XP that the Monster category (kills, fellowship, allegiance, proficiency) can absorb in one cap period.")),
-                ("daily_pvp_xp_category_ratio",      new Property<double>(0.70, "Rolling cap: maximum fraction of a player's remaining cap XP that the PvP category (player kills, arenas, PvP custom content) can absorb in one cap period.")),
+                ("daily_quest_xp_category_ratio",   new Property<double>(0.60, "Rolling cap: maximum fraction of a player's remaining cap XP that the Quest category (quests, emotes, exploration) can absorb in one cap period.")),
+                ("daily_monster_xp_category_ratio",  new Property<double>(0.60, "Rolling cap: maximum fraction of a player's remaining cap XP that the Monster category (kills, fellowship, allegiance, proficiency) can absorb in one cap period.")),
+                ("daily_pvp_xp_category_ratio",      new Property<double>(1.00, "Rolling cap: maximum fraction of a player's remaining cap XP that the PvP category (player kills, arenas, PvP custom content) can absorb in one cap period.")),
 
                 // PK kill XP rewards
                 ("pk_xp_level_diff_decay",           new Property<double>(0.85, "Exponential decay factor applied per level the victim is below the killer when awarding PvP XP on a PK kill. e.g. 0.85 means each level gap multiplies the reward by 0.85.")),

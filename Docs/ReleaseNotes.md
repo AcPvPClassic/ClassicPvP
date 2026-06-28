@@ -131,7 +131,15 @@ The rolling cap isn't just one number — your XP is divided into **three separa
 | ⚔️ **PvP** | Player kills · Arena match rewards · Other PvP Focused Custom Content |
 
 **How the limits work:**
-Each category has its own budget calculated from how much XP you still need to reach the current cap — your *remaining headroom*. You can earn up to a set portion of that headroom from each category before the bucket is full. Once a bucket fills, further XP of that type is blocked until the cap advances.
+Each category has its own budget calculated from how much XP you still need to reach the current cap — your *remaining headroom*. You can earn up to the following portion of that headroom from each category before the bucket is full:
+
+| Category | Budget (% of remaining headroom) |
+|----------|----------------------------------|
+| 🐉 Monster | 60% |
+| 📜 Quest | 60% |
+| ⚔️ PvP | 100% |
+
+PvP is uncapped relative to the global ceiling — if you're willing to PK, you can fill your entire remaining headroom from PvP alone. Monster and Quest are each limited to 60%, so neither can carry you to the cap on its own. Once a bucket fills, further XP of that type is blocked until the cap advances.
 
 The global cap is still the ultimate ceiling. Maxing one category doesn't let you earn unlimited XP from the others — all three together still can't exceed your total remaining headroom for the current window.
 
