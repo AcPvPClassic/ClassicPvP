@@ -3111,7 +3111,7 @@ namespace ACE.Server.Command.Handlers
         #region Allegiance Hometown
 
         [CommandHandler("ah", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, 0,
-            "Recalls to a random allegiance-owned hometown. Use /ahrecall <town name> to recall to a specific town.")]
+            "Recalls to a random allegiance-owned hometown. Use /ahtown <town name> to recall to a specific town.")]
         public static void HandleAllegianceHometownRecall(Session session, params string[] parameters)
         {
             var player = session.Player;
@@ -3206,7 +3206,7 @@ namespace ACE.Server.Command.Handlers
             chain.EnqueueChain();
         }
 
-        [CommandHandler("ahrecall", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, 1,
+        [CommandHandler("ahtown", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, 1,
             "Recalls to a specific allegiance-owned hometown by name.",
             "<town name>")]
         public static void HandleAllegianceHometownRecallNamed(Session session, params string[] parameters)
