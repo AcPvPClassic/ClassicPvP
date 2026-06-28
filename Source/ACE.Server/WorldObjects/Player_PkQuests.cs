@@ -210,13 +210,13 @@ namespace ACE.Server.WorldObjects
                             case "LUM":
                                 msg = $"Reward: {rewardCount} Luminance";
                                 Session.Network.EnqueueSend(new GameMessageSystemChat(msg, ChatMessageType.System));
-                                this.GrantLuminance(rewardCount, XpType.Quest);
+                                this.GrantLuminance(rewardCount, XpType.PvP);
                                 break;
                             case "XP%":
                                 msg = $"Reward: {rewardCount}% of XP to next level";
                                 Session.Network.EnqueueSend(new GameMessageSystemChat(msg, ChatMessageType.System));
                                 double xpPercent = (double)rewardCount / 100d;
-                                this.GrantLevelProportionalXp(xpPercent, 1, long.MaxValue);
+                                this.GrantLevelProportionalXp(xpPercent, 1, long.MaxValue, XpType.PvP);
                                 break;
                             case "DBKEY":
                                 msg = $"Reward: {rewardCount} Darkbet's Lost Storage Key{(rewardCount > 1 ? "s" : "")}";
