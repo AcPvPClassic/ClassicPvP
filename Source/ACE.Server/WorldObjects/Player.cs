@@ -126,6 +126,10 @@ namespace ACE.Server.WorldObjects
         public uint JumpStartCell;
         /// <summary>Highest Z coordinate observed during the current jump.</summary>
         public float JumpPeakZ;
+        /// <summary>Heading (degrees 0-360) at the moment the current jump began.</summary>
+        public float JumpStartHeading;
+        /// <summary>Maximum heading delta (degrees 0-180) accumulated since the jump started. Reset on landing.</summary>
+        public float AirborneHeadingDelta;
 
         public float LatestMovementHeading = 0;
 

@@ -170,6 +170,9 @@ namespace ACE.Server.WorldObjects
         public const float StickyDistance = 4.0f;
         public const float RepeatDistance = 16.0f;
 
+        // Minimum heading change (degrees) while airborne that breaks melee sticky, restoring the retail jump-spin mechanic.
+        public const float JumpSpinBreakAngle = 90f;
+
         public void HandleActionTargetedMeleeAttack_Inner(Creature target, int attackSequence)
         {
             var dist = GetCylinderDistance(target);
@@ -480,7 +483,12 @@ namespace ACE.Server.WorldObjects
 
                 var dist = GetCylinderDistance(target);
 
-                if (creature.IsAlive && GetCharacterOption(CharacterOption.AutoRepeatAttacks) && (dist <= MeleeDistance || dist <= StickyDistance && IsMeleeVisible(target)) && !IsBusy && !AttackCancelled)
+                var jumpSpinTarget = target as Player;
+                var jumpSpinBreak = jumpSpinTarget != null && jumpSpinTarget.IsJumping && jumpSpinTarget.AirborneHeadingDelta >= JumpSpinBreakAngle;
+                if (jumpSpinBreak && FastTick)
+                    PhysicsObj.cancel_moveto();
+
+                if (creature.IsAlive && GetCharacterOption(CharacterOption.AutoRepeatAttacks) && !jumpSpinBreak && (dist <= MeleeDistance || dist <= StickyDistance && IsMeleeVisible(target)) && !IsBusy && !AttackCancelled)
                 {
                     // client starts refilling power meter
                     Session.Network.EnqueueSend(new GameEventAttackDone(Session));
@@ -553,7 +561,11 @@ namespace ACE.Server.WorldObjects
             EnqueueBroadcastMotion(motion);
 
             if (FastTick)
-                PhysicsObj.stick_to_object(target.Guid.Full);
+            {
+                var tp = target as Player;
+                if (tp == null || !tp.IsJumping || tp.AirborneHeadingDelta < JumpSpinBreakAngle)
+                    PhysicsObj.stick_to_object(target.Guid.Full);
+            }
 
             return animLength;
         }

@@ -1468,19 +1468,27 @@ namespace ACE.Server.WorldObjects
                         var isJumpingNow = IsJumping;
                         if (!WasJumping && isJumpingNow)
                         {
-                            // Jump started: record the launch Z and landblock.
-                            JumpStartZ    = newPosition.PositionZ;
-                            JumpStartCell = newPosition.Cell;
-                            JumpPeakZ     = JumpStartZ;
+                            // Jump started: record the launch Z, landblock, and heading.
+                            JumpStartZ       = newPosition.PositionZ;
+                            JumpStartCell    = newPosition.Cell;
+                            JumpPeakZ        = JumpStartZ;
+                            JumpStartHeading = PhysicsObj.Position.Frame.get_heading();
+                            AirborneHeadingDelta = 0f;
                         }
                         else if (isJumpingNow)
                         {
-                            // In-flight: keep tracking the apex.
+                            // In-flight: keep tracking the apex and heading delta.
                             if (newPosition.PositionZ > JumpPeakZ)
                                 JumpPeakZ = newPosition.PositionZ;
+                            var curHeading = PhysicsObj.Position.Frame.get_heading();
+                            var rawDelta = Math.Abs(curHeading - JumpStartHeading);
+                            var headingDelta = rawDelta > 180f ? 360f - rawDelta : rawDelta;
+                            if (headingDelta > AirborneHeadingDelta)
+                                AirborneHeadingDelta = headingDelta;
                         }
                         else if (WasJumping)
                         {
+                            AirborneHeadingDelta = 0f;
                             // Just landed: evaluate the apex if the feature is enabled.
                             if (PropertyManager.GetBool("enforce_player_jump_height").Item
                                 && GodState == null
