@@ -592,6 +592,24 @@ Both bonuses apply simultaneously and stack with other multipliers (Hot Dungeon,
 
 **Darkbeat** is a special vendor located in the Afterlife area. He accepts **Phials of Bloody Tears** as currency (not pyreals) and sells a variety of rare utility items.
 
+| Item | Cost (Phials) | Description |
+|------|--------------|-------------|
+| Ancient Bottle | 20 | Absorbs PvP XP overflow up to 100M. Bonded & Attuned. |
+| Ancient Empyrean Tool | 25 | Guarantees the next tinker will not fail. |
+| Skill and Attribute Reset Gem | 50 | Clears quest stamps for the Temple of Enlightenment and Temple of Forgetfulness. Each use costs an escalating number of PK Trophies (see below). Bonded & Attuned. |
+| Workmanship Morph Gem | 25 | Randomizes the Workmanship of a loot item (1–10). |
+| Arcane Lore Morph Gem | 25 | 90% chance to reduce Arcane Lore requirement by 25; 10% chance to increase it by 50. |
+| Missile Defense Requirement Morph Gem | 25 | Removes the Missile Defense activation requirement from an item. |
+| Melee Defense Requirement Morph Gem | 25 | Removes the Melee Defense activation requirement from an item. |
+| Imbue Altering Morph Gem | 25 | Randomizes a weapon's imbue between Crippling Blow, Armor Rending, and Critical Strike. |
+| Player Wield Requirement Morph Gem | 25 | Removes the wield restriction binding an item to a specific player. |
+| Level Requirement Removal Morph Gem | 25 | Removes the level requirement from armor or jewelry (cannot be used on weapons). |
+| Slayer Upgrade Morph Gem | 25 | Upgrades an existing slayer damage bonus to 1.8 on weapons that rolled a slayer via the tinkering lottery. |
+| Impenetrability Morph Gem | 25 | Adds a random Impenetrability cantrip (Minor / Major / Epic / Legendary) to magical armor. |
+| Empyrean Jeweler's Sawblade | 25 | Randomizes the slot of a ring, bracelet, or necklace between finger, wrist, and neck. |
+| Oil of Creature Slaying | 25 | Adds a random slayer (1.8 damage bonus) to a weapon or magic caster that does not already have one. |
+| Empyrean Tuning Fork | 25 | Randomizes the legendary cantrips on armor, jewelry, or shields that already have legendaries. One use per item. |
+
 ---
 
 ### Anti Parazi
@@ -620,41 +638,25 @@ Both bonuses apply simultaneously and stack with other multipliers (Hot Dungeon,
 
 ### Darkbeat's Storage Locker
 
-The Storage Locker is a locked chest that always contains one tier-8 loot item and one randomly selected item from the table below. Darkbeat's Golem Drawing is always present and permanent (it does not leave when picked up — it regenerates).
+The Storage Locker is a locked chest that always contains one tier 6 loot item and up to two randomly selected bonus items per opening.
 
-The chest has a ~10% chance to contain a full WS10 (100-unit) salvage bag, evenly distributed across 11 salvage types (~0.91% each):
+Each opening makes two independent rolls from the bonus table. Each roll has a 5.5% cumulative chance to land on a salvage bag, distributed evenly across 11 salvage types (0.5% each):
 
 | Salvage | Use |
 |---------|-----|
-| Sunstone | Bludgeoning Rend |
-| Red Garnet | Slashing Rend |
-| Black Garnet | Piercing Rend/Imbue |
-| Imperial Topaz | Lightning Rend/Imbue |
-| Jet | Nether Rend/Imbue |
-| Aquamarine | Cold Imbue |
-| White Sapphire | Cold/Bludgeon Imbue |
-| Emerald | Acid Imbue/Rend |
-| Fire Opal | Fire Imbue |
-| Black Opal | Bludgeon/Nether Imbue |
-| Bloodstone | Crippling Blow |
+| Sunstone | Armor Rend |
+| Red Garnet | Fire Rend |
+| Black Garnet | Pierce Rend |
+| Imperial Topaz | Slash Rend |
+| Jet | Lightning Rend |
+| Aquamarine | Cold Rend |
+| White Sapphire | Bludgeon Rend |
+| Emerald | Acid Rend |
+| Fire Opal | Crippling Blow |
+| Black Opal | Critical Strike |
+| Bloodstone | Minor Endurance (jewelry only) |
 
-| Item | Cost (Phials) | Description |
-|------|--------------|-------------|
-| Ancient Bottle | 20 | Absorbs PvP XP overflow up to 100M. Bonded & Attuned. |
-| Ancient Empyrean Tool | 25 | Guarantees the next tinker will not fail. |
-| Skill and Attribute Reset Gem | 50 | Clears quest stamps for the Temple of Enlightenment and Temple of Forgetfulness. Each use costs an escalating number of PK Trophies (see below). Bonded & Attuned. |
-| Workmanship Morph Gem | 25 | Randomizes the Workmanship of a loot item (1–10). |
-| Arcane Lore Morph Gem | 25 | 90% chance to reduce Arcane Lore requirement by 25; 10% chance to increase it by 50. |
-| Missile Defense Requirement Morph Gem | 25 | Removes the Missile Defense activation requirement from an item. |
-| Melee Defense Requirement Morph Gem | 25 | Removes the Melee Defense activation requirement from an item. |
-| Imbue Altering Morph Gem | 25 | Randomizes a weapon's imbue between Crippling Blow, Armor Rending, and Critical Strike. |
-| Player Wield Requirement Morph Gem | 25 | Removes the wield restriction binding an item to a specific player. |
-| Level Requirement Removal Morph Gem | 25 | Removes the level requirement from armor or jewelry (cannot be used on weapons). |
-| Slayer Upgrade Morph Gem | 25 | Upgrades an existing slayer damage bonus to 1.8 on weapons that rolled a slayer via the tinkering lottery. |
-| Impenetrability Morph Gem | 25 | Adds a random Impenetrability cantrip (Minor / Major / Epic / Legendary) to magical armor. |
-| Empyrean Jeweler's Sawblade | 25 | Randomizes the slot of a ring, bracelet, or necklace between finger, wrist, and neck. |
-| Oil of Creature Slaying | 25 | Adds a random slayer (1.8 damage bonus) to a weapon or magic caster that does not already have one. |
-| Empyrean Tuning Fork | 25 | Randomizes the legendary cantrips on armor, jewelry, or shields that already have legendaries. One use per item. |
+All salvage bags are full WS10 (100-unit) bags. Other possible bonus items include foolproof tinkering gems, Trade Notes, PK Trophies, Phials of Bloody Tears, consumables, and Massive Mana Stones.
 
 ### Skill and Attribute Reset Gem — PK Trophy Cost
 
@@ -707,17 +709,17 @@ The Common, Rare, and Mythic Mystery Boxes each contain a weighted loot table of
 | Melee Requirement Morph Gem | ~6.4% |
 | Player Wield Requirement Morph Gem | ~6.4% |
 | Level Requirement Removal Morph Gem | ~6.4% |
-| Sunstone Salvage WS10 — Bludgeoning Rend | ~4.3% |
-| Red Garnet Salvage WS10 — Slashing Rend | ~4.3% |
-| Black Garnet Salvage WS10 — Piercing Rend/Imbue | ~4.3% |
-| Imperial Topaz Salvage WS10 — Lightning Rend/Imbue | ~4.3% |
-| Jet Salvage WS10 — Nether Rend/Imbue | ~4.3% |
-| Aquamarine Salvage WS10 — Cold Imbue | ~4.3% |
-| White Sapphire Salvage WS10 — Cold/Bludgeon Imbue | ~4.3% |
-| Emerald Salvage WS10 — Acid Imbue/Rend | ~4.3% |
-| Fire Opal Salvage WS10 — Fire Imbue | ~4.3% |
-| Black Opal Salvage WS10 — Bludgeon/Nether Imbue | ~4.3% |
-| Bloodstone Salvage WS10 — Crippling Blow | ~4.3% |
+| Sunstone Salvage WS10 — Armor Rend | ~4.3% |
+| Red Garnet Salvage WS10 — Fire Rend | ~4.3% |
+| Black Garnet Salvage WS10 — Pierce Rend | ~4.3% |
+| Imperial Topaz Salvage WS10 — Slash Rend | ~4.3% |
+| Jet Salvage WS10 — Lightning Rend | ~4.3% |
+| Aquamarine Salvage WS10 — Cold Rend | ~4.3% |
+| White Sapphire Salvage WS10 — Bludgeon Rend | ~4.3% |
+| Emerald Salvage WS10 — Acid Rend | ~4.3% |
+| Fire Opal Salvage WS10 — Crippling Blow | ~4.3% |
+| Black Opal Salvage WS10 — Critical Strike | ~4.3% |
+| Bloodstone Salvage WS10 — Minor Endurance (jewelry only) | ~4.3% |
 | Mythic Mystery Box | ~6.4% |
 | MMDs ×20 | ~6.4% |
 | PK Trophies ×100 | ~6.4% |
