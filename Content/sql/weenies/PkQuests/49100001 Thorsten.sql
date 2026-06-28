@@ -44,7 +44,7 @@ VALUES (49100001,   1,       5) /* HeartbeatInterval */
      , (49100001,  17,     0.4) /* ArmorModVsFire */
      , (49100001,  18,       1) /* ArmorModVsAcid */
      , (49100001,  19,     0.6) /* ArmorModVsElectric */
-     , (49100001,  39,     1.5) /* DefaultScale */
+     , (49100001,  39,     1.0) /* DefaultScale */
      , (49100001,  54,       3) /* UseRadius */
      , (49100001,  64,       1) /* ResistSlash */
      , (49100001,  65,       1) /* ResistPierce */
@@ -176,6 +176,8 @@ INSERT INTO `weenie_properties_emote_action` (`emote_Id`, `order`, `type`, `dela
 VALUES (@parent_id,  0,   5 /* Motion */, 0, 1, 0x430000F2 /* AkimboState */, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 INSERT INTO `weenie_properties_create_list` (`object_Id`, `destination_Type`, `weenie_Class_Id`, `stack_Size`, `palette`, `shade`, `try_To_Bond`)
-VALUES (49100001, 2, 490163,  1, 4, 0.5, False) /* Create Cragstone Armor (10696) for Wield */
-     , (49100001, 2,  2587,  1, 2, 0.8182, False) /* Create Shirt (2587) for Wield */
-     , (49100001, 2,   127,  1, 9, 0.9821, False) /* Create Pants (127) for Wield */;
+VALUES (49100001, 2,  72,  1, 0, 0, False) /* Create Platemail Hauberk (72) for Wield */
+     , (49100001, 2,  82,  1, 0, 0, False) /* Create Platemail Leggings (82) for Wield */
+     , (49100001, 2, 107,  1, 0, 0, False) /* Create Sollerets (107) for Wield */
+     , (49100001, 2,  75,  1, 0, 0, False) /* Create Helmet (75) for Wield */
+     , (49100001, 2,  57,  1, 0, 0, False) /* Create Platemail Gauntlets (57) for Wield */;
