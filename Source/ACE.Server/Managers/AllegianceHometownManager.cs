@@ -501,15 +501,18 @@ namespace ACE.Server.Managers
                 }
             }
 
-            // Smite ALL online members of the losing allegiance, wherever they are
+            // Smite losing allegiance members within 100m of the bindstone
             if (loserMonarchId.HasValue)
             {
-                foreach (var p in PlayerManager.GetAllOnline())
+                foreach (var lb in allLbs)
                 {
-                    if (!p.IsPK) continue;
-                    var monarchId = p.MonarchId ?? p.Guid.Full;
-                    if (monarchId == loserMonarchId.Value)
-                        p.Smite(p);
+                    foreach (var p in lb.GetPlayers())
+                    {
+                        if (!p.IsPK) continue;
+                        var monarchId = p.MonarchId ?? p.Guid.Full;
+                        if (monarchId == loserMonarchId.Value && p.Location.DistanceTo(bindstonePos) <= 100f)
+                            p.Smite(p);
+                    }
                 }
             }
 
