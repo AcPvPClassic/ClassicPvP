@@ -3111,8 +3111,7 @@ namespace ACE.Server.Command.Handlers
         #region Allegiance Hometown
 
         [CommandHandler("ah", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, 0,
-            "Recalls to an allegiance-owned hometown. No argument = random; specify a town name for a specific town.",
-            "[town name]")]
+            "Recalls to a random allegiance-owned hometown. Use /ahrecall <town name> to recall to a specific town.")]
         public static void HandleAllegianceHometownRecall(Session session, params string[] parameters)
         {
             var player = session.Player;
@@ -3156,39 +3155,116 @@ namespace ACE.Server.Command.Handlers
                 return;
             }
 
-            ACE.Entity.Position destination;
-
-            if (parameters.Length > 0)
+            // Random owned town
+            var ownedList = ownedTownIds.ToList();
+            var idx = ThreadSafeRandom.Next(0, ownedList.Count - 1);
+            var entry = ACE.Server.Entity.AllegianceHometown.AllegianceHometownRegistry.GetById(ownedList[idx]);
+            if (entry == null)
             {
-                // Specific town by name
-                var townArg = string.Join(" ", parameters).Trim();
-                var match = ACE.Server.Entity.AllegianceHometown.AllegianceHometownRegistry.All.Values
-                    .FirstOrDefault(t => ownedTownIds.Contains(t.TownId) &&
-                        t.TownName.StartsWith(townArg, StringComparison.OrdinalIgnoreCase));
-
-                if (match == null)
-                {
-                    player.SendTransientError($"Your allegiance does not own a hometown matching '{townArg}'. Use /towns to see owned towns.");
-                    return;
-                }
-
-                destination = match.BindstonePosition;
+                player.SendTransientError("Failed to find hometown data. Please try again.");
+                return;
             }
-            else
-            {
-                // Random owned town
-                var ownedList = ownedTownIds.ToList();
-                var idx = ThreadSafeRandom.Next(0, ownedList.Count - 1);
-                var entry = ACE.Server.Entity.AllegianceHometown.AllegianceHometownRegistry.GetById(ownedList[idx]);
-                if (entry == null)
-                {
-                    player.SendTransientError("Failed to find hometown data. Please try again.");
-                    return;
-                }
-                destination = entry.BindstonePosition;
-            }
+            ACE.Entity.Position destination = entry.BindstonePosition;
 
             // Perform recall animation then teleport
+            if (player.CombatMode != CombatMode.NonCombat)
+            {
+                var updateCombatMode = new GameMessagePrivateUpdatePropertyInt(player, ACE.Entity.Enum.Properties.PropertyInt.CombatMode, (int)CombatMode.NonCombat);
+                player.SetCombatMode(CombatMode.NonCombat);
+                session.Network.EnqueueSend(updateCombatMode);
+            }
+
+            player.EnqueueBroadcast(new GameMessageSystemChat($"{player.Name} is recalling to an allegiance hometown.", ChatMessageType.Recall), WorldObjects.WorldObject.LocalBroadcastRange, ChatMessageType.Recall);
+            player.SendMotionAsCommands(MotionCommand.AllegianceHometownRecall, MotionStance.NonCombat);
+
+            var startPos = new ACE.Entity.Position(player.Location);
+            player.IsBusy = true;
+
+            var animLength = DatLoader.DatManager.PortalDat.ReadFromDat<DatLoader.FileTypes.MotionTable>(player.MotionTableId)
+                .GetAnimationLength(MotionCommand.AllegianceHometownRecall);
+
+            var chain = new ActionChain();
+            chain.AddDelaySeconds(animLength);
+            chain.AddAction(player, () =>
+            {
+                player.IsBusy = false;
+
+                if (startPos.SquaredDistanceTo(player.Location) > WorldObjects.Player.RecallMoveThresholdSq)
+                {
+                    session.Network.EnqueueSend(new GameEventWeenieError(session, WeenieError.YouHaveMovedTooFar));
+                    return;
+                }
+
+                if (player.Allegiance == null)
+                {
+                    session.Network.EnqueueSend(new GameEventWeenieError(session, WeenieError.YouAreNotInAllegiance));
+                    return;
+                }
+
+                player.Teleport(destination);
+            });
+            chain.EnqueueChain();
+        }
+
+        [CommandHandler("ahrecall", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, 1,
+            "Recalls to a specific allegiance-owned hometown by name.",
+            "<town name>")]
+        public static void HandleAllegianceHometownRecallNamed(Session session, params string[] parameters)
+        {
+            var player = session.Player;
+
+            if (player.IsOlthoiPlayer)
+            {
+                player.SendTransientError("Olthoi cannot use this command.");
+                return;
+            }
+
+            if (player.PKTimerActive && ConfigManager.Config.Server.WorldRuleset != Common.Ruleset.CustomDM)
+            {
+                session.Network.EnqueueSend(new GameEventWeenieError(session, WeenieError.YouHaveBeenInPKBattleTooRecently));
+                return;
+            }
+
+            if (player.RecallsDisabled)
+            {
+                session.Network.EnqueueSend(new GameEventWeenieError(session, WeenieError.ExitTrainingAcademyToUseCommand));
+                return;
+            }
+
+            if (player.TooBusyToRecall)
+            {
+                session.Network.EnqueueSend(new GameEventWeenieError(session, WeenieError.YoureTooBusy));
+                return;
+            }
+
+            if (player.Allegiance == null)
+            {
+                session.Network.EnqueueSend(new GameEventWeenieError(session, WeenieError.YouAreNotInAllegiance));
+                return;
+            }
+
+            var monarchId    = player.MonarchId ?? player.Guid.Full;
+            var ownedTownIds = AllegianceHometownManager.GetOwnedTownIds(monarchId);
+
+            if (ownedTownIds.Count == 0)
+            {
+                player.SendTransientError("Your allegiance does not own any hometowns. Use a bind stone to claim one.");
+                return;
+            }
+
+            var townArg = string.Join(" ", parameters).Trim();
+            var match = ACE.Server.Entity.AllegianceHometown.AllegianceHometownRegistry.All.Values
+                .FirstOrDefault(t => ownedTownIds.Contains(t.TownId) &&
+                    t.TownName.StartsWith(townArg, StringComparison.OrdinalIgnoreCase));
+
+            if (match == null)
+            {
+                player.SendTransientError($"Your allegiance does not own a hometown matching '{townArg}'. Use /towns to see owned towns.");
+                return;
+            }
+
+            var destination = match.BindstonePosition;
+
             if (player.CombatMode != CombatMode.NonCombat)
             {
                 var updateCombatMode = new GameMessagePrivateUpdatePropertyInt(player, ACE.Entity.Enum.Properties.PropertyInt.CombatMode, (int)CombatMode.NonCombat);

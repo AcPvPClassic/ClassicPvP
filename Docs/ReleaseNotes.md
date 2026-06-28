@@ -517,7 +517,7 @@ Allegiances can now conquer and hold **towns across Dereth** through a two-phase
 Any allegiance member can walk up to a **Bind Stone** in an unowned town and use it to **claim the town for free**. Once claimed, the town becomes your allegiance's hometown and all members can recall there.
 
 - `/ah` — Recalls to a random town owned by your allegiance
-- `/ah <name>` — Recalls to a specific owned town (e.g. `/ah Arwic`)
+- `/ahrecall <name>` — Recalls to a specific owned town (e.g. `/ahrecall Arwic`)
 - `/towns` — Lists all 25 capturable towns and their current ownership status
 
 ### Capturing an Enemy Town
