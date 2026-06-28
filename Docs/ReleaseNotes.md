@@ -558,7 +558,7 @@ Winners within **100 meters of the Bind Stone** (on the town landblock or an adj
 - **3 Darkbeat Keys** per player
 - **10% of XP to next level** per player
 
-The losing allegiance's online PKs are **smited** at the moment of resolution, wherever they are in the world.
+Losing allegiance PKs within **100 meters of the Bind Stone** at the moment of resolution are **smited**.
 
 ### Using the Bind Stone
 
