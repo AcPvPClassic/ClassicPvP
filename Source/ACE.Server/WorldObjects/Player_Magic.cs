@@ -234,7 +234,10 @@ namespace ACE.Server.WorldObjects
                 if (PhysicsObj.MovementManager.MotionInterpreter.InterpretedState.TurnCommand == 0)
                     TurnTo_Magic(target);
                 else
+                {
+                    TurnTarget = target;
                     MagicState.PendingTurnRelease = true;
+                }
             }
         }
 
@@ -791,7 +794,10 @@ namespace ACE.Server.WorldObjects
                         if (PhysicsObj.MovementManager.MotionInterpreter.InterpretedState.TurnCommand == 0)
                             TurnTo_Magic(target);
                         else
+                        {
+                            TurnTarget = target;
                             MagicState.PendingTurnRelease = true;
+                        }
                     }
 
                     return;
