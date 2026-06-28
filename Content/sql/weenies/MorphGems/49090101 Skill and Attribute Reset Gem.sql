@@ -29,7 +29,7 @@ INSERT INTO `weenie_properties_d_i_d` (`object_Id`, `type`, `value`)
 VALUES (49090101,   1, 0x02000179) /* Setup */
      , (49090101,   3, 0x20000014) /* SoundTable */
      , (49090101,   6, 0x04000BEF) /* PaletteBase */
-     , (49090101,   8, 0x06003120) /* Icon */
+     , (49090101,   8, 100692712) /* Icon */
      , (49090101,  22, 0x3400002B) /* PhysicsEffectTable */
      , (49090101,  27, 0x13000093) /* UseUserAnimation - MimeEat */
      , (49090101,  52, 0x06005B0C) /* IconUnderlay */;
