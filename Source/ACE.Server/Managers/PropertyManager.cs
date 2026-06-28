@@ -1320,6 +1320,7 @@ namespace ACE.Server.Managers
                 // Discord webhooks — per-channel
                 ("pk_kill_webhook",    new Property<string>("", "Discord webhook URL for PK and PKL kill broadcast messages")),
                 ("hot_dungeon_webhook", new Property<string>("", "Discord webhook URL for Hot Dungeon announcements")),
+                ("hometown_webhook", new Property<string>("", "Discord webhook URL for Allegiance Hometown global broadcasts (captures, defenses, phase changes)")),
 
                 ("movement_violation_webhook", new Property<string>("", "Discord webhook URL for movement anti-cheat violation alerts (all violation types: speed, geometry, jump, door ghost, script detection, etc.)"))
                 );

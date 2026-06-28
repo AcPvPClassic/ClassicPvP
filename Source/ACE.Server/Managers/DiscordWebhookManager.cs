@@ -101,6 +101,20 @@ namespace ACE.Server.Managers
         }
 
         /// <summary>
+        /// Sends an Allegiance Hometown global broadcast to the configured Hometown webhook.
+        /// PropertyManager key: <c>hometown_webhook</c>
+        /// </summary>
+        public static void SendHometownBroadcast(string message)
+        {
+            if (string.IsNullOrWhiteSpace(message)) return;
+
+            var url = PropertyManager.GetString("hometown_webhook").Item;
+            if (string.IsNullOrWhiteSpace(url)) return;
+
+            _ = SendAsync(url, SanitiseMessage(message));
+        }
+
+        /// <summary>
         /// Sends a Hot Dungeon announcement to the configured Hot Dungeon webhook.
         /// PropertyManager key: <c>hot_dungeon_webhook</c>
         /// </summary>

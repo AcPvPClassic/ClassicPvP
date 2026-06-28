@@ -214,6 +214,13 @@ namespace ACE.Server.Entity
             if (defender.Invincible || defender.IsDead || defender.IsOnNoDamageLandblock)
                 return 0.0f;
 
+            // Bindstone proxy (Phase 2) — only PK players may deal damage; pets and NPKs deal zero
+            if (defender is WorldObjects.BindstoneCreatureProxy)
+            {
+                if (playerAttacker == null || !playerAttacker.IsPK)
+                    return 0.0f;
+            }
+
             // overpower
             if (attacker.Overpower != null)
                 Overpower = Creature.GetOverpower(attacker, defender);

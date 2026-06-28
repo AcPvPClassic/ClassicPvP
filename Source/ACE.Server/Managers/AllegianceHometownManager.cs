@@ -691,6 +691,7 @@ namespace ACE.Server.Managers
         {
             PlayerManager.BroadcastToAll(
                 new GameMessageSystemChat(message, ChatMessageType.WorldBroadcast));
+            DiscordWebhookManager.SendHometownBroadcast(message);
         }
 
         private static HashSet<T> GetOrCreateSet<TKey, T>(Dictionary<TKey, HashSet<T>> dict, TKey key)
