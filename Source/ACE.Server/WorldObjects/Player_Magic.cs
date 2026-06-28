@@ -106,10 +106,8 @@ namespace ACE.Server.WorldObjects
 
                 if (FastTick && PhysicsObj.MovementManager.MotionInterpreter.InterpretedState.CurrentStyle != (uint)MotionStance.Magic)
                 {
-                    log.Warn($"{Name} CombatMode: {CombatMode}, CurrentMotionState: {CurrentMotionState.Stance}.{CurrentMotionState.MotionState.ForwardCommand}, Physics: {(MotionStance)PhysicsObj.MovementManager.MotionInterpreter.InterpretedState.CurrentStyle}.{(MotionCommand)PhysicsObj.MovementManager.MotionInterpreter.InterpretedState.ForwardCommand}");
+                    log.Warn($"{Name} correcting physics stance to Magic (was {(MotionStance)PhysicsObj.MovementManager.MotionInterpreter.InterpretedState.CurrentStyle}) — continuing cast");
                     ApplyPhysicsMotion(new Motion(MotionStance.Magic));
-                    SendSpellCastingDoneEvent(WeenieError.YoureTooBusy, isCombatCasting);
-                    return;
                 }
             }
 
@@ -312,10 +310,8 @@ namespace ACE.Server.WorldObjects
 
                 if (FastTick && PhysicsObj.MovementManager.MotionInterpreter.InterpretedState.CurrentStyle != (uint)MotionStance.Magic)
                 {
-                    log.Warn($"{Name} CombatMode: {CombatMode}, CurrentMotionState: {CurrentMotionState.Stance}.{CurrentMotionState.MotionState.ForwardCommand}, Physics: {(MotionStance)PhysicsObj.MovementManager.MotionInterpreter.InterpretedState.CurrentStyle}.{(MotionCommand)PhysicsObj.MovementManager.MotionInterpreter.InterpretedState.ForwardCommand}");
+                    log.Warn($"{Name} correcting physics stance to Magic (was {(MotionStance)PhysicsObj.MovementManager.MotionInterpreter.InterpretedState.CurrentStyle}) — continuing cast");
                     ApplyPhysicsMotion(new Motion(MotionStance.Magic));
-                    SendSpellCastingDoneEvent(WeenieError.YoureTooBusy, isCombatCasting);
-                    return;
                 }
             }
 
