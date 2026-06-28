@@ -317,6 +317,12 @@ namespace ACE.Server.Entity
                     #region MorphGemRemovePlayerReq
                     case MorphGemRemovePlayerReq:
 
+                        if (target.WeenieClassId == 8142017u)
+                        {
+                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
+                            return;
+                        }
+
                         if (!target.GetProperty(PropertyInstanceId.AllowedWielder).HasValue)
                         {
                             player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
@@ -977,6 +983,12 @@ namespace ACE.Server.Entity
 
                     #region MorphGemRandomCantrip
                     case MorphGemRandomCantrip:
+
+                        if (target.WeenieClassId == 8142017u)
+                        {
+                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
+                            return;
+                        }
 
                         if ((target.ItemType != ItemType.Jewelry &&
                             target.ItemType != ItemType.Armor &&

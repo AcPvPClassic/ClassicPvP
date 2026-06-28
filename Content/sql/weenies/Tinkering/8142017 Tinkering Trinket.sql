@@ -24,7 +24,8 @@ VALUES (8142017,  11, True ) /* IgnoreCollisions */
      , (8142017,  14, True ) /* GravityStatus */
      , (8142017,  19, True ) /* Attackable */
      , (8142017,  22, True ) /* Inscribable */
-     , (8142017,  91, False) /* Retained */;
+     , (8142017,  91, False) /* Retained */
+     , (8142017,  99, False) /* Ivoryable */;
 
 INSERT INTO `weenie_properties_float` (`object_Id`, `type`, `value`)
 VALUES (8142017,   5,  -0.049) /* ManaRate */
@@ -42,28 +43,18 @@ VALUES (8142017,   1, 0x02000179) /* Setup */
      , (8142017,  22, 0x3400002B) /* PhysicsEffectTable */;
 
 INSERT INTO `weenie_properties_spell_book` (`object_Id`, `spell`, `probability`)
-VALUES (8142017,  689,      2)  /* Arcane Enlightenment Other VI */
-, (8142017, 713, 2) /*	Armor Tinkering Expertise Other VI */
-, (8142017, 737, 2) /*	Item Tinkering Expertise Other VI */
-, (8142017, 761, 2) /*	Magic Item Tinkering Expertise Other VI */
-, (8142017, 785, 2) /*	Weapon Tinkering Expertise Other VI */
-, (8142017, 933, 2) /*	Lockpick Mastery Other VI */
-, (8142017, 1005, 2) /*	Leaden Feet Other VI */
-, (8142017, 1017, 2) /*	Jumping Ineptitude Other VI */
-, (8142017, 1053, 2) /*	Bludgeoning Vulnerability Other VI */
-, (8142017, 1065, 2) /*	Cold Vulnerability Other VI */
-, (8142017, 1089, 2) /*	Lightning Vulnerability Other VI */
-, (8142017, 1108, 2) /*	Fire Vulnerability Other VI */
-, (8142017, 1132, 2) /*	Blade Vulnerability Other VI */
-, (8142017, 1156, 2) /*	Piercing Vulnerability Other VI */
-, (8142017, 1327, 2) /*	Imperil Other VI */
-, (8142017, 1337, 2) /*	Strength Other VI */
-, (8142017, 1360, 2) /*	Endurance Other VI */
-, (8142017, 1384, 2) /*	Coordination Other VI */
-, (8142017, 1408, 2) /*	Quickness Other VI */
-, (8142017, 1432, 2) /*	Focus Other VI */
-, (8142017, 1456, 2) /*	Willpower Other VI */
-, (8142017, 1714, 2) /*	Cooking Mastery Other VI */
-, (8142017, 1738, 2) /*	Fletching Mastery Other VI */
-, (8142017, 1762, 2) /*	Alchemy Mastery Other VI */
-, (8142017, 1774, 2) /*	Alchemy Ineptitude Other VI */;
+  VALUES (8142017, 2058, 2) /* Coordination Other VII */
+, (8142017, 2060, 2) /* Endurance Other VII */
+, (8142017, 2066, 2) /* Focus Other VII */
+, (8142017, 2080, 2) /* Quickness Other VII */
+, (8142017, 2086, 2) /* Strength Other VII */
+, (8142017, 2090, 2) /* Willpower Other VII */
+, (8142017, 2190, 2) /* Alchemy Mastery Other VII */
+, (8142017, 2196, 2) /* Armor Tinkering Expertise Other VII */
+, (8142017, 2210, 2) /* Cooking Mastery Other VII */
+, (8142017, 2236, 2) /* Fletching Mastery Other VII */
+, (8142017, 2250, 2) /* Item Tinkering Expertise Other VII */
+, (8142017, 2270, 2) /* Lockpick Mastery Other VII */
+, (8142017, 2276, 2) /* Magic Item Tinkering Expertise Other VII */
+, (8142017, 2324, 2) /* Weapon Tinkering Expertise Other VII */
+;
