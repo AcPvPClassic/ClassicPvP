@@ -185,19 +185,10 @@ VALUES (480641, 2,  5893,  1,  0, 1.0, False) /* Hoary Mattekar Robe for Wield *
      , (480641, 2,    57,  1, 13, 0.66, False) /* Platemail Gauntlets for Wield */
      , (480641, 2, 24207, 10,  0, 0.0, False) /* Weeping Wand for Wield */
      , (480641, 4, 60000213,  -1, 0, 0, False) /* Bounty Purchase Token for Shop */
-     , (480641, 4, 60000215,  -1, 0, 0, False) /* Writ of Pursuite for Shop */
-     , (480641, 4, 490071,  -1, 0, 0, False) /* Ancient Bottle for Shop */
-     , (480641, 4, 490298,  -1, 0, 0, False) /* Ancient Empyrean Tool for Shop */
-     , (480641, 4, 49090101,  -1, 0, 0, False) /* Skill and Attribute Reset Gem for Shop */
+     , (480641, 4, 60000215,  -1, 0, 0, False) /* Writ of Pursuit for Shop */
      , (480641, 4, 490027,   -1, 0, 0, False) /* Workmanship Morph Gem for Shop */
      , (480641, 4, 4200026,  -1, 0, 0, False) /* Arcane Lore Morph Gem for Shop */
      , (480641, 4, 480484,   -1, 0, 0, False) /* Missile Defense Requirement Morph Gem for Shop */
-     , (480641, 4, 480483,   -1, 0, 0, False) /* Melee Requirement Morph Gem for Shop */
-     , (480641, 4, 480486,   -1, 0, 0, False) /* Imbue Altering Morph Gem for Shop */
+     , (480641, 4, 480483,   -1, 0, 0, False) /* Melee Defense Requirement Morph Gem for Shop */
      , (480641, 4, 480485,   -1, 0, 0, False) /* Player Wield Requirement Morph Gem for Shop */
-     , (480641, 4, 480609,   -1, 0, 0, False) /* Level Requirement Removal Morph Gem for Shop */
-     , (480641, 4, 480639,   -1, 0, 0, False) /* Slayer Upgrade Morph Gem for Shop */
-     , (480641, 4, 490025,   -1, 0, 0, False) /* Impenetrability Morph Gem for Shop */
-     , (480641, 4, 490271,   -1, 0, 0, False) /* Empyrean Jeweler's Sawblade for Shop */
-     , (480641, 4, 490304,   -1, 0, 0, False) /* Oil of Creature Slaying for Shop */
-     , (480641, 4, 1548803,  -1, 0, 0, False) /* Empyrean Tuning Fork (Random Cantrip) for Shop */;
+     , (480641, 4, 480609,   -1, 0, 0, False) /* Level Requirement Removal Morph Gem for Shop */;

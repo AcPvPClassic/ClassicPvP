@@ -10,7 +10,7 @@ VALUES (60000215,   1,        128) /* ItemType - Misc */
      , (60000215,   9,   16777216) /* ValidLocations - Held */
      , (60000215,  16,          1) /* ItemUseable - No */
      , (60000215,  18,         32) /* UiEffects - Fire */
-     , (60000215,  19,          1) /* Value */
+     , (60000215,  19,        200) /* Value */
      , (60000215,  33,          1) /* Bonded - Bonded */
      , (60000215,  93,       1044) /* PhysicsState - Ethereal, IgnoreCollisions, Gravity */
      , (60000215, 114,          1) /* Attuned - Attuned */;

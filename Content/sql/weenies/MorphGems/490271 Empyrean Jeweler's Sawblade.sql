@@ -11,7 +11,7 @@ VALUES (490271,   1,       2048) /* ItemType - Gem */
      , (490271,  13,         10) /* StackUnitEncumbrance */
      , (490271,  15,          2) /* StackUnitValue */
      , (490271,  16,     524296) /* ItemUseable - SourceContainedTargetContained */
-     , (490271,  19,         25) /* Value */
+     , (490271,  19,         50) /* Value */
      , (490271,  65,        101) /* Placement - Resting */
      , (490271,  93,       1044) /* PhysicsState - Ethereal, IgnoreCollisions, Gravity */
      , (490271,  94,          8) /* TargetType - Jewelry */;

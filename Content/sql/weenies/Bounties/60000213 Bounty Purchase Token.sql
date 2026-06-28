@@ -10,7 +10,7 @@ VALUES (60000213,   1,       2048) /* ItemType - Gem */
      , (60000213,   8,        500) /* Mass */
      , (60000213,   9,   16777216) /* ValidLocations - Held */
      , (60000213,  16,          1) /* ItemUseable - No */
-     , (60000213,  19,          5) /* Value */
+     , (60000213,  19,        100) /* Value */
      , (60000213,  33,          1) /* Bonded - Bonded */
      , (60000213,  93,       1044) /* PhysicsState - Ethereal, IgnoreCollisions, Gravity */
      , (60000213, 114,          1) /* Attuned - Attuned */;

@@ -266,6 +266,22 @@ Use the `/arena` command to interact with the queue.
 - Eliminated players should stay online until the match ends to be eligible for rewards.
 - Rewards are scaled to your level range and the current rolling cap.
 
+### Daily PK Quest Rewards
+
+In addition to the per-match rewards above, completing arena and PK milestones each day earns **Phials of Bloody Tears** and **PK Trophies** through the daily quest system. Quests reset each day and stack — hitting a higher threshold also awards all lower tiers. Selected highlights:
+
+| Quest | Threshold | Phials | PK Trophies |
+|-------|-----------|--------|-------------|
+| Participate in arena matches | 5 / 15 / 30 / 50 | 1 / 2 / 3 / 5 | 5 / 25 / 50 / 100 |
+| Win arena matches (any type) | 10 / 20 / 30 | 2 / 3 / 5 | 40 / 100 / 200 |
+| Tugak War — participate | 2 / 25 matches | 1 / 5 | 15 / 75 |
+| Tugak War — win | 1 / 20 wins | 1 / 5 | 25 / 75 |
+| Tugak War — top 3 | 1 | 1 | 15 |
+| Open world kills (opposing allegiance) | 10 / 30 | 1 / 3 | 20 / 100 |
+| Complete bounty contracts | 1 / 5 / 25 | 1 / 3 / 5 | 25 / 50 / 100 |
+| Complete high priority bounties | 1 / 5 | 2 / 5 | 25 / 50 |
+| Town Control kills | 1 / 5 / 30 | — / 2 / 3 | 15 / 25 / 50 |
+
 ### Arena Ranking
 
 Each arena format has its own leaderboard, all viewable with `/arena rank <type>`.
@@ -617,49 +633,37 @@ Killing the same player more than **3 times within a 1-hour window** suppresses 
 
 ### Darkbeat
 
-**Darkbeat** is a special vendor located in the Afterlife area. He accepts **Phials of Bloody Tears** as currency (not pyreals) and sells a variety of rare utility items.
+**Darkbeat** is a special vendor located in the Afterlife area. He accepts **Phials of Bloody Tears** as currency (not pyreals) and sells rare crafting and upgrade items. Phials are earned through PK quests, arena rewards, and hometown captures.
 
 | Item | Cost (Phials) | Description |
 |------|--------------|-------------|
-| Ancient Bottle | 20 | Absorbs PvP XP overflow up to 100M. Bonded & Attuned. |
-| Ancient Empyrean Tool | 25 | Guarantees the next tinker will not fail. |
-| Skill and Attribute Reset Gem | 50 | Clears quest stamps for the Temple of Enlightenment and Temple of Forgetfulness. Each use costs an escalating number of PK Trophies (see below). Bonded & Attuned. |
-| Workmanship Morph Gem | 25 | Randomizes the Workmanship of a loot item (1–10). |
-| Arcane Lore Morph Gem | 25 | 90% chance to reduce Arcane Lore requirement by 25; 10% chance to increase it by 50. |
-| Missile Defense Requirement Morph Gem | 25 | Removes the Missile Defense activation requirement from an item. |
-| Melee Defense Requirement Morph Gem | 25 | Removes the Melee Defense activation requirement from an item. |
-| Imbue Altering Morph Gem | 25 | Randomizes a weapon's imbue between Crippling Blow, Armor Rending, and Critical Strike. |
-| Player Wield Requirement Morph Gem | 25 | Removes the wield restriction binding an item to a specific player. |
-| Level Requirement Removal Morph Gem | 25 | Removes the level requirement from armor or jewelry (cannot be used on weapons). |
-| Slayer Upgrade Morph Gem | 25 | Upgrades an existing slayer damage bonus to 1.8 on weapons that rolled a slayer via the tinkering lottery. |
-| Impenetrability Morph Gem | 25 | Adds a random Impenetrability cantrip (Minor / Major / Epic / Legendary) to magical armor. |
-| Empyrean Jeweler's Sawblade | 25 | Randomizes the slot of a ring, bracelet, or necklace between finger, wrist, and neck. |
-| Oil of Creature Slaying | 25 | Adds a random slayer (1.8 damage bonus) to a weapon or magic caster that does not already have one. |
+| Imbue Altering Morph Gem | 20 | Randomizes a weapon's imbue between Crippling Blow, Armor Rending, and Critical Strike. |
 | Empyrean Tuning Fork | 25 | Randomizes the legendary cantrips on armor, jewelry, or shields that already have legendaries. One use per item. |
+| Slayer Upgrade Gem | 25 | Upgrades an existing slayer damage bonus to 1.8 on weapons that rolled a slayer via the tinkering lottery. |
+| Ancient Bottle | 50 | Absorbs PvP XP overflow up to 100M. Bonded & Attuned. |
+| Ancient Empyrean Tool | 50 | Guarantees the next tinker will not fail. |
+| Empyrean Jeweler's Sawblade | 50 | Randomizes the slot of a ring, bracelet, or necklace between finger, wrist, and neck. |
+| Oil of Creature Slaying | 75 | Adds a random slayer (1.8 damage bonus) to a weapon or magic caster that does not already have one. |
+| Skill and Attribute Reset Gem | 100 | Clears quest stamps for the Temple of Enlightenment and Temple of Forgetfulness. Each use costs an escalating number of PK Trophies (see below). Bonded & Attuned. |
 
 ---
 
 ### Anti Parazi
 
-**Anti Parazi** is a vendor located in the Abandoned Mine alongside Darkbeat. He accepts **PK Trophies** as currency (not pyreals) and sells the same variety of rare utility items as Darkbeat.
+**Anti Parazi** is a vendor located in the Abandoned Mine alongside Darkbeat. He accepts **PK Trophies** as currency (not pyreals) and sells bounty consumables and item requirement morph gems. PK Trophies are earned at a higher rate than Phials, reflected in Anti Parazi's pricing.
 
 | Item | Cost (PK Trophies) | Description |
 |------|-------------------|-------------|
-| Ancient Bottle | 20 | Absorbs PvP XP overflow up to 100M. Bonded & Attuned. |
-| Ancient Empyrean Tool | 25 | Guarantees the next tinker will not fail. |
-| Skill and Attribute Reset Gem | 50 | Clears quest stamps for the Temple of Enlightenment and Temple of Forgetfulness. Each use costs an escalating number of PK Trophies (see below). Bonded & Attuned. |
-| Workmanship Morph Gem | 25 | Randomizes the Workmanship of a loot item (1–10). |
-| Arcane Lore Morph Gem | 25 | 90% chance to reduce Arcane Lore requirement by 25; 10% chance to increase it by 50. |
-| Missile Defense Requirement Morph Gem | 25 | Removes the Missile Defense activation requirement from an item. |
-| Melee Defense Requirement Morph Gem | 25 | Removes the Melee Defense activation requirement from an item. |
-| Imbue Altering Morph Gem | 25 | Randomizes a weapon's imbue between Crippling Blow, Armor Rending, and Critical Strike. |
-| Player Wield Requirement Morph Gem | 25 | Removes the wield restriction binding an item to a specific player. |
-| Level Requirement Removal Morph Gem | 25 | Removes the level requirement from armor or jewelry (cannot be used on weapons). |
-| Slayer Upgrade Morph Gem | 25 | Upgrades an existing slayer damage bonus to 1.8 on weapons that rolled a slayer via the tinkering lottery. |
-| Impenetrability Morph Gem | 25 | Adds a random Impenetrability cantrip (Minor / Major / Epic / Legendary) to magical armor. |
-| Empyrean Jeweler's Sawblade | 25 | Randomizes the slot of a ring, bracelet, or necklace between finger, wrist, and neck. |
-| Oil of Creature Slaying | 25 | Adds a random slayer (1.8 damage bonus) to a weapon or magic caster that does not already have one. |
-| Empyrean Tuning Fork | 25 | Randomizes the legendary cantrips on armor, jewelry, or shields that already have legendaries. One use per item. |
+| Bounty Purchase Token | 100 | Used to purchase a Bounty Contract from the Bounty Hunter NPC. |
+| Writ of Pursuit | 200 | Inscribe with `PlayerName:Amount` and turn in to flag a player as a High Priority Target. |
+| Workmanship Morph Gem | 300 | Randomizes the Workmanship of a loot item (1–10). |
+| Arcane Lore Morph Gem | 350 | 90% chance to reduce Arcane Lore requirement by 25; 10% chance to increase it by 50. |
+| Missile Defense Requirement Morph Gem | 400 | Removes the Missile Defense activation requirement from an item. |
+| Melee Defense Requirement Morph Gem | 400 | Removes the Melee Defense activation requirement from an item. |
+| Player Wield Requirement Morph Gem | 500 | Removes the wield restriction binding an item to a specific player. |
+| Level Requirement Removal Morph Gem | 750 | Removes the level requirement from armor or jewelry (cannot be used on weapons). |
+
+> **Impenetrability Morph Gem** — no longer sold by either vendor. Obtainable only from **Mythic Mystery Boxes**.
 
 ---
 

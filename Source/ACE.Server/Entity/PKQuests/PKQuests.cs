@@ -155,8 +155,8 @@ namespace ACE.Server.Entity.PKQuests
                     var arena_tugak_25 = new PKQuest();
                     arena_tugak_25.QuestCode = "ARENA_TUGAK_25";
                     arena_tugak_25.Description = "Participate in 25 Arena Tugak War matches";
-                    arena_tugak_25.RewardDescription = "100% XP to next level, 4 Darkbeat Keys, 15 Phials of Bloody Tears, 250 PK Trophies, 5 Boxes";
-                    arena_tugak_25.Rewards = new List<string>() { "XP%,100", "DBKEY,4", "PHIAL,15", "PKTROPHY,250", "BOX,5" };
+                    arena_tugak_25.RewardDescription = "100% XP to next level, 4 Darkbeat Keys, 5 Phials of Bloody Tears, 75 PK Trophies, 5 Boxes";
+                    arena_tugak_25.Rewards = new List<string>() { "XP%,100", "DBKEY,4", "PHIAL,5", "PKTROPHY,75", "BOX,5" };
                     arena_tugak_25.TaskCount = 25;
                     _pkQuestList.Add(arena_tugak_25);
 
@@ -236,8 +236,8 @@ namespace ACE.Server.Entity.PKQuests
                     var ARENA_TUGAK_WIN_1 = new PKQuest();
                     ARENA_TUGAK_WIN_1.QuestCode = "ARENA_TUGAK_WIN_1";
                     ARENA_TUGAK_WIN_1.Description = "Win 1 Arena Tugak War match";
-                    ARENA_TUGAK_WIN_1.RewardDescription = "35% XP to next level, 1 Darkbeat Keys, 1 Phials of Bloody Tears, 5 PK Trophies";
-                    ARENA_TUGAK_WIN_1.Rewards = new List<string>() { "XP%,35", "DBKEY,1", "PHIAL,1", "PKTROPHY,5" };
+                    ARENA_TUGAK_WIN_1.RewardDescription = "35% XP to next level, 1 Darkbeat Keys, 1 Phials of Bloody Tears, 25 PK Trophies";
+                    ARENA_TUGAK_WIN_1.Rewards = new List<string>() { "XP%,35", "DBKEY,1", "PHIAL,1", "PKTROPHY,25" };
                     ARENA_TUGAK_WIN_1.TaskCount = 1;
                     _pkQuestList.Add(ARENA_TUGAK_WIN_1);
 
@@ -245,8 +245,8 @@ namespace ACE.Server.Entity.PKQuests
                     var ARENA_TUGAK_WIN_20 = new PKQuest();
                     ARENA_TUGAK_WIN_20.QuestCode = "ARENA_TUGAK_WIN_20";
                     ARENA_TUGAK_WIN_20.Description = "Win 20 Arena Tugak War matches";
-                    ARENA_TUGAK_WIN_20.RewardDescription = "200% XP to next level, 6 Darkbeat Keys, 10 Phials of Bloody Tears, 250 PK Trophies, 5 Boxes.";
-                    ARENA_TUGAK_WIN_20.Rewards = new List<string>() { "XP%,200", "DBKEY,6", "PHIAL,10", "PKTROPHY,250", "BOX,5" };
+                    ARENA_TUGAK_WIN_20.RewardDescription = "200% XP to next level, 6 Darkbeat Keys, 5 Phials of Bloody Tears, 75 PK Trophies, 5 Boxes.";
+                    ARENA_TUGAK_WIN_20.Rewards = new List<string>() { "XP%,200", "DBKEY,6", "PHIAL,5", "PKTROPHY,75", "BOX,5" };
                     ARENA_TUGAK_WIN_20.TaskCount = 20;
                     _pkQuestList.Add(ARENA_TUGAK_WIN_20);
 
@@ -254,8 +254,8 @@ namespace ACE.Server.Entity.PKQuests
                     var arena_tugak_top3 = new PKQuest();
                     arena_tugak_top3.QuestCode = "ARENA_TUGAK_TOP3";
                     arena_tugak_top3.Description = "Place in the top 3 in an Arena Tugak War match";
-                    arena_tugak_top3.RewardDescription = "35% XP to next level, 1 Darkbeat Key, 1 Phial of Bloody Tears, 5 PK Trophies";
-                    arena_tugak_top3.Rewards = new List<string>() { "XP%,35", "DBKEY,1", "PHIAL,1", "PKTROPHY,5" };
+                    arena_tugak_top3.RewardDescription = "35% XP to next level, 1 Darkbeat Key, 1 Phial of Bloody Tears, 15 PK Trophies";
+                    arena_tugak_top3.Rewards = new List<string>() { "XP%,35", "DBKEY,1", "PHIAL,1", "PKTROPHY,15" };
                     arena_tugak_top3.TaskCount = 1;
                     _pkQuestList.Add(arena_tugak_top3);
 

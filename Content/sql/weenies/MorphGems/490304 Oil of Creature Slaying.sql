@@ -11,7 +11,7 @@ VALUES (490304,   1,       2048) /* ItemType - Gem */
      , (490304,  13,         10) /* StackUnitEncumbrance */
      , (490304,  16,     524296) /* ItemUseable - SourceContainedTargetContained */
      , (490304,  18,          1) /* UiEffects - Magical */
-     , (490304,  19,         25) /* Value */
+     , (490304,  19,         75) /* Value */
      , (490304,  65,        101) /* Placement - Resting */
      , (490304,  93,       1044) /* PhysicsState - Ethereal, IgnoreCollisions, Gravity */
      , (490304,  94,          33025) /* TargetType - Vestements */;
