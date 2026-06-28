@@ -3340,7 +3340,7 @@ namespace ACE.Server.Command.Handlers
             }
 
             sb.AppendLine();
-            sb.AppendLine($"Your allegiance owns {AllegianceHometownManager.GetOwnedTownCount(monarchId)} town(s). Use /ah [name] to recall.");
+            sb.AppendLine($"Your allegiance owns {AllegianceHometownManager.GetOwnedTownCount(monarchId)} town(s). Use /ah to recall to a random town or /ahtown <name> for a specific one.");
             CommandHandlerHelper.WriteOutputInfo(session, sb.ToString());
         }
 
