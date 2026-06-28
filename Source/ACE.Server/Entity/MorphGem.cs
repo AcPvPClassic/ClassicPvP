@@ -208,24 +208,28 @@ namespace ACE.Server.Entity
                             return;
                         }
                     
-                        var arcaneChange = ThreadSafeRandom.Next(-25, 20);
-                        var newArcane = currentItemArcane.Value + arcaneChange;
+                        var outcomeRoll = ThreadSafeRandom.Next(1, 100);
+                        int arcaneChange;
 
-                        if (newArcane < 1)
-                        {
-                            newArcane = 1;
-                            arcaneChange = currentItemArcane.Value < 1 ? 0 : 1 - currentItemArcane.Value;
-                        }
+                        if (outcomeRoll <= 75)          // 75% — success, reduce by 5–25
+                            arcaneChange = -ThreadSafeRandom.Next(5, 25);
+                        else if (outcomeRoll <= 90)     // 15% — fizzle, no effect
+                            arcaneChange = 0;
+                        else                            // 10% — backfire, increase by 5–15
+                            arcaneChange = ThreadSafeRandom.Next(5, 15);
+
+                        var newArcane = Math.Max(1, currentItemArcane.Value + arcaneChange);
+                        arcaneChange = newArcane - currentItemArcane.Value;
 
                         player.UpdateProperty(target, PropertyInt.ItemDifficulty, newArcane);
                         AddMorphGemLog(target, MorphGemArcane);
 
-                        if (arcaneChange > 0)
-                            playerMsg = $"The Morph Gem shatters against your {target.NameWithMaterial} and its arcane requirement has increased by {arcaneChange}";
+                        if (arcaneChange < 0)
+                            playerMsg = $"You apply the Morph Gem skillfully and have reduced the arcane requirement of your {target.NameWithMaterial} by {-arcaneChange}";
                         else if (arcaneChange == 0)
                             playerMsg = $"The Morph Gem shatters against your {target.NameWithMaterial} and leaves it unchanged. Could be worse.";
                         else
-                            playerMsg = $"You apply the Morph Gem skillfully and have reduced the arcane requirement of your item by {-1 * arcaneChange}";
+                            playerMsg = $"The Morph Gem backfires against your {target.NameWithMaterial} and its arcane requirement has increased by {arcaneChange}";
 
                         player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
                         break;
