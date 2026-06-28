@@ -583,14 +583,33 @@ During **Phase 2**, the real Bind Stone becomes invisible (cloaked) and an attac
 
 Server admins can suspend an allegiance from participating in hometown warfare via the blacklist. Blacklisted allegiances cannot initiate Phase 1 and are informed when they attempt to do so.
 
-### PK XP Bonuses
+### Open-World PK Kill XP
 
-| Condition | Bonus |
+When you kill an enemy PK in the open world (different allegiance, no diminishing returns), you earn PvP XP calculated as follows:
+
+**Base XP:**
+```
+Base XP = 10–20% of your XP-to-next-level (random roll per kill)
+```
+The random roll is re-rolled on every kill, so repeated kills against the same target vary slightly each time.
+
+**Level gap penalty:**
+If the victim is below your level, the base XP is multiplied by a decay factor for each level of difference:
+```
+Modifier = 0.85 ^ (your level − victim's level)
+```
+Killing someone at or above your level applies no penalty. Killing someone 5 levels below you reduces the reward to ~44% of base; 10 levels below ~20%.
+
+**Bonuses (applied after the decay modifier, all stack):**
+
+| Condition | Effect |
 |---|---|
-| +5% PK XP per town your allegiance owns | Passive, stacks, no cap |
-| Active conflict on the kill landblock (either phase) | 2× PK XP multiplier |
+| Hot Dungeon kill | × dungeon XP multiplier (1.5× – 4×, varies per dungeon) |
+| +5% per hometown your allegiance owns | Passive, stacks, no cap |
+| Active hometown conflict on the kill landblock (either phase) | × 2 |
 
-Both bonuses apply simultaneously and stack with other multipliers (Hot Dungeon, etc.).
+**Diminishing returns:**
+Killing the same player more than **3 times within a 1-hour window** suppresses all rewards from that target for **3 hours**. No XP, no quest credit, no season credit. You'll receive a message when a kill is suppressed.
 
 ---
 
