@@ -6,6 +6,8 @@
 -- Non-aggressive, stuck in place, no loot, no XP.
 -- Death triggers attacker victory via BindstoneCreatureProxy.OnDeath override.
 -- Low attributes and defense skills so attacks and spells always land.
+-- Physical damage types (slash/pierce/bludgeon) are 95% resisted to keep melee/archer
+-- damage in the same ballpark as magic damage.
 -- HP is overridden at spawn by AllegianceHometownManager.ComputeBindstoneHp().
 -- ============================================================
 
@@ -43,9 +45,9 @@ VALUES (1000010,   1,       5) /* HeartbeatInterval */
      , (1000010,  19,       1) /* ArmorModVsElectric */
      , (1000010,  39,       1) /* DefaultScale */
      , (1000010,  54,       3) /* UseRadius */
-     , (1000010,  64,       1) /* ResistSlash       - no resistance */
-     , (1000010,  65,       1) /* ResistPierce      - no resistance */
-     , (1000010,  66,       1) /* ResistBludgeon    - no resistance */
+     , (1000010,  64,    0.05) /* ResistSlash       - 95% physical resist */
+     , (1000010,  65,    0.05) /* ResistPierce      - 95% physical resist */
+     , (1000010,  66,    0.05) /* ResistBludgeon    - 95% physical resist */
      , (1000010,  67,       1) /* ResistFire        - no resistance */
      , (1000010,  68,       1) /* ResistCold        - no resistance */
      , (1000010,  69,       1) /* ResistAcid        - no resistance */
