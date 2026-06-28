@@ -689,10 +689,10 @@ namespace ACE.Server.Managers
         /// <summary>
         /// Broadcasts GameMessage to all online sessions.
         /// </summary>
-        public static void BroadcastToAll(GameMessage msg)
+        public static void BroadcastToAll(GameMessage msg, bool suppressWebhook = false)
         {
             bool isWorldBroadcast = false;
-            if (msg.Opcode == GameMessageOpcode.ServerMessage && msg is GameMessageSystemChat systemChat)
+            if (!suppressWebhook && msg.Opcode == GameMessageOpcode.ServerMessage && msg is GameMessageSystemChat systemChat)
             {
                 if (systemChat.Message != null && systemChat.ChatMessageType == ChatMessageType.WorldBroadcast)
                 {

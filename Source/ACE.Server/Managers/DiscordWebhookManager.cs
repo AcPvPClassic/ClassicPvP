@@ -145,7 +145,7 @@ namespace ACE.Server.Managers
                 if (content.Length > 2000)
                     content = content.Substring(0, 1997) + "...";
 
-                var json    = $"{{\"content\":\"{content}\"}}";
+                var json    = Newtonsoft.Json.JsonConvert.SerializeObject(new { content });
                 var payload = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var response = await _http.PostAsync(webhookUrl, payload).ConfigureAwait(false);

@@ -354,8 +354,9 @@ namespace ACE.Server.Managers
 
         private static void Broadcast(string msg)
         {
-            PlayerManager.BroadcastToAll(new GameMessageSystemChat(msg, ChatMessageType.WorldBroadcast));
+            PlayerManager.BroadcastToAll(new GameMessageSystemChat(msg, ChatMessageType.WorldBroadcast), suppressWebhook: true);
             PlayerManager.LogBroadcastChat(Channel.AllBroadcast, null, msg);
+            DiscordWebhookManager.SendHotDungeon(msg);
         }
     }
 }
