@@ -140,11 +140,8 @@ namespace ACE.Server.Managers
         {
             return message
                 .Replace("@", "@ ")          // neutralise Discord @mentions
-                .Replace("\\", "\\\\")
-                .Replace("\"",  "\\\"")
-                .Replace("\r\n", "\\n")
-                .Replace("\n",  "\\n")
-                .Replace("\r",  "\\n");
+                .Replace("\r\n", "\n")        // normalise line endings
+                .Replace("\r",   "\n");
         }
 
         /// <summary>
