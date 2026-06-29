@@ -963,7 +963,6 @@ namespace ACE.Server.WorldObjects
                                                             var castSpell = new Spell(castSpellId);
                                                             castSpell.OverrideSchool = (MagicSchool)amulet.LeyLineSchool;
                                                             var extraSpellChain = new ActionChain();
-                                                            extraSpellChain.AddDelaySeconds(0.3);
                                                             extraSpellChain.AddAction(this, () =>
                                                             {
                                                                 if (amulet.LeyLineEffectId == (uint)LeyLineEffect.CastExtraSpellSelf)
