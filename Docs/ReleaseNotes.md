@@ -671,7 +671,7 @@ Killing the same player more than **3 times within a 1-hour window** suppresses 
 
 The Storage Locker is a locked chest that always contains one tier 6 loot item and up to two randomly selected bonus items per opening.
 
-Each opening makes two independent rolls from the bonus table. Each roll has a 5.5% cumulative chance to land on a salvage bag, distributed evenly across 11 salvage types (0.5% each):
+Each opening makes two independent rolls from the bonus table. Each roll has a 10% cumulative chance to land on a salvage bag, distributed evenly across 11 salvage types (~0.91% each):
 
 | Salvage | Use |
 |---------|-----|
