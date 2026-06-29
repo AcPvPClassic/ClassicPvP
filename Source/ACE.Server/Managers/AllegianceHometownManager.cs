@@ -544,7 +544,7 @@ namespace ACE.Server.Managers
                 var xpBand = (long)winner.GetXPBetweenLevels(level, level + 1);
                 var bonusXp = (long)Math.Round(xpBand * 0.10);
                 if (bonusXp > 0)
-                    winner.GrantXP(bonusXp, XpType.Kill, ACE.Entity.Enum.ShareType.None, "hometown capture reward");
+                    winner.GrantXP(bonusXp, XpType.PvP, ACE.Entity.Enum.ShareType.None, "hometown capture reward");
 
                 winner.Session.Network.EnqueueSend(new GameMessageSystemChat(
                     $"[Hometown] You received {perTrophies} PK Trophy/Trophies, {perMmds} MMD(s), 1 Phial of Bloody Tears, and 3 Darkbeat Keys for your service!",

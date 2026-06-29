@@ -59,10 +59,11 @@ If you're coming from a more modern server, a lot of the late-game rating bloat 
 
 ClassicPvP enforces a **strict one-account-per-player** policy, backed by the server itself — not just the rules.
 
-- **One IP address, one account.** Each IP may only be bound to a single account. Playing multiple accounts from the same connection is not permitted.
-- **IP binding is automatic.** Your IP is recorded on first login and locked to your account.
-- **IP changes are limited.** You are allowed a limited number of IP changes per calendar month. Exceeding this limit triggers an **automatic account ban**.
-- Legitimate IP changes (ISP changes, moving, etc.) can be appealed to an admin.
+- **One IP address, one account.** Each IP may only be associated with a single account. Playing multiple accounts from the same connection is not permitted.
+- **IP tracking is automatic.** Every time you log in, your IP is recorded against your account. If your IP changes — because your ISP rotated it, you switched networks, or anything else — the new IP is simply added to your account's list and login proceeds normally. There is no penalty for IP changes.
+- **What is blocked:** if you connect from an IP that is already registered to a *different* account, your login will be rejected and you will be prompted to contact an admin.
+
+Common legitimate causes for an IP conflict: a household member plays on the same internet connection, you're connecting from a location another player has used (library, café, friend's house), or a VPN exit node was previously used by another player. Admins can review the binding history and resolve conflicts.
 
 The intent is simple: no multi-boxing, no alt-army farming, no market manipulation through alts. Everyone plays on a level field.
 
@@ -238,11 +239,6 @@ Use the `/arena` command to interact with the queue.
 **Requirements to join:**
 - Must be **Player Killer (PK)** status
 - Must **not** be PK-tagged (no active PK timer from a recent kill)
-- Must be at least **level ** TODO
-
-**Requirements to receive rewards:**
-- Must be at least **level ** TODO
-- Must have a minimum amount of in-game play time on your character TODO
 
 ### Arena Types
 
@@ -259,7 +255,9 @@ Use the `/arena` command to interact with the queue.
 | Type | XP | PK Trophies | Phials of Bloody Tears | Arena Keys |
 |------|-----|-------------|----------------------|------------|
 | **1v1** | Level-proportional | 5 | 1 | 1 |
+| **2v2** | Level-proportional | 5 | 1 | 1 |
 | **FFA** | Level-proportional (2×) | 5 | 3 | 5 |
+| **Tugak** | Level-proportional (2×) | 5 | 3 | 5 |
 | **Group** | — | 5 per member | 1 per member | — |
 
 - Arena XP counts against your **PvP daily bucket**.
@@ -331,7 +329,7 @@ Use `/arena rank ffa` or `/arena rank tugak` to see those leaderboards.
 
 ClassicPvP runs a number of anti-cheat and anti-abuse systems beyond standard emulator defaults.
 
-- **IP Binding** — as described above, accounts are hard-bound to an IP address. A second login from an IP already claimed by another account is flagged and acted upon automatically.
+- **IP Binding** — as described above, accounts accumulate IP addresses over time. A login from an IP already registered to a *different* account is rejected automatically.
 - **Comprehensive Server Logging** — the server runs a dedicated logging database that records:
   - All tinkering attempts (success and failure)
   - All PK kill events
@@ -410,7 +408,7 @@ Note: Many of the ratings introduced in later retail patches (Crit Rating, Damag
 
 ## 🏆 Season Leaderboards
 
-ClassicPvP tracks a **Season leaderboard** across 12 scored categories spanning both arena and open-world PvP. Every week the top players in each category are recognized and rewarded.
+ClassicPvP tracks a **Season leaderboard** across 12 categories spanning both arena and open-world PvP. Every week the top players in each category are recognized and rewarded.
 
 ### Leaderboard Categories
 
@@ -437,9 +435,9 @@ ClassicPvP tracks a **Season leaderboard** across 12 scored categories spanning 
 #### Overall
 | Category | What It Ranks |
 |---|---|
-| **Season Champion** | Weighted rank-points across all 11 categories |
+| **Season Champion** | Weighted rank-points across 11 categories (all except Arena Kills) |
 
-The Season Champion score gives more weight to categories that require skill and consistency. Categories are weighted as follows:
+The Season Champion score gives more weight to categories that require skill and consistency. **Arena Kills** is tracked on the leaderboard but does not contribute to the Season Champion score. The 11 weighted categories are:
 
 | Category | Weight |
 |---|---|
@@ -763,7 +761,7 @@ All salvage bags are full WS10 bags (100 units).
 |------|--------|
 | Ancient Bottle (XP Bottle) | ~5.0% |
 | Impenetrability Morph Gem | ~15.0% |
-| Slayer Upgrade Morph Gem | ~15.0% |
+| Slayer Upgrade Gem | ~15.0% |
 | Skill and Attribute Reset Gem | ~15.0% |
 | Imbue Altering Morph Gem | ~15.0% |
 | MMDs ×50 | ~15.0% |

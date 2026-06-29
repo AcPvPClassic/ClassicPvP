@@ -34,7 +34,7 @@ namespace ACE.Server.WorldObjects
         /// house open/closed status
         /// 0 = closed, 1 = open
         /// </summary>
-        public bool OpenStatus { get => OpenToEveryone; set => OpenToEveryone = value; }
+        public bool OpenStatus { get => true; set => OpenToEveryone = true; }  // PK server: housing barriers disabled
 
         /// <summary>
         /// For linking mansions

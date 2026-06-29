@@ -34,7 +34,7 @@ namespace ACE.Server.Network.Structure
 
             HouseOwner = house.HouseOwner ?? 0;
 
-            OpenStatus = house.OpenStatus;
+            OpenStatus = true;  // PK server: housing barriers disabled, no safe spaces
 
             if (house.MonarchId != null)
                 MonarchID = new ObjectGuid(house.MonarchId.Value);      // for allegiance guest/storage access
