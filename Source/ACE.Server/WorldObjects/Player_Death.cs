@@ -514,6 +514,7 @@ namespace ACE.Server.WorldObjects
                 //DatabaseManager.Shard.BaseDatabase.LogPlayerDeath(Account.AccountId, Guid.Full, Name, Level ?? 1, killerName, killerLevel, CurrentLandblock?.Id.Raw >> 16 ?? 0, (int)GameplayMode, wasPvP, PlayerKillsPkl ?? 0, TotalExperience ?? 0, Age ?? 0, DateTime.Now, MonarchId);
             }
 
+            bool isArenaDeath = false;
             if (topDamager != null && topDamager.IsPlayer && topDamager.Guid != Guid)
             {
                 try
@@ -521,6 +522,14 @@ namespace ACE.Server.WorldObjects
                     var killerPlayer = topDamager.TryGetAttacker() as Player;
                     var victimMonarchId = MonarchId.HasValue ? (uint?)MonarchId.Value : null;
                     var killerMonarchId = killerPlayer?.MonarchId.HasValue == true ? (uint?)killerPlayer.MonarchId.Value : null;
+
+                    if (ArenaLocation.IsArenaLandblock(Location.Landblock))
+                    {
+                        var victimArenaPlayer = ArenaManager.GetArenaPlayerByCharacterId(Character.Id);
+                        if (victimArenaPlayer != null)
+                            isArenaDeath = true;
+                    }
+
                     DatabaseManager.Log.LogPkKill((uint)Character.Id, (uint)topDamager.Guid.Full, victimMonarchId, killerMonarchId);
 
                     // Check diminishing returns: if the killer's kill of this victim was flagged as diminished
@@ -653,7 +662,7 @@ namespace ACE.Server.WorldObjects
                 ThreadSafeTeleportOnDeath(topDamager); // enter portal space
 
                 if ((IsPKDeath(topDamager) || IsPKLiteDeath(topDamager)) && !IsHardcore)
-                    SetMinimumTimeSincePK();
+                    SetMinimumTimeSincePK(isArenaDeath);
 
                 IsBusy = false;
             });
@@ -1613,7 +1622,7 @@ namespace ACE.Server.WorldObjects
             set { if (!value.HasValue) RemoveProperty(PropertyFloat.MinimumTimeSincePk); else SetProperty(PropertyFloat.MinimumTimeSincePk, value.Value); }
         }
 
-        public void SetMinimumTimeSincePK()
+        public void SetMinimumTimeSincePK(bool isArenaDeath = false)
         {
             if (IsOlthoiPlayer)
                 return;
@@ -1636,6 +1645,9 @@ namespace ACE.Server.WorldObjects
                 EnqueueBroadcast(new GameMessagePublicUpdatePropertyInt(this, PropertyInt.PlayerKillerStatus, (int)PlayerKillerStatus));
                 Session.Network.EnqueueSend(new GameEventWeenieError(Session, WeenieError.YouAreNonPKAgain));
             }
+
+            if (isArenaDeath)
+                MinimumTimeSincePk = Math.Max(PropertyManager.GetDouble("pk_respite_timer").Item - PropertyManager.GetDouble("arena_pk_respite_timer").Item, 0);
         }
 
         public void PK_DeathTick()
