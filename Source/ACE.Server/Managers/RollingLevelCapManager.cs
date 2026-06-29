@@ -289,6 +289,46 @@ namespace ACE.Server.Managers
         // ── Public API ───────────────────────────────────────────────────────────
 
         /// <summary>
+        /// Pure computation: returns the raw XP cap that the rolling schedule produces
+        /// for <paramref name="daysSinceStart"/> without touching any PropertyManager state.
+        /// Returns 0 if the dat is unavailable.
+        /// </summary>
+        public static long ComputeXpCapForDay(int daysSinceStart)
+        {
+            try
+            {
+                var xpTable        = DatManager.PortalDat.XpTable.CharacterLevelXPList;
+                var maxPossibleLvl = (int)xpTable.Count - 1;
+                var maxLevelXp     = (long)xpTable[maxPossibleLvl];
+
+                var seasonMaxXp = PropertyManager.GetLong("season_max_xp").Item;
+                if (seasonMaxXp < maxLevelXp) seasonMaxXp = maxLevelXp;
+
+                double newLevelCap = 15.0;
+                for (int i = 0; i < daysSinceStart; i++)
+                {
+                    if      (i < 15) newLevelCap += 3.00;
+                    else if (i < 45) newLevelCap += 1.50;
+                    else if (i < 60) newLevelCap += 1.40;
+                }
+
+                var levelCap = (int)Math.Ceiling(newLevelCap);
+                if (levelCap > maxPossibleLvl) levelCap = maxPossibleLvl;
+
+                if (levelCap < maxPossibleLvl)
+                    return (long)xpTable[levelCap];
+
+                int postCapStartDay  = ComputePostCapStartDay(maxPossibleLvl);
+                int postCapDays      = daysSinceStart - postCapStartDay;
+                int totalPostCapDays = SEASON_END_DAY - postCapStartDay;
+                if (totalPostCapDays <= 0) return seasonMaxXp;
+                double fraction = Math.Min(1.0, (double)postCapDays / totalPostCapDays);
+                return maxLevelXp + (long)(fraction * (seasonMaxXp - maxLevelXp));
+            }
+            catch { return 0; }
+        }
+
+        /// <summary>
         /// Returns the current raw total-XP cap, or 0 if the system is disabled
         /// or not yet configured.  The caller should treat 0 as "no active cap".
         /// </summary>

@@ -57,8 +57,11 @@ namespace ACE.Server.Managers
         private static readonly Dictionary<uint, uint> _currentStreaks = new();
 
         // ── Milestone state ───────────────────────────────────────────────────
-        private static DateTime _lastMilestoneDatetime = DateTime.MinValue;
-        private static ushort   _currentWeekNumber     = 0;
+        private static DateTime _lastMilestoneDatetime  = DateTime.MinValue;
+        private static ushort   _currentWeekNumber      = 0;
+
+        // ── Daily status state ────────────────────────────────────────────────
+        private static DateTime _lastDailyStatusDatetime = DateTime.MinValue;
 
         // ── Tick rate limiting ────────────────────────────────────────────────
         private static DateTime _lastTick = DateTime.MinValue;
@@ -105,6 +108,12 @@ namespace ACE.Server.Managers
             {
                 FireWeeklyMilestone();
             }
+
+            // Daily status: fire once per calendar day on any day.
+            if (DateTime.Now.Date > _lastDailyStatusDatetime.Date)
+            {
+                FireDailyStatus();
+            }
         }
 
         private static void FireWeeklyMilestone()
@@ -135,6 +144,66 @@ namespace ACE.Server.Managers
             _topCache.Clear();
 
             log.Info($"[Season] Week {_currentWeekNumber} milestone complete (id={milestoneId}).");
+        }
+
+        private static void FireDailyStatus()
+        {
+            _lastDailyStatusDatetime = DateTime.Now;
+
+            var msg = BuildDailyStatusMessage();
+            if (msg == null) return;
+
+            DiscordWebhookManager.SendSeasonMilestone(msg);
+            log.Info("[Season] Daily status posted to Discord.");
+        }
+
+        private static string BuildDailyStatusMessage()
+        {
+            var day = RollingLevelCapManager.GetCurrentSeasonDay();
+            if (day < 0) return null;   // season not started
+
+            var daysRemaining = Math.Max(0, RollingLevelCapManager.SeasonEndDay - day);
+
+            // XP cap — current and tomorrow
+            var xpCap         = RollingLevelCapManager.GetCurrentXpCap();
+            var tomorrowXpCap = RollingLevelCapManager.ComputeXpCapForDay(day + 1);
+            var capNow        = RollingLevelCapManager.GetCapDescription(xpCap);
+            var capTomorrow   = RollingLevelCapManager.GetCapDescription(tomorrowXpCap);
+
+            // XP modifier
+            var xpMod = PropertyManager.GetDouble("xp_modifier").Item;
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"📅 **Season Day {day} of {RollingLevelCapManager.SeasonEndDay}**  ·  Week {_currentWeekNumber}  ·  {daysRemaining} days remaining");
+            sb.AppendLine();
+            sb.AppendLine("**XP Cap**");
+            sb.AppendLine($"  Current:   {capNow}");
+            sb.AppendLine($"  Tomorrow:  {capTomorrow}");
+            sb.AppendLine();
+            sb.AppendLine($"**XP Modifier**  ·  {xpMod:0.00}×");
+            sb.AppendLine();
+            sb.AppendLine("**Current Leaders**");
+
+            // Overall first, then each scored category
+            var categoriesToShow = new[] { SeasonConfig.Cat_Overall }
+                .Concat(SeasonConfig.ScoredCategories);
+
+            foreach (var cat in categoriesToShow)
+            {
+                var top = GetTopForCategory(cat, 1);
+                var displayName = SeasonConfig.GetCategoryDisplayName(cat);
+                if (top.Count == 0)
+                {
+                    sb.AppendLine($"  {displayName}:  —");
+                }
+                else
+                {
+                    var leader = top[0];
+                    sb.AppendLine($"  {displayName}:  {leader.CharacterName}  ·  {leader.ScoreDisplay}");
+                }
+            }
+
+            return sb.ToString().TrimEnd();
         }
 
         private static string BuildMilestoneMessage(ushort week)
