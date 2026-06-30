@@ -234,6 +234,9 @@ namespace ACE.Server.WorldObjects
 
             var boostValue = (int)Math.Round(BoostValue * ratingMod);
 
+            if (player.IsJumping)
+                boostValue = 0;
+
             if (boostValue > 0)
             {
                 var cookingMod = GetCookingMod(player);
