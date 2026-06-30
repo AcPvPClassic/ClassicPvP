@@ -24,6 +24,8 @@ public partial class WorldDbContext : DbContext
 
     public virtual DbSet<ExplorationSite> ExplorationSite { get; set; }
 
+    public virtual DbSet<DungeonInfo> DungeonInfo { get; set; }
+
     public virtual DbSet<LandblockDescription> LandblockDescription { get; set; }
 
     public virtual DbSet<HousePortal> HousePortal { get; set; }
@@ -265,6 +267,33 @@ public partial class WorldDbContext : DbContext
             entity.Property(e => e.MicroRegion)
                 .HasColumnName("micro_Region");
         });
+        modelBuilder.Entity<DungeonInfo>(entity =>
+        {
+            entity.ToTable("dungeon_info");
+
+            entity.HasIndex(e => e.Landblock, "landblock_idx");
+
+            entity.Property(e => e.Id)
+                .HasColumnName("id")
+                .ValueGeneratedOnAdd()
+                .HasComment("Unique Id of this dungeon info instance");
+
+            entity.Property(e => e.LastModified)
+                .HasColumnType("datetime")
+                .ValueGeneratedOnAddOrUpdate()
+                .HasColumnName("last_Modified")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.Property(e => e.Landblock)
+                .HasColumnName("landblock");
+
+            entity.Property(e => e.Name)
+                .HasColumnName("name");
+
+            entity.Property(e => e.Coords)
+                .HasColumnName("coords");
+        });
+
         modelBuilder.Entity<Encounter>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");

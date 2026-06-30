@@ -270,6 +270,11 @@ namespace ACE.Server.Entity
                  + string.Format("{0:0.0}", Math.Abs(mapCoords.Value.X) - 0.05f) + eastWest;
         }
 
+        public static string GetLandblockHex(this Position pos)
+        {
+            return $"{pos.LandblockId.Raw:X8}".Substring(0, 4);
+        }
+
         public static void AdjustMapCoords(this Position pos)
         {
             // adjust Z to terrain height

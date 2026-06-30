@@ -312,8 +312,7 @@ namespace ACE.Server.WorldObjects
 
                         if (bountyTarget is Player onlinePlayer)
                         {
-                            var loc = onlinePlayer.Location;
-                            location = loc != null ? loc.GetMapCoordStr() : "Unknown";
+                            location = Landblock.GetLocString(onlinePlayer.Location);
                         }
                         else if (bountyTarget is OfflinePlayer offlinePlayer)
                         {
@@ -324,7 +323,7 @@ namespace ACE.Server.WorldObjects
                                 var pos = new Position(posVal.ObjCellId,
                                     posVal.PositionX, posVal.PositionY, posVal.PositionZ,
                                     posVal.RotationX, posVal.RotationY, posVal.RotationZ, posVal.RotationW);
-                                location = pos.GetMapCoordStr();
+                                location = Landblock.GetLocString(pos);
                             }
                         }
 

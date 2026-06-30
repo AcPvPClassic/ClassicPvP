@@ -581,6 +581,50 @@ namespace ACE.Database
 
 
         // =====================================
+        // DungeonInfo
+        // =====================================
+        private readonly ConcurrentDictionary<string, DungeonInfo> cachedDungeonInfo = new ConcurrentDictionary<string, DungeonInfo>();
+
+        public void CacheAllDungeonInfo()
+        {
+            using (var context = new WorldDbContext())
+            {
+                var results = context.DungeonInfo
+                    .AsNoTracking()
+                    .AsEnumerable()
+                    .GroupBy(r => r.Landblock)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.First()
+                    );
+
+                foreach (var result in results)
+                    cachedDungeonInfo[result.Key] = result.Value;
+            }
+        }
+
+        public DungeonInfo GetDungeonInformationByLandblock(string lb)
+        {
+            if (cachedDungeonInfo.TryGetValue(lb, out var cachedInfo))
+                return cachedInfo;
+
+            using (var context = new WorldDbContext())
+            {
+                context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+
+                var info = context.DungeonInfo
+                    .AsNoTracking()
+                    .FirstOrDefault(i => i.Landblock == lb);
+
+                if (info != null)
+                    cachedDungeonInfo.TryAdd(lb, info);
+
+                return info;
+            }
+        }
+
+
+        // =====================================
         // LandblockInstance
         // =====================================
 

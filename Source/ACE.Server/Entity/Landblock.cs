@@ -2210,5 +2210,20 @@ namespace ACE.Server.Entity
 
             return locationString;
         }
+
+        public static string GetLocString(Position pos)
+        {
+            if (pos == null)
+                return "Unknown Location";
+
+            if (!pos.Indoors)
+                return pos.GetMapCoordStr();
+
+            var dungeon = DatabaseManager.World.GetDungeonInformationByLandblock(pos.GetLandblockHex());
+            if (dungeon != null)
+                return dungeon.Name;
+
+            return $"Dungeon (0x{pos.Landblock:X4} / Cell 0x{pos.Cell:X8})";
+        }
     }
 }

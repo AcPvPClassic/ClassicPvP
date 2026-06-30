@@ -308,6 +308,8 @@ namespace ACE.Server
                 DatabaseManager.World.CacheAllTreasureMaterialColor();
                 log.Info("Precaching Treasures - Wielded...");
                 DatabaseManager.World.CacheAllTreasureWielded();
+                log.Info("Precaching Dungeon Info...");
+                DatabaseManager.World.CacheAllDungeonInfo();
             }
             else
                 log.Info("Precaching World Database Disabled...");
