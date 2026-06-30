@@ -1140,6 +1140,8 @@ namespace ACE.Server.WorldObjects
             }
         }
 
+        public bool PKDispelVulnTimerActive => IsPKType && Time.GetUnixTime() - LastPkAttackTimestamp < PropertyManager.GetLong("pvp_dispel_vuln_timer").Item;
+
         public bool PKLogoutActive => IsPKType && Time.GetUnixTime() - LastPkAttackTimestamp < PKLogoffTimer.TotalSeconds;
 
         public bool IsPKType => PlayerKillerStatus == PlayerKillerStatus.PK || PlayerKillerStatus == PlayerKillerStatus.PKLite;
@@ -1292,6 +1294,9 @@ namespace ACE.Server.WorldObjects
             }
             if (targetCreature == null)
                 return null;
+
+            if (IsTinker && target is Player)
+                return new List<WeenieErrorWithString>() { WeenieErrorWithString.YouFailToAffect_YouAreNotPK, WeenieErrorWithString._FailsToAffectYou_TheyAreNotPK };
 
             if (PlayerKillerStatus == PlayerKillerStatus.Free || targetCreature.PlayerKillerStatus == PlayerKillerStatus.Free)
                 return null;
