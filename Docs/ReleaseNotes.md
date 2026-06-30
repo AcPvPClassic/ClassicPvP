@@ -174,6 +174,25 @@ A few things to know:
 - When passup XP is delivered to you, it **does not generate further passup** to your own patron up the chain.
 - The amount of passup you can get at a time without spending it is 4.2 billion xp. If you accumulate that much and don't spend any you will start losing new earnings. 
 
+### XP Chain Mechanics (Loyalty & Leadership)
+
+The amount of XP that passes through each link in the chain is determined by two skills — one on each end of the link.
+
+**Loyalty** (vassal's skill) controls how much of the vassal's earned XP is *generated* for passup. **Leadership** (patron's skill) controls how much of that generated XP the patron actually *receives*. The final amount the patron gets is the product of both percentages — both sides of the link need to invest for maximum effect.
+
+**Vassal → Patron (first hop):**
+- Minimum: ~25% of earned XP passes up
+- Maximum: ~90% of earned XP passes up
+- Both skills cap at **291** for formula purposes (buffs count)
+
+**Patron → Grandpatron (second hop and beyond):**
+- Maximum: **10%** of whatever was received at the previous link
+- Every subsequent hop applies the same reduced factors, so the chain burns out quickly regardless of skills
+
+This reflects the behavior patched into the live servers on **January 12, 2004**. Before that patch, the second hop could pass up as much as 94%, making deep chains of well-spec'd characters extremely effective at funneling XP up to a monarch. After the patch (and on this server), the chain collapses after the first link. Loyalty and Leadership are still worth investing in for the direct vassal-to-patron link — 25% vs. 90% is a significant range — but building long XP chains to push XP deep up the tree is not viable. The second hop caps at 10% no matter what.
+
+**Vassal count matters for Leadership.** A patron with only 1 vassal gets 25% of Leadership's bonus. The full benefit requires **4 or more vassals**.
+
 ---
 
 ## 👥 Swearing Allegiance to Same-Account Characters
