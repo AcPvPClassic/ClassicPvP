@@ -608,6 +608,11 @@ namespace ACE.Server.WorldObjects
 
         private void HandleVitaeOnLogin(double currentUnixTime)
         {
+            // Offline vitae decay is a CustomDM feature only. Under other rulesets
+            // (e.g. Infiltration) vitae is burned solely through earned XP, matching retail/Doctide.
+            if (Common.ConfigManager.Config.Server.WorldRuleset != Common.Ruleset.CustomDM)
+                return;
+
             vitaeTickTimestamp = currentUnixTime + vitaeTickInterval + 10;
 
             var vitae = EnchantmentManager.GetVitae();

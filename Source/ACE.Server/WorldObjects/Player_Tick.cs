@@ -119,7 +119,9 @@ namespace ACE.Server.WorldObjects
                     houseRentWarnTimestamp = Time.GetFutureUnixTime(houseRentWarnInterval);
             }
 
-            if (currentUnixTime > vitaeTickTimestamp)
+            // Vitae decays over real time only under the CustomDM ruleset. Other rulesets
+            // (e.g. Infiltration) burn vitae solely through earned XP, matching retail/Doctide.
+            if (Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.CustomDM && currentUnixTime > vitaeTickTimestamp)
             {
                 var vitae = EnchantmentManager.GetVitae();
 
