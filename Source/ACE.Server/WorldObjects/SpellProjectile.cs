@@ -1,5 +1,6 @@
 using ACE.Common;
 using ACE.Entity;
+using log4net;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Entity.Models;
@@ -20,6 +21,8 @@ namespace ACE.Server.WorldObjects
 {
     public class SpellProjectile : WorldObject
     {
+        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         public Spell Spell;
         public ProjectileSpellType SpellType { get; set; }
 
@@ -294,7 +297,12 @@ namespace ACE.Server.WorldObjects
             // ensure caster can damage target
             var sourceCreature = ProjectileSource as Creature;
             if (sourceCreature != null && !sourceCreature.CanDamage(creatureTarget))
+            {
+                if (sourceCreature is Player sourcePlayer && creatureTarget.Teleporting)
+                    sourcePlayer.SendTransientError($"You cannot attack {creatureTarget.Name}");
+
                 return;
+            }
 
             // if player target, ensure matching PK status
             var targetPlayer = creatureTarget as Player;
@@ -439,6 +447,8 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public float? CalculateDamage(WorldObject source, Creature target, ref bool criticalHit, ref bool critDefended, ref bool overpower, ref bool resisted, ref bool blocked, ref bool isPerfectBlock, ref float damageBlocked)
         {
+            try
+            {
             var sourcePlayer = source as Player;
             var targetPlayer = target as Player;
             var isPvP = sourcePlayer != null && targetPlayer != null;
@@ -571,6 +581,13 @@ namespace ACE.Server.WorldObjects
 
                 if (!critDefended)
                     criticalHit = true;
+            }
+
+            // all spell projectiles crit 100% against a logging out target, same as physical hits
+            if (targetPlayer != null && (targetPlayer.IsLoggingOut || targetPlayer.PKLogout))
+            {
+                criticalChance = 1.0f;
+                criticalHit = true;
             }
 
             var absorbMod = GetAbsorbMod(this, target);
@@ -842,6 +859,12 @@ namespace ACE.Server.WorldObjects
                 ShowInfo(target, Spell, attackSkill, criticalChance, criticalHit, critDefended, overpower, weaponCritDamageMod, skillBonus, baseDamage, critDamageBonus, elementalDamageMod, slayerMod, weaponResistanceMod, resistanceMod, absorbMod, LifeProjectileDamage, lifeMagicDamage, finalDamage);
             }
             return finalDamage;
+            }
+            catch (Exception ex)
+            {
+                log.Error($"SpellProjectile.CalculateDamage() exception. Spell={Spell?.Name}, Source={source?.Name}, Target={target?.Name}. Ex: {ex}");
+                return null;
+            }
         }
 
         public static float GetAbsorbMod(WorldObject source, Creature target)

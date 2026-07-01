@@ -5,6 +5,7 @@ using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Server.Entity;
 using ACE.Server.Entity.Actions;
+using ACE.Server.Managers;
 using ACE.Server.Physics.Animation;
 using ACE.Server.Physics.Extensions;
 using ACE.Server.Network.GameMessages.Messages;
@@ -127,7 +128,29 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public void TurnToObject(WorldObject target, bool stopCompletely = true)
         {
+            // Retail uses MovementType.TurnToObject, which includes the target's ObjectGuid in the
+            // motion packet -- this is exploitable in PvP by War Detect style plugins
             var turnToMotion = new Motion(this, target, MovementType.TurnToObject);
+
+            try
+            {
+                if (PropertyManager.GetBool("turnto_use_heading_stealth").Item &&
+                    this is Player caster &&
+                    target is Player targetPlayer &&
+                    caster.PlayerKillerStatus == PlayerKillerStatus.PK &&
+                    targetPlayer.PlayerKillerStatus == PlayerKillerStatus.PK)
+                {
+                    // stealth mode: use TurnToHeading with an absolute heading instead of TurnToObject,
+                    // so the motion packet carries no target ID for plugins to read
+                    var absoluteHeading = PhysicsObj.Position.heading(target.PhysicsObj.Position);
+
+                    turnToMotion = new Motion(this, Location, absoluteHeading);
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error in Creature_Navigation.TurnToObject when applying turnto_use_heading_stealth logic. Ex: {ex}");
+            }
 
             if (!stopCompletely)
                 turnToMotion.MoveToParameters.MovementParameters &= ~MovementParams.StopCompletely;

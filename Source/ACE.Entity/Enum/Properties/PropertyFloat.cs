@@ -222,6 +222,9 @@ namespace ACE.Entity.Enum.Properties
         PCAPRecordeOmegaY              = 8017,
         PCAPRecordeOmegaZ              = 8018,
 
+        /* ClassicPvP */
+        JumpTimer = 9004,
+
         // CustomDM
         LeyLineTriggerChance           = 10001,
         HotspotImmunityTimestamp       = 10002,

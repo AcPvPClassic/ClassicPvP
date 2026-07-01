@@ -7,6 +7,7 @@ using ACE.Entity.Enum.Properties;
 using ACE.Entity.Models;
 using ACE.Server.Entity;
 using ACE.Server.Entity.Actions;
+using ACE.Server.Managers;
 using ACE.Server.Factories.Tables;
 using ACE.Server.Network.GameEvent.Events;
 using ACE.Server.Network.GameMessages.Messages;
@@ -311,8 +312,15 @@ namespace ACE.Server.WorldObjects
             var trainedMod = healingSkill.AdvancementClass == SkillAdvancementClass.Specialized ? 1.5f : 1.1f;
 
             var combatMod = healer.CombatMode == CombatMode.NonCombat ? 1.0f : 1.1f;
+            int boostValue = BoostValue;
+            var arenaEvent = ArenaManager.GetArenaEventByLandblock(target.Location.Landblock);
+            bool isArena = target != null && ArenaLocation.IsArenaLandblock(target.Location.Landblock);
+            if (isArena && arenaEvent != null && arenaEvent.EventType.Equals("1v1"))
+            {
+                boostValue = Math.Min(BoostValue, (int)PropertyManager.GetDouble("arena_1v1_healkit_skill_bonus_cap").Item);
+            }
 
-            var effectiveSkill = (int)Math.Round((healingSkill.Current + BoostValue) * trainedMod);
+            var effectiveSkill = (int)Math.Round((healingSkill.Current + boostValue) * trainedMod);
             difficulty = (int)Math.Round(missingVital * 2 * combatMod);
 
             var skillCheck = SkillCheck.GetSkillChance(effectiveSkill, difficulty);
@@ -326,7 +334,14 @@ namespace ACE.Server.WorldObjects
         {
             // factors: healing skill, healing kit bonus, stamina, critical chance
             var healingSkill = healer.GetCreatureSkill(Skill.Healing).Current;
-            var healBase = healingSkill * (float)HealkitMod.Value;
+            var arenaEvent = ArenaManager.GetArenaEventByLandblock(target.Location.Landblock);
+            bool isArena = target != null && ArenaLocation.IsArenaLandblock(target.Location.Landblock);
+            var healkitMod = (float)HealkitMod.Value;
+            if (isArena && arenaEvent != null && arenaEvent.EventType.Equals("1v1"))
+            {
+                healkitMod = Math.Min(healkitMod, (float)PropertyManager.GetDouble("arena_1v1_healkit_restoration_bonus_cap").Item);
+            }
+            var healBase = healingSkill * healkitMod;
 
             // todo: determine applicable range from pcaps
             var healMin = healBase * 0.2f;      // ??

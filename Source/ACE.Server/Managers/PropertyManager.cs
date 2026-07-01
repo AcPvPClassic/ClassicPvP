@@ -720,6 +720,7 @@ namespace ACE.Server.Managers
                 ("rolling_level_cap_enabled", new Property<bool>(false, "Enables the server-wide rolling level cap. When enabled, players cannot exceed the XP threshold for the current cap level. The cap starts at 15 and increases daily based on rolling_level_cap_start_timestamp.")),
                 ("rolling_xp_modifier_enabled", new Property<bool>(false, "When true, RollingLevelCapManager automatically adjusts xp_modifier each day using a quadratic curve tied to season progression. Starts at 0.25 on day 0, reaches 1.0 at ~36% through the season (day ~44, level cap ~101), and climbs to rolling_xp_modifier_max at 80% (day 96). Requires rolling_level_cap_enabled.")),
                 ("hot_dungeon_enabled", new Property<bool>(false, "Enables the Hot Dungeons system on Infiltration servers. When enabled, up to 3 dungeons are periodically selected to offer bonus XP and loot.")),
+                ("turnto_use_heading_stealth", new Property<bool>(false, "If true, TurnTo motions between two PK players use an absolute heading instead of a target ID, to prevent War Detect style plugins from revealing the target.")),
 
                 // Bounty Hunter system
                 ("bounty_system_enabled",            new Property<bool>(true,  "Enable or disable the bounty hunter system entirely.")),
@@ -747,6 +748,10 @@ namespace ACE.Server.Managers
                 ("rares_max_seconds_between", new Property<long>(5256000, "for rares_real_time: the maximum number of seconds a player can go before a second chance at a rare is allowed on rare eligible creature kills that did not generate a rare")),
                 ("summoning_killtask_multicredit_cap", new Property<long>(2, "if allow_summoning_killtask_multicredit is enabled, the maximum # of killtask credits a player can receive from 1 kill")),
                 ("teleport_visibility_fix", new Property<long>(0, "Fixes some possible issues with invisible players and mobs. 0 = default / disabled, 1 = players only, 2 = creatures, 3 = all world objects")),
+                ("pvp_dispel_vuln_timer", new Property<long>(300, "the number of seconds where a player's dispel actions will not remove vulns after becoming involved in a PK battle")),
+                ("jump_limit", new Property<long>(7, "the number of jumps you can do before being penalized")),
+                ("jump_second_timer", new Property<long>(10, "the number of seconds cutoff for jumping")),
+                ("jump_penalty_length", new Property<long>(5, "the number of seconds you're penalized after hitting the jump limits")),
                 ("max_level", new Property<long>(275, "Set the max character level.")),
                 ("discord_channel_id", new Property<long>(0, "Messages posted to this Discord channel will be shown in General Chat")),
                 ("quest_mindelta_rate_shortest", new Property<long>(72000, "Quest min deltas below this won't be affected by quest_mindelta_rate, additionally modified min deltas that would fall under this value will be set to this value instead")),
@@ -1101,6 +1106,8 @@ namespace ACE.Server.Managers
                 ("arena_corpse_rot_seconds", new Property<double>(900, "the number of seconds a corpse generated in an arena landblock takes to rot")),
                 ("arena_pk_respite_timer", new Property<double>(120, "the number of seconds a player killer is set to NPK status after dying in an arena match")),
                 ("arena_1v1_global_dmg_mod", new Property<double>(1.0, "a damage modifier applied across all melee, missile and war/void projectile damage during arena 1v1 events")),
+                ("arena_1v1_healkit_skill_bonus_cap", new Property<double>(150, "the maximum effective skill bonus applied from a healing kit during arena 1v1 events.")),
+                ("arena_1v1_healkit_restoration_bonus_cap", new Property<double>(1.5, "the maximum effective restoration bonus applied from a healing kit during arena 1v1 events.")),
 
                 // Doctide flat PvP damage modifiers (additive with ClassicPvP's level-interpolated system; all default 1.0)
                 // War magic

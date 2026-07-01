@@ -535,6 +535,9 @@ namespace ACE.Server.WorldObjects
             if (spell.CasterEffect != 0 && (!spell.IsProjectile || !projectileHit))
                 caster.EnqueueBroadcast(new GameMessageScript(caster.Guid, spell.CasterEffect, spell.Formula.Scale));
 
+            if (target == null)
+                return;
+
             if (spell.TargetEffect != 0 && (!spell.IsProjectile || projectileHit))
             {
                 var targetBroadcaster = target.Wielder ?? target;
@@ -550,7 +553,8 @@ namespace ACE.Server.WorldObjects
         public void CreateEnchantment(WorldObject target, WorldObject caster, WorldObject weapon, Spell spell, bool equip = false, bool fromProc = false, bool showMsg = true, bool isWeaponSpell = false)
         {
             // weird itemCaster -> caster collapsing going on here -- fixme
-
+            try
+            {
             var player = this as Player;
 
             var aetheriaProc = false;
@@ -664,6 +668,11 @@ namespace ACE.Server.WorldObjects
 
                 if (showMsg)
                     playerTarget.SendChatMessage(this, $"{caster.Name} {(spell.IsQuickcastSpell ? "quickcasts" : "casts")} {spell.NameWithMetaspellAdjectivesWithoutQuickcast} on {targetName}{suffix}", ChatMessageType.Magic);
+            }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"{Name}.CreateEnchantment() exception. Spell={spell?.Name}, Target={target?.Name}. Ex: {ex}");
             }
         }
 
@@ -1823,6 +1832,11 @@ namespace ACE.Server.WorldObjects
             var creature = this as Creature;
 
             var removeSpells = target.EnchantmentManager.SelectDispel(spell);
+
+            var playerTarget = target as Player;
+
+            if (playerTarget != null && playerTarget.PKDispelVulnTimerActive)
+                removeSpells = removeSpells.Where(s => s.Spell != null && !s.Spell.IsVuln).ToList();
 
             // dispel on server and client
             target.EnchantmentManager.Dispel(removeSpells.Select(s => s.Enchantment).ToList());

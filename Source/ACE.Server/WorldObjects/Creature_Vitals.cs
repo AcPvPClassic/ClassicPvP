@@ -205,7 +205,7 @@ namespace ACE.Server.WorldObjects
             var enchantmentMod = EnchantmentManager.GetRegenerationMod(vital);
 
             var augMod = 1.0f;
-            if (this is Player player && player.AugmentationFasterRegen > 0)
+            if (this is Player player && player.AugmentationFasterRegen > 0 && ForwardCommand == MotionCommand.Sleeping)
                 augMod += player.AugmentationFasterRegen;
 
             // cap rate?
@@ -284,12 +284,15 @@ namespace ACE.Server.WorldObjects
         /// Returns the vital regeneration modifier based on player stance
         /// (combat, crouch, sitting, sleeping)
         /// </summary>
+        private MotionCommand ForwardCommand => CurrentMovementData.MovementType == MovementType.Invalid && CurrentMovementData.Invalid != null ?
+            CurrentMovementData.Invalid.State.ForwardCommand : MotionCommand.Invalid;
+
         public float GetStanceMod(CreatureVital vital)
         {
             // only applies to players
             if ((this as Player) == null) return 1.0f;
 
-            var forwardCommand = CurrentMovementData.MovementType == MovementType.Invalid && CurrentMovementData.Invalid != null ? CurrentMovementData.Invalid.State.ForwardCommand : MotionCommand.Invalid;
+            var forwardCommand = ForwardCommand;
 
             if (vital.Vital == PropertyAttribute2nd.MaxMana)
             {

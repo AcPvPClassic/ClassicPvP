@@ -120,7 +120,7 @@ namespace ACE.Server.WorldObjects
                 return;
             }
 
-            if (!CanDamage(creatureTarget))
+            if (!CanDamageNoTeleport(creatureTarget))
             {
                 SendTransientError($"You cannot attack {creatureTarget.Name}");
                 OnAttackDone();

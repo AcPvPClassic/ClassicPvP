@@ -173,6 +173,12 @@ namespace ACE.Server.WorldObjects
             if (target.Health.Current <= 0)
                 return null;
 
+            if (!CanDamage(target))
+            {
+                SendTransientError($"You cannot attack {target.Name}");
+                return null;
+            }
+
             var targetPlayer = target as Player;
 
             // check PK status
@@ -1007,6 +1013,11 @@ namespace ACE.Server.WorldObjects
             return target.Attackable && !target.Teleporting && !(target is CombatPet);
         }
 
+        public override bool CanDamageNoTeleport(Creature target)
+        {
+            return target.Attackable && !(target is CombatPet);
+        }
+
         // http://acpedia.org/wiki/Announcements_-_2002/04_-_Betrayal
 
         // Some combination of strength and endurance (the two are roughly of equivalent importance) now allows one to have a level of "natural resistances" to the 7 damage types,
@@ -1328,6 +1339,19 @@ namespace ACE.Server.WorldObjects
 
                     if (spell == null || spell.IsHarmful || targetPlayer.PlayerKillerStatus != PlayerKillerStatus.NPK)
                         return new List<WeenieErrorWithString>() { WeenieErrorWithString.YouFailToAffect_NotSamePKType, WeenieErrorWithString._FailsToAffectYou_NotSamePKType };
+                }
+
+                // disable most inepts in arenas — only defense-lowering spells are allowed
+                if (ArenaLocation.IsArenaLandblock(this.Location.Landblock) &&
+                    spell != null &&
+                    spell.IsHarmful &&
+                    ((spell.School == MagicSchool.CreatureEnchantment &&
+                    spell.Category != SpellCategory.MagicDefenseLowering &&
+                    spell.Category != SpellCategory.MeleeDefenseLowering &&
+                    spell.Category != SpellCategory.MissileDefenseLowering) ||
+                    spell.School == MagicSchool.ItemEnchantment))
+                {
+                    return new List<WeenieErrorWithString>() { WeenieErrorWithString.YouFailToAffect_YouCannotAffectAnyone, WeenieErrorWithString._FailsToAffectYou_TheyCannotAffectAnyone };
                 }
             }
             else

@@ -402,7 +402,7 @@ namespace ACE.Server.WorldObjects
             if (target == this && spell.IsNegativeRedirectable)
                 return true;
 
-            if (targetCreature != null && targetCreature != this && spell.NonComponentTargetType == ItemType.Creature && !CanDamage(targetCreature))
+            if (targetCreature != null && targetCreature != this && spell.NonComponentTargetType == ItemType.Creature && !CanDamageNoTeleport(targetCreature))
                 return true;
 
             return false;

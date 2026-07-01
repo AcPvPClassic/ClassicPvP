@@ -488,7 +488,8 @@ namespace ACE.Server.WorldObjects
         {
             // cleans up bugged chars with dangling item set spells
             // from previous bugs
-
+            try
+            {
             var allPossessions = GetAllPossessions().ToDictionary(i => i.Guid, i => i);
 
             // this is a legacy method, but is still a decent failsafe to catch any existing issues
@@ -538,6 +539,11 @@ namespace ACE.Server.WorldObjects
                         EnchantmentManager.Dispel(removeSpell);
                     }
                 }
+            }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"{Name}.AuditItemSpells() exception: {ex}");
             }
         }
         public void GrantRoadSpeedBuff()

@@ -1623,6 +1623,11 @@ namespace ACE.Server.WorldObjects
             }
         }
 
+        public virtual bool CanDamageNoTeleport(Creature target)
+        {
+            return CanDamage(target);
+        }
+
         public static Skill GetDefenseSkill(CombatType combatType)
         {
             switch (combatType)

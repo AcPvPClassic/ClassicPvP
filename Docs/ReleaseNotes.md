@@ -269,6 +269,13 @@ Use the `/arena` command to interact with the queue.
 | **Tugak** | Large Free-for-All — up to 15 players, last one standing wins. No allegiance limit per match. Prefers larger player counts before launching. Has its own separate quest achievement tracking. |
 | **Group** | Team-based — organized fellowship vs. fellowship |
 
+### Arena Combat Rules
+
+Arenas run under specific combat restrictions that do not apply in the open world.
+
+- **Ineptitude spells are suppressed.** Creature enchantment debuffs (inepts) and all item enchantment spells are blocked in arena matches. Only the three defense-lowering spell categories are permitted — Magic Defense Lowering, Melee Defense Lowering, and Missile Defense Lowering. This prevents NPC pets, item procs, or other external debuff sources from influencing match outcomes.
+- **Healing kit bonuses are capped in 1v1 matches.** The skill bonus from a healing kit is capped at 150 effective bonus skill, and the restoration multiplier is capped at 1.5×. High-end healing kits still function — they just can't fully carry a fight in the structured 1v1 format.
+
 ### Arena Rewards (Winners)
 
 | Type | XP | PK Trophies | Phials of Bloody Tears | Arena Keys |
@@ -344,6 +351,22 @@ Use `/arena rank ffa` or `/arena rank tugak` to see those leaderboards.
 
 ---
 
+## ⚔️ PvP Combat Rules
+
+### Logout Penalty
+Logging out during PvP does not protect you. Any spell projectile (War spells, Void spells) that hits a player who is actively logging out will **critical hit 100% of the time** — matching existing melee behavior. Pulling the plug to escape a spell in flight doesn't work.
+
+### Portal Space Behavior
+Melee swings and missile attacks can **initiate against targets who are in portal space** (the purple bubble state). The attack animation and windup begin normally, but damage is not applied until the target exits portal space. This matches retail behavior — you could already be mid-swing when a target finishes porting in, and the attack resolves the moment they materialize.
+
+### Dispel Protection After Taking Damage
+For a window after being struck in PK combat, your own dispel spells will **not remove vulnerability spells** on your target. This prevents the tactic of attacking someone, getting hit once, then immediately dispelling their vulns to bleed off the damage setup. The protection window is 5 minutes by default and is configurable by admins.
+
+### Jump Spam
+Jumping rapidly in succession triggers accelerated stamina drain. After exceeding the jump threshold within a rolling 10-second window, every subsequent jump costs PK-rate stamina for a short penalty period. This eliminates the movement speed advantage gained through rapid jump-chaining.
+
+---
+
 ## 🛡️ Enhanced Anti-Cheat
 
 ClassicPvP runs a number of anti-cheat and anti-abuse systems beyond standard emulator defaults.
@@ -358,6 +381,7 @@ ClassicPvP runs a number of anti-cheat and anti-abuse systems beyond standard em
   - Stuck character force-logoff events
 - This gives admins a full audit trail to investigate suspicious activity, item duplication concerns, or systemic exploits.
 - Rate limiting is applied to exploit-sensitive player commands to prevent abuse through rapid automated input.
+- **War Detect Countermeasure** — TurnTo motions between two PK players use an absolute compass heading rather than a target GUID in the network packet. Plugins that parse network data to identify your spell target (commonly called "War Detect") are unable to extract any player identity from these packets.
 
 ---
 

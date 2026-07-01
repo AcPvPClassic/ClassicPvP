@@ -143,7 +143,7 @@ namespace ACE.Server.WorldObjects
 
             var targetCategory = GetTargetCategory(targetGuid, spellId, out var target);
 
-            if (target == null || target.Teleporting)
+            if (target == null)
             {
                 SendSpellCastingDoneEvent(WeenieError.TargetNotAcquired, isCombatCasting);
                 return;
@@ -923,6 +923,14 @@ namespace ACE.Server.WorldObjects
             var pk_error = CheckPKStatusVsTarget(target, spell);
             if (pk_error != null)
                 castingPreCheckStatus = CastingPreCheckStatus.InvalidPKStatus;
+
+            if (target.Teleporting)
+            {
+                if (spell.NumProjectiles == 0)
+                    SendTransientError($"You fail to affect {target.Name} because they are in portal space");
+
+                castingPreCheckStatus = CastingPreCheckStatus.InvalidPKStatus;
+            }
 
             switch (castingPreCheckStatus)
             {
