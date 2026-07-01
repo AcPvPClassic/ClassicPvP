@@ -224,6 +224,30 @@ namespace ACE.Server.Managers
             if (olthoiPlayerReturnedToLifestone)
                 session.Player.Location = new Position(session.Player.Sanctuary);
 
+            // Redirect players who logged out inside an arena back to their sanctuary
+            if (ArenaLocation.IsArenaLandblock(session.Player.Location?.Landblock ?? 0))
+                session.Player.Location = new Position(session.Player.Sanctuary);
+
+            // Clean up observer state for players who disconnected while observing or cloaked
+            if (session.Player.IsArenaObserver ||
+                session.Player.IsPendingArenaObserver ||
+                (!session.Player.IsPlussed && session.Player.Cloaked.HasValue && session.Player.Cloaked.Value))
+                ArenaManager.ExitArenaObserverMode(session.Player);
+
+            // Catch-all to ensure non-plussed players never log in with stuck observer/cloak state
+            if (!session.Player.IsPlussed)
+            {
+                session.Player.RecallsDisabled = false;
+                session.Player.IsFrozen = false;
+                session.Player.Attackable = true;
+                if (session.Player.GagDuration <= 0)
+                    session.Player.IsGagged = false;
+                session.Player.EnqueueBroadcastPhysicsState();
+                session.Player.DeCloak();
+                session.Player.IsPendingArenaObserver = false;
+                session.Player.IsArenaObserver = false;
+            }
+
             session.Player.PlayerEnterWorld();
 
             var success = LandblockManager.AddObject(session.Player, true);
