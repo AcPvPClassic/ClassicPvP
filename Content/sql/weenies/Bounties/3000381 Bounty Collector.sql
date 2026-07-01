@@ -144,11 +144,11 @@ VALUES (@parent_id,  0,   5 /* Motion */, 0, 1, 1090519043 /* Ready */, NULL, NU
      , (@parent_id,  3,  10 /* Tell */, 1, 1, NULL, 'Give me a Bounty Purchase Token and I''''ll assign you a bounty! I also accept a Writ of Pursuit if you wish to create your own bounty and rewards for someone. Inscribe the Writ of Pursuit with their name and the reward amount (in phials) using the following format "<name>:<reward amount>".', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 INSERT INTO `weenie_properties_create_list` (`object_Id`, `destination_Type`, `weenie_Class_Id`, `stack_Size`, `palette`, `shade`, `try_To_Bond`)
-VALUES (3000381, 2,  72,  1, 0, 0, False) /* Create Platemail Hauberk (72) for Wield */
-     , (3000381, 2,  82,  1, 0, 0, False) /* Create Platemail Leggings (82) for Wield */
-     , (3000381, 2, 107,  1, 0, 0, False) /* Create Sollerets (107) for Wield */
-     , (3000381, 2,  75,  1, 0, 0, False) /* Create Helmet (75) for Wield */
-     , (3000381, 2,  57,  1, 0, 0, False) /* Create Platemail Gauntlets (57) for Wield */;
+VALUES (3000381, 2,  72,  1, 8, 0.5, False) /* Create Platemail Hauberk (72) for Wield - Green */
+     , (3000381, 2,  82,  1, 8, 0.5, False) /* Create Platemail Leggings (82) for Wield - Green */
+     , (3000381, 2, 107,  1, 8, 0.5, False) /* Create Sollerets (107) for Wield - Green */
+     , (3000381, 2, 32169, 1, 0, 0, False) /* Create Eye Patch (32169) for Wield */
+     , (3000381, 2,  57,  1, 8, 0.5, False) /* Create Platemail Gauntlets (57) for Wield - Green */;
 
 /* Lifestoned Changelog:
 {
