@@ -106,10 +106,21 @@ namespace ACE.Server.WorldObjects
         public double GeometryViolationCooldownUntil;
 
         /// <summary>
-        /// Accumulates each time a speed violation fires. Decays each heartbeat when no violations occur.
+        /// Accumulates each time a movement violation fires. Decays each heartbeat when no violations occur.
         /// Reaching 50 triggers a session kick regardless of <c>movement_violation_kick</c> config.
         /// </summary>
         public float MovementSuspicionScore;
+
+        /// <summary>
+        /// Snapshot of <see cref="MovementSuspicionScore"/> taken at the end of the previous heartbeat.
+        /// The decay logic compares the live score against this: if it has not risen, no violation
+        /// occurred during the interval and the score is bled down. This makes decay independent of
+        /// <see cref="MovementEnforcementCounter"/>, which the heuristic script checks never increment.
+        /// </summary>
+        private float _suspicionScoreAtLastHeartbeat;
+
+        /// <summary>Consecutive clean heartbeats (score did not rise); ramps up the decay rate.</summary>
+        private int _cleanHeartbeatStreak;
 
         /// <summary>
         /// Ring buffer of recently validated positions used by the sliding-window average speed checks.
@@ -118,6 +129,17 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public System.Collections.Generic.List<(double Timestamp, ACE.Entity.Position Pos)> MovementWindowBuffer
             = new System.Collections.Generic.List<(double, ACE.Entity.Position)>();
+
+        /// <summary>Unix timestamp of the last time the packet-rate check added to the suspicion score.
+        /// The packet-rate check evaluates on every clean tick; without this throttle a brief burst over
+        /// the limit would score on every packet. Scoring is limited to once per second.</summary>
+        private double _lastPacketRateScoreTime;
+
+        /// <summary>Timestamps of recent qualifying direction-reversal detections. The reversal check
+        /// only scores once several accumulate within a short window, so a brief glitch-run oscillation
+        /// does not score while a sustained kiting script does.</summary>
+        public System.Collections.Generic.List<double> ReversalEventTimes
+            = new System.Collections.Generic.List<double>();
 
         // --- Jump height tracking fields (Change 8) ---
         /// <summary>Whether the player was in the air (IsJumping) on the previous clean position tick.</summary>

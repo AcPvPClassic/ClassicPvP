@@ -472,7 +472,7 @@ All movement checks are **disabled by default**. Enable `enforce_player_movement
 | `enforce_player_movement_speed` | Gates all scoring and logging checks. Must be ON for anything below to fire |
 | `movement_violation_kick` | Kick when violation counter ≥ 10. Score ≥ 50 always kicks regardless of this flag |
 | `movement_violation_webhook` | Discord webhook URL for real-time alerts. Leave blank to disable |
-| `movement_packet_rate_limit` | Max movement packets/sec before flood detection fires (default: 60) |
+| `movement_packet_rate_limit` | Max movement packets/sec before flood detection fires (default: 75). Legitimate players reach ~35/s on fast machines and while glitch-running; do not set at or below ~40 |
 
 ### Physics-Based Checks
 
@@ -486,15 +486,26 @@ All movement checks are **disabled by default**. Enable `enforce_player_movement
 
 ### Script Detection Checks
 
+These are **heuristic** checks — statistical inferences rather than provable physics violations. They **score and log only; they do not rubber-band** the player (see "Hard vs. soft checks" below). A sustained scripter still accrues score to the kick threshold, but a legitimate player who trips one is not jerked around.
+
 | Property | What It Detects |
 |---|---|
 | `enforce_player_timing_regularity` | Inter-packet timing regularity. CV < 0.015 over a 4-second window flags bot-level precision. Human hands: CV ≈ 0.15–0.40. AC client fixed-rate: CV ≈ 0.02–0.06. Scripts: CV < 0.005. Do NOT raise above 0.04 |
-| `enforce_player_packet_rate` | Packet flood. Fires above `movement_packet_rate_limit` (default 60/s). Normal client at 30 FPS ≈ 30/s; at 60 FPS ≈ 60/s; scripts: 100+/s |
-| `enforce_player_reversal_detection` | Inhuman direction reversal. Requires 4 consecutive buffer entries. Fires only when ALL of: all three intervals < 150 ms, all three steps have real displacement (> 0.2 units), two consecutive headings both within 20° of 180°. Characteristic of kiting/dodge scripts |
+| `enforce_player_packet_rate` | Packet flood. Fires above `movement_packet_rate_limit` (default 75/s). Legitimate clients reach ~35/s on fast machines / while glitch-running; scripts flood at 100+/s. Scoring is throttled to once per second so a brief burst cannot spike the score |
+| `enforce_player_reversal_detection` | Inhuman direction reversal. A qualifying detection needs 4 consecutive buffer entries with all three intervals < 66 ms, all three steps > 0.2 units of displacement, and two adjacent headings both within 10° of 180°. A single detection is **not** scored — it only counts toward a sustained threshold (4 detections within 2 s), so brief glitch-running does not score while continuous kiting/dodge scripts do |
+
+### Hard vs. soft checks
+
+| Class | Checks | On violation |
+|---|---|---|
+| **Hard** (provable physics) | `speed_packet`, `geometry`, `door_ghost`, `spawn_ghost`, `jump_height` | Rubber-band the player back to the last confirmed position **and** score |
+| **Soft** (heuristic) | `speed_avg_3s/15s`, `script_timing`, `script_packet_rate`, `script_reversal` | Score and log only — **no rubber-band** |
+
+The split exists so legitimate-but-unusual movement (glitch-running, high framerates, sticky-target combat facing) that trips a heuristic isn't visibly disrupted, while genuine wall-walks and speed hacks are still corrected on the spot. Soft checks still contribute to the kick threshold, so a sustained scripter is still removed.
 
 ### Suspicion Score System
 
-Score accumulates each violation and decays −1.0 per heartbeat tick during clean movement.
+Score accumulates on each violation and decays during clean movement: −3 per heartbeat (~5 s), rising to −6 per heartbeat after ~15 s of clean movement. Decay runs whenever the score did not rise since the previous heartbeat, **regardless of violation type** — so an occasional false positive fades within a heartbeat or two instead of ratcheting permanently toward a kick, while a genuine cheater who keeps the score climbing never benefits from decay.
 
 | Violation Type | Score Gain |
 |---|---|

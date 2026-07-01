@@ -152,6 +152,9 @@ namespace ACE.Server.WorldObjects
 
                 BountyTick();
 
+                if (IsArenaObserver && !ArenaLocation.IsArenaLandblock(Location?.Landblock ?? 0))
+                    ArenaManager.ExitArenaObserverMode(this);
+
                 if (PvPInciteTickTimestamp == 0)
                     PvPInciteTickTimestamp = Time.GetFutureUnixTime(PropertyManager.GetLong("bz_whispers_login_delay").Item);
                 else if (currentUnixTime > PvPInciteTickTimestamp)
@@ -241,8 +244,11 @@ namespace ACE.Server.WorldObjects
                 {
                     MovementEnforcementCounter = 0;
                     MovementSuspicionScore = 0.0f;
+                    _suspicionScoreAtLastHeartbeat = 0.0f;
+                    _cleanHeartbeatStreak = 0;
                     RubberBandRecoveryUntil = 0.0;
                     MovementWindowBuffer.Clear();
+                    ReversalEventTimes.Clear();
                     WasJumping = false;
                     JumpStartZ = 0f;
                     JumpPeakZ = 0f;
@@ -253,12 +259,36 @@ namespace ACE.Server.WorldObjects
                     HasPerformedActionsSinceLastMovementUpdate = false;
                 }
 
-                if (MovementEnforcementCounter > 0)
+                // Decay the suspicion score during clean movement so occasional false positives
+                // (glitch-running speed spikes, transient packet-rate bursts) fade instead of
+                // ratcheting permanently toward a kick.  This runs regardless of
+                // MovementEnforcementCounter: the heuristic script checks (packet_rate, timing,
+                // reversal, avg) add to the score but never touch the counter, so the old
+                // counter-gated decay never ran for those at all — a player who only tripped
+                // heuristic checks accumulated a score that never came back down.
+                //
+                // "No violation this interval" is detected by comparing the live score against the
+                // snapshot from the previous heartbeat: a genuine cheater keeps the score rising and
+                // never benefits, while a one-off false positive clears within a heartbeat or two.
+                if (MovementSuspicionScore > 0.0f)
                 {
-                    MovementEnforcementCounter--;
-                    // Decay suspicion score gradually when no violations are occurring this tick.
-                    MovementSuspicionScore = Math.Max(0.0f, MovementSuspicionScore - 1.0f);
+                    if (MovementSuspicionScore <= _suspicionScoreAtLastHeartbeat)
+                    {
+                        _cleanHeartbeatStreak++;
+                        // Bleed faster the longer the player stays clean: -3/heartbeat, rising to
+                        // -6 after ~3 clean heartbeats (~15 s).
+                        float decay = _cleanHeartbeatStreak >= 3 ? 6.0f : 3.0f;
+                        MovementSuspicionScore = Math.Max(0.0f, MovementSuspicionScore - decay);
+                    }
+                    else
+                    {
+                        _cleanHeartbeatStreak = 0; // score rose → a violation occurred this interval
+                    }
                 }
+                _suspicionScoreAtLastHeartbeat = MovementSuspicionScore;
+
+                if (MovementEnforcementCounter > 0)
+                    MovementEnforcementCounter--;
 
                 if (!HasAnyMovement() && currentUnixTime > LastPlayerMovementCheckTime + 5)
                 {
@@ -1122,10 +1152,12 @@ namespace ACE.Server.WorldObjects
                                     if (cv < 0.015)  // 0.04 false-positives on legit AC clients (machine-clock FPS loop); 0.015 only catches true script precision
                                     {
                                         MovementSuspicionScore += 6.0f;
-                                        RubberBandRecoveryUntil = currentTime + 0.75;
 
-                                        RollbackToSnap($"script_timing cv={cv:0.0000} (need >{0.015:0.000})");
-
+                                        // Heuristic check — score and log only, no rubber-band.
+                                        // Timing regularity is a statistical inference, not a provable
+                                        // physics violation; rubber-banding would jerk a legitimate
+                                        // player (e.g. a rock-steady framerate) around.  The accumulated
+                                        // score still kicks a sustained scripter.
                                         log.Warn($"{Name} - SCRIPTED TIMING DETECTED - CV: {cv:0.0000} (mean: {meanI * 1000:0.0} ms, stddev: {stddevI * 1000:0.2} ms) SuspicionScore: {MovementSuspicionScore:0.0}");
 
                                         var _stLoc     = Location?.ToString() ?? "unknown";
@@ -1152,15 +1184,17 @@ namespace ACE.Server.WorldObjects
                                             return false;
                                         }
 
-                                        return false;
+                                        // fall through: position is accepted normally (no rubber-band)
                                     }
                                 }
                             }
                         }
 
                         // --- Script detection: packet flood rate ---
-                        // A legitimate AC client sends 5–15 movement updates per second.
-                        // A script or modified client flooding the server exceeds movement_packet_rate_limit/s.
+                        // A legitimate AC client sends up to ~35 movement updates per second (higher on
+                        // fast machines and during glitch-running); scripts flood at 100+/s.  Keep
+                        // movement_packet_rate_limit well above the legitimate ceiling — see the notes
+                        // on this property in the admin guide.
                         if (PropertyManager.GetBool("enforce_player_packet_rate").Item)
                         {
                             // Count entries added in the last 2 seconds.
@@ -1173,12 +1207,16 @@ namespace ACE.Server.WorldObjects
                             float packetRate = packetsIn2s / 2.0f;
                             var rateLimit = (float)PropertyManager.GetLong("movement_packet_rate_limit").Item;
 
-                            if (packetRate > rateLimit)
+                            // Heuristic check — score and log only, no rubber-band.  Throttled to once
+                            // per second: this evaluates on every clean tick, so without the throttle a
+                            // brief burst over the limit would score on every packet and spike the score.
+                            // A genuine flood stays over the limit for many seconds and still accrues
+                            // score steadily toward a kick.
+                            if (packetRate > rateLimit && currentTime - _lastPacketRateScoreTime >= 1.0)
                             {
+                                _lastPacketRateScoreTime = currentTime;
                                 MovementSuspicionScore += 4.0f;
-                                RubberBandRecoveryUntil = currentTime + 0.75;
 
-                                RollbackToSnap($"script_packet_rate {packetRate:0.0}/{rateLimit:0.0}/s");
                                 log.Warn($"{Name} - PACKET FLOOD DETECTED - Rate: {packetRate:0.0}/s (limit: {rateLimit:0}/s) SuspicionScore: {MovementSuspicionScore:0.0}");
 
                                 var _pfLoc     = Location?.ToString() ?? "unknown";
@@ -1205,16 +1243,19 @@ namespace ACE.Server.WorldObjects
                                     return false;
                                 }
 
-                                return false;
+                                // fall through: position is accepted normally (no rubber-band)
                             }
                         }
 
                         // --- Script detection: inhuman direction reversal ---
-                        // Human reaction time floor is ~150 ms. A back-and-forth kiting script
-                        // performs two consecutive ~180° heading reversals faster than any human can.
-                        // Requires 4 consecutive buffer entries (3 steps), each step having real
-                        // displacement (> 0.2 units), each interval under 150 ms, and two adjacent
-                        // heading changes both near 180°. A single reversal is not flagged.
+                        // A back-and-forth kiting script performs consecutive ~180° heading reversals
+                        // faster and more precisely than a human can.  Each detection requires 4
+                        // consecutive buffer entries (3 steps), each step with real displacement
+                        // (> 0.2 units), all three intervals under 66 ms, and both adjacent heading
+                        // changes within 10° of 180°.  A single detection is NOT scored — it only
+                        // counts toward a sustained-pattern threshold below, because brief glitch-
+                        // running produces the occasional qualifying flip while only a continuous
+                        // script sustains several in a row.
                         if (PropertyManager.GetBool("enforce_player_reversal_detection").Item
                             && MovementWindowBuffer.Count >= 4)
                         {
@@ -1272,37 +1313,48 @@ namespace ACE.Server.WorldObjects
                                     const double reversalMin = Math.PI - 0.175;
                                     if (rAngle1 >= reversalMin && rAngle2 >= reversalMin)
                                     {
-                                        MovementSuspicionScore += 7.0f;
-                                        RubberBandRecoveryUntil = currentTime + 0.75;
+                                        // Record this qualifying double-reversal and prune to a 2 s window.
+                                        ReversalEventTimes.Add(currentTime);
+                                        while (ReversalEventTimes.Count > 0 && currentTime - ReversalEventTimes[0] > 2.0)
+                                            ReversalEventTimes.RemoveAt(0);
 
-                                        RollbackToSnap($"script_reversal {rAngle1 * 180 / Math.PI:0.0}°+{rAngle2 * 180 / Math.PI:0.0}° in {rdt01 * 1000:0.0}/{rdt12 * 1000:0.0}/{rdt23 * 1000:0.0}ms");
-                                        log.Warn($"{Name} - INHUMAN REVERSAL DETECTED - Angle1: {rAngle1 * 180 / Math.PI:0.0}° Angle2: {rAngle2 * 180 / Math.PI:0.0}° Intervals: {rdt01 * 1000:0.0}/{rdt12 * 1000:0.0}/{rdt23 * 1000:0.0} ms SuspicionScore: {MovementSuspicionScore:0.0}");
-
-                                        var _rvLoc     = Location?.ToString() ?? "unknown";
-                                        var _rvAccount = Session?.Account ?? "unknown";
-                                        var _rvScore   = MovementSuspicionScore;
-                                        DiscordWebhookManager.SendMovementViolation("script_reversal", Name, _rvAccount, (float)rAngle1, (float)reversalMin, _rvScore, _rvLoc);
-                                        System.Threading.Tasks.Task.Run(() =>
-                                            DatabaseManager.Log.LogMovementViolation(
-                                                Guid.Full, Name, _rvAccount, "script_reversal", (float)rAngle1, (float)reversalMin, _rvScore, _rvLoc));
-
-                                        if (MovementSuspicionScore >= 50.0f)
+                                        // Sustained-pattern gate: a single qualifying flip is not enough
+                                        // (brief glitch-running produces the occasional one).  Only score
+                                        // once several accumulate within the window — a continuous kiting
+                                        // script sustains them; human glitch-running does not.  Score-only,
+                                        // no rubber-band: this is a heuristic, not a provable violation.
+                                        if (ReversalEventTimes.Count >= 4)
                                         {
-                                            log.Warn($"{Name} - MOVEMENT SUSPICION THRESHOLD REACHED ({MovementSuspicionScore:0.0}) - KICKING");
-                                            Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
-                                                new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
-                                            return false;
-                                        }
+                                            ReversalEventTimes.Clear(); // reset the window after scoring (throttle)
+                                            MovementSuspicionScore += 7.0f;
 
-                                        if (MovementEnforcementCounter >= 10 && PropertyManager.GetBool("movement_violation_kick").Item)
-                                        {
-                                            log.Warn($"{Name} - MOVEMENT ENFORCEMENT COUNTER THRESHOLD ({MovementEnforcementCounter}) - KICKING");
-                                            Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
-                                                new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
-                                            return false;
-                                        }
+                                            log.Warn($"{Name} - INHUMAN REVERSAL DETECTED - Angle1: {rAngle1 * 180 / Math.PI:0.0}° Angle2: {rAngle2 * 180 / Math.PI:0.0}° Intervals: {rdt01 * 1000:0.0}/{rdt12 * 1000:0.0}/{rdt23 * 1000:0.0} ms SuspicionScore: {MovementSuspicionScore:0.0}");
 
-                                        return false;
+                                            var _rvLoc     = Location?.ToString() ?? "unknown";
+                                            var _rvAccount = Session?.Account ?? "unknown";
+                                            var _rvScore   = MovementSuspicionScore;
+                                            DiscordWebhookManager.SendMovementViolation("script_reversal", Name, _rvAccount, (float)rAngle1, (float)reversalMin, _rvScore, _rvLoc);
+                                            System.Threading.Tasks.Task.Run(() =>
+                                                DatabaseManager.Log.LogMovementViolation(
+                                                    Guid.Full, Name, _rvAccount, "script_reversal", (float)rAngle1, (float)reversalMin, _rvScore, _rvLoc));
+
+                                            if (MovementSuspicionScore >= 50.0f)
+                                            {
+                                                log.Warn($"{Name} - MOVEMENT SUSPICION THRESHOLD REACHED ({MovementSuspicionScore:0.0}) - KICKING");
+                                                Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
+                                                    new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                                return false;
+                                            }
+
+                                            if (MovementEnforcementCounter >= 10 && PropertyManager.GetBool("movement_violation_kick").Item)
+                                            {
+                                                log.Warn($"{Name} - MOVEMENT ENFORCEMENT COUNTER THRESHOLD ({MovementEnforcementCounter}) - KICKING");
+                                                Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
+                                                    new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                                return false;
+                                            }
+                                        }
+                                        // fall through: position is accepted normally (no rubber-band)
                                     }
                                 }
                             }
