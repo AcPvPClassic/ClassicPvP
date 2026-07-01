@@ -223,7 +223,7 @@ namespace ACE.Server.Managers
             }
 
             sb.AppendLine("Use /season top to see the full leaderboards.");
-            sb.AppendLine("Use /season claim to collect your weekly reward items!");
+            sb.AppendLine("Use /season rewards to collect your weekly reward items!");
             return sb.ToString().TrimEnd();
         }
 
