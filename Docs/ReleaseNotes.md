@@ -710,9 +710,9 @@ Killing the same player more than **3 times within a 1-hour window** suppresses 
 
 ### Darkbeat's Storage Locker
 
-The Storage Locker is a locked chest that always contains one tier 6 loot item and up to two randomly selected bonus items per opening.
+The Storage Locker is a locked chest that always contains one tier 6 loot item and up to three randomly selected bonus items per opening. Each opening also has an independent **~20% chance to contain a Sturdy Iron Key**.
 
-Each opening makes two independent rolls from the bonus table. Each roll has a 10% cumulative chance to land on a salvage bag, distributed evenly across 11 salvage types (~0.91% each):
+Each opening makes three independent rolls from the bonus table. Each roll has a 10% cumulative chance to land on a salvage bag, distributed evenly across 11 salvage types (~0.91% each):
 
 | Salvage | Use |
 |---------|-----|
@@ -754,47 +754,49 @@ The Common, Rare, and Mythic Mystery Boxes each contain a weighted loot table of
 
 | Item | Chance |
 |------|--------|
-| Workmanship Morph Gem | ~2.6% |
-| Missile Defense Requirement Morph Gem | ~2.6% |
-| Melee Requirement Morph Gem | ~2.6% |
-| Player Wield Requirement Morph Gem | ~2.6% |
-| Level Requirement Removal Morph Gem | ~2.6% |
-| Darkbeat's Lost Storage Key | ~7.9% |
-| Arcane Lore Morph Gem | ~7.9% |
-| Steel Salvage (WS10, 100 units) | ~7.9% |
-| Granite Salvage (WS10, 100 units) | ~7.9% |
-| Iron Salvage (WS10, 100 units) | ~7.9% |
-| Green Garnet Salvage (WS10, 100 units) | ~7.9% |
-| Opal Salvage (WS10, 100 units) | ~7.9% |
-| Rare Mystery Box | ~7.9% |
-| MMDs ×5 | ~7.9% |
-| PK Trophies ×10 | ~7.9% |
-| Bounty Purchase Token | ~7.9% |
+| Workmanship Morph Gem | ~2.4% |
+| Missile Defense Requirement Morph Gem | ~2.4% |
+| Melee Requirement Morph Gem | ~2.4% |
+| Player Wield Requirement Morph Gem | ~2.4% |
+| Level Requirement Removal Morph Gem | ~2.4% |
+| Darkbeat's Lost Storage Key | ~7.3% |
+| Sturdy Iron Key | ~7.3% |
+| Arcane Lore Morph Gem | ~7.3% |
+| Steel Salvage (WS10, 100 units) | ~7.3% |
+| Granite Salvage (WS10, 100 units) | ~7.3% |
+| Iron Salvage (WS10, 100 units) | ~7.3% |
+| Green Garnet Salvage (WS10, 100 units) | ~7.3% |
+| Opal Salvage (WS10, 100 units) | ~7.3% |
+| Rare Mystery Box | ~7.3% |
+| MMDs ×5 | ~7.3% |
+| PK Trophies ×10 | ~7.3% |
+| Bounty Purchase Token | ~7.3% |
 
 ### Rare Mystery Box
 
 | Item | Chance |
 |------|--------|
-| Ancient Bottle (XP Bottle) | ~2.1% |
-| Workmanship Morph Gem | ~6.4% |
-| Missile Defense Requirement Morph Gem | ~6.4% |
-| Melee Requirement Morph Gem | ~6.4% |
-| Player Wield Requirement Morph Gem | ~6.4% |
-| Level Requirement Removal Morph Gem | ~6.4% |
-| Sunstone Salvage WS10 — Armor Rend | ~4.3% |
-| Red Garnet Salvage WS10 — Fire Rend | ~4.3% |
-| Black Garnet Salvage WS10 — Pierce Rend | ~4.3% |
-| Imperial Topaz Salvage WS10 — Slash Rend | ~4.3% |
-| Jet Salvage WS10 — Lightning Rend | ~4.3% |
-| Aquamarine Salvage WS10 — Cold Rend | ~4.3% |
-| White Sapphire Salvage WS10 — Bludgeon Rend | ~4.3% |
-| Emerald Salvage WS10 — Acid Rend | ~4.3% |
-| Fire Opal Salvage WS10 — Crippling Blow | ~4.3% |
-| Black Opal Salvage WS10 — Critical Strike | ~4.3% |
-| Bloodstone Salvage WS10 — Minor Endurance (jewelry only) | ~4.3% |
-| Mythic Mystery Box | ~6.4% |
-| MMDs ×20 | ~6.4% |
-| PK Trophies ×100 | ~6.4% |
+| Ancient Bottle (XP Bottle) | ~2.0% |
+| Workmanship Morph Gem | ~6.0% |
+| Missile Defense Requirement Morph Gem | ~6.0% |
+| Melee Requirement Morph Gem | ~6.0% |
+| Player Wield Requirement Morph Gem | ~6.0% |
+| Level Requirement Removal Morph Gem | ~6.0% |
+| Sunstone Salvage WS10 — Armor Rend | ~4.0% |
+| Red Garnet Salvage WS10 — Fire Rend | ~4.0% |
+| Black Garnet Salvage WS10 — Pierce Rend | ~4.0% |
+| Imperial Topaz Salvage WS10 — Slash Rend | ~4.0% |
+| Jet Salvage WS10 — Lightning Rend | ~4.0% |
+| Aquamarine Salvage WS10 — Cold Rend | ~4.0% |
+| White Sapphire Salvage WS10 — Bludgeon Rend | ~4.0% |
+| Emerald Salvage WS10 — Acid Rend | ~4.0% |
+| Fire Opal Salvage WS10 — Crippling Blow | ~4.0% |
+| Black Opal Salvage WS10 — Critical Strike | ~4.0% |
+| Bloodstone Salvage WS10 — Minor Endurance (jewelry only) | ~4.0% |
+| Sturdy Iron Keys ×3 | ~6.0% |
+| Mythic Mystery Box | ~6.0% |
+| MMDs ×20 | ~6.0% |
+| PK Trophies ×100 | ~6.0% |
 
 All salvage bags are full WS10 bags (100 units).
 

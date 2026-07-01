@@ -12,8 +12,8 @@ VALUES (480607,   1,        512) /* ItemType - Container */
      , (480607,  16,         48) /* ItemUseable - ViewedRemote */
      , (480607,  19,       2500) /* Value */
      , (480607,  38,       9999) /* ResistLockpick */
-     , (480607,  81,          3) /* MaxGeneratedObjects */
-     , (480607,  82,          3) /* InitGeneratedObjects */
+     , (480607,  81,          4) /* MaxGeneratedObjects */
+     , (480607,  82,          4) /* InitGeneratedObjects */
      , (480607,  93,       1048) /* PhysicsState - ReportCollisions, IgnoreCollisions, Gravity */
      , (480607,  96,        500) /* EncumbranceCapacity */
      , (480607, 100,          1) /* GeneratorType - Relative */;
@@ -49,11 +49,17 @@ VALUES (480607,   1, 0x02000F7A) /* Setup */
 
 /* -----------------------------------------------------------------------
    Generator table — cumulative probability bands
-   MaxGeneratedObjects = 3: 1 always-spawn slot (-1 loot profile) +
-   2 optional rolls from this table per chest open.
+   MaxGeneratedObjects = 4: 1 always-spawn slot (-1 loot profile) +
+   3 optional rolls from this table per chest open.
 
    -1 entry always spawns (tier 6 loot profile).
    Every optional roll is guaranteed to produce an item (no fallback entry).
+
+   NOTE on the -1 loot profile: while the -1 slot is unspawned,
+   GetTotalProbability() returns 1.0 (WorldObject_Generators.cs), so the
+   FIRST RNG roll of a fresh/reset chest is locked to the [0,1.0] existing-item
+   space and can never select the Sturdy Iron Key group below. The key is only
+   eligible on the 2 remaining rolls — see the Sturdy Iron Key group note.
 
    Main group (0.0000 – 0.5000, 50% of total probability space):
      Salvage bags     0.0000 – 0.0550   (0.5% each × 11 = 5.5%)
@@ -74,7 +80,15 @@ VALUES (480607,   1, 0x02000F7A) /* Setup */
      Mana Stone #4    0.8000 – 0.9000   (10%)
      Mana Stone #5    0.9000 – 1.0000   (10%)
 
-   GetTotalProbability() = 0.5000 + 0.5000 = 1.0000
+   Sturdy Iron Key group — probability reset (independent ~20% key roll):
+     Sturdy Iron Key  1.0000 – 1.1180   (raw prob 0.1180; reset triggers, 0.1180 < 0.5000)
+
+   GetTotalProbability() = 0.5000 + 0.5000 + 0.1180 = 1.1180
+   Per RNG roll the key occupies band [1.0000, 1.1180] of a [0,1.1180] roll
+   = 0.1180 / 1.1180 = 10.55%. Because the first RNG roll is locked to [0,1.0]
+   (see note above), the key is eligible on 2 rolls per chest:
+   1 - (1 - 0.1055)^2 ≈ 20% chance of a Sturdy Iron Key per chest open.
+   max_Create = 1 caps it at one key per chest.
    ----------------------------------------------------------------------- */
 
 INSERT INTO `weenie_properties_generator` (`object_Id`, `probability`, `weenie_Class_Id`, `delay`, `init_Create`, `max_Create`, `when_Create`, `where_Create`, `stack_Size`, `palette_Id`, `shade`, `obj_Cell_Id`, `origin_X`, `origin_Y`, `origin_Z`, `angles_W`, `angles_X`, `angles_Y`, `angles_Z`)
@@ -116,4 +130,5 @@ VALUES (480607,    -1, 10000, 1, 1,   1, 2, 72,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0,
      , (480607, 0.2000,  27329, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Massive Mana Stone #2 */
      , (480607, 0.3000,  27329, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Massive Mana Stone #3 */
      , (480607, 0.4000,  27329, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Massive Mana Stone #4 */
-     , (480607, 0.5000,  27329, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Massive Mana Stone #5 */;
+     , (480607, 0.5000,  27329, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Massive Mana Stone #5 */
+     , (480607, 0.1180,   6876, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Sturdy Iron Key — reset group, ~20% independent key roll */;
