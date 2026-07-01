@@ -101,6 +101,23 @@ namespace ACE.Server.Managers
         }
 
         /// <summary>
+        /// Sends a sequence of Season messages to the configured Season webhook, posting
+        /// them in order.  Used for content that exceeds Discord's single-message limit
+        /// (e.g. the full top-10 leaderboard announcement), which must be split across
+        /// several messages.
+        /// PropertyManager key: <c>season_milestone_webhook</c>
+        /// </summary>
+        public static void SendSeasonMilestoneMulti(System.Collections.Generic.IReadOnlyList<string> messages)
+        {
+            if (messages == null || messages.Count == 0) return;
+
+            var url = PropertyManager.GetString("season_milestone_webhook").Item;
+            if (string.IsNullOrWhiteSpace(url)) return;
+
+            _ = SendSequentialAsync(url, messages);
+        }
+
+        /// <summary>
         /// Sends an Allegiance Hometown global broadcast to the configured Hometown webhook.
         /// PropertyManager key: <c>hometown_webhook</c>
         /// </summary>
@@ -142,6 +159,21 @@ namespace ACE.Server.Managers
                 .Replace("@", "@ ")          // neutralise Discord @mentions
                 .Replace("\r\n", "\n")        // normalise line endings
                 .Replace("\r",   "\n");
+        }
+
+        /// <summary>
+        /// Posts a list of messages to a single webhook endpoint one at a time, in order.
+        /// A short delay between posts preserves ordering and stays clear of Discord's
+        /// webhook rate limit (30 requests / 60s per webhook).
+        /// </summary>
+        private static async Task SendSequentialAsync(string webhookUrl, System.Collections.Generic.IReadOnlyList<string> messages)
+        {
+            foreach (var message in messages)
+            {
+                if (string.IsNullOrWhiteSpace(message)) continue;
+                await SendAsync(webhookUrl, SanitiseMessage(message)).ConfigureAwait(false);
+                await Task.Delay(400).ConfigureAwait(false);
+            }
         }
 
         /// <summary>

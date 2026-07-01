@@ -6073,6 +6073,7 @@ namespace ACE.Server.Command.Handlers
             "Usage:\n" +
             "  /seasons status          — Show week number, last milestone date, cache stats\n" +
             "  /seasons forcemilestone  — Force an immediate weekly milestone snapshot\n" +
+            "  /seasons announce        — Re-post the full top-10 leaderboard + rewards to Discord\n" +
             "  /seasons resetcache      — Flush all cached leaderboard data")]
         public static void HandleSeasonsAdmin(Session session, params string[] parameters)
         {
@@ -6092,6 +6093,14 @@ namespace ACE.Server.Command.Handlers
                         $"{session?.Player?.Name ?? "CONSOLE"} forced a Season milestone snapshot.");
                     break;
 
+                case "announce":
+                    CommandHandlerHelper.WriteOutputInfo(session, "[Season] Posting top-10 leaderboard announcement to Discord...");
+                    Managers.SeasonManager.AnnounceLeaderboardsNow();
+                    CommandHandlerHelper.WriteOutputInfo(session, "[Season] Announcement posted. Check the Season channel.");
+                    PlayerManager.BroadcastToAuditChannel(session?.Player,
+                        $"{session?.Player?.Name ?? "CONSOLE"} posted a Season leaderboard announcement.");
+                    break;
+
                 case "resetcache":
                     Managers.SeasonManager.ResetCache();
                     CommandHandlerHelper.WriteOutputInfo(session, "[Season] Leaderboard cache cleared.");
@@ -6101,7 +6110,7 @@ namespace ACE.Server.Command.Handlers
 
                 default:
                     CommandHandlerHelper.WriteOutputInfo(session,
-                        $"Unknown sub-command \"{sub}\". Valid options: status, forcemilestone, resetcache");
+                        $"Unknown sub-command \"{sub}\". Valid options: status, forcemilestone, announce, resetcache");
                     break;
             }
         }

@@ -67,40 +67,44 @@ namespace ACE.Database
         // ── Weekly milestone: XP grants ──────────────────────────────────────
         // Uses GrantLevelProportionalXp(multiplier, 0, 0) — same pattern as ArenaLocation.
         // multiplier = fraction of XP to the next level (0.10 = 10%).
-        public const double Weekly_Rank1_XpMultiplier     = 1.0;
-        public const double Weekly_Rank2_XpMultiplier     = 0.5;
-        public const double Weekly_Rank3_XpMultiplier     = 0.35;
-        public const double Weekly_Rank4to10_XpMultiplier = 0.2;
+        public const double Weekly_Rank1_XpMultiplier     = 2.0;
+        public const double Weekly_Rank2_XpMultiplier     = 1.0;
+        public const double Weekly_Rank3_XpMultiplier     = 0.75;
+        public const double Weekly_Rank4to10_XpMultiplier = 0.5;
 
         // ── Weekly milestone: item bundles per rank ──────────────────────────
         // Each tuple is (weenieId, quantity). Weenie IDs from CustomWeenieId.
 
         public static readonly (uint weenieId, int qty)[] Weekly_Rank1_Items =
         {
-            (CustomWeenieId.ABox,               3),
-            (CustomWeenieId.DarkbeatKey,        3),
-            (CustomWeenieId.PhialOfBloodyTears, 2),
-            (CustomWeenieId.PkTrophy,          50),
+            (CustomWeenieId.ABox,                10),
+            (CustomWeenieId.DarkbeatKey,         10),
+            (CustomWeenieId.PhialOfBloodyTears,  20),
+            (CustomWeenieId.PkTrophy,           250),
         };
 
         public static readonly (uint weenieId, int qty)[] Weekly_Rank2_Items =
         {
-            (CustomWeenieId.ABox,               2),
-            (CustomWeenieId.DarkbeatKey,        2),
-            (CustomWeenieId.PhialOfBloodyTears, 1),
+            (CustomWeenieId.ABox,                 5),
+            (CustomWeenieId.DarkbeatKey,          5),
+            (CustomWeenieId.PhialOfBloodyTears,  10),
+            (CustomWeenieId.PkTrophy,           100),
         };
 
         public static readonly (uint weenieId, int qty)[] Weekly_Rank3_Items =
         {
-            (CustomWeenieId.ABox,        1),
-            (CustomWeenieId.DarkbeatKey, 1),
-            (CustomWeenieId.PkTrophy,    1),
+            (CustomWeenieId.ABox,                3),
+            (CustomWeenieId.DarkbeatKey,         3),
+            (CustomWeenieId.PhialOfBloodyTears,  5),
+            (CustomWeenieId.PkTrophy,           50),
         };
 
         public static readonly (uint weenieId, int qty)[] Weekly_Rank4to10_Items =
         {
-            (CustomWeenieId.DarkbeatKey,        1),
-            (CustomWeenieId.PhialOfBloodyTears, 1),
+            (CustomWeenieId.ABox,                1),
+            (CustomWeenieId.DarkbeatKey,         1),
+            (CustomWeenieId.PhialOfBloodyTears,  3),
+            (CustomWeenieId.PkTrophy,           25),
         };
 
         // ── Accessors ────────────────────────────────────────────────────────

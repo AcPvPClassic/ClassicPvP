@@ -134,11 +134,13 @@ namespace ACE.Server.Managers
             // Build the broadcast message
             var msg = BuildMilestoneMessage(_currentWeekNumber);
 
-            // In-game broadcast
+            // In-game broadcast — keep it terse (#1 per category); the full top-10
+            // would flood in-game chat.
             PlayerManager.BroadcastToAll(new GameMessageSystemChat(msg, ChatMessageType.WorldBroadcast));
 
-            // Discord webhook
-            DiscordWebhookManager.SendSeasonMilestone(msg);
+            // Discord webhook — post the full top-10-per-category announcement with
+            // the reward legend (split across messages to fit Discord's size limit).
+            AnnounceLeaderboards(_currentWeekNumber);
 
             // Flush the whole top cache so next query is fresh
             _topCache.Clear();
@@ -223,6 +225,131 @@ namespace ACE.Server.Managers
             sb.AppendLine("Use /season top to see the full leaderboards.");
             sb.AppendLine("Use /season claim to collect your weekly reward items!");
             return sb.ToString().TrimEnd();
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // Full top-10 leaderboard announcement (Discord)
+        // ─────────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Discord content limit is 2000 chars per message; a full top-10 across every
+        /// category is far larger, so blocks are packed into messages up to this size.
+        /// </summary>
+        private const int DiscordMessageBudget = 1900;
+
+        /// <summary>
+        /// Posts the full top-10 for every category (Overall first) plus the weekly
+        /// reward legend to the Season webhook, split across as few messages as the
+        /// Discord size limit allows.  Called automatically at the weekly milestone
+        /// and on demand via <c>/seasons announce</c>.
+        /// </summary>
+        public static void AnnounceLeaderboards(ushort week)
+        {
+            if (!LogDatabase.IsConfigured) return;
+
+            var messages = BuildLeaderboardAnnouncement(week);
+            if (messages.Count == 0) return;
+
+            DiscordWebhookManager.SendSeasonMilestoneMulti(messages);
+            log.Info($"[Season] Posted Week {week} top-10 leaderboard announcement to Discord ({messages.Count} message(s)).");
+        }
+
+        /// <summary>
+        /// Builds the ordered list of Discord messages for the weekly announcement:
+        /// a title, one block per category (Overall + each scored category), and a
+        /// reward legend.  Category blocks are packed together up to the Discord size
+        /// budget so we send as few messages as possible.
+        /// </summary>
+        private static List<string> BuildLeaderboardAnnouncement(ushort week)
+        {
+            // One self-contained block per category (header + up to 10 entries).
+            var blocks = new List<string>();
+
+            var categories = new[] { SeasonConfig.Cat_Overall }
+                .Concat(SeasonConfig.ScoredCategories);
+
+            foreach (var cat in categories)
+            {
+                var top = GetTopForCategory(cat, 10);
+                if (top.Count == 0) continue;
+
+                var block = new StringBuilder();
+                block.AppendLine($"**{SeasonConfig.GetCategoryDisplayName(cat)}**");
+                foreach (var entry in top)
+                    block.AppendLine($"`{entry.Rank,2}.` {entry.CharacterName} — {entry.ScoreDisplay}");
+
+                blocks.Add(block.ToString().TrimEnd());
+            }
+
+            var messages = new List<string>();
+
+            // Title always leads.
+            messages.Add(
+                $"🏆 **Season Week {week} — Weekly Leaderboards** 🏆\n" +
+                "Top 10 in every category. Rewards are now claimable in-game with `/season rewards`.");
+
+            // Pack category blocks into as few messages as the budget allows.
+            var current = new StringBuilder();
+            foreach (var block in blocks)
+            {
+                if (current.Length > 0 && current.Length + block.Length + 2 > DiscordMessageBudget)
+                {
+                    messages.Add(current.ToString().TrimEnd());
+                    current.Clear();
+                }
+
+                if (current.Length > 0) current.AppendLine();
+                current.AppendLine(block);
+            }
+            if (current.Length > 0)
+                messages.Add(current.ToString().TrimEnd());
+
+            // Reward legend closes the announcement.
+            messages.Add(BuildRewardLegend());
+
+            return messages;
+        }
+
+        /// <summary>
+        /// Builds the per-rank reward legend shown at the end of the announcement.
+        /// Reward tiers apply per category, so this is a single shared block.
+        /// </summary>
+        private static string BuildRewardLegend()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("**Weekly Rewards** — by finishing rank, in every category");
+            sb.AppendLine($"🥇 1st — {FormatRewardBundle(1)}");
+            sb.AppendLine($"🥈 2nd — {FormatRewardBundle(2)}");
+            sb.AppendLine($"🥉 3rd — {FormatRewardBundle(3)}");
+            sb.AppendLine($"🎖️ 4th–10th — {FormatRewardBundle(4)}");
+            sb.Append("Collect yours in-game with `/season rewards`.");
+            return sb.ToString();
+        }
+
+        /// <summary>Formats a single rank's reward bundle (XP grant + item list) for display.</summary>
+        private static string FormatRewardBundle(int rank)
+        {
+            var parts = new List<string> { $"+{SeasonConfig.GetXpMultiplier(rank) * 100:0}% XP" };
+
+            foreach (var (weenieId, qty) in SeasonConfig.GetItems(rank))
+            {
+                if (weenieId == 0) continue;
+                parts.Add($"{qty}× {GetWeenieName(weenieId)}");
+            }
+
+            return string.Join(" · ", parts);
+        }
+
+        /// <summary>
+        /// Resolves a weenie's display name from the world cache, falling back to
+        /// <c>Item #id</c> when the weenie is not cached.
+        /// </summary>
+        private static string GetWeenieName(uint weenieId)
+        {
+            var cachedWeenie = DatabaseManager.World.GetCachedWeenie(weenieId);
+            return (cachedWeenie?.PropertiesString != null &&
+                    cachedWeenie.PropertiesString.TryGetValue(ACE.Entity.Enum.Properties.PropertyString.Name, out var wn))
+                   ? wn : $"Item #{weenieId}";
         }
 
         // ─────────────────────────────────────────────────────────────────────
@@ -377,10 +504,7 @@ namespace ACE.Server.Managers
                         continue;
                     }
 
-                    var cachedWeenie = DatabaseManager.World.GetCachedWeenie(weenieId);
-                    var weenieName = (cachedWeenie?.PropertiesString != null &&
-                                      cachedWeenie.PropertiesString.TryGetValue(ACE.Entity.Enum.Properties.PropertyString.Name, out var wn))
-                                     ? wn : $"Item #{weenieId}";
+                    var weenieName = GetWeenieName(weenieId);
 
                     for (var i = 0; i < qty; i++)
                     {
@@ -418,6 +542,12 @@ namespace ACE.Server.Managers
             if (!LogDatabase.IsConfigured) return;
             FireWeeklyMilestone();
         }
+
+        /// <summary>
+        /// Re-posts the full top-10 leaderboard announcement to Discord for the current
+        /// week without capturing a new milestone snapshot.  GM use only.
+        /// </summary>
+        public static void AnnounceLeaderboardsNow() => AnnounceLeaderboards(_currentWeekNumber);
 
         /// <summary>Flushes every cached leaderboard entry.  GM use only.</summary>
         public static void ResetCache()

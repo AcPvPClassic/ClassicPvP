@@ -498,18 +498,18 @@ For each category you are ranked in, you earn `max(0, 11 − rank)` rank-points,
 
 Every **Sunday**, the server automatically snapshots the top 10 players in each category. This is the weekly **milestone**.
 
-- A server-wide broadcast announces the top finishers in each category.
-- An announcement is also posted to the ClassicPvP Discord.
+- A server-wide broadcast announces the #1 finisher in each category.
+- A full **top 10 in every category**, along with the reward legend, is posted to the ClassicPvP Discord Season channel.
 - The **top 10** players in each category earn rewards for that week.
 
 **Milestone rewards by rank:**
 
-| Rank | XP | Darkbeat Keys | Phials of Bloody Tears | PK Trophies |
-|---|---|---|---|---|
-| 🥇 1st | +10% to next level | 3 | 2 | 1 |
-| 🥈 2nd | +7% to next level | 2 | 1 | — |
-| 🥉 3rd | +5% to next level | 1 | — | 1 |
-| 4th–10th | +2% to next level | — | 1 | — |
+| Rank | XP | A-Boxes | Darkbeat Keys | Phials of Bloody Tears | PK Trophies |
+|---|---|---|---|---|---|
+| 🥇 1st | +200% to next level | 10 | 10 | 20 | 250 |
+| 🥈 2nd | +100% to next level | 5 | 5 | 10 | 100 |
+| 🥉 3rd | +75% to next level | 3 | 3 | 5 | 50 |
+| 4th–10th | +50% to next level | 1 | 1 | 3 | 25 |
 
 Rewards are **not delivered automatically** — you must claim them with `/season rewards`. Unclaimed rewards accumulate and can be collected at any time.
 
