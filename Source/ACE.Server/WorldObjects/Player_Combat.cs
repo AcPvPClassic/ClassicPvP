@@ -824,6 +824,9 @@ namespace ACE.Server.WorldObjects
         {
             //log.Info($"{Name}.HandleActionChangeCombatMode({newCombatMode})");
 
+            if (IsArenaObserver)
+                newCombatMode = CombatMode.NonCombat;
+
             // Make sure the player doesn't have an invalid weapon setup (e.g. sword + wand)
             if (!CheckWeaponCollision(null, null, newCombatMode))
             {

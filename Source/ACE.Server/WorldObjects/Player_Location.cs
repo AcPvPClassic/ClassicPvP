@@ -853,6 +853,9 @@ namespace ACE.Server.WorldObjects
 
             UpdatePlayerPosition(new Position(newPosition), true);
 
+            if ((IsArenaObserver || IsPendingArenaObserver) && !ArenaLocation.IsArenaLandblock(newPosition.Landblock))
+                ArenaManager.ExitArenaObserverMode(this);
+
             ForceMaterializeForTeleport(currentTeleportId);
         }
 

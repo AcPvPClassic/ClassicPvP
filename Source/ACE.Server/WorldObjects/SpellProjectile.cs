@@ -453,6 +453,9 @@ namespace ACE.Server.WorldObjects
             var targetPlayer = target as Player;
             var isPvP = sourcePlayer != null && targetPlayer != null;
 
+            if (sourcePlayer != null && sourcePlayer.IsArenaObserver)
+                return null;
+
             if (source == null || target == null || target.IsDead || target.Invincible || target.IsOnNoDamageLandblock)
                 return null;
 

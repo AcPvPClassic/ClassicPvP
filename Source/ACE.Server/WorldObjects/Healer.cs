@@ -234,6 +234,9 @@ namespace ACE.Server.WorldObjects
         {
             if (target.IsDead || target.Teleporting) return;
 
+            if (healer != null && (healer.IsArenaObserver || healer.IsPendingArenaObserver))
+                return;
+
             var remainingMsg = "";
 
             if (!UnlimitedUse)
@@ -332,6 +335,13 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public uint GetHealAmount(Player healer, Player target, uint missingVital, out bool criticalHeal, out uint staminaCost)
         {
+            if (healer != null && (healer.IsArenaObserver || healer.IsPendingArenaObserver))
+            {
+                criticalHeal = false;
+                staminaCost = 0;
+                return 0;
+            }
+
             // factors: healing skill, healing kit bonus, stamina, critical chance
             var healingSkill = healer.GetCreatureSkill(Skill.Healing).Current;
             var arenaEvent = ArenaManager.GetArenaEventByLandblock(target.Location.Landblock);

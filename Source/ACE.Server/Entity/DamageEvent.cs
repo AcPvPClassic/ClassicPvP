@@ -943,9 +943,12 @@ namespace ACE.Server.Entity
                             }
                         }
 
-                        // apply arena 1v1 global damage modifier
+                        // apply arena 1v1 global damage modifier; block damage from observers
                         if (playerDefender != null && ArenaLocation.IsArenaLandblock(playerDefender.Location.Landblock))
                         {
+                            if (playerAttacker != null && playerAttacker.IsArenaObserver)
+                                config_mod = 0;
+
                             var arenaEvent = ArenaManager.GetArenaEventByLandblock(playerDefender.Location.Landblock);
                             if (arenaEvent != null && arenaEvent.EventType != null && arenaEvent.EventType.Equals("1v1", StringComparison.OrdinalIgnoreCase))
                                 config_mod *= (float)PropertyManager.GetDouble("arena_1v1_global_dmg_mod").Item;

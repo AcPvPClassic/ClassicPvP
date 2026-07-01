@@ -193,6 +193,9 @@ namespace ACE.Server.WorldObjects
             var wand = GetEquippedWand();
             if (wand == null) return 0.0f;
 
+            if ((this as Player)?.IsArenaObserver ?? false)
+                return 0.0f;
+
             var animLength = SwitchCombatStyles();
             animLength += MotionTable.GetAnimationLength(MotionTableId, CurrentMotionState.Stance, MotionCommand.Ready, MotionCommand.Magic);
 
