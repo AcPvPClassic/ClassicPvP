@@ -2879,14 +2879,14 @@ namespace ACE.Server.Command.Handlers
             var  player   = session.Player;
             long xpCap    = RollingLevelCapManager.GetCurrentXpCap();
             int  day      = RollingLevelCapManager.GetCurrentSeasonDay();
-            int  levelCap = RollingLevelCapManager.GetCurrentLevelCap(xpCap);
+            int  levelCap = RollingLevelCapManager.GetDisplayLevelCap(xpCap);
 
             var sb = new StringBuilder();
             sb.AppendLine("------- Season Status -------");
             sb.AppendLine($"  Day:         {day}");
 
-            if (levelCap >= 126)
-                sb.AppendLine($"  Level Cap:   126  (post-cap XP grind)");
+            if (levelCap > 126)
+                sb.AppendLine($"  Level Cap:   {levelCap}  (XP-equivalent; in-game level caps at 126)");
             else
                 sb.AppendLine($"  Level Cap:   {levelCap}");
 

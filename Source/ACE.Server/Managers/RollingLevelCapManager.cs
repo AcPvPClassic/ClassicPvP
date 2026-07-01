@@ -369,12 +369,11 @@ namespace ACE.Server.Managers
 
                 if (impliedLevel >= maxPossibleLvl)
                 {
-                    // Cap is at or above level 126 — express as XP beyond level cap.
-                    long postCapXp = xpCap - (long)xpTable[maxPossibleLvl];
-                    if (postCapXp <= 0)
-                        return $"level {maxPossibleLvl} (XP: {xpCap:N0})";
-
-                    return $"post-level-{maxPossibleLvl} (+{postCapXp:N0} XP beyond level cap, total {xpCap:N0})";
+                    // Cap is at or above the dat's max level.  Express it as the retail
+                    // level-equivalent on the 275-level curve (e.g. "level 150"), even
+                    // though the in-game level is capped at 126.
+                    int retailLevel = GetDisplayLevelCap(xpCap);
+                    return $"level {retailLevel} (XP: {xpCap:N0})";
                 }
 
                 return $"level {impliedLevel} (XP: {xpCap:N0})";
@@ -437,6 +436,92 @@ namespace ACE.Server.Managers
                 return impliedLevel;
             }
             catch { return 0; }
+        }
+
+        // ── Retail level-equivalent display (post level 126) ──────────────────────
+        //
+        // ClassicPvP runs on an Infiltration-era dat whose character XP table stops at
+        // level 126.  The season XP cap, however, keeps climbing past that point into
+        // the skill/attribute grind phase.  For status displays we express that extra
+        // XP as the level it *would* correspond to on the End-of-Retail (Throne of
+        // Destiny) 275-level curve — e.g. a cap worth 9,940,676,567 XP shows as
+        // "level 150" even though the in-game level remains 126.
+        //
+        // Values below are the retail total-XP thresholds for levels 127–275, indexed
+        // so that RetailPostCapLevelXp[0] == level 127.  The 0–126 portion still comes
+        // from the live dat table, so this only supplements the post-126 range.
+        private const int RetailPostCapFirstLevel = 127;
+
+        private static readonly long[] RetailPostCapLevelXp =
+        {
+            4452737184L,   4623976457L,   4800443961L,   4982258511L,   5169540711L,   // 127-131
+            5362412965L,   5560999488L,   5765426325L,   5975821358L,   6192314325L,   // 132-136
+            6415036828L,   6644122352L,   6879706272L,   7121925872L,   7370920356L,   // 137-141
+            7626830859L,   7889800466L,   8159974219L,   8437499136L,   8722524219L,   // 142-146
+            9015200473L,   9315680913L,   9624120583L,   9940676567L,   10265508000L,  // 147-151
+            10598776087L,  10940644110L,  11291277447L,  11650843580L,  12019512114L,  // 152-156
+            12397454784L,  12784845474L,  13181860228L,  13588677261L,  14005476978L,  // 157-161
+            14432441981L,  14869757088L,  15317609341L,  15776188025L,  16245684675L,  // 162-166
+            16726293095L,  17218209369L,  17721631872L,  18236761289L,  18763800622L,  // 167-171
+            19302955209L,  19854432732L,  20418443236L,  20995199136L,  21584915236L,  // 172-176
+            22187808740L,  22804099263L,  23434008850L,  24077761983L,  24735585600L,  // 177-181
+            25407709103L,  26094364377L,  26795785797L,  27512210247L,  28243877131L,  // 182-186
+            28991028384L,  29753908491L,  30532764494L,  31327846011L,  32139405244L,  // 187-191
+            32967696998L,  33812978688L,  34675510358L,  35555554692L,  36453377025L,  // 192-196
+            37369245362L,  38303430385L,  39256205472L,  40227846705L,  41218632889L,  // 197-201
+            42228845559L,  43258768999L,  44308690253L,  45378899136L,  46469688253L,  // 202-206
+            47581353006L,  48714191613L,  49868505116L,  51044597400L,  52242775200L,  // 207-211
+            53463348120L,  54706628644L,  55972932147L,  57262576914L,  58575884147L,  // 212-216
+            59913177984L,  61274785507L,  62661036761L,  64072264761L,  65508805511L,  // 217-221
+            66970998015L,  68459184288L,  69973709375L,  71514921358L,  73083171375L,  // 222-226
+            74678813628L,  76302205402L,  77953707072L,  79633682122L,  81342497156L,  // 227-231
+            83080521909L,  84848129266L,  86645695269L,  88473599136L,  90332223269L,  // 232-236
+            92221953273L,  94143177963L,  96096289383L,  98081682817L,  100099756800L, // 237-241
+            102150913137L, 104235556910L, 106354096497L, 108506943580L, 110694513164L, // 242-246
+            112917223584L, 115175496524L, 117469757028L, 119800433511L, 122167957778L, // 247-251
+            124572765031L, 127015293888L, 129495986391L, 132015288025L, 134573647725L, // 252-256
+            137171517895L, 139809354419L, 142487616672L, 145206767539L, 147967273422L, // 257-261
+            150769604259L, 153614233532L, 156501638286L, 159432299136L, 162406700286L, // 262-266
+            165425329540L, 168488678313L, 171597241650L, 174751518233L, 177952010400L, // 267-271
+            181199224153L, 184493669177L, 187835858847L, 191226310247L,                // 272-275
+        };
+
+        /// <summary>
+        /// Returns the level that <paramref name="xpCap"/> corresponds to for status
+        /// displays, extending past the dat's level-126 ceiling onto the retail
+        /// (Throne of Destiny) 275-level curve.  For caps at or below the dat's max
+        /// level this is identical to <see cref="GetCurrentLevelCap"/>; above it, the
+        /// embedded retail table is consulted so a post-126 cap reads as its retail
+        /// level-equivalent (e.g. "level 150").  This is a *display* value only — the
+        /// in-game level remains capped at 126.
+        /// </summary>
+        public static int GetDisplayLevelCap(long xpCap)
+        {
+            if (xpCap <= 0) return 0;
+
+            int datLevel = GetCurrentLevelCap(xpCap);
+
+            try
+            {
+                var datMaxLevel = DatManager.PortalDat.XpTable.CharacterLevelXPList.Count - 1;
+
+                // Only extend when the loaded dat is the Infiltration table (max 126)
+                // and the cap has reached that ceiling.  A retail dat already covers
+                // the full range, so GetCurrentLevelCap is authoritative there.
+                if (datMaxLevel != 126 || datLevel < datMaxLevel)
+                    return datLevel;
+
+                int level = datMaxLevel;
+                for (int i = 0; i < RetailPostCapLevelXp.Length; i++)
+                {
+                    if (RetailPostCapLevelXp[i] <= xpCap)
+                        level = RetailPostCapFirstLevel + i;
+                    else
+                        break;
+                }
+                return level;
+            }
+            catch { return datLevel; }
         }
 
         /// <summary>
