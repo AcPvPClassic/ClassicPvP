@@ -838,3 +838,11 @@ Admins can review the binding history and whitelist your IP or clear conflicting
 ### For Admins
 
 See **Section 1** of the Admin Guide for full details on the `enforce_account_ip_binding` property, the IP whitelist, and the `/checkipbinding` and `/clearipbinding` commands.
+
+---
+
+## 🐗 Tusker Tusk & Olthoi Pincer Turn-In Timers
+
+The repeat timer on the Tusker Tusk and Olthoi Pincer turn-in quests has been shortened from **21 days** to **20 hours**. You can now farm and turn in these tusks and pincers far more frequently instead of waiting weeks between rewards.
+
+This covers all 14 Tusker Tusk turn-ins and all 8 Olthoi Pincer turn-ins (Harvester, Gardener, Soldier, Legionary, Eviscerator, Worker, Warrior, and Mutilator pincers turned in to Behdo Yii).
