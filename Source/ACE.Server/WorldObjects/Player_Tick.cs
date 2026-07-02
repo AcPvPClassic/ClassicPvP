@@ -908,7 +908,7 @@ namespace ACE.Server.WorldObjects
                             }
                             PrevMovementUpdateMaxSpeed = currentMaxSpeed;
 
-                            if (dist > currentMaxSpeed)
+                            if (dist > currentMaxSpeed && !IsMeleeStickyChasing())
                             {
                                 // Recovery guard: if we just rubber-banded, the client hasn't acknowledged
                                 // the correction yet and is still sending packets from its old position.
@@ -984,6 +984,25 @@ namespace ACE.Server.WorldObjects
                                     }
 
                                     return false;
+                                }
+                            }
+                            else if (dist > currentMaxSpeed)
+                            {
+                                // Melee sticky-chase grace: the player is over the per-packet speed
+                                // budget but is actively chasing a live melee target (the branch above
+                                // was skipped by !IsMeleeStickyChasing()).  The client's sticky auto-
+                                // face/follow produces short, legitimate speed/position spikes — it
+                                // snaps the character to face the target, and on hills the 3-D step
+                                // distance inflates past the horizontal run budget.  Accept the
+                                // position with NO rubber-band and NO score.  This is bounded (see
+                                // IsMeleeStickyChasing): the geometry wall-walk check and the 15-second
+                                // average-speed check still run, so a real hack is still caught.
+                                if (PropertyManager.GetBool("movement_debug_chat").Item && currentTime - _lastDebugChatTime >= 1.0)
+                                {
+                                    _lastDebugChatTime = currentTime;
+                                    Session?.Network.EnqueueSend(new GameMessageSystemChat(
+                                        $"[AC DBG] melee-sticky grace {dist:0.00}/{currentMaxSpeed:0.00} | Δt={enforcementDeltaTime*1000:0}ms | v={velocity:0.0}",
+                                        ChatMessageType.Help));
                                 }
                             }
                             else if (PropertyManager.GetBool("movement_debug_chat").Item)

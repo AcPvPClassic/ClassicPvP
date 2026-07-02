@@ -503,6 +503,8 @@ These are **heuristic** checks — statistical inferences rather than provable p
 
 The split exists so legitimate-but-unusual movement (glitch-running, high framerates, sticky-target combat facing) that trips a heuristic isn't visibly disrupted, while genuine wall-walks and speed hacks are still corrected on the spot. Soft checks still contribute to the kick threshold, so a sustained scripter is still removed.
 
+**Melee sticky-chase exemption:** the per-packet `speed_packet` check is waived (no rubber-band, no score) while a player is actively engaged in melee against a live target within melee range. Sticky auto-face and hill terrain routinely make legitimate melee movement read as "too fast" or "wrong location." The exemption is bounded and cannot be used as a speed-hack bypass: it requires melee combat mode with an active attack sequence and an in-range living target, and the geometry (wall-walk) and 15-second average-speed checks still apply throughout.
+
 ### Suspicion Score System
 
 Score accumulates on each violation and decays during clean movement: −3 per heartbeat (~5 s), rising to −6 per heartbeat after ~15 s of clean movement. Decay runs whenever the score did not rise since the previous heartbeat, **regardless of violation type** — so an occasional false positive fades within a heartbeat or two instead of ratcheting permanently toward a kick, while a genuine cheater who keeps the score climbing never benefits from decay.

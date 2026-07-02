@@ -173,6 +173,28 @@ namespace ACE.Server.WorldObjects
         // Minimum heading change (degrees) while airborne that breaks melee sticky, restoring the retail jump-spin mechanic.
         public const float JumpSpinBreakAngle = 90f;
 
+        /// <summary>
+        /// True when the player is actively engaged in melee against a live target within melee
+        /// repeat range — i.e. the client's sticky auto-face/follow is what's driving movement.
+        /// Sticky melee produces short, legitimate speed/position spikes (the client snaps the
+        /// character to face the target, and on hills the 3-D step distance inflates past the
+        /// horizontal run budget) that read like speed violations.  Used to waive the per-packet
+        /// speed rubber-band while chasing.
+        ///
+        /// This is server-authoritative and bounded, so it can't be used as a speed-hack bypass:
+        /// AttackTarget is only set during an active attack sequence (cleared by OnAttackDone), the
+        /// target must be a living creature within RepeatDistance (beyond which melee breaks anyway),
+        /// and the geometry (wall-walk) and 15-second average-speed checks still run regardless.
+        /// </summary>
+        public bool IsMeleeStickyChasing()
+        {
+            if (CombatMode != CombatMode.Melee)
+                return false;
+            if (AttackTarget is not Creature target || !target.IsAlive)
+                return false;
+            return GetCylinderDistance(target) <= RepeatDistance;
+        }
+
         public void HandleActionTargetedMeleeAttack_Inner(Creature target, int attackSequence)
         {
             var dist = GetCylinderDistance(target);
