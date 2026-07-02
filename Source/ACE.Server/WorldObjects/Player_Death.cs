@@ -126,17 +126,52 @@ namespace ACE.Server.WorldObjects
         }
 
         /// <summary>
-        /// Per-victim kill tracking for sliding-window diminishing returns.
+        /// Per-victim-character kill tracking for sliding-window diminishing returns.
+        /// Lives on the killer character; keyed by victim character GUID.
         /// Ephemeral — not persisted across server restarts.
         /// </summary>
-        private readonly Dictionary<uint, VictimKillRecord> _pkKillRecords = new Dictionary<uint, VictimKillRecord>();
+        private readonly Dictionary<ulong, VictimKillRecord> _pkKillRecords = new Dictionary<ulong, VictimKillRecord>();
 
         /// <summary>
-        /// Returns false when this kill against victimGuid should grant full rewards.
-        /// Returns true when diminishing returns apply (no XP, no quest/season credit).
-        /// Side-effects: advances the window state and may set DiminishedUntil.
+        /// Per-account kill tracking shared across every character on both the killer's and the
+        /// victim's accounts, so neither side can dodge diminishing returns by rotating alts.
+        /// Keyed by (killerAccountId, victimAccountId). Static + locked; ephemeral.
         /// </summary>
-        private bool CheckPkKillDiminished(uint victimGuid)
+        private static readonly Dictionary<ulong, VictimKillRecord> _pkKillRecordsByAccount = new Dictionary<ulong, VictimKillRecord>();
+        private static readonly object _pkKillRecordsByAccountLock = new object();
+
+        /// <summary>
+        /// Returns false when this kill should grant full rewards.
+        /// Returns true when diminishing returns apply (no XP, no quest/season credit).
+        /// Diminishing is evaluated per victim character AND per account pair; if either sliding
+        /// window is over threshold the kill is diminished.
+        /// Side-effects: advances both window states and may set DiminishedUntil.
+        /// </summary>
+        private bool CheckPkKillDiminished(Player victim)
+        {
+            // Per-character window on this killer character.
+            bool charDiminished = AdvanceKillWindow(_pkKillRecords, victim.Guid.Full);
+
+            // Per-account window across all characters of both accounts. Evaluated independently
+            // (not short-circuited) so both windows always advance for this kill.
+            bool acctDiminished = false;
+            var killerAccountId = Account?.AccountId;
+            var victimAccountId = victim.Account?.AccountId;
+            if (killerAccountId.HasValue && victimAccountId.HasValue)
+            {
+                var key = ((ulong)killerAccountId.Value << 32) | victimAccountId.Value;
+                lock (_pkKillRecordsByAccountLock)
+                    acctDiminished = AdvanceKillWindow(_pkKillRecordsByAccount, key);
+            }
+
+            return charDiminished || acctDiminished;
+        }
+
+        /// <summary>
+        /// Advances a sliding-window kill record for the given key and returns whether this kill
+        /// falls under diminishing returns. Shared by the per-character and per-account stores.
+        /// </summary>
+        private static bool AdvanceKillWindow(Dictionary<ulong, VictimKillRecord> records, ulong key)
         {
             var windowHours     = PropertyManager.GetDouble("pk_kill_window_hours").Item;
             var threshold       = (int)PropertyManager.GetDouble("pk_kill_diminish_threshold").Item;
@@ -144,13 +179,13 @@ namespace ACE.Server.WorldObjects
             var now             = DateTime.UtcNow;
             var windowStart     = now.AddHours(-windowHours);
 
-            if (!_pkKillRecords.TryGetValue(victimGuid, out var rec))
+            if (!records.TryGetValue(key, out var rec))
                 rec = new VictimKillRecord { WindowKills = new List<DateTime>() };
 
             // If currently suppressed, deny reward
             if (rec.DiminishedUntil.HasValue && now < rec.DiminishedUntil.Value)
             {
-                _pkKillRecords[victimGuid] = rec;
+                records[key] = rec;
                 return true;
             }
 
@@ -169,7 +204,7 @@ namespace ACE.Server.WorldObjects
             }
 
             rec.WindowKills.Add(now);
-            _pkKillRecords[victimGuid] = rec;
+            records[key] = rec;
             return isDiminished;
         }
 
@@ -186,9 +221,10 @@ namespace ACE.Server.WorldObjects
             {
                 pkPlayer.PkTimestamp = Time.GetUnixTime();
 
-                // Ancient Bottle drain: victim loses 1–20% (random) of stored bottle XP per bottle, killer gains it as PvP XP
+                // Ancient Bottle drain: victim loses 1–20% (random) of stored bottle XP per bottle, killer gains it as PvP XP.
+                // Same-allegiance kills are excluded so allegiance-mates can't launder bottle XP between characters.
                 var victimBottles = GetInventoryItemsOfWCID(490071);
-                if (victimBottles != null && victimBottles.Count > 0)
+                if (!pkPlayer.IsSameAllegiance(this) && victimBottles != null && victimBottles.Count > 0)
                 {
                     long totalDrained = 0;
                     foreach (var bottleItem in victimBottles)
@@ -215,7 +251,7 @@ namespace ACE.Server.WorldObjects
                 if (!pkPlayer.IsSameAllegiance(this))
                 {
                     var victimGuidFull  = Guid.Full;
-                    var isDiminished    = pkPlayer.CheckPkKillDiminished(victimGuidFull);
+                    var isDiminished    = pkPlayer.CheckPkKillDiminished(this);
                     pkPlayer._lastKillWasDiminished[victimGuidFull] = isDiminished;
 
                     if (!isDiminished)
@@ -286,7 +322,9 @@ namespace ACE.Server.WorldObjects
 
                 if (Common.ConfigManager.Config.Server.WorldRuleset != Common.Ruleset.CustomDM)
                 {
-                    pkPlayer.PlayerKillsPk++;
+                    // Same-allegiance kills do not count toward the PK leaderboard.
+                    if (!pkPlayer.IsSameAllegiance(this))
+                        pkPlayer.PlayerKillsPk++;
 
                     if ((Location.Cell & 0xFFFF) < 0x100)
                         globalPKDe += $" The kill occured at {Location.GetMapCoordStr()}";
@@ -383,9 +421,13 @@ namespace ACE.Server.WorldObjects
                 // Kill streak tracking and bounty completion
                 if (Common.ConfigManager.Config.Server.WorldRuleset != Common.Ruleset.CustomDM)
                 {
-                    // Increment killer's streak; reset victim's streak
-                    pkPlayer.PlayerKillStreak++;
-                    PlayerKillStreak = 0;
+                    // Increment killer's streak; reset victim's streak. Same-allegiance kills are
+                    // excluded so allegiance-mates can't inflate a streak or reset each other's.
+                    if (!pkPlayer.IsSameAllegiance(this))
+                    {
+                        pkPlayer.PlayerKillStreak++;
+                        PlayerKillStreak = 0;
+                    }
 
                     // Notify all online hunters who have an active contract on this player
                     var victimGuid  = Guid.Full;
@@ -541,7 +583,9 @@ namespace ACE.Server.WorldObjects
                         killerPlayer._lastKillWasDiminished.Remove(Guid.Full);
                     }
 
-                    if (!killIsDiminished)
+                    // Same-allegiance kills do not count toward season ranking or streaks.
+                    bool sameAllegiance = killerPlayer != null && killerPlayer.IsSameAllegiance(this);
+                    if (!killIsDiminished && !sameAllegiance)
                     {
                         SeasonManager.RecordPkKill((uint)topDamager.Guid.Full, killerPlayer?.Name ?? topDamager.Name);
                         SeasonManager.RecordPkDeath((uint)Character.Id, Name);
