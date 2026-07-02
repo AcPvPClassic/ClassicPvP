@@ -686,12 +686,7 @@ namespace ACE.Server.Entity
                         {
                             case "1v1":
                             case "2v2":
-                                if (player.Level > 0 && player.Level < 50)
-                                    player.GrantLevelProportionalXp(5, 0, 0, XpType.PvP);
-                                else if (player.Level >= 50 && player.Level < 150)
-                                    player.GrantLevelProportionalXp(0.5, 0, 0, XpType.PvP);
-                                else if (player.Level >= 150)
-                                    player.GrantLevelProportionalXp(0.35, 0, 0, XpType.PvP);
+                                player.GrantLevelProportionalXp(0.2, 0, 0, XpType.PvP);
 
                                 if (player.MaximumLuminance != null)
                                     player.GrantLuminance(30000, XpType.PvP, ShareType.None);
@@ -738,12 +733,7 @@ namespace ACE.Server.Entity
 
                             case "ffa":
                             case "tugak":
-                                if (player.Level > 0 && player.Level < 50)
-                                    player.GrantLevelProportionalXp(10, 0, 0, XpType.PvP);
-                                else if (player.Level >= 50 && player.Level < 150)
-                                    player.GrantLevelProportionalXp(2, 0, 0, XpType.PvP);
-                                else if (player.Level >= 150)
-                                    player.GrantLevelProportionalXp(1, 0, 0, XpType.PvP);
+                                player.GrantLevelProportionalXp(0.35, 0, 0, XpType.PvP);
 
                                 if (player.MaximumLuminance != null)
                                     player.GrantLuminance(80000, XpType.PvP, ShareType.None);
@@ -778,12 +768,8 @@ namespace ACE.Server.Entity
 
                             case "group":
                                 var rewardMultiplier = winner.FinishPlace == 1 && !sameClanFight ? 3 : 1;
-                                if (player.Level > 0 && player.Level < 50)
-                                    player.GrantLevelProportionalXp(1 * rewardMultiplier, 0, 0, XpType.PvP);
-                                else if (player.Level >= 50 && player.Level < 150)
-                                    player.GrantLevelProportionalXp(0.25 * rewardMultiplier, 0, 0, XpType.PvP);
-                                else if (player.Level >= 150)
-                                    player.GrantLevelProportionalXp(0.15 * rewardMultiplier, 0, 0, XpType.PvP);
+                                var groupWinXp = winner.FinishPlace == 1 && !sameClanFight ? 0.6 : 0.3;
+                                player.GrantLevelProportionalXp(groupWinXp, 0, 0, XpType.PvP);
 
                                 if (player.MaximumLuminance != null)
                                     player.GrantLuminance(20000 * rewardMultiplier, XpType.PvP, ShareType.None);
@@ -900,7 +886,7 @@ namespace ACE.Server.Entity
                         {
                             case "1v1":
                             case "2v2":
-                                player.GrantLevelProportionalXp(0.1, 0, 0, XpType.PvP);
+                                player.GrantLevelProportionalXp(0.05, 0, 0, XpType.PvP);
 
                                 if (player.MaximumLuminance != null)
                                     player.GrantLuminance(5000, XpType.PvP, ShareType.None);
@@ -929,12 +915,7 @@ namespace ACE.Server.Entity
                             case "tugak":
                                 if (loser.FinishPlace == 2)
                                 {
-                                    if (player.Level > 0 && player.Level < 50)
-                                        player.GrantLevelProportionalXp(5, 0, 0, XpType.PvP);
-                                    else if (player.Level >= 50 && player.Level < 150)
-                                        player.GrantLevelProportionalXp(1, 0, 0, XpType.PvP);
-                                    else if (player.Level >= 150)
-                                        player.GrantLevelProportionalXp(0.5, 0, 0, XpType.PvP);
+                                    player.GrantLevelProportionalXp(0.25, 0, 0, XpType.PvP);
 
                                     if (player.MaximumLuminance != null)
                                         player.GrantLuminance(12000, XpType.PvP, ShareType.None);
@@ -965,12 +946,7 @@ namespace ACE.Server.Entity
                                 }
                                 else if (loser.FinishPlace == 3)
                                 {
-                                    if (player.Level > 0 && player.Level < 50)
-                                        player.GrantLevelProportionalXp(1, 0, 0, XpType.PvP);
-                                    else if (player.Level >= 50 && player.Level < 150)
-                                        player.GrantLevelProportionalXp(0.5, 0, 0, XpType.PvP);
-                                    else if (player.Level >= 150)
-                                        player.GrantLevelProportionalXp(0.25, 0, 0, XpType.PvP);
+                                    player.GrantLevelProportionalXp(0.15, 0, 0, XpType.PvP);
 
                                     if (player.MaximumLuminance != null)
                                         player.GrantLuminance(8000, XpType.PvP, ShareType.None);
@@ -1001,12 +977,7 @@ namespace ACE.Server.Entity
                                 }
                                 else
                                 {
-                                    if (player.Level > 0 && player.Level < 50)
-                                        player.GrantLevelProportionalXp(0.5, 0, 0, XpType.PvP);
-                                    else if (player.Level >= 50 && player.Level < 150)
-                                        player.GrantLevelProportionalXp(0.25, 0, 0, XpType.PvP);
-                                    else if (player.Level >= 150)
-                                        player.GrantLevelProportionalXp(0.1, 0, 0, XpType.PvP);
+                                    player.GrantLevelProportionalXp(0.05, 0, 0, XpType.PvP);
 
                                     if (player.MaximumLuminance != null)
                                         player.GrantLuminance(5000, XpType.PvP, ShareType.None);
@@ -1025,12 +996,7 @@ namespace ACE.Server.Entity
                                 break;
 
                             case "group":
-                                if (player.Level > 0 && player.Level < 50)
-                                    player.GrantLevelProportionalXp(0.5, 0, 0, XpType.PvP);
-                                else if (player.Level >= 50 && player.Level < 150)
-                                    player.GrantLevelProportionalXp(0.15, 0, 0, XpType.PvP);
-                                else if (player.Level >= 150)
-                                    player.GrantLevelProportionalXp(0.1, 0, 0, XpType.PvP);
+                                player.GrantLevelProportionalXp(0.1, 0, 0, XpType.PvP);
 
                                 if (player.MaximumLuminance != null)
                                     player.GrantLuminance(20000, XpType.PvP, ShareType.None);
@@ -1250,12 +1216,7 @@ namespace ACE.Server.Entity
 
                     if (shouldReward)
                     {
-                        if (player.Level > 0 && player.Level < 50)
-                            player.GrantLevelProportionalXp(0.035, 1, long.MaxValue, XpType.PvP);
-                        else if (player.Level >= 50 && player.Level < 150)
-                            player.GrantLevelProportionalXp(0.025, 1, long.MaxValue, XpType.PvP);
-                        else if (player.Level >= 150)
-                            player.GrantLevelProportionalXp(0.01, 1, long.MaxValue, XpType.PvP);
+                        player.GrantLevelProportionalXp(0.15, 1, long.MaxValue, XpType.PvP);
 
                         if (new Random().NextDouble() > 0.75)
                         {
