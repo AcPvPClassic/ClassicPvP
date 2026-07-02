@@ -10,6 +10,10 @@ namespace ACE.Server.Entity
         /// </summary>
         public static bool IsAllegianceWhitelisted(this IPlayer player)
         {
+            // When the whitelist is globally disabled, treat everyone as whitelisted.
+            if (PropertyManager.GetBool("disable_allegiance_whitelist").Item)
+                return true;
+
             var allegiance = AllegianceManager.GetAllegiance(player);
             return allegiance?.MonarchId.HasValue == true &&
                    WhitelistedAllegiances.IsAllowedAllegiance((int)allegiance.MonarchId!.Value);
