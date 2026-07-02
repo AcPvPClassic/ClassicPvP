@@ -424,7 +424,14 @@ namespace ACE.Server.Managers
                 worldTickTimer.Restart();
 
                 ServerPerformanceMonitor.RestartEvent(ServerPerformanceMonitor.MonitorType.PlayerManager_Tick);
-                PlayerManager.Tick();
+                try
+                {
+                    PlayerManager.Tick();
+                }
+                catch (Exception ex)
+                {
+                    log.Error($"[TICK_EXCEPTION] Exception executing PlayerManager.Tick(). ex: {ex}");
+                }
                 ServerPerformanceMonitor.RegisterEventEnd(ServerPerformanceMonitor.MonitorType.PlayerManager_Tick);
 
                 ServerPerformanceMonitor.RestartEvent(ServerPerformanceMonitor.MonitorType.NetworkManager_InboundClientMessageQueueRun);
@@ -445,7 +452,15 @@ namespace ACE.Server.Managers
                 ServerPerformanceMonitor.RegisterEventEnd(ServerPerformanceMonitor.MonitorType.UpdateGameWorld);
 
                 ServerPerformanceMonitor.RestartEvent(ServerPerformanceMonitor.MonitorType.NetworkManager_DoSessionWork);
-                int sessionCount = NetworkManager.DoSessionWork();
+                int sessionCount = 0;
+                try
+                {
+                    sessionCount = NetworkManager.DoSessionWork();
+                }
+                catch (Exception ex)
+                {
+                    log.Error($"[TICK_EXCEPTION] Exception executing NetworkManager.DoSessionWork(). ex: {ex}");
+                }
                 ServerPerformanceMonitor.RegisterEventEnd(ServerPerformanceMonitor.MonitorType.NetworkManager_DoSessionWork);
 
                 ServerPerformanceMonitor.Tick();
@@ -476,11 +491,32 @@ namespace ACE.Server.Managers
             ServerPerformanceMonitor.RestartCumulativeEvents();
             ServerPerformanceMonitor.RestartEvent(ServerPerformanceMonitor.MonitorType.UpdateGameWorld_Entire);
 
-            LandblockManager.Tick(Timers.PortalYearTicks);
+            try
+            {
+                LandblockManager.Tick(Timers.PortalYearTicks);
+            }
+            catch (Exception ex)
+            {
+                log.Error($"[TICK_EXCEPTION] Exception executing LandblockManager.Tick(). ex: {ex}");
+            }
 
-            HouseManager.Tick();
+            try
+            {
+                HouseManager.Tick();
+            }
+            catch (Exception ex)
+            {
+                log.Error($"[TICK_EXCEPTION] Exception executing HouseManager.Tick(). ex: {ex}");
+            }
 
-            EventManager.Tick();
+            try
+            {
+                EventManager.Tick();
+            }
+            catch (Exception ex)
+            {
+                log.Error($"[TICK_EXCEPTION] Exception executing EventManager.Tick(). ex: {ex}");
+            }
 
             //Arena logic
             try

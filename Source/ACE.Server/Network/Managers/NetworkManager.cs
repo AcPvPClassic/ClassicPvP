@@ -356,7 +356,19 @@ namespace ACE.Server.Network.Managers
             {
                 // The session tick outbound processes pending actions and handles outgoing messages
                 ServerPerformanceMonitor.RestartEvent(ServerPerformanceMonitor.MonitorType.DoSessionWork_TickOutbound);
-                Parallel.ForEach(sessionMap, ConfigManager.Config.Server.Threading.NetworkManagerParallelOptions, s => s?.TickOutbound());
+                Parallel.ForEach(sessionMap, ConfigManager.Config.Server.Threading.NetworkManagerParallelOptions, s =>
+                {
+                    try
+                    {
+                        s?.TickOutbound();
+                    }
+                    catch (Exception ex)
+                    {
+                        // One session's outbound processing throwing must not surface as an AggregateException that
+                        // takes down DoSessionWork (and the world thread). Skip this session's outbound work this frame.
+                        log.Error($"[TICK_EXCEPTION] TickOutbound aborted for session 0x{s?.Network?.ClientId:X4} account: {s?.AccountId}:{s?.Account}, player: {s?.Player?.Name}. ex: {ex}");
+                    }
+                });
                 ServerPerformanceMonitor.RegisterEventEnd(ServerPerformanceMonitor.MonitorType.DoSessionWork_TickOutbound);
 
                 // Removes sessions in the NetworkTimeout state, including sessions that have reached a timeout limit.

@@ -46,10 +46,19 @@ namespace ACE.Server.Entity.Actions
 
                 foreach (var action in toAct)
                 {
-                    Tuple<IActor, IAction> next = action.Act();
+                    try
+                    {
+                        Tuple<IActor, IAction> next = action.Act();
 
-                    if (next != null)
-                        next.Item1.EnqueueAction(next.Item2);
+                        if (next != null)
+                            next.Item1.EnqueueAction(next.Item2);
+                    }
+                    catch (Exception ex)
+                    {
+                        // A single delayed action must never take down the world thread.
+                        // Log it and continue processing the rest of the due actions.
+                        log.Error($"[TICK_EXCEPTION] DelayManager action aborted.", ex);
+                    }
                 }
             }
         }

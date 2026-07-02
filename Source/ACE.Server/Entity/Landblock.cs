@@ -101,6 +101,13 @@ namespace ACE.Server.Entity
         private DateTime lastHeartBeat = DateTime.MinValue;
 
         /// <summary>
+        /// When a per-object tick (Monster_Tick, GeneratorUpdate, GeneratorRegeneration, Heartbeat) throws, we push the
+        /// object's next scheduled tick out by this many seconds. This keeps the object in the world while guaranteeing
+        /// forward progress through the sorted tick lists, so a repeatably-throwing object can't spin the tick in-frame.
+        /// </summary>
+        private const double tickExceptionRetryInterval = 5.0;
+
+        /// <summary>
         /// Landblock items will be saved to the database every 5 minutes
         /// </summary>
         private static readonly TimeSpan databaseSaveInterval = TimeSpan.FromMinutes(5);
@@ -1068,11 +1075,20 @@ namespace ACE.Server.Entity
 
             foreach (WorldObject wo in worldObjects.Values)
             {
-                // set to TRUE if object changes landblock
-                var landblockUpdate = wo.UpdateObjectPhysics();
+                try
+                {
+                    // set to TRUE if object changes landblock
+                    var landblockUpdate = wo.UpdateObjectPhysics();
 
-                if (landblockUpdate)
-                    movedObjects.Add(wo);
+                    if (landblockUpdate)
+                        movedObjects.Add(wo);
+                }
+                catch (Exception ex)
+                {
+                    // One misbehaving object must not crash the physics tick for the entire landblock (group/thread).
+                    // Skip this object's physics update for this frame; leave the object in the world.
+                    log.Error($"[TICK_EXCEPTION] UpdateObjectPhysics aborted for {wo.Guid}:{wo.Name} in landblock {Id}. ex: {ex}");
+                }
             }
 
             Monitor5m.Pause();
@@ -1120,7 +1136,19 @@ namespace ACE.Server.Entity
                     if (first.NextMonsterTickTime <= currentUnixTime)
                     {
                         sortedCreaturesByNextTick.RemoveFirst();
-                        first.Monster_Tick(currentUnixTime);
+                        try
+                        {
+                            first.Monster_Tick(currentUnixTime);
+                        }
+                        catch (Exception ex)
+                        {
+                            // One misbehaving creature must not crash the world tick. Skip its AI update this frame.
+                            log.Error($"[TICK_EXCEPTION] Monster_Tick aborted for {first.Guid}:{first.Name} in landblock {Id}. ex: {ex}");
+
+                            // Ensure its next tick is in the future so it isn't re-processed this same frame (which would infinite-loop).
+                            if (first.NextMonsterTickTime <= currentUnixTime)
+                                first.NextMonsterTickTime = currentUnixTime + tickExceptionRetryInterval;
+                        }
                         sortedCreaturesByNextTick.AddLast(first); // All creatures tick at a fixed interval
                     }
                     else
@@ -1140,7 +1168,19 @@ namespace ACE.Server.Entity
                 if (first.NextGeneratorUpdateTime <= currentUnixTime)
                 {
                     sortedGeneratorsByNextGeneratorUpdate.RemoveFirst();
-                    first.GeneratorUpdate(currentUnixTime);
+                    try
+                    {
+                        first.GeneratorUpdate(currentUnixTime);
+                    }
+                    catch (Exception ex)
+                    {
+                        // One misbehaving generator must not crash the world tick. Skip its update this frame.
+                        log.Error($"[TICK_EXCEPTION] GeneratorUpdate aborted for {first.Guid}:{first.Name} in landblock {Id}. ex: {ex}");
+
+                        // Ensure its next update is in the future so it isn't re-processed this same frame (which would infinite-loop).
+                        if (first.NextGeneratorUpdateTime <= currentUnixTime)
+                            first.NextGeneratorUpdateTime = currentUnixTime + tickExceptionRetryInterval;
+                    }
                     //InsertWorldObjectIntoSortedGeneratorUpdateList(first);
                     sortedGeneratorsByNextGeneratorUpdate.AddLast(first);
                 }
@@ -1162,7 +1202,20 @@ namespace ACE.Server.Entity
                 if (first.NextGeneratorRegenerationTime <= currentUnixTime)
                 {
                     sortedGeneratorsByNextRegeneration.RemoveFirst();
-                    first.GeneratorRegeneration(currentUnixTime);
+                    try
+                    {
+                        first.GeneratorRegeneration(currentUnixTime);
+                    }
+                    catch (Exception ex)
+                    {
+                        // One misbehaving generator must not crash the world tick. Skip its regeneration this frame.
+                        log.Error($"[TICK_EXCEPTION] GeneratorRegeneration aborted for {first.Guid}:{first.Name} in landblock {Id}. ex: {ex}");
+
+                        // Push the next regeneration into the future before re-inserting, otherwise it re-sorts to the
+                        // front of the list and gets re-processed this same frame (which would infinite-loop).
+                        if (first.NextGeneratorRegenerationTime <= currentUnixTime)
+                            first.NextGeneratorRegenerationTime = currentUnixTime + tickExceptionRetryInterval;
+                    }
                     InsertWorldObjectIntoSortedGeneratorRegenerationList(first); // Generators can have regnerations at different intervals
                 }
                 else
@@ -1185,8 +1238,16 @@ namespace ACE.Server.Entity
                 {
                     foreach (var wo in worldObjects.Values)
                     {
-                        if (wo.IsDecayable())
-                            wo.Decay(thisHeartBeat - lastHeartBeat);
+                        try
+                        {
+                            if (wo.IsDecayable())
+                                wo.Decay(thisHeartBeat - lastHeartBeat);
+                        }
+                        catch (Exception ex)
+                        {
+                            // One misbehaving object must not crash the landblock heartbeat. Skip its decay this frame.
+                            log.Error($"[TICK_EXCEPTION] Decay aborted for {wo.Guid}:{wo.Name} in landblock {Id}. ex: {ex}");
+                        }
                     }
                 }
 
@@ -1219,7 +1280,15 @@ namespace ACE.Server.Entity
             if (IsAllegianceHometownLandblock && lastAhPhase1Tick + ahPhase1TickInterval <= DateTime.UtcNow)
             {
                 lastAhPhase1Tick = DateTime.UtcNow;
-                HandleAllegianceHometownPhase1Tick();
+                try
+                {
+                    HandleAllegianceHometownPhase1Tick();
+                }
+                catch (Exception ex)
+                {
+                    // Custom ClassicPvP capture logic runs on landblock-group worker threads; a bug here must not crash the tick.
+                    log.Error($"[TICK_EXCEPTION] HandleAllegianceHometownPhase1Tick aborted for landblock {Id}. ex: {ex}");
+                }
             }
 
             // Database Save
@@ -1261,7 +1330,18 @@ namespace ACE.Server.Entity
 
             stopwatch.Restart();
             foreach (var player in players)
-                player.Player_Tick(currentUnixTime);
+            {
+                try
+                {
+                    player.Player_Tick(currentUnixTime);
+                }
+                catch (Exception ex)
+                {
+                    // One player's tick throwing must not crash the world thread or skip every other player on this landblock.
+                    // Short-circuit this player's tick for this frame and leave them in the world.
+                    log.Error($"[TICK_EXCEPTION] Player_Tick aborted for {player.Guid}:{player.Name} in landblock {Id}. ex: {ex}");
+                }
+            }
             ServerPerformanceMonitor.AddToCumulativeEvent(ServerPerformanceMonitor.CumulativeEventHistoryType.Landblock_Tick_Player_Tick, stopwatch.Elapsed.TotalSeconds);
 
             stopwatch.Restart();
@@ -1273,7 +1353,20 @@ namespace ACE.Server.Entity
                 if (first.NextHeartbeatTime <= currentUnixTime)
                 {
                     sortedWorldObjectsByNextHeartbeat.RemoveFirst();
-                    first.Heartbeat(currentUnixTime);
+                    try
+                    {
+                        first.Heartbeat(currentUnixTime);
+                    }
+                    catch (Exception ex)
+                    {
+                        // One misbehaving object must not crash the world tick. Skip its heartbeat this frame.
+                        log.Error($"[TICK_EXCEPTION] Heartbeat aborted for {first.Guid}:{first.Name} in landblock {Id}. ex: {ex}");
+
+                        // Push the next heartbeat into the future before re-inserting, otherwise it re-sorts to the
+                        // front of the list and gets re-processed this same frame (which would infinite-loop).
+                        if (first.NextHeartbeatTime <= currentUnixTime)
+                            first.NextHeartbeatTime = currentUnixTime + tickExceptionRetryInterval;
+                    }
                     InsertWorldObjectIntoSortedHeartbeatList(first); // WorldObjects can have heartbeats at different intervals
                 }
                 else
