@@ -9,7 +9,7 @@ This guide walks you through setting up your Asheron's Call client and DATs to c
 | Field | Value |
 |-------|-------|
 | **URL** | doctide.online |
-| **Port** | 9002 |
+| **Port** | 9000 |
 | **Name** | Classic PvP |
 | **Type** | ACE |
 

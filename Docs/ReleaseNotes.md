@@ -9,7 +9,7 @@
 | Field | Value |
 |-------|-------|
 | **URL** | doctide.online |
-| **Port** | 9002 |
+| **Port** | 9000 |
 | **Name** | Classic PvP |
 | **Type** | ACE |
 
