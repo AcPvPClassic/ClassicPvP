@@ -47,11 +47,43 @@ Each IP address may only be associated with one account. Accounts accumulate eve
 | Property | Type | Default | Description |
 |---|---|---|---|
 | `enforce_account_ip_binding` | bool | `true` | Master on/off for the IP binding system |
-| `ip_binding_ip_whitelist` | string | `""` | Comma-separated list of IPs exempt from all binding enforcement (e.g. `192.168.1.1,10.0.0.5`). Accounts logging in from a whitelisted IP bypass the conflict check entirely. Use for LAN setups or trusted staff locations where multiple accounts sharing an IP is expected. |
+| `ip_binding_ip_whitelist` | string | `""` | Comma-separated list of IPs exempt from all binding enforcement (e.g. `192.168.1.1,10.0.0.5`). Accounts logging in from a whitelisted IP bypass the conflict check entirely — **unlimited** accounts. Use for LAN setups or trusted staff locations. |
+| `ip_binding_ip_allowance` | string | `""` | Comma-separated `ip:count` overrides that allow a **capped** number of accounts on an IP (e.g. `203.0.113.42:2`). IPs not listed use the default of 1. Prefer this over the whitelist for households (father/son) where you want exactly N, not unlimited. |
+
+### Whitelist vs. Allowance — which to use
+
+Both let more than one account share an IP, but they differ in the critical way:
+
+| | `ip_binding_ip_whitelist` | `ip_binding_ip_allowance` |
+|---|---|---|
+| Accounts per IP | **Unlimited** | **Hard cap** (the `:count` you set) |
+| Use for | LAN / staff / café where any number is fine | A specific household that should get *exactly* N |
+| Risk | Opens the door to unlimited accounts on that IP | Third account on the IP is rejected automatically |
+
+For the "father and son, same house" case, use the **allowance** — set the household's IP to `:2`. A third account attempting to bind that IP is rejected at login, so a truthful two-player household is served without opening the floodgates to unlimited alts.
+
+### Setting an allowance
+
+Use the dedicated command (recommended — avoids CSV formatting mistakes):
+
+```
+/setipallowance 203.0.113.42 2      — allow up to 2 accounts on this IP
+/setipallowance 203.0.113.42 1      — remove the override (back to default 1)
+```
+
+Or edit the property directly:
+
+```
+/modifystring ip_binding_ip_allowance 203.0.113.42:2, 198.51.100.7:2
+```
+
+Both take effect immediately — no restart required.
+
+> **Note on existing bindings:** the allowance is checked when a *new* account first binds an IP. Accounts already bound to an IP are unaffected. Lowering an allowance below the number of accounts already on an IP does not evict them — use `/clearipbinding` to remove a specific account's binding.
 
 ### IP Whitelist
 
-To allow multiple accounts from a shared IP (e.g. a home LAN, internet café, or staff office):
+To allow **unlimited** accounts from a shared IP (e.g. a large LAN, internet café, or staff office):
 
 ```
 /modifystring ip_binding_ip_whitelist 192.168.1.100,203.0.113.42
@@ -69,8 +101,9 @@ Changes take effect immediately — no restart required.
 
 | Command | Description |
 |---|---|
-| `/checkipbinding <account>` | Lists all known IPs for the account and recent IP change history |
+| `/checkipbinding <account>` | Lists all known IPs for the account, how many accounts share each IP, its allowance, and recent IP change history |
 | `/clearipbinding <account>` | Removes all IP bindings for the account. Player's next login creates a fresh binding. Use when an account is legitimately moving to a new household. |
+| `/setipallowance <ip> <count>` | Sets how many distinct accounts may bind to `<ip>`. `count` ≤ 1 removes the override (back to default 1). Edits `ip_binding_ip_allowance`. |
 
 ### Database Tables (`ace_auth`)
 
@@ -685,8 +718,9 @@ Changes take effect on the next cast — already-active enchantments are not ret
 
 | Command | Summary |
 |---|---|
-| `/checkipbinding <account>` | Show IP binding and change history |
+| `/checkipbinding <account>` | Show IP binding, shared-account counts, allowances, and change history |
 | `/clearipbinding <account>` | Remove IP binding and reset monthly counter |
+| `/setipallowance <ip> <count>` | Set how many accounts may bind to an IP (default 1) |
 
 ### Season
 

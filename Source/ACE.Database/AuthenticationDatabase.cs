@@ -179,6 +179,19 @@ namespace ACE.Database
                 return context.AccountIpBinding.AsNoTracking().FirstOrDefault(r => r.IpAddress == ip);
         }
 
+        /// <summary>
+        /// Returns every binding row for the given IP address. Since an IP may now be shared by more
+        /// than one account (up to the configured allowance), use this to count distinct accounts on an IP.
+        /// </summary>
+        public List<AccountIpBinding> GetIpBindingsByIp(string ip)
+        {
+            using (var context = new AuthDbContext())
+                return context.AccountIpBinding.AsNoTracking()
+                    .Where(r => r.IpAddress == ip)
+                    .OrderBy(r => r.BoundAt)
+                    .ToList();
+        }
+
         /// <summary>Adds an IP address to an account's known-IP set.</summary>
         public void CreateIpBinding(uint accountId, string ip, string boundBy = "login")
         {
