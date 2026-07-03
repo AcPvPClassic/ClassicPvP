@@ -780,7 +780,8 @@ namespace ACE.Server.WorldObjects
                     {
                         GenerateTreasure(killer, corpse);
 
-                        if (ThreadSafeRandom.Next(0.0f, 1.0f) < hotDungeon.BoxDropChance)
+                        var boxDropMultiplier = (float)PropertyManager.GetDouble("hot_dungeon_box_drop_multiplier").Item;
+                        if (ThreadSafeRandom.Next(0.0f, 1.0f) < hotDungeon.BoxDropChance * boxDropMultiplier)
                         {
                             var box = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.ABox);
                             if (box != null)
