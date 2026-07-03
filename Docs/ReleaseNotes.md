@@ -889,3 +889,25 @@ When you flag a Tinker, the character is instantly transformed:
 - 👑 **No allegiance passup.** A Tinker does not pass XP up the allegiance chain to its patron.
 
 The intent is simple: a Tinker is a maxed-out crafting workstation in character form. Flag one, park it in your allegiance, and let it handle all your tinkering, salvaging, and item work.
+
+---
+
+## 🩹 Patch — July 3, 2026
+
+### 👑 Allegiance Swearing — Monarch Fix
+
+Fixed a bug that prevented certain monarchs from swearing allegiance. If you became a monarch because another character on your account swore to you with the `OfflineSwear` command — but you had never sworn allegiance to anyone yourself — the game would incorrectly block you from swearing into another allegiance, claiming another character on your account was sworn elsewhere.
+
+These monarchs can now swear allegiance normally. When a monarch swears in, their entire allegiance (including the account characters beneath them) follows along to the new monarch, so the one-allegiance-per-account rule is still honored. No character changes are needed — the fix applies to everyone automatically.
+
+### 🐗 Hot Dungeon Box Drops Reduced
+
+Box drop rates from Hot Dungeon kills have been **reduced by roughly 75%**. Boxes were dropping more often than intended, so every Hot Dungeon's per-kill box chance has been scaled down while keeping the relative balance between dungeons intact (denser dungeons still drop fewer boxes per kill than sparse ones).
+
+This affects only the random per-kill box drops. The guaranteed box awarded for a PK kill inside a Hot Dungeon is unchanged.
+
+### 🏟️ Arena Matchmaking — Low-Level Fix
+
+Fixed a bug that prevented low-level players from ever being matched into arena events. The level-range calculation used to pair players of similar levels miscalculated for anyone below level 20, producing an impossibly high minimum level that no opponent could satisfy.
+
+As a result, a queue full of low-level players would never start a match no matter how many were waiting. Matchmaking now correctly pairs low-level players, and no character changes are needed — the fix applies automatically.

@@ -285,7 +285,9 @@ namespace ACE.Server.Managers
                 else if (firstArenaPlayer.CharacterLevel < 80)
                 {
                     maxMatchLevel = firstArenaPlayer.CharacterLevel + 20;
-                    minMatchLevel = Math.Max(firstArenaPlayer.CharacterLevel - 20, 1);
+                    // CharacterLevel is unsigned; do the subtraction in signed space so the
+                    // Math.Max(..., 1) floor holds for players below level 20 instead of underflowing.
+                    minMatchLevel = (uint)Math.Max((int)firstArenaPlayer.CharacterLevel - 20, 1);
                 }
 
                 var otherPlayers = queuedPlayers.Values?
