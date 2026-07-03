@@ -508,6 +508,12 @@ namespace ACE.Server.WorldObjects
                 var siblingMonarchId = sibling.MonarchId;
                 if (!siblingMonarchId.HasValue) continue;
 
+                // Skip siblings that belong to this player's own allegiance (their monarch is this
+                // player). If this player is a monarch swearing into another allegiance,
+                // HandleMonarchSwear cascades the entire sub-tree — including these account siblings —
+                // to the new monarch, so they will share the same monarch once the swear completes.
+                if (siblingMonarchId.Value == Guid.Full) continue;
+
                 if (siblingMonarchId.Value != targetMonarchId)
                 {
                     Session.Network.EnqueueSend(new GameMessageSystemChat(
