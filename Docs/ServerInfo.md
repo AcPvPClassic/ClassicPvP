@@ -1,8 +1,6 @@
-# 📜 ClassicPvP — Release Notes
+# 🗺️ ClassicPvP — Server Info & Mechanics Guide
 
-> **This is a historical changelog.** Everything below is the **Launch Edition (July 3, 2026)** and is final — existing sections are not edited after release. New patches are **appended to the end** under their own dated headers, capturing the history of changes.
->
-> For the current state of every mechanic (kept continuously up to date), see **[ServerInfo.md](ServerInfo.md)**.
+> This is the **living reference** for how ClassicPvP works right now. It is kept current as mechanics change — older behavior is replaced in place rather than dated. For the history of changes over time, see **[ReleaseNotes.md](ReleaseNotes.md)**.
 
 ---
 
@@ -70,6 +68,8 @@ ClassicPvP enforces a **strict one-account-per-player** policy, backed by the se
 Common legitimate causes for an IP conflict: a household member plays on the same internet connection, you're connecting from a location another player has used (library, café, friend's house), or a VPN exit node was previously used by another player. Admins can review the binding history and resolve conflicts.
 
 The intent is simple: no multi-boxing, no alt-army farming, no market manipulation through alts. Everyone plays on a level field.
+
+> **For admins:** see **Section 1** of the Admin Guide for the `enforce_account_ip_binding` property, the IP whitelist, and the `/checkipbinding` and `/clearipbinding` commands.
 
 ---
 
@@ -375,7 +375,7 @@ Jumping rapidly in succession triggers accelerated stamina drain. After exceedin
 
 ClassicPvP runs a number of anti-cheat and anti-abuse systems beyond standard emulator defaults.
 
-- **IP Binding** — as described above, accounts accumulate IP addresses over time. A login from an IP already registered to a *different* account is rejected automatically.
+- **IP Binding** — accounts accumulate IP addresses over time. A login from an IP already registered to a *different* account is rejected automatically (see **Account Restrictions** above).
 - **Comprehensive Server Logging** — the server runs a dedicated logging database that records:
   - All tinkering attempts (success and failure)
   - All PK kill events
@@ -573,13 +573,11 @@ Each dungeon in the pool has a **level bracket** (minimum and maximum server lev
 | **A Box** | Each monster kill has a per-dungeon configurable chance to drop **A Box** on the corpse. |
 | **PK Rewards** | When a PK kill occurs inside a Hot Dungeon between players of **different allegiances**, the victim's corpse will contain a **Phial of Bloody Tears** and **A Box**. |
 
-*This document will be updated as new systems and content are added. Stay tuned.*
-
 ---
 
 ## 🏘️ Allegiance Hometown Capture
 
-Allegiances can now conquer and hold **towns across Dereth** through a two-phase PvP assault system. The old single-hometown bindstone has been replaced entirely.
+Allegiances can conquer and hold **towns across Dereth** through a two-phase PvP assault system.
 
 ### Owning Towns
 
@@ -708,7 +706,7 @@ Killing the same player more than **3 times within a 1-hour window** suppresses 
 | Player Wield Requirement Morph Gem | 500 | Removes the wield restriction binding an item to a specific player. |
 | Level Requirement Removal Morph Gem | 750 | Removes the level requirement from armor or jewelry (cannot be used on weapons). |
 
-> **Impenetrability Morph Gem** — no longer sold by either vendor. Obtainable only from **Mythic Mystery Boxes**.
+> **Impenetrability Morph Gem** — not sold by either vendor. Obtainable only from **Mythic Mystery Boxes**.
 
 ---
 
@@ -819,35 +817,9 @@ All salvage bags are full WS10 bags (100 units).
 
 ---
 
-## 🔒 One-Account-Per-IP Enforcement
-
-ClassicPvP now enforces that each IP address can only be associated with one account, helping prevent account sharing while staying fair to players with dynamic IPs or VPN hiccups.
-
-### How It Works
-
-Every time you log in, your IP is recorded against your account. If you log in from a new IP — because your ISP changed it, you switched networks, or anything else — that IP is simply added to your account's list and login proceeds normally. There is no penalty for IP changes.
-
-What **is** blocked: if an IP you're connecting from is already registered to a **different** account, your login will be rejected with a message to contact an admin. This is the core protection against account sharing.
-
-### If You're Blocked
-
-If you receive a message saying your IP is registered to another account, contact an administrator. Common legitimate causes:
-
-- A household member plays on the same internet connection
-- You're connecting from a location (library, café, friend's house) that another player has also used
-- A VPN exit node was previously used by another player
-
-Admins can review the binding history and whitelist your IP or clear conflicting bindings as appropriate.
-
-### For Admins
-
-See **Section 1** of the Admin Guide for full details on the `enforce_account_ip_binding` property, the IP whitelist, and the `/checkipbinding` and `/clearipbinding` commands.
-
----
-
 ## 🐗 Tusker Tusk & Olthoi Pincer Turn-In Timers
 
-The repeat timer on the Tusker Tusk and Olthoi Pincer turn-in quests has been shortened from **21 days** to **20 hours**. You can now farm and turn in these tusks and pincers far more frequently instead of waiting weeks between rewards.
+The repeat timer on the Tusker Tusk and Olthoi Pincer turn-in quests is **20 hours**, so you can farm and turn in tusks and pincers frequently rather than waiting weeks between rewards.
 
 This covers all 14 Tusker Tusk turn-ins and all 8 Olthoi Pincer turn-ins (Harvester, Gardener, Soldier, Legionary, Eviscerator, Worker, Warrior, and Mutilator pincers turned in to Behdo Yii).
 
@@ -855,7 +827,7 @@ This covers all 14 Tusker Tusk turn-ins and all 8 Olthoi Pincer turn-ins (Harves
 
 ## 🔧 Tinker Characters — `/FlagTinker`
 
-You can now dedicate a character to be a **pure crafting specialist** using the `/FlagTinker` command. A Tinker is a support/crafting alt with every tinkering and crafting skill maxed out — perfect for salvaging, imbuing, and tinkering gear for yourself and your allegiance without having to level a combat character first.
+You can dedicate a character to be a **pure crafting specialist** using the `/FlagTinker` command. A Tinker is a support/crafting alt with every tinkering and crafting skill maxed out — perfect for salvaging, imbuing, and tinkering gear for yourself and your allegiance without having to level a combat character first.
 
 ### How to Flag a Tinker
 
