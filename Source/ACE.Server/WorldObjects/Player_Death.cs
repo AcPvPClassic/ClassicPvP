@@ -246,7 +246,7 @@ namespace ACE.Server.WorldObjects
                     }
                 }
 
-                // PvP XP on kill — 1–4% of XP-to-next-level, with level-gap diminishing returns
+                // PvP XP on kill — 5–10% of XP-to-next-level, with level-gap diminishing returns
                 // Guards: different allegiance, repeat-kill cooldown
                 if (!pkPlayer.IsSameAllegiance(this))
                 {
@@ -262,7 +262,7 @@ namespace ACE.Server.WorldObjects
                         var decay       = PropertyManager.GetDouble("pk_xp_level_diff_decay").Item;
                         var modifier    = Math.Pow(decay, levelDiff);
 
-                        var randPercent = ThreadSafeRandom.Next(0.10f, 0.20f);
+                        var randPercent = ThreadSafeRandom.Next(0.05f, 0.10f);
                         var baseXp      = (long)pkPlayer.GetXPBetweenLevels(killerLevel, killerLevel + 1);
                         var pvpXp       = (long)Math.Round(baseXp * randPercent * modifier);
 
