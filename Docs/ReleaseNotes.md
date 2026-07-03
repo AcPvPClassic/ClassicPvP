@@ -175,7 +175,7 @@ Allegiance XP works as it did in the Infiltration era. When your vassals earn XP
 
 A few things to know:
 - Passup XP counts against your **Monster bucket** (same pool as creature kills). If you're actively grinding and also receiving heavy passup from your vassals, both compete for that budget.
-- When passup XP is delivered to you, it **does not generate further passup** to your own patron up the chain.
+- Passup cascades **automatically up the chain** the moment the XP is originally earned — your patron receives a share, their patron a smaller share, and so on up the tree (see the chain mechanics below). What does **not** happen is a *second* cascade when you personally collect your held passup: the lump sum delivered to you on login is not treated as freshly-earned XP, so receiving it does not generate new passup up your own chain.
 - The amount of passup you can get at a time without spending it is 4.2 billion xp. If you accumulate that much and don't spend any you will start losing new earnings. 
 
 ### XP Chain Mechanics (Loyalty & Leadership)
@@ -282,13 +282,13 @@ Arenas run under specific combat restrictions that do not apply in the open worl
 
 ### Arena Rewards (Winners)
 
-| Type | XP | PK Trophies | Phials of Bloody Tears | Arena Keys |
+| Type | XP | PK Trophies | Phials of Bloody Tears | Darkbeat Keys |
 |------|-----|-------------|----------------------|------------|
 | **1v1** | Level-proportional | 5 | 1 | 1 |
 | **2v2** | Level-proportional | 5 | 1 | 1 |
 | **FFA** | Level-proportional (2×) | 5 | 3 | 5 |
 | **Tugak** | Level-proportional (2×) | 5 | 3 | 5 |
-| **Group** | — | 5 per member | 1 per member | — |
+| **Group** | — | 5 per member | 1 per member | 2 per member |
 
 - Arena XP counts against your **PvP daily bucket**.
 - Eliminated players should stay online until the match ends to be eligible for rewards.
@@ -709,6 +709,12 @@ Killing the same player more than **3 times within a 1-hour window** suppresses 
 | Level Requirement Removal Morph Gem | 750 | Removes the level requirement from armor or jewelry (cannot be used on weapons). |
 
 > **Impenetrability Morph Gem** — no longer sold by either vendor. Obtainable only from **Mythic Mystery Boxes**.
+
+---
+
+### Custom Character Titles — `/buytitle`
+
+Spend PK Trophies to give your character a **custom title**. Use `/BuyTitle <New Title>` in game — the title is applied to your character immediately and costs **200 PK Trophies** per purchase. New titles are screened against the server's taboo word filter, so disallowed words are rejected.
 
 ---
 
