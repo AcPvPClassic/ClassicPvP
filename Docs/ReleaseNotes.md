@@ -646,7 +646,7 @@ When you kill an enemy PK in the open world (different allegiance, no diminishin
 
 **Base XP:**
 ```
-Base XP = 10–20% of your XP-to-next-level (random roll per kill)
+Base XP = 5–10% of your XP-to-next-level (random roll per kill)
 ```
 The random roll is re-rolled on every kill, so repeated kills against the same target vary slightly each time.
 
