@@ -434,6 +434,14 @@ namespace ACE.Server.WorldObjects
 
         public bool VerifySpellTarget(Spell spell, WorldObject target)
         {
+            // Tinker-flagged characters may not cast spells on other players
+            if (IsTinker && target is Player && target != this)
+            {
+                Session.Network.EnqueueSend(new GameEventCommunicationTransientString(Session, "As a Tinker, you cannot cast spells on other players."));
+                SendSpellCastingDoneEvent(WeenieError.None);
+                return false;
+            }
+
             if (target.StackSize > 1)
             {
                 Session.Network.EnqueueSend(new GameEventCommunicationTransientString(Session, $"Cannot cast spell on a stack of items."));
@@ -994,9 +1002,17 @@ namespace ACE.Server.WorldObjects
                     }
                     else
                     {
-                        var fellows = GetFellowshipTargets();
-                        foreach (var fellow in fellows)
-                            CreatePlayerSpell(fellow, spell, isWeaponSpell);
+                        // Tinker-flagged characters may not affect other players, even via fellowship spells
+                        if (IsTinker)
+                        {
+                            CreatePlayerSpell(this, spell, isWeaponSpell);
+                        }
+                        else
+                        {
+                            var fellows = GetFellowshipTargets();
+                            foreach (var fellow in fellows)
+                                CreatePlayerSpell(fellow, spell, isWeaponSpell);
+                        }
                     }
 
                     // handle self procs

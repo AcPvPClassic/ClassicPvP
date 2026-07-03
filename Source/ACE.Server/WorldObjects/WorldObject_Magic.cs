@@ -219,6 +219,10 @@ namespace ACE.Server.WorldObjects
             //Console.WriteLine($"{target.Name}.ResistSpell({Name}, {spell.Name}): magicSkill: {magicSkill}, difficulty: {difficulty}");
             bool resisted = MagicDefenseCheck(magicSkill, difficulty, out float resistChance, resistChanceMod, targetPlayer != null ? (float)targetPlayer.CachedMagicDefenseCapBonus : 5.0f);
 
+            // Tinker-flagged characters can never resist spells (lifestone protection below still applies)
+            if (targetPlayer != null && targetPlayer.IsTinker)
+                resisted = false;
+
             if (targetPlayer != null)
             {
                 if (targetPlayer.UnderLifestoneProtection)

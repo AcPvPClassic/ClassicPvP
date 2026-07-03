@@ -593,6 +593,13 @@ namespace ACE.Server.WorldObjects
                 criticalHit = true;
             }
 
+            // Tinker-flagged characters always take critical spell damage when hit
+            if (targetPlayer != null && targetPlayer.IsTinker)
+            {
+                criticalChance = 1.0f;
+                criticalHit = true;
+            }
+
             var absorbMod = GetAbsorbMod(this, target);
 
             //http://acpedia.org/wiki/Announcements_-_2014/01_-_Forces_of_Nature - Aegis is 72% effective in PvP

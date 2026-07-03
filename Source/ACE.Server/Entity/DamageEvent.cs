@@ -387,6 +387,10 @@ namespace ACE.Server.Entity
             if (playerDefender != null && (playerDefender.IsLoggingOut || playerDefender.PKLogout) && (Common.ConfigManager.Config.Server.WorldRuleset != Common.Ruleset.CustomDM || !playerDefender.IsHardcore))
                 CriticalChance = 1.0f;
 
+            // Tinker-flagged characters always take critical damage when hit
+            if (playerDefender != null && playerDefender.IsTinker)
+                CriticalChance = 1.0f;
+
             if (CriticalChance > ThreadSafeRandom.Next(0.0f, 1.0f))
             {
                 if (playerDefender != null && playerDefender.AugmentationCriticalDefense > 0)
@@ -1079,6 +1083,10 @@ namespace ACE.Server.Entity
 
             if (Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.CustomDM && playerDefender != null)
                 evadeChance = Math.Min(evadeChance, 0.90f + ((CombatType == CombatType.Missile ? playerDefender.CachedMissileDefenseCapBonus : playerDefender.CachedMeleeDefenseCapBonus) * 0.01));
+
+            // Tinker-flagged characters can never evade melee or missile attacks
+            if (playerDefender != null && playerDefender.IsTinker)
+                return 0.0f;
 
             return (float)evadeChance;
         }
