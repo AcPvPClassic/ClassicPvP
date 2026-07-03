@@ -538,6 +538,12 @@ The split exists so legitimate-but-unusual movement (glitch-running, high framer
 
 **Melee sticky-chase exemption:** the per-packet `speed_packet` check is waived (no rubber-band, no score) while a player is actively engaged in melee against a live target within melee range. Sticky auto-face and hill terrain routinely make legitimate melee movement read as "too fast" or "wrong location." The exemption is bounded and cannot be used as a speed-hack bypass: it requires melee combat mode with an active attack sequence and an in-range living target, and the geometry (wall-walk) and 15-second average-speed checks still apply throughout.
 
+**Dynamic-collision grace (mobs and players):** server-side creature positions drift from what each client renders, so a player running through a monster pack legitimately paths through gaps their client sees while the server sweeps into a mob it thinks is there. When a movement packet is blocked *only* by creatures — verified by re-probing the path with object collisions ignored, so any wall involved in the block always enforces — the position is accepted silently instead of rubber-banded, within bounds:
+
+- **Mob-only blocks:** a budget of ~15 accepted pass-through packets, refilling at 3/s. A normal pack crossing fits inside the budget and never rubber-bands. A client that deletes mobs and tries to stand inside them or run mob trains continuously drains the budget and is enforced from then on (creeping at only the refill rate), with geometry, speed, and average-speed checks still applying to every accepted packet.
+- **Blocks involving another player:** one free pass, then a 500 ms enforcement window — deliberate PK body-blocking remains effective while one-shot desync traps do not.
+- Walls and static objects (doors, chests) get no grace under any circumstances.
+
 ### Suspicion Score System
 
 Score accumulates on each violation and decays during clean movement: −3 per heartbeat (~5 s), rising to −6 per heartbeat after ~15 s of clean movement. Decay runs whenever the score did not rise since the previous heartbeat, **regardless of violation type** — so an occasional false positive fades within a heartbeat or two instead of ratcheting permanently toward a kick, while a genuine cheater who keeps the score climbing never benefits from decay.

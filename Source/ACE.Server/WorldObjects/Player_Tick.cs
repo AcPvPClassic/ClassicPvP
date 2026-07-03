@@ -1429,8 +1429,13 @@ namespace ACE.Server.WorldObjects
                         // within the last 5 seconds. This catches the brief window where a mob spawns
                         // inside or immediately adjacent to a player who can then walk through it.
                         // LastTransitionHitNewCreature is set in update_object_server_new().
+                        // Skipped when the packet was accepted via the dynamic-collision grace: a pack
+                        // being crossed often contains a freshly-respawned mob, and double-punishing a
+                        // deliberately grace-accepted move would undo the grace.  Sustained pass-through
+                        // abuse is bounded by the grace budget itself.
                         if (PropertyManager.GetBool("enforce_player_spawn_collision").Item
                             && PhysicsObj.LastTransitionHitNewCreature
+                            && !PhysicsObj.LastTransitionCreatureGraceUsed
                             && GodState == null)
                         {
                             MovementSuspicionScore += 4.0f; // lower weight — may be a legitimate spawn overlap

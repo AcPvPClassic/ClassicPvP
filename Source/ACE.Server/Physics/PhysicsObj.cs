@@ -88,19 +88,38 @@ namespace ACE.Server.Physics
 
         /// <summary>
         /// Set by <see cref="update_object_server_new"/> after each call.
-        /// True when the transition was blocked exclusively by one or more other <see cref="Player"/>
-        /// objects and nothing else (no geometry, no closed door, no non-player creature).
+        /// True when the most recent position packet was accepted through the dynamic-collision
+        /// grace (blocked only by creatures/players, with the ethereal probe confirming no wall
+        /// involvement) rather than by a clean transition.  Player_Tick uses this to suppress
+        /// the spawn-ghost score for grace-accepted packets.
         /// </summary>
-        public bool LastTransitionBlockedByPlayerOnly;
+        public bool LastTransitionCreatureGraceUsed;
 
         /// <summary>
-        /// Unix timestamp after which the next player-only collision block is enforced.
-        /// Set to <c>now + 0.5s</c> each time a player-only block is silently accepted
-        /// (the free-pass window).  Within the window, subsequent player-only blocks are
-        /// enforced normally so a stationary body-blocker still stops the moving player.
-        /// Resets naturally when real time advances past the stored value.
+        /// Unix timestamp after which the next player-involved collision block is enforced.
+        /// Set to <c>now + 0.5s</c> each time a block involving another Player is silently
+        /// accepted (the free-pass window).  Within the window, subsequent player-involved
+        /// blocks are enforced normally so a deliberate body-blocker still stops the moving
+        /// player.  Resets naturally when real time advances past the stored value.
         /// </summary>
         public double PlayerCollisionCooldownUntil;
+
+        /// <summary>
+        /// Pass-through packets consumed from the mob-collision grace budget
+        /// (see <see cref="update_object_server_new"/>).  Refills at
+        /// <see cref="CreatureGraceRefillPerSec"/>; accepts while below
+        /// <see cref="CreatureGraceMaxSpent"/>.
+        /// </summary>
+        public float CreatureBlockGraceSpent;
+
+        /// <summary>Timestamp of the last mob-collision grace budget refill computation.</summary>
+        public double LastCreatureGraceDecayTime;
+
+        /// <summary>Max mob pass-through packets accepted in a burst before enforcement.</summary>
+        private const float CreatureGraceMaxSpent = 15.0f;
+
+        /// <summary>Mob-collision grace budget refill rate, in packets per second.</summary>
+        private const float CreatureGraceRefillPerSec = 3.0f;
 
         public double UpdateTime;
         public Vector3 Velocity;
@@ -4339,6 +4358,35 @@ namespace ACE.Server.Physics
         }
 
         /// <summary>
+        /// Re-runs the measurement transition with this object temporarily ethereal, so dynamic
+        /// objects (creatures, players) are ignored while environment cells and static objects
+        /// still block (see <see cref="FindObjCollisions"/> — an ethereal mover passes through
+        /// non-static objects only).  Returns true when the requested position is reachable that
+        /// way, i.e. the original block was caused purely by dynamic objects and no wall/terrain
+        /// was involved.  Guards the dynamic-collision grace in
+        /// <see cref="update_object_server_new"/> against being used as a wall bypass: a
+        /// transition that fails at a wall while merely brushing a creature must never be
+        /// grace-accepted.
+        /// </summary>
+        private bool TransitionClearsEnvironment()
+        {
+            var savedState = State;
+            State |= PhysicsState.Ethereal;
+            try
+            {
+                var probe = transition(Position, RequestPos, false);
+                if (probe == null)
+                    return false;
+
+                return probe.SpherePath.CurPos.Distance(probe.SpherePath.EndPos) < 0.01f;
+            }
+            finally
+            {
+                State = savedState;
+            }
+        }
+
+        /// <summary>
         /// This is for full / updated movement system
         /// </summary>
         public bool update_object_server_new(bool forcePos = true)
@@ -4449,21 +4497,26 @@ namespace ACE.Server.Physics
                         && !_blockedByDynamicObjects;
 
                     // Anti-cheat (Options K & N): scan the collision list for specific object types.
-                    // Also determines whether every dynamic blocker is a Player (player-desync bypass).
-                    LastTransitionHitClosedDoor       = false;
-                    LastTransitionHitNewCreature      = false;
-                    LastTransitionBlockedByPlayerOnly = false;
+                    // Also classifies the blockers for the dynamic-collision grace below:
+                    //   • _allBlockersAreCreatures — every blocker is a Creature (players included);
+                    //     no door, static object, or unclassifiable entry in the list.
+                    //   • _anyPlayerBlocker — at least one blocker is another Player.
+                    LastTransitionHitClosedDoor     = false;
+                    LastTransitionHitNewCreature    = false;
+                    LastTransitionCreatureGraceUsed = false;
+                    var _allBlockersAreCreatures = false;
+                    var _anyPlayerBlocker        = false;
                     if (fullTransition != null && !valid)
                     {
-                        // Assume all-players until proven otherwise; a non-empty list is required.
-                        var allBlockersArePlayers = fullTransition.CollisionInfo.CollideObject.Count > 0;
+                        // Assume all-creatures until proven otherwise; a non-empty list is required.
+                        _allBlockersAreCreatures = fullTransition.CollisionInfo.CollideObject.Count > 0;
                         var utcNow = DateTime.UtcNow;
                         foreach (var colObj in fullTransition.CollisionInfo.CollideObject)
                         {
                             var wo = colObj?.WeenieObj?.WorldObject;
                             if (wo == null)
                             {
-                                allBlockersArePlayers = false; // unclassifiable — conservative
+                                _allBlockersAreCreatures = false; // unclassifiable — conservative
                                 continue;
                             }
 
@@ -4472,20 +4525,16 @@ namespace ACE.Server.Physics
                                 LastTransitionHitClosedDoor = true;
 
                             // Option K: creature that spawned within the last 5 seconds (ghost window).
-                            // Note: Player : Creature, so this also fires for a recently-logged-in player;
-                            // allBlockersArePlayers remains true in that case (checked separately below).
+                            // Note: Player : Creature, so this also fires for a recently-logged-in player.
                             if (wo is Creature creature && !creature.IsDead
                                 && (utcNow - creature.SpawnTimestamp).TotalSeconds < 5.0)
                                 LastTransitionHitNewCreature = true;
 
-                            // Any non-Player object (door, creature, unknown) disqualifies the bypass.
-                            if (!(wo is Player))
-                                allBlockersArePlayers = false;
-
-                            if (LastTransitionHitClosedDoor && LastTransitionHitNewCreature)
-                                break; // both flags set; allBlockersArePlayers already false at this point
+                            if (wo is Player)
+                                _anyPlayerBlocker = true;
+                            else if (!(wo is Creature))
+                                _allBlockersAreCreatures = false; // door/static/unknown object in the path
                         }
-                        LastTransitionBlockedByPlayerOnly = allBlockersArePlayers;
                     }
 
                     if (valid || forcePos || player?.GodState != null)
@@ -4503,29 +4552,57 @@ namespace ACE.Server.Physics
                     }
                     else if (dist > 0.1)
                     {
-                        if (LastTransitionBlockedByPlayerOnly)
+                        // --- Dynamic-collision grace ---
+                        // Server-side creature/player positions drift from what each client renders,
+                        // so a client can legitimately path through a gap it sees while the server
+                        // sweeps into a mob or player it thinks is there.  When the block was caused
+                        // purely by dynamic creatures — verified by TransitionClearsEnvironment() so
+                        // a wall involved in the same failed transition can never be bypassed —
+                        // accept the position within tight bounds instead of rubber-banding.
+                        var graceAccepted = false;
+                        if (_allBlockersAreCreatures && TransitionClearsEnvironment())
                         {
                             var now = PhysicsTimer.CurrentTime;
-                            if (now >= PlayerCollisionCooldownUntil)
+                            if (_anyPlayerBlocker)
                             {
-                                // First player-only block (or cooldown has expired): accept the position
-                                // and arm a 500 ms enforcement window.  Desync events are almost always
-                                // one-shot — the blocking player's server position resolves before the
-                                // cooldown fires — so no rubber-band is ever sent.  A deliberate
-                                // body-blocker keeps the player in their collision sphere past the
-                                // window, and the very next packet in the enforcement window is blocked.
-                                set_current_pos(RequestPos);
-                                PlayerCollisionCooldownUntil = now + 0.5;
+                                // Another player is (part of) the block.  Deliberate PK body-blocking
+                                // is a legitimate mechanic, so stay tight: one free pass, then a
+                                // 500 ms enforcement window.  Transient desync resolves within the
+                                // window; a real body-blocker keeps blocking.
+                                if (now >= PlayerCollisionCooldownUntil)
+                                {
+                                    PlayerCollisionCooldownUntil = now + 0.5;
+                                    graceAccepted = true;
+                                }
                             }
                             else
                             {
-                                // Within the enforcement window: block is persistent (not transient
-                                // desync), so treat it like any other collision — rubber-band the mover.
-                                WeenieObj.WorldObject.Location = new ACE.Entity.Position(Position.ObjCellID, Position.Frame.Origin, Position.Frame.Orientation);
-                                WeenieObj.WorldObject.Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
-                                WeenieObj.WorldObject.SendUpdatePosition();
-                                success = false;
+                                // Mob-only block (e.g. running through a monster pack).  Leaky-bucket
+                                // budget: accept silently while fewer than CreatureGraceMaxSpent
+                                // passes are outstanding; spent passes refill at
+                                // CreatureGraceRefillPerSec.  A legitimate pack crossing (~1-2 s of
+                                // intermittent blocks) fits inside the budget and never rubber-bands.
+                                // A client that deletes mobs and tries to live inside them drains the
+                                // budget and is enforced from then on, creeping at only the refill
+                                // rate — and the geometry, speed, and average-speed checks still
+                                // apply to every accepted packet.
+                                var elapsed = now - LastCreatureGraceDecayTime;
+                                if (LastCreatureGraceDecayTime > 0 && elapsed > 0)
+                                    CreatureBlockGraceSpent = Math.Max(0.0f, CreatureBlockGraceSpent - (float)(elapsed * CreatureGraceRefillPerSec));
+                                LastCreatureGraceDecayTime = now;
+
+                                if (CreatureBlockGraceSpent < CreatureGraceMaxSpent)
+                                {
+                                    CreatureBlockGraceSpent += 1.0f;
+                                    graceAccepted = true;
+                                }
                             }
+                        }
+
+                        if (graceAccepted)
+                        {
+                            set_current_pos(RequestPos);
+                            LastTransitionCreatureGraceUsed = true;
                         }
                         else
                         {
