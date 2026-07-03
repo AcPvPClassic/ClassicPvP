@@ -286,7 +286,15 @@ namespace ACE.Server.WorldObjects
                     SendNpcResponse(npc,
                         "Unable to parse your Writ of Pursuit. Please inscribe it with the player's name and reward amount in this format: <Name>:<Amount>.");
                     SendNpcResponse(npc,
-                        $"The reward amount must be between 1 and {wopCurrencyWeenie.GetMaxStackSize()}.");
+                        $"The reward amount must be between {BountyContract.BountyWopMinimumAmount} and {wopCurrencyWeenie.GetMaxStackSize()}.");
+                    return NpcTransactionResult.Return;
+                }
+
+                var minimumReward = BountyContract.BountyWopMinimumAmount;
+                if (rewardAmount < minimumReward)
+                {
+                    SendNpcResponse(npc,
+                        $"The minimum bounty amount has not been met. You must inscribe a reward of at least {wopCurrencyWeenie.BuildAmountString(minimumReward)}.");
                     return NpcTransactionResult.Return;
                 }
 

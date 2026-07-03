@@ -30,6 +30,7 @@ namespace ACE.Server.WorldObjects
 
         public static uint BountyWopCurrencyWcid       => (uint)PropertyManager.GetLong("bounty_wop_currency_wcid").Item;
         public static Weenie BountyWopCurrencyWeenie   => DatabaseManager.World.GetOrThrowCachedWeenie(BountyWopCurrencyWcid);
+        public static int BountyWopMinimumAmount       => (int)PropertyManager.GetLong("bounty_wop_minimum_amount").Item;
 
         public static uint BountyLocationCurrencyWcid      => (uint)PropertyManager.GetLong("bounty_location_currency_wcid").Item;
         public static Weenie BountyLocationCurrencyWeenie  => DatabaseManager.World.GetOrThrowCachedWeenie(BountyLocationCurrencyWcid);
