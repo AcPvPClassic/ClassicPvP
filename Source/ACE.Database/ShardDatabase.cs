@@ -489,8 +489,8 @@ namespace ACE.Database
             using (var context = new ShardDbContext())
             {
                 // Attach a stub entity so EF issues DELETE without a prior SELECT.
-                // If the row does not exist, SaveChanges returns 0 rows affected without throwing
-                // (no concurrency token on Biota), matching the previous "not found → return true" behaviour.
+                // NOTE: a tracked delete that affects 0 rows raises DbUpdateConcurrencyException (this happens
+                // for a missing row even though Biota has no concurrency token), which is handled below as success.
                 var stub = new Biota { Id = id };
                 context.Biota.Attach(stub);
                 context.Entry(stub).State = EntityState.Deleted;
@@ -505,6 +505,15 @@ namespace ACE.Database
                     if (firstException != null)
                         log.DebugFormat("[DATABASE] RemoveBiota 0x{0:X8} retry succeeded after initial exception of: {1}", id, firstException.GetFullMessage());
 
+                    return true;
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    // The biota row did not exist, so the tracked DELETE affected 0 rows and EF raised a
+                    // concurrency exception (this check fires regardless of concurrency tokens). For a delete,
+                    // "already absent" is the desired outcome, so treat it as success. This restores the
+                    // pre-optimization SELECT-first "not found -> return true" behaviour and avoids spurious
+                    // failures when removing ephemeral biotas that were never persisted.
                     return true;
                 }
                 catch (Exception ex)
