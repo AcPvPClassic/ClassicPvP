@@ -2883,7 +2883,8 @@ namespace ACE.Server.Command.Handlers
 
             var sb = new StringBuilder();
             sb.AppendLine("------- Season Status -------");
-            sb.AppendLine($"  Day:         {day}");
+            // Display is 1-based: opening day is "Day 1" even though GetCurrentSeasonDay is 0-based.
+            sb.AppendLine($"  Day:         {day + 1}");
 
             if (levelCap > 126)
                 sb.AppendLine($"  Level Cap:   {levelCap}  (XP-equivalent; in-game level caps at 126)");

@@ -176,7 +176,9 @@ namespace ACE.Server.Managers
             var xpMod = PropertyManager.GetDouble("xp_modifier").Item;
 
             var sb = new StringBuilder();
-            sb.AppendLine($"📅 **Season Day {day} of {RollingLevelCapManager.SeasonEndDay}**  ·  Week {_currentWeekNumber}  ·  {daysRemaining} days remaining");
+            // Display is 1-based (opening day is "Day 1"); the raw `day` above stays
+            // 0-based for XP-cap phase math and daysRemaining.
+            sb.AppendLine($"📅 **Season Day {day + 1} of {RollingLevelCapManager.SeasonEndDay + 1}**  ·  Week {_currentWeekNumber}  ·  {daysRemaining} days remaining");
             sb.AppendLine();
             sb.AppendLine("**XP Cap**");
             sb.AppendLine($"  Current:   {capNow}");
