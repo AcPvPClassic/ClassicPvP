@@ -4560,7 +4560,19 @@ namespace ACE.Server.Physics
                         // a wall involved in the same failed transition can never be bypassed —
                         // accept the position within tight bounds instead of rubber-banding.
                         var graceAccepted = false;
-                        if (_allBlockersAreCreatures && TransitionClearsEnvironment())
+                        if (_allBlockersAreCreatures && LScape.get_landcell(RequestPos.ObjCellID) == null)
+                        {
+                            // A grace accept force-sets the client's claimed position via
+                            // set_current_pos.  If the claimed cell cannot be resolved (landblock not
+                            // loaded yet / bogus cell id), set_current_pos would change_cell_server(null),
+                            // nulling CurCell and zeroing Position.ObjCellID — corrupting cell and
+                            // visibility tracking ("handle_visible_obj: CurCell null" spam,
+                            // invisible-attacker fixups) until a later clean move repairs it.  An
+                            // unresolvable claimed cell is also exactly the case where enforcement is
+                            // wanted, so fall through to the rubber-band instead.
+                            log.Warn($"{Name} - dynamic-collision grace denied: unresolvable request cell 0x{RequestPos.ObjCellID:X8}");
+                        }
+                        else if (_allBlockersAreCreatures && TransitionClearsEnvironment())
                         {
                             var now = PhysicsTimer.CurrentTime;
                             if (_anyPlayerBlocker)
