@@ -459,6 +459,10 @@ namespace ACE.Server.WorldObjects
             if (source == null || target == null || target.IsDead || target.Invincible || target.IsOnNoDamageLandblock)
                 return null;
 
+            // Tinker-flagged characters cannot damage monsters (non-player targets)
+            if (sourcePlayer != null && sourcePlayer.IsTinker && targetPlayer == null)
+                return null;
+
             // check lifestone protection
             if (targetPlayer != null && targetPlayer.UnderLifestoneProtection)
             {

@@ -214,6 +214,10 @@ namespace ACE.Server.Entity
             if (defender.Invincible || defender.IsDead || defender.IsOnNoDamageLandblock)
                 return 0.0f;
 
+            // Tinker-flagged characters cannot damage monsters (non-player targets)
+            if (playerAttacker != null && playerAttacker.IsTinker && playerDefender == null)
+                return 0.0f;
+
             // Bindstone proxy (Phase 2) — only PK players may deal damage; pets and NPKs deal zero
             if (defender is WorldObjects.BindstoneCreatureProxy)
             {
