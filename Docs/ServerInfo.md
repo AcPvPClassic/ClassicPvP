@@ -277,6 +277,8 @@ Use the `/arena` command to interact with the queue.
 
 Arenas run under specific combat restrictions that do not apply in the open world.
 
+- **No damage before the match starts.** After you're teleported into the arena there is a short countdown before the match officially begins. During this window you can cast beneficial spells (buffs, vulns, and other preparation) but cannot deal any damage — melee, missile, magic, or damage-over-time. Damage only begins landing once the match starts.
+- **Overtime healing restrictions.** If a match runs long enough to reach overtime, chugging food and potions is disabled and all other healing — heal-over-time spells, life-magic heals, and stamina-to-health transfers — is heavily reduced, weakening further as overtime continues. This forces stalled matches to a decisive finish.
 - **Ineptitude spells are suppressed.** Creature enchantment debuffs (inepts) and all item enchantment spells are blocked in arena matches. Only the three defense-lowering spell categories are permitted — Magic Defense Lowering, Melee Defense Lowering, and Missile Defense Lowering. This prevents NPC pets, item procs, or other external debuff sources from influencing match outcomes.
 - **Healing kit bonuses are capped in 1v1 matches.** The skill bonus from a healing kit is capped at 150 effective bonus skill, and the restoration multiplier is capped at 1.5×. High-end healing kits still function — they just can't fully carry a fight in the structured 1v1 format.
 

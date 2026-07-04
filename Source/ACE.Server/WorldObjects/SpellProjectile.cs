@@ -456,6 +456,15 @@ namespace ACE.Server.WorldObjects
             if (sourcePlayer != null && sourcePlayer.IsArenaObserver)
                 return null;
 
+            //Arenas - If this is an arena landblock
+            //don't allow any dmg except while the event is in a started status (Status == 4)
+            if (targetPlayer != null && ArenaLocation.IsArenaLandblock(targetPlayer.Location.Landblock))
+            {
+                var arenaEvent = ArenaManager.GetArenaEventByLandblock(targetPlayer.Location.Landblock);
+                if (arenaEvent == null || arenaEvent.Status != 4)
+                    return null;
+            }
+
             if (source == null || target == null || target.IsDead || target.Invincible || target.IsOnNoDamageLandblock)
                 return null;
 
@@ -859,6 +868,23 @@ namespace ACE.Server.WorldObjects
                         {
                             finalDamage = finalDamage * (float)PropertyManager.GetDouble("arena_1v1_global_dmg_mod").Item;
                         }
+                    }
+                }
+            }
+
+            //Arenas - If this is an arena landblock, track dmg dealt and received
+            if (targetPlayer != null && ArenaLocation.IsArenaLandblock(targetPlayer.Location.Landblock))
+            {
+                var arenaEvent = ArenaManager.GetArenaEventByLandblock(targetPlayer.Location.Landblock);
+                if (arenaEvent != null && arenaEvent.Status == 4 && sourcePlayer != null)
+                {
+                    var attackerArenaPlayer = arenaEvent.Players.FirstOrDefault(x => x.CharacterId == sourcePlayer.Character.Id);
+                    var defenderArenaPlayer = arenaEvent.Players.FirstOrDefault(x => x.CharacterId == targetPlayer.Character.Id);
+
+                    if (attackerArenaPlayer != null && defenderArenaPlayer != null)
+                    {
+                        attackerArenaPlayer.TotalDmgDealt += (uint)Math.Round(finalDamage);
+                        defenderArenaPlayer.TotalDmgReceived += (uint)Math.Round(finalDamage);
                     }
                 }
             }

@@ -773,6 +773,14 @@ namespace ACE.Server.WorldObjects
                     srcVital = "stamina";
                     break;
                 default:   // Health
+                    //Arena overtime reduces heal amounts
+                    var targetP = targetCreature as Player;
+                    if (targetP != null && ArenaLocation.IsArenaLandblock(targetP.Location.Landblock))
+                    {
+                        var arenaEvent = ArenaManager.GetArenaEventByLandblock(targetP.Location.Landblock);
+                        if (arenaEvent != null && arenaEvent.IsOvertime)
+                            tryBoost = (int)Math.Round(tryBoost * arenaEvent.OvertimeHealingModifier);
+                    }
                     boost = targetCreature.UpdateVitalDelta(targetCreature.Health, tryBoost);
                     srcVital = "health";
 
@@ -1076,6 +1084,19 @@ namespace ACE.Server.WorldObjects
 
             var targetPlayer = targetCreature as Player;
 
+            //Arena overtime nerfs drains/transfers to the target
+            bool isArenaOvertime = false;
+            var arenaOvertimeDrainMod = 1.0f;
+            if (targetPlayer != null && ArenaLocation.IsArenaLandblock(targetPlayer.Location.Landblock))
+            {
+                var arenaEvent = ArenaManager.GetArenaEventByLandblock(targetPlayer.Location.Landblock);
+                if (arenaEvent != null && arenaEvent.IsOvertime)
+                {
+                    isArenaOvertime = true;
+                    arenaOvertimeDrainMod = arenaEvent.OvertimeHealingModifier * 0.25f;
+                }
+            }
+
             // prevent double deaths from indirect casts
             // caster is already checked in player/monster, and re-checking caster here would break death emotes such as bunny smite
             if (targetCreature != null && targetCreature.IsDead)
@@ -1148,6 +1169,10 @@ namespace ACE.Server.WorldObjects
                     destVitalChange = (uint)Math.Round(srcVitalChange * (1.0f - spell.LossPercent) * boostMod);
                 }
             }
+
+            //Nerf drains/transfers in arena overtime
+            if (isArenaOvertime)
+                destVitalChange = (uint)Math.Round(destVitalChange * arenaOvertimeDrainMod);
 
             string srcVital, destVital;
 

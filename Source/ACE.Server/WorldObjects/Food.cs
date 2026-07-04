@@ -237,6 +237,14 @@ namespace ACE.Server.WorldObjects
             if (player.IsJumping)
                 boostValue = 0;
 
+            //Arena overtime disables chugs/food (healing)
+            if (ArenaLocation.IsArenaLandblock(player.Location.Landblock))
+            {
+                var arenaEvent = ArenaManager.GetArenaEventByLandblock(player.Location.Landblock);
+                if (arenaEvent != null && arenaEvent.IsOvertime)
+                    boostValue = 0;
+            }
+
             if (boostValue > 0)
             {
                 var cookingMod = GetCookingMod(player);

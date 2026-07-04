@@ -1476,6 +1476,15 @@ namespace ACE.Server.WorldObjects.Managers
             // apply healing ratings?
             tickAmountTotal *= creature.GetHealingRatingMod();
 
+            //Arena overtime reduces heal amounts
+            var healTargetPlayer = WorldObject as Player;
+            if (healTargetPlayer != null && ArenaLocation.IsArenaLandblock(healTargetPlayer.Location.Landblock))
+            {
+                var arenaEvent = ArenaManager.GetArenaEventByLandblock(healTargetPlayer.Location.Landblock);
+                if (arenaEvent != null && arenaEvent.IsOvertime)
+                    tickAmountTotal = tickAmountTotal * arenaEvent.OvertimeHealingModifier * 0.25f;
+            }
+
             // do healing
             var healAmount = creature.UpdateVitalDelta(creature.Health, (int)Math.Round(tickAmountTotal));
             creature.DamageHistory.OnHeal((uint)healAmount);
@@ -1578,6 +1587,14 @@ namespace ACE.Server.WorldObjects.Managers
             var damagers = new Dictionary<WorldObject, float>();
 
             var targetPlayer = WorldObject as Player;
+
+            //Arenas - If this is an arena landblock, don't allow any DoT dmg except while the event is in a started status (Status == 4)
+            if (targetPlayer != null && ArenaLocation.IsArenaLandblock(targetPlayer.Location.Landblock))
+            {
+                var preMatchArenaEvent = ArenaManager.GetArenaEventByLandblock(targetPlayer.Location.Landblock);
+                if (preMatchArenaEvent == null || preMatchArenaEvent.Status != 4 || preMatchArenaEvent.EventType.Equals("tugak"))
+                    return;
+            }
 
             // get the total tick amount
             var tickAmountTotal = 0.0f;
@@ -1704,6 +1721,14 @@ namespace ACE.Server.WorldObjects.Managers
                     enchantment.CachedModifiedStatModValue = tickAmount;
                 }
 
+                //Arena overtime reduces DoT dmg (applied after the cache lookup so it is not baked into the cached value)
+                if (targetPlayer != null && ArenaLocation.IsArenaLandblock(targetPlayer.Location.Landblock))
+                {
+                    var overtimeArenaEvent = ArenaManager.GetArenaEventByLandblock(targetPlayer.Location.Landblock);
+                    if (overtimeArenaEvent != null && overtimeArenaEvent.IsOvertime)
+                        tickAmount = tickAmount * overtimeArenaEvent.OvertimeHealingModifier * 0.25f;
+                }
+
                 // make sure the target's current health is not exceeded
                 if (tickAmountTotal + tickAmount >= creature.Health.Current)
                 {
@@ -1722,6 +1747,23 @@ namespace ACE.Server.WorldObjects.Managers
                 }
 
                 tickAmountTotal += tickAmount;
+
+                //Arenas - track total dmg dealt and received
+                if (damager is Player dotSourcePlayer && targetPlayer != null && ArenaLocation.IsArenaLandblock(targetPlayer.Location.Landblock))
+                {
+                    var trackArenaEvent = ArenaManager.GetArenaEventByLandblock(targetPlayer.Location.Landblock);
+                    if (trackArenaEvent != null && trackArenaEvent.Status == 4)
+                    {
+                        var attackerArenaPlayer = trackArenaEvent.Players.FirstOrDefault(x => x.CharacterId == dotSourcePlayer.Character.Id);
+                        var defenderArenaPlayer = trackArenaEvent.Players.FirstOrDefault(x => x.CharacterId == targetPlayer.Character.Id);
+
+                        if (attackerArenaPlayer != null && defenderArenaPlayer != null)
+                        {
+                            attackerArenaPlayer.TotalDmgDealt += (uint)Math.Round(tickAmount);
+                            defenderArenaPlayer.TotalDmgReceived += (uint)Math.Round(tickAmount);
+                        }
+                    }
+                }
 
                 if (isDead) break;
             }

@@ -225,6 +225,19 @@ namespace ACE.Server.Entity
                     return 0.0f;
             }
 
+            //Arenas - If this is an arena landblock
+            //don't allow any dmg except while the event is in a started status (Status == 4)
+            //also disallow any dmg except from Tugak in a Tugak War event
+            if (playerDefender != null && ArenaLocation.IsArenaLandblock(playerDefender.Location.Landblock))
+            {
+                if (playerAttacker != null && playerAttacker.IsArenaObserver)
+                    return 0.0f;
+
+                var arenaEvent = ArenaManager.GetArenaEventByLandblock(playerDefender.Location.Landblock);
+                if (arenaEvent == null || arenaEvent.Status != 4 || arenaEvent.EventType.Equals("tugak"))
+                    return 0.0f;
+            }
+
             // overpower
             if (attacker.Overpower != null)
                 Overpower = Creature.GetOverpower(attacker, defender);
@@ -1018,6 +1031,23 @@ namespace ACE.Server.Entity
 
                 if (ablativeArmor.StatModKey == 0 || ablativeArmor.StatModValue < 1)
                     defender.EnchantmentManager.Remove(ablativeArmor);
+            }
+
+            //Arenas - If this is an arena landblock, track total dmg dealt and received
+            if (playerDefender != null && ArenaLocation.IsArenaLandblock(playerDefender.Location.Landblock))
+            {
+                var arenaEvent = ArenaManager.GetArenaEventByLandblock(playerDefender.Location.Landblock);
+                if (arenaEvent != null && arenaEvent.Status == 4 && playerAttacker != null)
+                {
+                    var attackerArenaPlayer = arenaEvent.Players.FirstOrDefault(x => x.CharacterId == playerAttacker.Character.Id);
+                    var defenderArenaPlayer = arenaEvent.Players.FirstOrDefault(x => x.CharacterId == playerDefender.Character.Id);
+
+                    if (attackerArenaPlayer != null && defenderArenaPlayer != null)
+                    {
+                        attackerArenaPlayer.TotalDmgDealt += (uint)Math.Round(Damage);
+                        defenderArenaPlayer.TotalDmgReceived += (uint)Math.Round(Damage);
+                    }
+                }
             }
 
             return Damage;

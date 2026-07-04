@@ -929,3 +929,15 @@ Fixed a bug where some pyreal stacks would refuse to act as money — they would
 The cause was a leftover piece of logic from another ruleset that tagged certain coin stacks as "restricted" and quietly excluded them from your usable currency. That restriction should never apply on ClassicPvP, and it no longer does — every pyreal stack now counts as spendable money again.
 
 Any affected stacks already in your pack will start working the moment this patch goes live. If you still have a stubborn stack, simply merge it into a normal pyreal stack to clear the old tag. No character changes are needed — the fix applies automatically.
+
+### 🏟️ Arena — No Damage Until the Match Starts
+
+Fixed arena matches so that no damage can be dealt during the pre-match countdown after players are teleported into the arena. You can still cast beneficial spells — buffs, vulns, and other preparation — while you wait, but melee, missile, magic, and damage-over-time will not land on your opponent until the match officially begins. Everyone now starts the fight on equal footing.
+
+### 🏟️ Arena — Overtime Rules Now Enforced
+
+When an arena match reaches overtime, its healing restrictions are now actually applied. Chugging food and potions is disabled, and all other healing — heal-over-time spells, life-magic heals, and stamina-to-health transfers — is heavily reduced and continues to weaken as overtime goes on. Overtime now reliably drives a stalled match to a decisive finish instead of dragging on.
+
+### 🏟️ Arena — In-Match Damage Now Tracked
+
+Damage dealt and taken inside arena matches is now recorded again, so damage-based arena achievements and per-match combat stats work correctly.
