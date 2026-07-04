@@ -95,12 +95,6 @@ namespace ACE.Server.WorldObjects
 
             // get world object of target guid
             var targetWo = CurrentLandblock?.GetObject(targetGuid);
-            if (targetWo is BindstoneCreatureProxy)
-            {
-                SendTransientError("You must use melee to attack the Bind Stone.");
-                OnAttackDone();
-                return;
-            }
             var target = targetWo as Creature;
             if (target == null)
             {
