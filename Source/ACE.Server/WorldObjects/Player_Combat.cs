@@ -1356,6 +1356,16 @@ namespace ACE.Server.WorldObjects
                 {
                     return new List<WeenieErrorWithString>() { WeenieErrorWithString.YouFailToAffect_YouCannotAffectAnyone, WeenieErrorWithString._FailsToAffectYou_TheyCannotAffectAnyone };
                 }
+
+                // Tugak War - only the Health Bolt line (Martyr's Hecatomb I-VII) may be cast offensively
+                if (ArenaLocation.IsArenaLandblock(this.Location.Landblock) &&
+                    spell != null &&
+                    spell.IsHarmful)
+                {
+                    var arenaEvent = ArenaManager.GetArenaEventByLandblock(this.Location.Landblock);
+                    if (arenaEvent != null && arenaEvent.EventType.Equals("tugak") && !ArenaLocation.IsTugakAllowedSpell(spell.Id))
+                        return new List<WeenieErrorWithString>() { WeenieErrorWithString.YouFailToAffect_YouCannotAffectAnyone, WeenieErrorWithString._FailsToAffectYou_TheyCannotAffectAnyone };
+                }
             }
             else
             {

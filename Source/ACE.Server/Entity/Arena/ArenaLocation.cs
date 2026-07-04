@@ -37,6 +37,25 @@ namespace ACE.Server.Entity
 
         public string ArenaName { get; set; }
 
+        // Tugak War permits damage only from the Health Bolt line (Martyr's Hecatomb I-VII, spell ids 2760-2766).
+        // Classic has no Curse of Raven Fury ("Tugak") spell, so the Health Bolt line stands in for it.
+        public static readonly HashSet<uint> TugakAllowedSpellIds = new HashSet<uint>
+        {
+            (uint)SpellId.HealthBolt1,
+            (uint)SpellId.HealthBolt2,
+            (uint)SpellId.HealthBolt3,
+            (uint)SpellId.HealthBolt4,
+            (uint)SpellId.HealthBolt5,
+            (uint)SpellId.HealthBolt6,
+            (uint)SpellId.HealthBolt7,
+        };
+
+        /// <summary>
+        /// Returns true if the given spell id is a permitted damage spell in a Tugak War event
+        /// (the Health Bolt / Martyr's Hecatomb line, tiers I-VII).
+        /// </summary>
+        public static bool IsTugakAllowedSpell(uint spellId) => TugakAllowedSpellIds.Contains(spellId);
+
         public ArenaLocation()
         {
             lastTickDateTime = DateTime.MinValue;

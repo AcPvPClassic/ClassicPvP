@@ -281,7 +281,7 @@ Arenas run under specific combat restrictions that do not apply in the open worl
 - **Overtime healing restrictions.** If a match runs long enough to reach overtime, chugging food and potions is disabled and all other healing — heal-over-time spells, life-magic heals, and stamina-to-health transfers — is heavily reduced, weakening further as overtime continues. This forces stalled matches to a decisive finish.
 - **Ineptitude spells are suppressed.** Creature enchantment debuffs (inepts) and all item enchantment spells are blocked in arena matches. Only the three defense-lowering spell categories are permitted — Magic Defense Lowering, Melee Defense Lowering, and Missile Defense Lowering. This prevents NPC pets, item procs, or other external debuff sources from influencing match outcomes.
 - **Healing kit bonuses are capped in 1v1 matches.** The skill bonus from a healing kit is capped at 150 effective bonus skill, and the restoration multiplier is capped at 1.5×. High-end healing kits still function — they just can't fully carry a fight in the structured 1v1 format.
-- **Tugak War is spell-only.** In Tugak War the only damage that lands is from the **Martyr's Hecatomb** (Health Bolt) line of spells, tiers I through VII. Weapon attacks, all other spells, and damage-over-time do nothing to opponents — everyone fights on equal footing with the same spell.
+- **Tugak War is spell-only.** In Tugak War the only weapon is the **Martyr's Hecatomb** (Health Bolt) line of spells, tiers I through VII. Any other harmful spell you try to cast on an opponent simply fails ("you cannot affect anyone"), and weapon attacks and damage-over-time do nothing — everyone fights on equal footing with the same spell.
 
 ### Arena Rewards (Winners)
 

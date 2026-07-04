@@ -952,4 +952,4 @@ Damage dealt and taken inside arena matches is now recorded again, so damage-bas
 
 ### 🏟️ Tugak War — Spell-Only Combat
 
-Tugak War is now fought exclusively with the **Martyr's Hecatomb** (Health Bolt) line of spells, tiers I through VII. Weapon attacks, damage-over-time, and every other spell no longer deal any damage inside a Tugak War match — everyone competes on equal footing using the same spell.
+Tugak War is now fought exclusively with the **Martyr's Hecatomb** (Health Bolt) line of spells, tiers I through VII. Any other harmful spell you try to cast on an opponent now fails outright ("you cannot affect anyone"), and weapon attacks and damage-over-time do nothing inside a Tugak War match — everyone competes on equal footing using the same spell.
