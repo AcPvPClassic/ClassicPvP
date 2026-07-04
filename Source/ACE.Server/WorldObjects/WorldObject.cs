@@ -1497,22 +1497,31 @@ namespace ACE.Server.WorldObjects
 
         public bool VerifyGameplayMode(WorldObject item1 = null, WorldObject item2 = null)
         {
+            // The gameplay-mode system (Hardcore / Solo Self-Found, plus per-character binding via
+            // GameplayModeExtraIdentifier) is a CustomDM-only feature. Under other rulesets such as
+            // Infiltration it must stay inert: a stray mode/identifier stamp on an item -- notably a
+            // pyreal stack -- otherwise fails this check, so the coin stops counting as currency
+            // (UpdateCoinValue), refuses to be spent/sold/given, and can only be dropped. Doctide
+            // (EoR) has no gameplay-mode gating at all; match that here. The Limbo character-creation
+            // lock is preserved for every ruleset.
+            var isCustomDM = Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.CustomDM;
+
             if (item1 != null)
             {
                 if (GameplayMode == GameplayModes.Limbo && item1.GameplayMode != GameplayModes.Limbo)
                     return false;
-                else if (GameplayMode > item1.GameplayMode || (GameplayMode == GameplayModes.SoloSelfFound && item1.IsHardcore))
+                else if (isCustomDM && (GameplayMode > item1.GameplayMode || (GameplayMode == GameplayModes.SoloSelfFound && item1.IsHardcore)))
                     return false;
-                else if (item1.GameplayModeExtraIdentifier != 0 && GameplayModeExtraIdentifier != item1.GameplayModeExtraIdentifier)
+                else if (isCustomDM && item1.GameplayModeExtraIdentifier != 0 && GameplayModeExtraIdentifier != item1.GameplayModeExtraIdentifier)
                     return false;
             }
             if (item2 != null)
             {
                 if (GameplayMode == GameplayModes.Limbo && item2.GameplayMode != GameplayModes.Limbo)
                     return false;
-                else if (GameplayMode > item2.GameplayMode || (GameplayMode == GameplayModes.SoloSelfFound && item2.IsHardcore))
+                else if (isCustomDM && (GameplayMode > item2.GameplayMode || (GameplayMode == GameplayModes.SoloSelfFound && item2.IsHardcore)))
                     return false;
-                else if (item2.GameplayModeExtraIdentifier != 0 && GameplayModeExtraIdentifier != item2.GameplayModeExtraIdentifier)
+                else if (isCustomDM && item2.GameplayModeExtraIdentifier != 0 && GameplayModeExtraIdentifier != item2.GameplayModeExtraIdentifier)
                     return false;
             }
             return true;

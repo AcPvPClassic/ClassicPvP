@@ -917,3 +917,15 @@ As a result, a queue full of low-level players would never start a match no matt
 Fixed a bug where players who lost an arena match by dying often received no end-of-match rewards. A death that ended the match wasn't being recorded at the moment it happened, so once the fallen player respawned the system mistook it for them leaving the arena early and disqualified them, which stripped their reward eligibility.
 
 Deaths are now recorded correctly, so losers reliably receive their participation rewards (and kill/death totals are tracked properly). No character changes are needed — the fix applies automatically.
+
+---
+
+## 🩹 Patch — July 4, 2026
+
+### 💰 Pyreal Stacks — Currency Fix
+
+Fixed a bug where some pyreal stacks would refuse to act as money — they wouldn't count toward your cash when you opened a vendor, couldn't be spent or sold, and couldn't be merged into another stack. The only way to get rid of an affected stack was to drop it on the ground.
+
+The cause was a leftover piece of logic from another ruleset that tagged certain coin stacks as "restricted" and quietly excluded them from your usable currency. That restriction should never apply on ClassicPvP, and it no longer does — every pyreal stack now counts as spendable money again.
+
+Any affected stacks already in your pack will start working the moment this patch goes live. If you still have a stubborn stack, simply merge it into a normal pyreal stack to clear the old tag. No character changes are needed — the fix applies automatically.
