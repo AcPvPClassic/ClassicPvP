@@ -539,10 +539,10 @@ namespace ACE.Server.Managers
                 for (int k = 0; k < 3; k++)
                     GiveSingle(winner, CustomWeenieId.DarkbeatKey);
 
-                // 10% of XP to next level
+                // 5% of XP to next level (fixed reward; GrantXP already bypasses the season xp_modifier)
                 var level = winner.Level ?? 1;
                 var xpBand = (long)winner.GetXPBetweenLevels(level, level + 1);
-                var bonusXp = (long)Math.Round(xpBand * 0.10);
+                var bonusXp = (long)Math.Round(xpBand * 0.05);
                 if (bonusXp > 0)
                     winner.GrantXP(bonusXp, XpType.PvP, ACE.Entity.Enum.ShareType.None, "hometown capture reward");
 

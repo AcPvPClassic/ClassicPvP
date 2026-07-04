@@ -123,6 +123,8 @@ The rate accelerates on a quadratic curve — the gains are small at first and r
 
 The maximum rate (3×) is configurable by admins and may change between seasons.
 
+**Custom PvP rewards are exempt from this rate.** Arena match XP, PK quest XP, hometown capture XP, and open-world PK kill XP are granted as fixed percentages of your level, so they are *not* multiplied by the rolling XP rate. They neither shrink in the low-rate opening days nor balloon when the rate climbs above 1× late in the season — a given PvP reward is worth the same fraction of a level all season long.
+
 ---
 
 ## ⏱️ XP Cap Categories
@@ -285,17 +287,17 @@ Arenas run under specific combat restrictions that do not apply in the open worl
 
 ### Arena Rewards (Winners)
 
-| Type | XP | PK Trophies | Phials of Bloody Tears | Darkbeat Keys |
+| Type | XP (of level) | PK Trophies | Phials of Bloody Tears | Darkbeat Keys |
 |------|-----|-------------|----------------------|------------|
-| **1v1** | Level-proportional | 5 | 1 | 1 |
-| **2v2** | Level-proportional | 5 | 1 | 1 |
-| **FFA** | Level-proportional (2×) | 5 | 3 | 5 |
-| **Tugak** | Level-proportional (2×) | 5 | 3 | 5 |
-| **Group** | — | 5 per member | 1 per member | 2 per member |
+| **1v1** | 10% | 5 | 1 | 1 |
+| **2v2** | 10% | 5 | 1 | 1 |
+| **FFA** | 17.5% | 5 | 3 | 5 |
+| **Tugak** | 17.5% | 5 | 3 | 5 |
+| **Group** | 15% (30% on a clean 1st-place win) | 5 per member | 1 per member | 2 per member |
 
 - Arena XP counts against your **PvP daily bucket**.
 - Eliminated players should stay online until the match ends to be eligible for rewards.
-- Rewards are scaled to your level range and the current rolling cap.
+- Arena XP is a **fixed percentage of your XP to the next level** and is not scaled by the seasonal rolling XP rate — the same result is worth the same fraction of a level all season long. (Losers of a 1v1/2v2 receive 2.5%.)
 
 ### Daily PK Quest Rewards
 
@@ -626,7 +628,7 @@ Winners within **100 meters of the Bind Stone** (on the town landblock or an adj
 - **10–30 MMDs** split among eligible players
 - **1 Phial of Bloody Tears** per player
 - **3 Darkbeat Keys** per player
-- **10% of XP to next level** per player
+- **5% of XP to next level** per player
 
 Losing allegiance PKs within **100 meters of the Bind Stone** at the moment of resolution are **smited**.
 
@@ -651,7 +653,7 @@ When you kill an enemy PK in the open world (different allegiance, no diminishin
 
 **Base XP:**
 ```
-Base XP = 5–10% of your XP-to-next-level (random roll per kill)
+Base XP = 2.5–5% of your XP-to-next-level (random roll per kill)
 ```
 The random roll is re-rolled on every kill, so repeated kills against the same target vary slightly each time.
 

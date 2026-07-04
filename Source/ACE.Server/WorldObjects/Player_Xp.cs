@@ -1071,6 +1071,34 @@ namespace ACE.Server.WorldObjects
         }
 
         /// <summary>
+        /// Grants XP as a fixed fraction of the XP between the player's current and next level,
+        /// bypassing EarnXP so the global (season/rolling) <c>xp_modifier</c> is NOT applied.
+        ///
+        /// Used for custom PvP rewards (arena, PK quests, hometown control, PK kills): their
+        /// payouts are meant to be a fixed slice of a level regardless of the rolling XP rate,
+        /// so they neither shrink when the rate is below 1.0 nor balloon when it climbs above it.
+        /// XP is still routed through GrantXP, so the per-category PvP cap and allegiance passup
+        /// still apply.
+        /// </summary>
+        public void GrantLevelProportionalXpNoModifier(double percent, long min, long max, XpType xpType = XpType.PvP)
+        {
+            var nextLevelXP = GetXPBetweenLevels(Level.Value, Level.Value + 1);
+
+            var scaledXP = (long)Math.Round(nextLevelXP * percent);
+
+            if (max > 0)
+                scaledXP = Math.Min(scaledXP, max);
+
+            if (min > 0)
+                scaledXP = Math.Max(scaledXP, min);
+
+            if (scaledXP <= 0)
+                return;
+
+            GrantXP(scaledXP, xpType, ShareType.Allegiance);
+        }
+
+        /// <summary>
         /// The player earns XP for items that can be leveled up
         /// by killing creatures and completing quests,
         /// while those items are equipped.

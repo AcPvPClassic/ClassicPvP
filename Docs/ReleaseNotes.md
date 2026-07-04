@@ -963,3 +963,9 @@ Now a contract only completes if **you** earned the kill: either you land the ki
 ### 🩸 Anti Parazi — Burn Your Vitae for a PK Trophy
 
 Anti Parazi now clears your **Vitae penalty** in exchange for a **PK Trophy**. Hand him a trophy directly (drag it onto him) and he removes your Vitae — "(Vitae Removed) Now get back in there and make me proud..." — taking a single trophy from the stack. This is separate from his shop: he still takes PK Trophies as currency for his morph gems and bounty items.
+
+### ⚔️ PvP Reward XP — Decoupled from the Season Rate
+
+Custom PvP reward XP — **arena matches, PK quests, hometown captures, and open-world PK kills** — is no longer multiplied by the seasonal rolling XP rate. Previously these rewards were scaled by the same global rate that ramps from ~0.25× early in the season up to 3× at the end, which made them feel tiny in the opening weeks and would have inflated them dramatically later on.
+
+These rewards are now granted as **fixed percentages of your XP to the next level**, so a given result is worth the same fraction of a level all season long. To keep early-season values reasonable now that the season rate no longer reduces them, the base percentages have been **halved**. For example, an arena 1v1 win now grants 10% of a level (loss 2.5%), a hometown capture grants 5%, and an open-world PK kill grants 2.5–5%. PK quest XP rewards were halved to match, and their listed reward amounts have been updated accordingly.

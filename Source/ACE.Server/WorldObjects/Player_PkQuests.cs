@@ -213,10 +213,12 @@ namespace ACE.Server.WorldObjects
                                 this.GrantLuminance(rewardCount, XpType.PvP);
                                 break;
                             case "XP%":
-                                msg = $"Reward: {rewardCount}% of XP to next level";
+                                // PvP quest XP is a fixed fraction of a level, exempt from the season
+                                // xp_modifier, and granted at half the advertised quest value.
+                                double xpPercent = (double)rewardCount / 100d * 0.5;
+                                msg = $"Reward: {rewardCount / 2.0:0.#}% of XP to next level";
                                 Session.Network.EnqueueSend(new GameMessageSystemChat(msg, ChatMessageType.System));
-                                double xpPercent = (double)rewardCount / 100d;
-                                this.GrantLevelProportionalXp(xpPercent, 1, long.MaxValue, XpType.PvP);
+                                this.GrantLevelProportionalXpNoModifier(xpPercent, 1, long.MaxValue, XpType.PvP);
                                 break;
                             case "DBKEY":
                                 msg = $"Reward: {rewardCount} Darkbet's Lost Storage Key{(rewardCount > 1 ? "s" : "")}";
