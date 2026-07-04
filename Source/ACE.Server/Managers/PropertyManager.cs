@@ -1300,6 +1300,7 @@ namespace ACE.Server.Managers
                 ("bounty_weight_multiplier",         new Property<double>(50.0,  "Additive weight multiplier for kill-streak and Writ of Pursuit reward bonuses.")),
                 ("bounty_weight_maxstack_scale",     new Property<double>(0.2,   "Fraction of the WoP currency max stack used as the normalisation cap for reward-amount weight (0.01–1.0).")),
                 ("bounty_npc_use_cooldown_seconds",  new Property<double>(3.0,   "Minimum seconds between NPC transactions for a single player (anti-spam).")),
+                ("bounty_kill_min_damage_percent",   new Property<double>(0.25,  "Fraction (0.0-1.0) of a target's total damage a hunter must deal (while in visible range) to complete a contract when they did not land the killing blow.")),
 
                 // Hot Dungeon box drops
                 ("hot_dungeon_box_drop_multiplier",  new Property<double>(1.0,   "Global multiplier applied to every hot dungeon's per-kill Box drop chance (1.0 = tuned defaults, 0.25 = 75% fewer boxes)."))

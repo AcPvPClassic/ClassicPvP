@@ -587,10 +587,12 @@ namespace ACE.Server.WorldObjects
         // --- PK death integration ---
 
         /// <summary>
-        /// Called from Player_Death when a PK kill occurs.
-        /// Marks the hunter's contract as complete if they have an active contract on this target.
+        /// Called from Player_Death when a PK kill occurs, for every online hunter.
+        /// Marks this hunter's contract as complete only if they actually earned the kill
+        /// (see <see cref="IsEligibleBountyKill"/>), so an unrelated player's kill no longer
+        /// completes a contract the hunter had no part in.
         /// </summary>
-        public void MarkBountyComplete(Player bountyTarget, double damageDealt, double maxHealth, double currentHealth)
+        public void MarkBountyComplete(Player bountyTarget, Player killer)
         {
             var targetGuid = bountyTarget.Guid.Full;
             var killStreak = bountyTarget.PlayerKillStreak;
@@ -601,10 +603,58 @@ namespace ACE.Server.WorldObjects
             if (contract.IsInvalidContract || contract.IsBountyExpired || !contract.IsActiveState)
                 return;
 
+            if (!IsEligibleBountyKill(bountyTarget, killer))
+                return;
+
             contract.SetState(BountyContract.BountyContractState.Completed, this);
             contract.BountyKillStreakCount = killStreak;
 
             TryAddCompletedBountyContract(contract);
+        }
+
+        /// <summary>
+        /// A hunter (this player) only completes a bounty when they earned the kill:
+        ///   - they landed the killing blow (the target's top/credited damager), OR
+        ///   - they dealt at least bounty_kill_min_damage_percent of the target's total
+        ///     damage AND were within visible range of the target at the moment of death.
+        /// Damage from the hunter's combat pets counts toward their contribution.
+        /// </summary>
+        private bool IsEligibleBountyKill(Player bountyTarget, Player killer)
+        {
+            // The hunter who got the kill always qualifies.
+            if (killer != null && killer.Guid.Full == Guid.Full)
+                return true;
+
+            var history = bountyTarget.DamageHistory;
+            if (history == null)
+                return false;
+
+            var totalDamage = history.TotalHealth;
+            if (totalDamage <= 0)
+                return false;
+
+            // Sum this hunter's contribution, including damage dealt by their combat pets.
+            float hunterDamage = 0;
+            foreach (var info in history.TotalDamage.Values)
+            {
+                var isHunterSource = info.Guid.Full == Guid.Full ||
+                    (info.PetOwner != null && info.TryGetPetOwner()?.Guid.Full == Guid.Full);
+
+                if (isHunterSource)
+                    hunterDamage += info.TotalDamage;
+            }
+
+            if (hunterDamage <= 0)
+                return false;
+
+            var minDamagePercent = PropertyManager.GetDouble("bounty_kill_min_damage_percent").Item;
+            if (hunterDamage / totalDamage < minDamagePercent)
+                return false;
+
+            // Must have been within visible range of the target at the time of the kill.
+            return bountyTarget.PhysicsObj?.ObjMaint?
+                .GetVisibleObjectsValuesOfTypeCreature()
+                .Any(c => c.Guid.Full == Guid.Full) ?? false;
         }
 
         // --- Tracking integration ---

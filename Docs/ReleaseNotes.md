@@ -953,3 +953,9 @@ Damage dealt and taken inside arena matches is now recorded again, so damage-bas
 ### 🏟️ Tugak War — Spell-Only Combat
 
 Tugak War is now fought exclusively with the **Martyr's Hecatomb** (Health Bolt) line of spells, tiers I through VII. Any other harmful spell you try to cast on an opponent now fails outright ("you cannot affect anyone"), and weapon attacks and damage-over-time do nothing inside a Tugak War match — everyone competes on equal footing using the same spell.
+
+### 🎯 Bounty — You Must Earn the Kill
+
+Fixed a bug where a bounty contract could complete even when you had no part in the kill. Previously, if anyone killed your target, your contract was marked complete — regardless of whether you were in the area or dealt any damage.
+
+Now a contract only completes if **you** earned the kill: either you land the killing blow, or you deal at least **25%** of the target's total damage **and** are within visible range of them when they die. Standing across the map while someone else does the work no longer counts.

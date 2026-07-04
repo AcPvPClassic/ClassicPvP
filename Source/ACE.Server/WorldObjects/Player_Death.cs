@@ -246,7 +246,8 @@ namespace ACE.Server.WorldObjects
                     }
                 }
 
-                // PvP XP on kill — 5–10% of XP-to-next-level, with level-gap diminishing returns
+                // PvP XP on kill — 2.5–5% of XP-to-next-level, with level-gap diminishing returns.
+                // Granted via GrantXP so it bypasses the season xp_modifier (fixed reward).
                 // Guards: different allegiance, repeat-kill cooldown
                 if (!pkPlayer.IsSameAllegiance(this))
                 {
@@ -262,7 +263,7 @@ namespace ACE.Server.WorldObjects
                         var decay       = PropertyManager.GetDouble("pk_xp_level_diff_decay").Item;
                         var modifier    = Math.Pow(decay, levelDiff);
 
-                        var randPercent = ThreadSafeRandom.Next(0.05f, 0.10f);
+                        var randPercent = ThreadSafeRandom.Next(0.025f, 0.05f);
                         var baseXp      = (long)pkPlayer.GetXPBetweenLevels(killerLevel, killerLevel + 1);
                         var pvpXp       = (long)Math.Round(baseXp * randPercent * modifier);
 
@@ -429,16 +430,11 @@ namespace ACE.Server.WorldObjects
                         PlayerKillStreak = 0;
                     }
 
-                    // Notify all online hunters who have an active contract on this player
-                    var victimGuid  = Guid.Full;
-                    var victimMaxHp = Health?.MaxValue ?? 0;
-                    var victimCurHp = 0.0;
-                    var dmgDealt    = topDamager.TotalDamage;
-
+                    // Complete contracts only for hunters who actually earned this kill:
+                    // the credited killer, or a hunter who dealt enough damage while in
+                    // visible range of the target. Unrelated kills no longer complete contracts.
                     foreach (var hunter in PlayerManager.GetAllOnline())
-                    {
-                        hunter.MarkBountyComplete(this, dmgDealt, victimMaxHp, victimCurHp);
-                    }
+                        hunter.MarkBountyComplete(this, pkPlayer);
                 }
 
                 string webhookMsg = new String(globalPKDe);
