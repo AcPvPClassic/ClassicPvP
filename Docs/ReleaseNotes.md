@@ -911,3 +911,9 @@ This affects only the random per-kill box drops. The guaranteed box awarded for 
 Fixed a bug that prevented low-level players from ever being matched into arena events. The level-range calculation used to pair players of similar levels miscalculated for anyone below level 20, producing an impossibly high minimum level that no opponent could satisfy.
 
 As a result, a queue full of low-level players would never start a match no matter how many were waiting. Matchmaking now correctly pairs low-level players, and no character changes are needed — the fix applies automatically.
+
+### 🏟️ Arena Rewards — Fix for Losing a Match
+
+Fixed a bug where players who lost an arena match by dying often received no end-of-match rewards. A death that ended the match wasn't being recorded at the moment it happened, so once the fallen player respawned the system mistook it for them leaving the arena early and disqualified them, which stripped their reward eligibility.
+
+Deaths are now recorded correctly, so losers reliably receive their participation rewards (and kill/death totals are tracked properly). No character changes are needed — the fix applies automatically.

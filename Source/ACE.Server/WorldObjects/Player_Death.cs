@@ -569,7 +569,16 @@ namespace ACE.Server.WorldObjects
                     {
                         var victimArenaPlayer = ArenaManager.GetArenaPlayerByCharacterId(Character.Id);
                         if (victimArenaPlayer != null)
+                        {
                             isArenaDeath = true;
+
+                            // Record the arena elimination at the moment of death (killer credit,
+                            // death count, and the loser's FinishPlace). Without this call the death
+                            // is only observed later by ArenaLocation.Tick(), after the player has
+                            // respawned off the arena landblock, where it is misread as fleeing and
+                            // disqualifies them (FinishPlace = -1) so they become reward-ineligible.
+                            ArenaManager.HandlePlayerDeath(Character.Id, killerPlayer?.Character.Id ?? 0);
+                        }
                     }
 
                     DatabaseManager.Log.LogPkKill((uint)Character.Id, (uint)topDamager.Guid.Full, victimMonarchId, killerMonarchId);
