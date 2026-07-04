@@ -959,3 +959,7 @@ Tugak War is now fought exclusively with the **Martyr's Hecatomb** (Health Bolt)
 Fixed a bug where a bounty contract could complete even when you had no part in the kill. Previously, if anyone killed your target, your contract was marked complete — regardless of whether you were in the area or dealt any damage.
 
 Now a contract only completes if **you** earned the kill: either you land the killing blow, or you deal at least **25%** of the target's total damage **and** are within visible range of them when they die. Standing across the map while someone else does the work no longer counts.
+
+### 🩸 Anti Parazi — Burn Your Vitae for a PK Trophy
+
+Anti Parazi now clears your **Vitae penalty** in exchange for a **PK Trophy**. Hand him a trophy directly (drag it onto him) and he removes your Vitae — "(Vitae Removed) Now get back in there and make me proud..." — taking a single trophy from the stack. This is separate from his shop: he still takes PK Trophies as currency for his morph gems and bounty items.

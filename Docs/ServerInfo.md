@@ -711,6 +711,8 @@ Killing the same player more than **3 times within a 1-hour window** suppresses 
 
 > **Impenetrability Morph Gem** — not sold by either vendor. Obtainable only from **Mythic Mystery Boxes**.
 
+**Vitae Removal.** Beyond his shop, Anti Parazi will **remove your Vitae penalty** in exchange for **1 PK Trophy**. Give him a trophy directly (drag it onto him rather than buying) and he clears your Vitae, consuming a single trophy from the stack.
+
 ---
 
 ### Custom Character Titles — `/buytitle`
