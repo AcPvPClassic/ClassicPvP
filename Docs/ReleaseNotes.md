@@ -922,6 +922,14 @@ Deaths are now recorded correctly, so losers reliably receive their participatio
 
 ## 🩹 Patch — July 4, 2026
 
+### 🏘️ Allegiance Hometown — Bind Stone Combat Fixes
+
+During a Phase 2 siege, the Bind Stone could not be attacked with missile weapons, shutting archers out of the fight entirely. Missile attacks now work against it. Physical damage against the Bind Stone was also out of balance, and has been retuned.
+
+---
+
+## 🩹 Patch — July 4, 2026
+
 ### 💰 Pyreal Stacks — Currency Fix
 
 Fixed a bug where some pyreal stacks would refuse to act as money — they wouldn't count toward your cash when you opened a vendor, couldn't be spent or sold, and couldn't be merged into another stack. The only way to get rid of an affected stack was to drop it on the ground.
