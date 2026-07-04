@@ -227,7 +227,7 @@ namespace ACE.Server.Entity
 
             //Arenas - If this is an arena landblock
             //don't allow any dmg except while the event is in a started status (Status == 4)
-            //also disallow any dmg except from Tugak in a Tugak War event
+            //Tugak War allows no weapon damage at all - players fight only with the Health Bolt line of spells
             if (playerDefender != null && ArenaLocation.IsArenaLandblock(playerDefender.Location.Landblock))
             {
                 if (playerAttacker != null && playerAttacker.IsArenaObserver)

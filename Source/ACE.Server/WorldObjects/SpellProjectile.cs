@@ -441,6 +441,19 @@ namespace ACE.Server.WorldObjects
             }
         }
 
+        // Tugak War restricts all damage to the Health Bolt line (Martyr's Hecatomb I-VII).
+        // Classic has no Curse of Raven Fury ("Tugak") spell, so the Health Bolt line stands in for it.
+        private static readonly HashSet<uint> TugakAllowedSpellIds = new HashSet<uint>
+        {
+            (uint)SpellId.HealthBolt1,
+            (uint)SpellId.HealthBolt2,
+            (uint)SpellId.HealthBolt3,
+            (uint)SpellId.HealthBolt4,
+            (uint)SpellId.HealthBolt5,
+            (uint)SpellId.HealthBolt6,
+            (uint)SpellId.HealthBolt7,
+        };
+
         /// <summary>
         /// Calculates the damage for a spell projectile
         /// Used by war magic, void magic, and life magic projectiles
@@ -462,6 +475,10 @@ namespace ACE.Server.WorldObjects
             {
                 var arenaEvent = ArenaManager.GetArenaEventByLandblock(targetPlayer.Location.Landblock);
                 if (arenaEvent == null || arenaEvent.Status != 4)
+                    return null;
+
+                //Tugak War - only the Health Bolt line (Martyr's Hecatomb I-VII) may deal damage
+                if (arenaEvent.EventType.Equals("tugak") && !TugakAllowedSpellIds.Contains(Spell.Id))
                     return null;
             }
 

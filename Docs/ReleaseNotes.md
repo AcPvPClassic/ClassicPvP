@@ -949,3 +949,7 @@ When an arena match reaches overtime, its healing restrictions are now actually 
 ### 🏟️ Arena — In-Match Damage Now Tracked
 
 Damage dealt and taken inside arena matches is now recorded again, so damage-based arena achievements and per-match combat stats work correctly.
+
+### 🏟️ Tugak War — Spell-Only Combat
+
+Tugak War is now fought exclusively with the **Martyr's Hecatomb** (Health Bolt) line of spells, tiers I through VII. Weapon attacks, damage-over-time, and every other spell no longer deal any damage inside a Tugak War match — everyone competes on equal footing using the same spell.
