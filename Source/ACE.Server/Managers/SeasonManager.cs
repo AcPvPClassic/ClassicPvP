@@ -354,6 +354,88 @@ namespace ACE.Server.Managers
                    ? wn : $"Item #{weenieId}";
         }
 
+        /// <summary>
+        /// Resolves a weenie's MaxStackSize from the world cache, returning 1 for
+        /// non-stackable items or when the weenie is not cached.
+        /// </summary>
+        private static int GetWeenieMaxStackSize(uint weenieId)
+        {
+            var cachedWeenie = DatabaseManager.World.GetCachedWeenie(weenieId);
+            if (cachedWeenie?.PropertiesInt != null &&
+                cachedWeenie.PropertiesInt.TryGetValue(ACE.Entity.Enum.Properties.PropertyInt.MaxStackSize, out var max) &&
+                max > 1)
+                return max;
+
+            return 1;
+        }
+
+        /// <summary>
+        /// Computes how many inventory slots a rank's reward bundle needs, counting one
+        /// slot per stack (a quantity larger than an item's MaxStackSize spills into
+        /// additional stacks).  Mirrors how <see cref="GrantRewardStacks"/> lays items out,
+        /// so the pre-check in <see cref="ClaimRewards"/> is exact.
+        /// </summary>
+        private static int GetRequiredInventorySlots(int rank)
+        {
+            var slots = 0;
+
+            foreach (var (weenieId, qty) in SeasonConfig.GetItems(rank))
+            {
+                if (weenieId == 0 || qty <= 0) continue;
+
+                var maxStack = GetWeenieMaxStackSize(weenieId);
+                slots += (qty + maxStack - 1) / maxStack; // ceil(qty / maxStack)
+            }
+
+            return slots;
+        }
+
+        /// <summary>
+        /// Grants <paramref name="qty"/> of a weenie to <paramref name="player"/> as
+        /// properly-sized, client-networked stacks, splitting across multiple stacks
+        /// when <paramref name="qty"/> exceeds the item's MaxStackSize.
+        /// Returns the quantity actually delivered; a shortfall means the inventory filled up.
+        /// </summary>
+        /// <remarks>
+        /// Uses <see cref="Player.TryCreateInInventoryWithNetworking(WorldObject)"/> — the same
+        /// path the PK-quest rewards use — so the client receives the create/stack packets
+        /// immediately.  The old code created one WorldObject per unit and called
+        /// <c>TryAddToInventory</c> directly, which (a) handed out unstacked singletons and
+        /// (b) never sent the create packet, so items appeared bugged until a relog forced a
+        /// full inventory re-send.
+        /// </remarks>
+        private static int GrantRewardStacks(Player player, uint weenieId, int qty, string weenieName)
+        {
+            var delivered = 0;
+
+            while (delivered < qty)
+            {
+                var item = WorldObjectFactory.CreateNewWorldObject(weenieId);
+                if (item == null)
+                {
+                    log.Error($"[Season] WorldObjectFactory returned null for weenieId={weenieId}.");
+                    break;
+                }
+
+                var maxStack = Math.Max(1, (int)(item.MaxStackSize ?? 1));
+                var thisStack = Math.Min(qty - delivered, maxStack);
+                if (thisStack > 1)
+                    item.SetStackSize(thisStack);
+
+                if (!player.TryCreateInInventoryWithNetworking(item))
+                {
+                    log.Warn($"[Season] Could not add {weenieName} to {player.Name}'s inventory " +
+                             $"(full?). {qty - delivered} not delivered.");
+                    item.Destroy();
+                    break;
+                }
+
+                delivered += thisStack;
+            }
+
+            return delivered;
+        }
+
         // ─────────────────────────────────────────────────────────────────────
         // Event hooks (called by Player_Death and Player_BountyInformation)
         // ─────────────────────────────────────────────────────────────────────
@@ -487,16 +569,34 @@ namespace ACE.Server.Managers
             var sb = new StringBuilder();
             sb.AppendLine($"[Season] Collecting {unclaimed.Count} pending reward(s)...\n");
 
+            var claimed = 0;
+            var deferred = 0;
+
             foreach (var row in unclaimed)
             {
-                sb.AppendLine($"  Week {row.WeekNumber} — {SeasonConfig.GetCategoryDisplayName(row.Category)} — {row.RankDisplay} Place:");
+                var header = $"  Week {row.WeekNumber} — {SeasonConfig.GetCategoryDisplayName(row.Category)} — {row.RankDisplay} Place:";
+
+                // Pre-check: a bundle is delivered all-or-nothing.  If the whole bundle
+                // won't fit, leave it unclaimed (no XP, no items) so nothing is lost, and
+                // tell the player how much room to free.  Re-checked live so earlier
+                // deliveries this run are accounted for.
+                var requiredSlots = GetRequiredInventorySlots(row.Rank);
+                if (player.GetFreeInventorySlots() < requiredSlots)
+                {
+                    deferred++;
+                    sb.AppendLine($"{header} DEFERRED");
+                    sb.AppendLine($"    Needs {requiredSlots} free inventory slot(s) — free up space and run /season rewards again.");
+                    continue;
+                }
+
+                sb.AppendLine(header);
 
                 // XP grant
                 var xpMult = SeasonConfig.GetXpMultiplier(row.Rank);
                 player.GrantLevelProportionalXp(xpMult, 0, 0);
                 sb.AppendLine($"    +{xpMult * 100:0}% XP to next level");
 
-                // Item grants
+                // Item grants — guaranteed to fit by the pre-check above.
                 foreach (var (weenieId, qty) in SeasonConfig.GetItems(row.Rank))
                 {
                     if (weenieId == 0)
@@ -507,30 +607,24 @@ namespace ACE.Server.Managers
                     }
 
                     var weenieName = GetWeenieName(weenieId);
+                    var delivered = GrantRewardStacks(player, weenieId, qty, weenieName);
 
-                    for (var i = 0; i < qty; i++)
-                    {
-                        var item = WorldObjectFactory.CreateNewWorldObject(weenieId);
-                        if (item == null)
-                        {
-                            log.Error($"[Season] WorldObjectFactory returned null for weenieId={weenieId}.");
-                            continue;
-                        }
-
-                        if (!player.TryAddToInventory(item))
-                        {
-                            log.Warn($"[Season] Could not add {weenieName} to {player.Name}'s inventory (full?). Item destroyed.");
-                            item.Destroy();
-                        }
-                    }
-
-                    sb.AppendLine($"    +{qty}x {weenieName}");
+                    if (delivered < qty)
+                        sb.AppendLine($"    +{delivered}x {weenieName} (inventory full — {qty - delivered} not delivered)");
+                    else
+                        sb.AppendLine($"    +{qty}x {weenieName}");
                 }
 
                 DatabaseManager.Log.MarkMilestoneLeaderClaimed(row.Id);
+                claimed++;
             }
 
-            sb.AppendLine("\n[Season] Rewards collected!");
+            if (deferred > 0)
+                sb.AppendLine($"\n[Season] Collected {claimed} reward(s); {deferred} deferred for inventory space. " +
+                              "Free up slots and run /season rewards again to collect the rest.");
+            else
+                sb.AppendLine("\n[Season] Rewards collected!");
+
             player.SendMessage(sb.ToString().TrimEnd());
         }
 
