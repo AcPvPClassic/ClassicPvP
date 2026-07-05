@@ -381,6 +381,7 @@ Jumping rapidly in succession triggers accelerated stamina drain. After exceedin
 ClassicPvP runs a number of anti-cheat and anti-abuse systems beyond standard emulator defaults.
 
 - **IP Binding** — accounts accumulate IP addresses over time. A login from an IP already registered to a *different* account is rejected automatically (see **Account Restrictions** above).
+- **Movement Validation** — the server independently validates player movement against server-side speed limits, so client-side speed and quickness hacks are detected and corrected rather than trusted. The system is terrain-aware — it accounts for legitimate movement over hills and uneven ground while still catching artificially fast movement — and repeat offenders are logged and removed.
 - **Comprehensive Server Logging** — the server runs a dedicated logging database that records:
   - All tinkering attempts (success and failure)
   - All PK kill events

@@ -973,3 +973,11 @@ These rewards are now granted as **fixed percentages of your XP to the next leve
 ### 🏰 Hometown Control — Phase 1 Timer Fix
 
 Fixed the Allegiance Hometown Phase 1 countdown, which announced "0s until Phase 2" after only one minute even though Phase 2 didn't begin until several minutes later. The countdown now matches the real Phase 1 hold duration.
+
+---
+
+## 🩹 Patch — July 5, 2026
+
+### 🛡️ Anti-Cheat — Tighter Movement Speed Enforcement
+
+The server's movement speed enforcement has been improved to better catch client-side speed and quickness hacks. The checks are now terrain-aware: they account for legitimate movement over hills and uneven ground, which previously caused occasional rubber-banding for honest players, while holding a tighter limit on open ground where cheating is most obvious. The result is fewer false corrections during normal play and a smaller window for artificially fast movement to slip through. No action is needed on your part — the change applies automatically.

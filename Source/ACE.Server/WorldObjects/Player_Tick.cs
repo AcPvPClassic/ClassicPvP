@@ -845,7 +845,16 @@ namespace ACE.Server.WorldObjects
                         var loggingPrevMaxMovementSpeed = PrevMovementUpdateMaxSpeed;
                         var loggingInertia = false;
 
-                        var dist = Location.DistanceTo(newPosition);
+                        // Measure HORIZONTAL displacement only.  GetRunRate() governs horizontal
+                        // ground speed; the full 3-D DistanceTo inflates the number on slopes by the
+                        // vertical climb/descent, which previously forced large fudge factors that also
+                        // loosened flat ground (where a client-side quickness hack is most visible).
+                        // Checking the horizontal component lets flat ground stay tight while hills
+                        // self-attenuate: the horizontal projection of run speed is runRate*cos(slope),
+                        // always <= the flat budget, so climbing a hill can never exceed it.  Downhill
+                        // and airborne momentum are still covered by the CachedVelocity term below,
+                        // which is computed server-side by the physics engine and cannot be spoofed.
+                        var dist = Location.Distance2D(newPosition);
                         float velocity = PhysicsObj.CachedVelocity.Length();
                         float currentMaxSpeed;
 
@@ -859,7 +868,13 @@ namespace ACE.Server.WorldObjects
                                 var clampedDelta = Math.Min(enforcementDeltaTime, 0.2f);
                                 // Scale the flat fudge bonus with clamped time so it stays proportional
                                 // rather than dominating at normal (high-frequency) packet rates.
-                                var flatBonus = Math.Max(5.0f, clampedDelta * 30.0f);
+                                // Now that vertical terrain inflation is removed from dist, the floor is
+                                // brought down to tighten flat-ground detection — but kept generous
+                                // enough to absorb packet-timing jitter and brief legitimate catch-up.
+                                // A legit runner covers <1 unit in a typical sub-100 ms packet, so 3.5
+                                // is still several times the honest per-packet distance: wiggle room,
+                                // not a tripwire.
+                                var flatBonus = Math.Max(3.5f, clampedDelta * 30.0f);
                                 // Physics-velocity consistency allowance:
                                 // The AC client stops sending AutoPos packets for ~1 second after it
                                 // receives a ForcePosition (rubber-band) correction.  When it resumes,
@@ -926,9 +941,9 @@ namespace ACE.Server.WorldObjects
                                 var overage = currentMaxSpeed > 0 ? (dist / currentMaxSpeed) - 1.0f : 1.0f;
                                 var suspicionGain = Math.Min(overage * 10.0f, 15.0f);
 
-                                if (currentMaxSpeed != 0 && dist < currentMaxSpeed * 1.4f)
+                                if (currentMaxSpeed != 0 && dist < currentMaxSpeed * 1.3f)
                                 {
-                                    // Borderline overage (≤ 40%): typical during casting, charging, or
+                                    // Borderline overage (≤ 30%): typical during casting, charging, or
                                     // brief post-collision recovery.  Accept the position without a
                                     // rubber-band so the player isn't disrupted; score at half-weight so
                                     // a sustained borderline pattern still accumulates suspicion over time.
@@ -1060,17 +1075,26 @@ namespace ACE.Server.WorldObjects
                         {
                             // Convert run rate to world-coordinate units/sec.
                             // GetRunRate() returns a dimensionless multiplier (1.0–4.5), not a speed.
-                            // The per-packet check scales it with 1.8f * runRate * deltaTime; applying
-                            // the same 1.8f factor here gives the equivalent sustained speed ceiling.
-                            // The additional 1.5f accounts for the velocity-boost term in the per-packet
-                            // formula ((1 + clampedVelocity/8) ≈ 1.5 at typical running velocity) so a
-                            // legitimately fast-running character doesn't false-positive the window check
-                            // while still catching anyone sustaining >2x their normal movement speed.
-                            var avgWindowMaxSpeed = GetRunRate() * 1.8f * 2.0f * 1.15f; // ≈ GetRunRate() × 4.1
+                            // The per-packet check scales it with 1.8f * runRate * deltaTime, so
+                            // 1.8f * GetRunRate() is the legitimate sustained horizontal speed.
+                            var baseSustainedSpeed = GetRunRate() * 1.8f;
+
+                            // Ceiling = baseSustainedSpeed * ceilingMultiplier.  Now that vertical
+                            // terrain noise is out of the window sum, these can come down from the old
+                            // 2.3x blanket headroom.  They differ by window length: a short 3 s window
+                            // still sees legitimate bursts (casting/charging/downhill/road buff/lag
+                            // catch-up) so it keeps more wiggle; a 15 s window washes bursts out, so a
+                            // sustained average that high is almost certainly a hack — hence a tighter
+                            // ceiling there.  Neither is at the theoretical 1.0x limit, leaving room for
+                            // legitimately fast characters while still catching anyone sustaining well
+                            // above their normal speed.
+                            //   3 s : 1.8x normal  ·  15 s : 1.5x normal
 
                             // Local function: evaluate one window and return true if a kick was triggered.
-                            bool EvalSpeedWindow(double windowSecs, float scoreMultiplier, float scoreCap, string violationType)
+                            bool EvalSpeedWindow(double windowSecs, float ceilingMultiplier, float scoreMultiplier, float scoreCap, string violationType)
                             {
+                                var avgWindowMaxSpeed = baseSustainedSpeed * ceilingMultiplier;
+
                                 // Find the first entry within the window.
                                 int startIdx = 0;
                                 while (startIdx < MovementWindowBuffer.Count - 1 &&
@@ -1084,9 +1108,13 @@ namespace ACE.Server.WorldObjects
                                 if (span < 0.5) return false;
 
                                 // Cumulative step-wise displacement so round-trip teleport patterns are caught.
+                                // Horizontal only, matching the per-packet check.  Removing vertical
+                                // terrain noise from the cumulative sum means a hilly route no longer
+                                // inflates the measured average, so the existing ceiling catches a real
+                                // hack on any terrain without tightening the threshold itself.
                                 float totalDist = 0f;
                                 for (int i = startIdx; i < MovementWindowBuffer.Count - 1; i++)
-                                    totalDist += MovementWindowBuffer[i].Pos.DistanceTo(MovementWindowBuffer[i + 1].Pos);
+                                    totalDist += MovementWindowBuffer[i].Pos.Distance2D(MovementWindowBuffer[i + 1].Pos);
 
                                 var avgSpeed = (float)(totalDist / span);
                                 if (avgSpeed <= avgWindowMaxSpeed) return false;
@@ -1131,8 +1159,8 @@ namespace ACE.Server.WorldObjects
                             }
 
                             // Evaluate short window first; if it kicks, skip long window.
-                            if (EvalSpeedWindow(3.0, 5.0f, 8.0f, "speed_avg_3s")) return false;
-                            if (EvalSpeedWindow(15.0, 8.0f, 12.0f, "speed_avg_15s")) return false;
+                            if (EvalSpeedWindow(3.0, 1.8f, 5.0f, 8.0f, "speed_avg_3s")) return false;
+                            if (EvalSpeedWindow(15.0, 1.5f, 8.0f, 12.0f, "speed_avg_15s")) return false;
                         }
 
                         // --- Script detection: inter-packet timing regularity ---

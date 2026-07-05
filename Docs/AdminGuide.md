@@ -511,11 +511,13 @@ All movement checks are **disabled by default**. Enable `enforce_player_movement
 
 | Property | What It Detects |
 |---|---|
-| `enforce_player_movement_avg` | 3-second and 15-second sliding window average speed. Fires when avg exceeds run rate × 1.15 |
+| `enforce_player_movement_avg` | Sliding-window average speed over 3-second and 15-second windows. The short 3 s window fires above ~1.8× normal sustained run speed (keeps headroom for legitimate bursts — casting/charging/downhill/road buff/lag catch-up); the 15 s window is tighter, firing above ~1.5× (a *sustained* average that high washes out bursts and is almost certainly a hack) |
 | `enforce_player_movement_raycast` | Geometry collision — flags positions the physics engine cannot reach without passing through solid geometry (wall-walk, out-of-bounds). 2-second cooldown after first hit prevents cascade false kicks in tight corridors |
 | `enforce_player_jump_height` | Jump apex cap via InqJumpVelocity(Strength, Jump). Fires if apex exceeds max height × 1.5 (50% lag fudge). Same-landblock only |
 | `enforce_player_door_collision` | Door ghost detection. +8 score — highest weight. No legitimate way through a closed door |
 | `enforce_player_spawn_collision` | Spawn overlap detection. +4 score — lowest weight. Server-side spawn timing can coincide |
+
+> **Speed checks measure horizontal distance.** Both the per-packet `speed_packet` check and the `enforce_player_movement_avg` windows compare *horizontal* (2-D) displacement against the run budget, since run rate governs horizontal ground speed. This removes the false positives that used to fire on slopes (where the vertical climb inflated 3-D distance past the budget): climbing a hill can no longer exceed the flat budget, so the budget itself can be held tight on flat ground where a client-side quickness hack is most visible. Downhill and airborne momentum are still covered by the server-computed physics velocity, which the client cannot spoof.
 
 ### Script Detection Checks
 
