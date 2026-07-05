@@ -477,6 +477,11 @@ namespace ACE.Server.WorldObjects
                     var xpRemainingGlobal = rollingCapXp - (TotalExperience ?? 0);
                     if (xpRemainingGlobal <= 0)
                     {
+                        // Global daily cap is exhausted: no XP can be added. PvP/PK XP still
+                        // overflows into Ancient Bottles (if any exist with room) rather than
+                        // being silently lost.
+                        if (xpType == XpType.PvP && addAmount > 0)
+                            FillXpBottlesFromOverflow(addAmount);
                         addAmount = 0;
                     }
                     else
@@ -563,6 +568,12 @@ namespace ACE.Server.WorldObjects
                 Session.Network.EnqueueSend(xpTotalUpdate, xpAvailUpdate);
 
                 CheckForLevelup();
+            }
+            else if (xpType == XpType.PvP)
+            {
+                // At absolute max level with XP gain disabled, no XP can be added. PvP/PK XP
+                // overflows into Ancient Bottles (if any exist with room) rather than being lost.
+                FillXpBottlesFromOverflow(amount);
             }
 
             if (xpMessage != "")

@@ -985,3 +985,7 @@ The server's movement speed enforcement has been improved to better catch client
 ### 🚪 Closed Doors No Longer Disconnect You
 
 Walking into a closed door is now treated purely as a physical barrier — like bumping a wall. You're still stopped from passing through a closed door, but doing so will no longer count against you or risk a disconnect. This removes a rare case where players pressed against a door (usually from a brief mismatch over whether the door was open) could be disconnected by the anti-cheat system.
+
+### ⚗️ PvP XP Overflow — No Longer Lost at the Daily Cap
+
+Fixed a bug where PvP reward XP could silently vanish instead of filling your **Ancient Bottles**. Overflow was only being captured when your PvP category bucket was full; if you had already hit the **global daily XP cap** (or the maximum level), any PvP reward — arena wins, PK quests, hometown captures, open-world PK kills — was lost entirely, even with an empty bottle in your pack. Now PvP overflow always tops off an Ancient Bottle that has room, from every cap, matching how the system was always meant to work. If you have no bottle (or all are full), there is nothing to catch it, as before.
