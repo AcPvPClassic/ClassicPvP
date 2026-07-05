@@ -57,6 +57,13 @@ namespace ACE.Server.Managers
 
         public const int MaxSimultaneousAttacks = 2;
 
+        /// <summary>
+        /// Seconds an attacking allegiance must hold the bind stone to complete Phase 1.
+        /// Configurable via the "ah_phase1_seconds" server property (default 240 = 4 minutes).
+        /// </summary>
+        public static double Phase1DurationSeconds =>
+            PropertyManager.GetLong("ah_phase1_seconds", 240).Item;
+
         // -----------------------------------------------------------------------
         // Initialization
         // -----------------------------------------------------------------------
@@ -334,7 +341,7 @@ namespace ACE.Server.Managers
             if (attackersWithinRange >= 2)
             {
                 accumulatedSeconds += 5;
-                if (accumulatedSeconds >= 240) // 4 minutes
+                if (accumulatedSeconds >= Phase1DurationSeconds)
                     return Phase1TickResult.PhaseComplete;
             }
 

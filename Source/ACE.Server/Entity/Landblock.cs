@@ -386,13 +386,14 @@ namespace ACE.Server.Entity
                 {
                     _lastAhPhase1Broadcast = now;
 
-                    var secsRemaining = Math.Max(0, 60 - _ahPhase1AccumulatedSeconds);
+                    var phase1Duration = Managers.AllegianceHometownManager.Phase1DurationSeconds;
+                    var secsRemaining = Math.Max(0, phase1Duration - _ahPhase1AccumulatedSeconds);
                     string progressMsg;
                     if (rawEnemyPresent)
                     {
                         var graceRemaining = Math.Max(0, Phase1EnemyGraceSeconds - _phase1EnemyPresenceSeconds);
                         progressMsg = $"[{registry.TownName}] Phase 1 assault — enemy in area! {graceRemaining:0}s until progress resets. " +
-                                      $"Progress: {_ahPhase1AccumulatedSeconds:0}/{60}s";
+                                      $"Progress: {_ahPhase1AccumulatedSeconds:0}/{phase1Duration:0}s";
                     }
                     else if (attackersNear >= 2)
                     {
@@ -401,7 +402,7 @@ namespace ACE.Server.Entity
                     else
                     {
                         progressMsg = $"[{registry.TownName}] Phase 1 assault paused — need at least 2 attackers within 5m of the Bind Stone. " +
-                                      $"Progress: {_ahPhase1AccumulatedSeconds:0}/{60}s";
+                                      $"Progress: {_ahPhase1AccumulatedSeconds:0}/{phase1Duration:0}s";
                     }
 
                     EnqueueBroadcast(null, false, null, null,
@@ -482,9 +483,10 @@ namespace ACE.Server.Entity
 
             if (Managers.AllegianceHometownManager.TryStartPhase1(registry.TownId, attackerMonarchId, attackerName, out _))
             {
+                var holdMinutes = Managers.AllegianceHometownManager.Phase1DurationSeconds / 60.0;
                 EnqueueBroadcast(null, false, null, null,
                     new Network.GameMessages.Messages.GameMessageSystemChat(
-                        $"[{registry.TownName}] {attackerName} has initiated a Phase 1 assault! Hold the bind stone for 1 minute.",
+                        $"[{registry.TownName}] {attackerName} has initiated a Phase 1 assault! Hold the bind stone for {holdMinutes:0.#} minute(s).",
                         ACE.Entity.Enum.ChatMessageType.WorldBroadcast));
             }
         }

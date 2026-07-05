@@ -787,7 +787,10 @@ namespace ACE.Server.Managers
                 ("bounty_wop_minimum_amount",            new Property<long>(200,        "Minimum reward amount that must be inscribed on a Writ of Pursuit for it to be accepted.")),
                 ("bounty_location_currency_wcid",         new Property<long>(0,          "WCID of the currency consumed to use the location finder on a bounty contract.")),
                 ("bounty_location_price_amount",          new Property<long>(25,         "Amount of location currency consumed per location finder use.")),
-                ("bounty_max_contracts",                  new Property<long>(3,          "Maximum number of active bounty contracts a hunter can hold at once."))
+                ("bounty_max_contracts",                  new Property<long>(3,          "Maximum number of active bounty contracts a hunter can hold at once.")),
+
+                // Allegiance Hometown
+                ("ah_phase1_seconds",                     new Property<long>(240,        "Seconds an attacking allegiance must hold the bind stone (2+ attackers within 5m, no enemy interruption) to complete Phase 1 and start Phase 2."))
                 );
 
         public static readonly ReadOnlyDictionary<string, Property<double>> DefaultDoubleProperties =

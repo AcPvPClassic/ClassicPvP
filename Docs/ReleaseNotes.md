@@ -969,3 +969,7 @@ Anti Parazi now clears your **Vitae penalty** in exchange for a **PK Trophy**. H
 Custom PvP reward XP — **arena matches, PK quests, hometown captures, and open-world PK kills** — is no longer multiplied by the seasonal rolling XP rate. Previously these rewards were scaled by the same global rate that ramps from ~0.25× early in the season up to 3× at the end, which made them feel tiny in the opening weeks and would have inflated them dramatically later on.
 
 These rewards are now granted as **fixed percentages of your XP to the next level**, so a given result is worth the same fraction of a level all season long. To keep early-season values reasonable now that the season rate no longer reduces them, the base percentages have been **halved**. For example, an arena 1v1 win now grants 10% of a level (loss 2.5%), a hometown capture grants 5%, and an open-world PK kill grants 2.5–5%. PK quest XP rewards were halved to match, and their listed reward amounts have been updated accordingly.
+
+### 🏰 Hometown Control — Phase 1 Timer Fix
+
+Fixed the Allegiance Hometown Phase 1 countdown, which announced "0s until Phase 2" after only one minute even though Phase 2 didn't begin until several minutes later. The countdown now matches the real Phase 1 hold duration.
