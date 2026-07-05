@@ -981,3 +981,7 @@ Fixed the Allegiance Hometown Phase 1 countdown, which announced "0s until Phase
 ### 🛡️ Anti-Cheat — Tighter Movement Speed Enforcement
 
 The server's movement speed enforcement has been improved to better catch client-side speed and quickness hacks. The checks are now terrain-aware: they account for legitimate movement over hills and uneven ground, which previously caused occasional rubber-banding for honest players, while holding a tighter limit on open ground where cheating is most obvious. The result is fewer false corrections during normal play and a smaller window for artificially fast movement to slip through. No action is needed on your part — the change applies automatically.
+
+### 🚪 Closed Doors No Longer Disconnect You
+
+Walking into a closed door is now treated purely as a physical barrier — like bumping a wall. You're still stopped from passing through a closed door, but doing so will no longer count against you or risk a disconnect. This removes a rare case where players pressed against a door (usually from a brief mismatch over whether the door was open) could be disconnected by the anti-cheat system.

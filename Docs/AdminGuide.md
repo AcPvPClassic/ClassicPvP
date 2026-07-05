@@ -514,7 +514,7 @@ All movement checks are **disabled by default**. Enable `enforce_player_movement
 | `enforce_player_movement_avg` | Sliding-window average speed over 3-second and 15-second windows. The short 3 s window fires above ~1.8× normal sustained run speed (keeps headroom for legitimate bursts — casting/charging/downhill/road buff/lag catch-up); the 15 s window is tighter, firing above ~1.5× (a *sustained* average that high washes out bursts and is almost certainly a hack) |
 | `enforce_player_movement_raycast` | Geometry collision — flags positions the physics engine cannot reach without passing through solid geometry (wall-walk, out-of-bounds). 2-second cooldown after first hit prevents cascade false kicks in tight corridors |
 | `enforce_player_jump_height` | Jump apex cap via InqJumpVelocity(Strength, Jump). Fires if apex exceeds max height × 1.5 (50% lag fudge). Same-landblock only |
-| `enforce_player_door_collision` | Door ghost detection. +8 score — highest weight. No legitimate way through a closed door |
+| `enforce_player_door_collision` | Closed-door collision. Rubber-bands the player back so they cannot pass through a closed door. **Enforcement only — no suspicion score and no kick**; a closed door is treated like a wall (a player leaning on one, often from door-state desync, is simply stopped). Logging is throttled to once per 5 s per player |
 | `enforce_player_spawn_collision` | Spawn overlap detection. +4 score — lowest weight. Server-side spawn timing can coincide |
 
 > **Speed checks measure horizontal distance.** Both the per-packet `speed_packet` check and the `enforce_player_movement_avg` windows compare *horizontal* (2-D) displacement against the run budget, since run rate governs horizontal ground speed. This removes the false positives that used to fire on slopes (where the vertical climb inflated 3-D distance past the budget): climbing a hill can no longer exceed the flat budget, so the budget itself can be held tight on flat ground where a client-side quickness hack is most visible. Downhill and airborne momentum are still covered by the server-computed physics velocity, which the client cannot spoof.
@@ -533,7 +533,8 @@ These are **heuristic** checks — statistical inferences rather than provable p
 
 | Class | Checks | On violation |
 |---|---|---|
-| **Hard** (provable physics) | `speed_packet`, `geometry`, `door_ghost`, `spawn_ghost`, `jump_height` | Rubber-band the player back to the last confirmed position **and** score |
+| **Hard** (provable physics) | `speed_packet`, `geometry`, `spawn_ghost`, `jump_height` | Rubber-band the player back to the last confirmed position **and** score |
+| **Enforcement-only** (physical barrier) | `door_ghost` | Rubber-band the player back — **no score, no kick**. A closed door is treated like a wall: the player is stopped from passing through, not punished |
 | **Soft** (heuristic) | `speed_avg_3s/15s`, `script_timing`, `script_packet_rate`, `script_reversal` | Score and log only — **no rubber-band** |
 
 The split exists so legitimate-but-unusual movement (glitch-running, high framerates, sticky-target combat facing) that trips a heuristic isn't visibly disrupted, while genuine wall-walks and speed hacks are still corrected on the spot. Soft checks still contribute to the kick threshold, so a sustained scripter is still removed.
@@ -557,7 +558,7 @@ Score accumulates on each violation and decays during clean movement: −3 per h
 | `speed_avg_15s` | proportional, max 12 |
 | `geometry` | +5 |
 | `jump_height` | `overage × 10`, max 15 |
-| `door_ghost` | +8 |
+| `door_ghost` | none — enforcement only (rubber-band, no score/kick) |
 | `spawn_ghost` | +4 |
 | `script_timing` | +6 |
 | `script_packet_rate` | +4 |

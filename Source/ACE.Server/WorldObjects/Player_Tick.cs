@@ -1410,43 +1410,35 @@ namespace ACE.Server.WorldObjects
                         }
 
                         // --- Option N: Door collision detection ---
-                        // Flags players whose physics transition passed through a closed door.
+                        // Blocks players whose physics transition passed through a closed door.
                         // LastTransitionHitClosedDoor is set in update_object_server_new() when the
                         // collision list contains a Door with IsOpen == false.
+                        //
+                        // This is treated as pure collision enforcement, NOT a punishable violation:
+                        // the player is rubber-banded back so they cannot pass through the door, but
+                        // there is no suspicion score and no kick.  A closed door is a physical barrier
+                        // like a wall — a player pressed against one (often from client/server door-state
+                        // desync) should simply be stopped, never booted.  Logging is throttled since the
+                        // rubber-band re-triggers this block every tick the player leans on the door.
                         if (PropertyManager.GetBool("enforce_player_door_collision").Item
                             && PhysicsObj.LastTransitionHitClosedDoor
                             && GodState == null)
                         {
-                            MovementSuspicionScore += 8.0f; // higher weight — doors are deliberately placed barriers
-
                             RubberBandRecoveryUntil = currentTime + 0.75;
                             RollbackToSnap("door_ghost");
-                            log.Warn($"{Name} - DOOR GHOST DETECTED (passed through closed door) - Location: {newPosition} SuspicionScore: {MovementSuspicionScore:0.0}");
 
-                            // Log to ace_log for long-term ban evidence (fire-and-forget).
-                            var _doorLocation = Location?.ToString() ?? "unknown";
-                            var _doorAccount  = Session?.Account ?? "unknown";
-                            var _doorScore    = MovementSuspicionScore;
-                            DiscordWebhookManager.SendMovementViolation("door_ghost", Name, _doorAccount, 0f, 0f, _doorScore, _doorLocation);
-                            System.Threading.Tasks.Task.Run(() =>
-                                DatabaseManager.Log.LogMovementViolation(
-                                    Guid.Full, Name, _doorAccount, "door_ghost", 0f, 0f, _doorScore, _doorLocation));
-
-                            // Shared kick thresholds.
-                            if (MovementSuspicionScore >= 50.0f)
+                            // Informational only (throttled to once per 5 s per player). No score, no kick.
+                            if (currentTime - _lastDoorGhostLogTime >= 5.0)
                             {
-                                log.Warn($"{Name} - MOVEMENT SUSPICION THRESHOLD REACHED ({MovementSuspicionScore:0.0}) - KICKING");
-                                Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
-                                    new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
-                                return false;
-                            }
+                                _lastDoorGhostLogTime = currentTime;
+                                log.Warn($"{Name} - DOOR COLLISION (blocked from passing through closed door) - Location: {newPosition}");
 
-                            if (MovementEnforcementCounter >= 10 && PropertyManager.GetBool("movement_violation_kick").Item)
-                            {
-                                log.Warn($"{Name} - MOVEMENT ENFORCEMENT COUNTER THRESHOLD ({MovementEnforcementCounter}) - KICKING");
-                                Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
-                                    new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
-                                return false;
+                                var _doorLocation = Location?.ToString() ?? "unknown";
+                                var _doorAccount  = Session?.Account ?? "unknown";
+                                DiscordWebhookManager.SendMovementViolation("door_ghost", Name, _doorAccount, 0f, 0f, MovementSuspicionScore, _doorLocation);
+                                System.Threading.Tasks.Task.Run(() =>
+                                    DatabaseManager.Log.LogMovementViolation(
+                                        Guid.Full, Name, _doorAccount, "door_ghost", 0f, 0f, MovementSuspicionScore, _doorLocation));
                             }
 
                             return false;

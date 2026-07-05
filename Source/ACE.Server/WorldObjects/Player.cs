@@ -100,6 +100,11 @@ namespace ACE.Server.WorldObjects
         /// <summary>Unix timestamp of the last time the movement_debug_chat throttle sent a message.</summary>
         private double _lastDebugChatTime;
 
+        /// <summary>Unix timestamp of the last door-collision (door_ghost) log/alert. Throttles logging
+        /// since the door block rubber-bands but never scores or kicks, so a player leaning on a door
+        /// re-triggers it every tick.</summary>
+        private double _lastDoorGhostLogTime;
+
         /// <summary>Unix timestamp after which the geometry-collision cooldown expires. Suppresses
         /// repeated geometry scores from tight dungeon walls so a single wall-adjacent position
         /// can't cascade into an instant kick.</summary>
