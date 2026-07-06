@@ -2893,6 +2893,15 @@ namespace ACE.Server.Command.Handlers
 
             sb.AppendLine($"  XP Cap:      {xpCap:N0}");
 
+            // Progress of the player's lifetime total XP toward the current season cap.
+            long totalXp = player.TotalExperience ?? 0;
+            if (xpCap > 0)
+            {
+                double capPct    = Math.Min(100.0, totalXp * 100.0 / xpCap);
+                string capStatus = capPct >= 100.0 ? " [AT CAP]" : $" ({capPct:F1}%)";
+                sb.AppendLine($"  To Cap:      {totalXp:N0} / {xpCap:N0}{capStatus}");
+            }
+
             // Time until next cap advance — rounded to nearest minute
             var timeUntil = RollingLevelCapManager.GetTimeUntilNextCapIncrease();
             if (timeUntil == TimeSpan.Zero)
