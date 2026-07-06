@@ -1005,3 +1005,7 @@ The Bind Stone's health during Phase 2 has been reduced by **20%** across all le
 ### 🏰 Hometown Control — Attacker's Allegiance Named in Announcements
 
 Global and Discord announcements for hometown assaults, captures, and defenses now identify the attacker's **allegiance**, not just a player name. Messages read like "Alice (The Dark Legion) is assaulting Yaraq!" — and for allegiances without a custom name, the monarch is used as the identity (e.g. "Alice (Bob's Allegiance)").
+
+### 🪄 Wand Monkeying Disabled in PvP
+
+A caster's **built-in spell** — the spell baked into a wand, orb, or other casting implement — now deals **no damage to other players**. This shuts down "wand monkeying," where players leaned on a caster's innate spell instead of casting their own war magic. Normal war magic cast from your spellbook is completely unaffected, and the change applies to PvP only — built-in caster spells still work as before against creatures.

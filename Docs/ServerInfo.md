@@ -374,6 +374,9 @@ For a window after being struck in PK combat, your own dispel spells will **not 
 ### Jump Spam
 Jumping rapidly in succession triggers accelerated stamina drain. After exceeding the jump threshold within a rolling 10-second window, every subsequent jump costs PK-rate stamina for a short penalty period. This eliminates the movement speed advantage gained through rapid jump-chaining.
 
+### Wand Monkeying Disabled
+A caster's **built-in spell** (the spell baked into a wand, orb, or other casting implement via its item spell) deals **no damage to other players**. This disables "wand monkeying" in PvP. Regular war magic cast from your own spellbook is unaffected, and built-in caster spells still function normally against creatures — the zero-damage rule applies only when the target is another player.
+
 ---
 
 ## 🛡️ Enhanced Anti-Cheat

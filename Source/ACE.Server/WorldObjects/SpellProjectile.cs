@@ -342,6 +342,11 @@ namespace ACE.Server.WorldObjects
                 }
                 else
                 {
+                    // Wand monkeying: in PvP, a caster's built-in spell (weapon SpellDID) does no damage.
+                    // Regular war magic is unaffected.
+                    if (isPvP && IsWeaponSpell)
+                        damage = 0;
+
                     if (Spell.IsExtendedSpell)
                         creatureTarget.ApplyDoT((int)(damage.Value / 4), (int)(damage.Value * 2), critical, CombatType.Magic, Spell.DamageType, ProjectileSource, ProjectileLauncher, sourceCreature?.GetCreatureSkill(Spell.School), Spell.NameWithMetaspellAdjectives);
                     else
