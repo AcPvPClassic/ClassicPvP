@@ -1009,3 +1009,7 @@ Global and Discord announcements for hometown assaults, captures, and defenses n
 ### 🪄 Wand Monkeying Disabled in PvP
 
 A caster's **built-in spell** — the spell baked into a wand, orb, or other casting implement — now deals **no damage to other players**. This shuts down "wand monkeying," where players leaned on a caster's innate spell instead of casting their own war magic. Normal war magic cast from your spellbook is completely unaffected, and the change applies to PvP only — built-in caster spells still work as before against creatures.
+
+### 💰 Pyreal Coins Now Stack to 25,000
+
+Pyreal coins now stack up to **25,000** (up from 10,000), matching End of Retail. Fewer stacks means less pack clutter and easier trading. Your existing coin stacks are updated automatically — no action needed.
