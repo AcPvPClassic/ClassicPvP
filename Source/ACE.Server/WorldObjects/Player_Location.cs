@@ -776,6 +776,12 @@ namespace ACE.Server.WorldObjects
                 return;
             }
 
+            // Anti-cheat: drop movement history across a teleport. If the window buffer kept
+            // positions from both sides of a portal/recall/death hop, the pair straddling the
+            // teleport would count hundreds of units as "travelled" distance and falsely fire
+            // the sliding-window average speed checks the moment movement resumes.
+            MovementWindowBuffer.Clear();
+
             var newPosition = new Position(_newPosition);
 
             if(newPosition.PositionX == 0 && newPosition.PositionY == 0 && newPosition.Cell == 0) // Trying to catch invalid position.

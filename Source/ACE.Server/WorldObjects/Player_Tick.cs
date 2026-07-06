@@ -1064,36 +1064,66 @@ namespace ACE.Server.WorldObjects
                         // Always maintained on clean ticks so that any check below that needs
                         // historical positions (speed windows, timing regularity, packet rate,
                         // direction reversal) works regardless of which individual configs are on.
-                        MovementWindowBuffer.Add((currentTime, new ACE.Entity.Position(newPosition)));
+                        //
+                        // Discontinuity guard: Teleport() clears this buffer, but if a position jump
+                        // reaches here through any path that bypassed Teleport(), a single cross-map
+                        // pair would poison the window sums with hundreds of units of "travelled"
+                        // distance and instantly fire both average-speed windows.  100 units (2-D) is
+                        // far above any step the per-packet check can accept (even the velocity-
+                        // consistent post-lag catch-up), so clearing here can never hide real movement.
+                        if (MovementWindowBuffer.Count > 0 &&
+                            MovementWindowBuffer[MovementWindowBuffer.Count - 1].Pos.Distance2D(newPosition) > 100.0f)
+                            MovementWindowBuffer.Clear();
+
+                        // RunRate is sampled per-entry so the window ceiling can use the max across the
+                        // window — see the MovementWindowBuffer declaration for why.
+                        MovementWindowBuffer.Add((currentTime, new ACE.Entity.Position(newPosition), GetRunRate()));
                         // Prune entries older than the longest window (15 s).
                         while (MovementWindowBuffer.Count > 0 && currentTime - MovementWindowBuffer[0].Timestamp > 15.0)
                             MovementWindowBuffer.RemoveAt(0);
 
                         // --- Sliding window average speed checks (Change 6) ---
-                        // Catches cheaters who pace teleport packets to stay under the per-packet limit.
+                        // Catches cheaters who pace teleport packets to stay under the per-packet limit,
+                        // and sustained client-side speed boosts (e.g. injected Quickness) too small to
+                        // trip the per-packet budget.
                         if (PropertyManager.GetBool("enforce_player_movement_avg").Item)
                         {
                             // Convert run rate to world-coordinate units/sec.
                             // GetRunRate() returns a dimensionless multiplier (1.0–4.5), not a speed.
-                            // The per-packet check scales it with 1.8f * runRate * deltaTime, so
-                            // 1.8f * GetRunRate() is the legitimate sustained horizontal speed.
-                            var baseSustainedSpeed = GetRunRate() * 1.8f;
-
-                            // Ceiling = baseSustainedSpeed * ceilingMultiplier.  Now that vertical
-                            // terrain noise is out of the window sum, these can come down from the old
-                            // 2.3x blanket headroom.  They differ by window length: a short 3 s window
-                            // still sees legitimate bursts (casting/charging/downhill/road buff/lag
-                            // catch-up) so it keeps more wiggle; a 15 s window washes bursts out, so a
-                            // sustained average that high is almost certainly a hack — hence a tighter
-                            // ceiling there.  Neither is at the theoretical 1.0x limit, leaving room for
-                            // legitimately fast characters while still catching anyone sustaining well
-                            // above their normal speed.
-                            //   3 s : 1.8x normal  ·  15 s : 1.5x normal
+                            // The engine's conversion is speed = runRate * 4.0 units/sec: the server's
+                            // own walk/run prediction above uses (runRate * 4.0f * deltaTime), and
+                            // MovementSystem.GetRunRate caps at 4.5 = the known 18 units/sec max run
+                            // speed.  (An earlier revision anchored this on 1.8f * runRate — the
+                            // per-packet scale factor, NOT a speed — putting the ceilings *below*
+                            // normal running speed and kicking legitimate players constantly.)
+                            //
+                            // The ceiling uses the MAX run rate sampled across the window, not the
+                            // current one: when run rate drops mid-window (run/road buff expiring,
+                            // stamina exhaustion), the movement already in the window was made at the
+                            // old faster rate and would otherwise read as a violation for up to 15 s.
+                            // Server-side rates are authoritative, so a client cannot inflate this.
+                            //
+                            // Ceiling multipliers over true sustained speed (4.0 * maxRunRate):
+                            //   3 s  : 1.4x — headroom for short legitimate bursts (downhill, jump
+                            //          momentum, post-lag catch-up, rubber-band round-trips)
+                            //   15 s : 1.25x — bursts wash out over 15 s; sustaining >25% over normal
+                            //          run speed for that long is not legitimate movement
+                            // Detection floor: sustained ~1.5x+ speed kicks within a minute or two;
+                            // ~1.3x logs/alerts without kicking (deliberate wiggle room).
 
                             // Local function: evaluate one window and return true if a kick was triggered.
-                            bool EvalSpeedWindow(double windowSecs, float ceilingMultiplier, float scoreMultiplier, float scoreCap, string violationType)
+                            bool EvalSpeedWindow(double windowSecs, float ceilingMultiplier, float scoreMultiplier, float scoreCap, string violationType, ref double lastScoreTime)
                             {
-                                var avgWindowMaxSpeed = baseSustainedSpeed * ceilingMultiplier;
+                                // A single burst keeps the trailing average elevated for seconds, and
+                                // this runs on every movement packet — without a cooldown one breach
+                                // would score dozens of times and instantly hit the kick threshold.
+                                // Each window scores at most once per its own length.
+                                if (currentTime - lastScoreTime < windowSecs) return false;
+
+                                // Right after a rubber-band the client replays from its pre-correction
+                                // position; those round-trips inflate the window sum with distance the
+                                // player never really travelled.  Skip until the client has caught up.
+                                if (currentTime < RubberBandRecoveryUntil) return false;
 
                                 // Find the first entry within the window.
                                 int startIdx = 0;
@@ -1113,11 +1143,20 @@ namespace ACE.Server.WorldObjects
                                 // inflates the measured average, so the existing ceiling catches a real
                                 // hack on any terrain without tightening the threshold itself.
                                 float totalDist = 0f;
+                                var maxWindowRunRate = 0.0f;
                                 for (int i = startIdx; i < MovementWindowBuffer.Count - 1; i++)
+                                {
                                     totalDist += MovementWindowBuffer[i].Pos.Distance2D(MovementWindowBuffer[i + 1].Pos);
+                                    maxWindowRunRate = Math.Max(maxWindowRunRate, MovementWindowBuffer[i].RunRate);
+                                }
+                                maxWindowRunRate = Math.Max(maxWindowRunRate, MovementWindowBuffer[MovementWindowBuffer.Count - 1].RunRate);
+
+                                var avgWindowMaxSpeed = 4.0f * maxWindowRunRate * ceilingMultiplier;
 
                                 var avgSpeed = (float)(totalDist / span);
                                 if (avgSpeed <= avgWindowMaxSpeed) return false;
+
+                                lastScoreTime = currentTime;
 
                                 var overage = (avgSpeed / avgWindowMaxSpeed) - 1.0f;
                                 var suspicionGain = Math.Min(overage * scoreMultiplier, scoreCap);
@@ -1159,8 +1198,11 @@ namespace ACE.Server.WorldObjects
                             }
 
                             // Evaluate short window first; if it kicks, skip long window.
-                            if (EvalSpeedWindow(3.0, 1.8f, 5.0f, 8.0f, "speed_avg_3s")) return false;
-                            if (EvalSpeedWindow(15.0, 1.5f, 8.0f, 12.0f, "speed_avg_15s")) return false;
+                            // Score multipliers are tuned against overage relative to the corrected
+                            // (higher) ceilings: a 2x speed hack gains ~ +10/3s + +15/15s and kicks in
+                            // ~15-20 s; a 1.5x hack kicks in about a minute; ~1.3x logs without kicking.
+                            if (EvalSpeedWindow(3.0, 1.4f, 25.0f, 10.0f, "speed_avg_3s", ref _lastSpeedAvg3sScoreTime)) return false;
+                            if (EvalSpeedWindow(15.0, 1.25f, 40.0f, 15.0f, "speed_avg_15s", ref _lastSpeedAvg15sScoreTime)) return false;
                         }
 
                         // --- Script detection: inter-packet timing regularity ---

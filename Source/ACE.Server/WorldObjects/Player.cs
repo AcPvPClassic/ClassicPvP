@@ -131,9 +131,20 @@ namespace ACE.Server.WorldObjects
         /// Ring buffer of recently validated positions used by the sliding-window average speed checks.
         /// Entries older than 15 seconds are pruned on each position update.
         /// Only contains positions that passed the per-packet speed check.
+        /// RunRate is the server-computed GetRunRate() at the time of the sample: the window ceiling is
+        /// derived from the MAX rate across the window, so a rate drop mid-window (run/road buff expiry,
+        /// stamina exhaustion) doesn't turn already-validated fast movement into a false violation.
+        /// Cleared on Teleport() so a portal/recall hop is never counted as travelled distance.
         /// </summary>
-        public System.Collections.Generic.List<(double Timestamp, ACE.Entity.Position Pos)> MovementWindowBuffer
-            = new System.Collections.Generic.List<(double, ACE.Entity.Position)>();
+        public System.Collections.Generic.List<(double Timestamp, ACE.Entity.Position Pos, float RunRate)> MovementWindowBuffer
+            = new System.Collections.Generic.List<(double, ACE.Entity.Position, float)>();
+
+        /// <summary>Unix timestamps of the last time each average-speed window added to the suspicion
+        /// score. A window's trailing average stays elevated for seconds after a single burst, and the
+        /// check runs on every movement packet — without a cooldown one breach would score dozens of
+        /// times (instant kick). Each window may score at most once per its own window length.</summary>
+        private double _lastSpeedAvg3sScoreTime;
+        private double _lastSpeedAvg15sScoreTime;
 
         /// <summary>Unix timestamp of the last time the packet-rate check added to the suspicion score.
         /// The packet-rate check evaluates on every clean tick; without this throttle a brief burst over

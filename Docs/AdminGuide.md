@@ -511,7 +511,7 @@ All movement checks are **disabled by default**. Enable `enforce_player_movement
 
 | Property | What It Detects |
 |---|---|
-| `enforce_player_movement_avg` | Sliding-window average speed over 3-second and 15-second windows. The short 3 s window fires above ~1.8× normal sustained run speed (keeps headroom for legitimate bursts — casting/charging/downhill/road buff/lag catch-up); the 15 s window is tighter, firing above ~1.5× (a *sustained* average that high washes out bursts and is almost certainly a hack) |
+| `enforce_player_movement_avg` | Sliding-window average horizontal speed over 3 s and 15 s windows, measured against true run speed (`4.0 × run rate` units/s — the engine's own conversion). The 3 s window fires above **1.4×** normal (headroom for downhill, jump momentum, lag catch-up); the 15 s window fires above **1.25×** (bursts wash out over 15 s). Detection floor: sustained ~1.5×+ speed kicks within a minute or two; ~1.3× logs/alerts without kicking. False-positive protections: the ceiling uses the **max** run rate sampled across the window (immune to buff-expiry / road-exit / exhaustion transients), the window buffer is **cleared on every teleport** (portal hops never count as travelled distance), scoring is suppressed during rubber-band recovery, and each window scores **at most once per its own length** — a single breach can no longer fire dozens of times per second and insta-kick |
 | `enforce_player_movement_raycast` | Geometry collision — flags positions the physics engine cannot reach without passing through solid geometry (wall-walk, out-of-bounds). 2-second cooldown after first hit prevents cascade false kicks in tight corridors |
 | `enforce_player_jump_height` | Jump apex cap via InqJumpVelocity(Strength, Jump). Fires if apex exceeds max height × 1.5 (50% lag fudge). Same-landblock only |
 | `enforce_player_door_collision` | Closed-door collision. Rubber-bands the player back so they cannot pass through a closed door. **Enforcement only — no suspicion score and no kick**; a closed door is treated like a wall (a player leaning on one, often from door-state desync, is simply stopped). Logging is throttled to once per 5 s per player |
@@ -554,8 +554,8 @@ Score accumulates on each violation and decays during clean movement: −3 per h
 | Violation Type | Score Gain |
 |---|---|
 | `speed_packet` | `overage × 10`, max 15 (borderline: ×0.5) |
-| `speed_avg_3s` | proportional, max 8 |
-| `speed_avg_15s` | proportional, max 12 |
+| `speed_avg_3s` | proportional, max 10 — at most once per 3 s |
+| `speed_avg_15s` | proportional, max 15 — at most once per 15 s |
 | `geometry` | +5 |
 | `jump_height` | `overage × 10`, max 15 |
 | `door_ghost` | none — enforcement only (rubber-band, no score/kick) |
