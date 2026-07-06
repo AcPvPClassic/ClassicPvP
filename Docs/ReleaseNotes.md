@@ -968,7 +968,7 @@ Anti Parazi now clears your **Vitae penalty** in exchange for a **PK Trophy**. H
 
 Custom PvP reward XP — **arena matches, PK quests, hometown captures, and open-world PK kills** — is no longer multiplied by the seasonal rolling XP rate. Previously these rewards were scaled by the same global rate that ramps from ~0.25× early in the season up to 3× at the end, which made them feel tiny in the opening weeks and would have inflated them dramatically later on.
 
-These rewards are now granted as **fixed percentages of your XP to the next level**, so a given result is worth the same fraction of a level all season long. To keep early-season values reasonable now that the season rate no longer reduces them, the base percentages have been **halved**. For example, an arena 1v1 win now grants 10% of a level (loss 2.5%), a hometown capture grants 5%, and an open-world PK kill grants 2.5–5%. PK quest XP rewards were halved to match, and their listed reward amounts have been updated accordingly.
+These rewards are now granted as **fixed percentages of your XP to the next level**, so a given result is worth the same fraction of a level all season long — they no longer shrink in the low-rate opening weeks, nor inflate late in the season when the rate climbs above 1×. The reward percentages themselves are unchanged (for example an arena 1v1 win grants 20% of a level, a loss 5%; a hometown capture grants 10%; an open-world PK kill grants 5–10%).
 
 ### 🏰 Hometown Control — Phase 1 Timer Fix
 
@@ -989,3 +989,19 @@ Walking into a closed door is now treated purely as a physical barrier — like 
 ### ⚗️ PvP XP Overflow — No Longer Lost at the Daily Cap
 
 Fixed a bug where PvP reward XP could silently vanish instead of filling your **Ancient Bottles**. Overflow was only being captured when your PvP category bucket was full; if you had already hit the **global daily XP cap** (or the maximum level), any PvP reward — arena wins, PK quests, hometown captures, open-world PK kills — was lost entirely, even with an empty bottle in your pack. Now PvP overflow always tops off an Ancient Bottle that has room, from every cap, matching how the system was always meant to work. If you have no bottle (or all are full), there is nothing to catch it, as before.
+
+---
+
+## 🩹 Patch — July 6, 2026
+
+### 🏰 Hometown Control — Bind Stone No Longer Heals Over Time
+
+During a Phase 2 siege, the Bind Stone no longer passively regenerates health. Its HP now changes only through the intended siege mechanics — dropping when a defender is killed and recovering when an attacker is killed — so a sustained assault can't be undone by slow background healing.
+
+### 🏰 Hometown Control — Bind Stone Health Reduced
+
+The Bind Stone's health during Phase 2 has been reduced by **20%** across all level caps. It still scales with the rolling level cap; it's simply a bit faster to bring down, shortening a clean unopposed siege from roughly 22 minutes to about 18.
+
+### 🏰 Hometown Control — Attacker's Allegiance Named in Announcements
+
+Global and Discord announcements for hometown assaults, captures, and defenses now identify the attacker's **allegiance**, not just a player name. Messages read like "Alice (The Dark Legion) is assaulting Yaraq!" — and for allegiances without a custom name, the monarch is used as the identity (e.g. "Alice (Bob's Allegiance)").

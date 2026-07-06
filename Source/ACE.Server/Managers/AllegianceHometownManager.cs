@@ -51,6 +51,12 @@ namespace ACE.Server.Managers
         // town_id → real Bindstone WO cloaked during Phase 2
         private static readonly Dictionary<byte, WorldObjects.Bindstone> _phase2CloakedBindstones = new();
 
+        // town_id → bare attacker allegiance identity for the active conflict.
+        // ConflictAttackerName holds the "Player (Allegiance)" display label used in broadcasts;
+        // this holds the plain allegiance name used for ownership transfer and audit logging.
+        // In-memory only — conflicts never survive a restart (ConflictPhase is reset on load).
+        private static readonly Dictionary<byte, string> _conflictAttackerAllegiance = new();
+
         // monarch IDs permanently banned from attacking towns
         private static readonly System.Collections.Generic.HashSet<uint> _blacklist = new();
         private static readonly System.Collections.Generic.Dictionary<uint, ACE.Database.Models.Log.AllegianceHometownBlacklist> _blacklistEntries = new();
@@ -63,6 +69,24 @@ namespace ACE.Server.Managers
         /// </summary>
         public static double Phase1DurationSeconds =>
             PropertyManager.GetLong("ah_phase1_seconds", 240).Item;
+
+        /// <summary>
+        /// A human-readable identity for a player's allegiance: the custom allegiance name if
+        /// one is set, otherwise "{Monarch}'s Allegiance". Falls back to the player's own name
+        /// when no allegiance or monarch name is available.
+        /// </summary>
+        public static string GetAllegianceIdentity(WorldObjects.Player player)
+        {
+            var allegiance = player?.Allegiance;
+            if (allegiance == null)
+                return player?.Name ?? "Unknown";
+
+            if (!string.IsNullOrWhiteSpace(allegiance.AllegianceName))
+                return allegiance.AllegianceName;
+
+            var monarchName = allegiance.Monarch?.Player?.Name;
+            return !string.IsNullOrWhiteSpace(monarchName) ? $"{monarchName}'s Allegiance" : player.Name;
+        }
 
         // -----------------------------------------------------------------------
         // Initialization
@@ -79,6 +103,7 @@ namespace ACE.Server.Managers
                 _captureProtection.Clear();
                 _latestEventByTown.Clear();
                 _phase2Proxies.Clear();
+                _conflictAttackerAllegiance.Clear();
                 _blacklist.Clear();
                 _blacklistEntries.Clear();
 
@@ -229,8 +254,8 @@ namespace ACE.Server.Managers
         /// Attempts to start Phase 1 for the given attacker allegiance on the given town.
         /// Returns false (with reason message) if blocked by cooldowns, protection, or conflict limits.
         /// </summary>
-        public static bool TryStartPhase1(byte townId, uint attackerMonarchId, string attackerName,
-            out string failReason)
+        public static bool TryStartPhase1(byte townId, uint attackerMonarchId,
+            string attackerDisplayName, string attackerAllegianceName, out string failReason)
         {
             failReason = null;
 
@@ -287,16 +312,18 @@ namespace ACE.Server.Managers
 
             town.ConflictPhase             = 1;
             town.ConflictAttackerMonarchId = attackerMonarchId;
-            town.ConflictAttackerName      = attackerName;
+            town.ConflictAttackerName      = attackerDisplayName;
             town.ConflictStartTime         = DateTime.UtcNow;
             town.Phase2StartTime           = null;
             SaveTown(town);
 
+            _conflictAttackerAllegiance[townId] = attackerAllegianceName;
+
             GetOrCreateSet(_activeConflictsByMonarch, attackerMonarchId).Add(townId);
 
-            // Log event
+            // Log event (bare allegiance name, not the display label)
             var evt = DatabaseManager.Log.StartAllegianceHometownEvent(
-                townId, attackerMonarchId, attackerName,
+                townId, attackerMonarchId, attackerAllegianceName,
                 town.OwnerMonarchId, defenderName);
             if (evt != null)
                 _latestEventByTown[townId] = evt;
@@ -305,7 +332,7 @@ namespace ACE.Server.Managers
             var ownerPart = town.OwnerMonarchId.HasValue
                 ? $" (owned by {defenderName})"
                 : " (unowned)";
-            GlobalBroadcast($"{attackerName} is assaulting {town.TownName}{ownerPart}! Phase 1 has begun.");
+            GlobalBroadcast($"{attackerDisplayName} is assaulting {town.TownName}{ownerPart}! Phase 1 has begun.");
 
             return true;
         }
@@ -393,6 +420,7 @@ namespace ACE.Server.Managers
 
             var attackerMonarchId = town.ConflictAttackerMonarchId!.Value;
             var attackerName      = town.ConflictAttackerName;
+            var attackerAllegiance = _conflictAttackerAllegiance.TryGetValue(townId, out var an) ? an : attackerName;
             var prevOwnerName     = town.OwnerAllegianceName;
             var prevOwnerId       = town.OwnerMonarchId;
 
@@ -402,7 +430,7 @@ namespace ACE.Server.Managers
             GetOrCreateSet(_ownedByMonarch, attackerMonarchId).Add(town.TownId);
 
             town.OwnerMonarchId       = attackerMonarchId;
-            town.OwnerAllegianceName  = attackerName;
+            town.OwnerAllegianceName  = attackerAllegiance; // bare allegiance identity, not the display label
             town.CapturedAt           = DateTime.UtcNow;
 
             // Apply capture protection
@@ -546,10 +574,10 @@ namespace ACE.Server.Managers
                 for (int k = 0; k < 3; k++)
                     GiveSingle(winner, CustomWeenieId.DarkbeatKey);
 
-                // 5% of XP to next level (fixed reward; GrantXP already bypasses the season xp_modifier)
+                // 10% of XP to next level (fixed reward; GrantXP already bypasses the season xp_modifier)
                 var level = winner.Level ?? 1;
                 var xpBand = (long)winner.GetXPBetweenLevels(level, level + 1);
-                var bonusXp = (long)Math.Round(xpBand * 0.05);
+                var bonusXp = (long)Math.Round(xpBand * 0.10);
                 if (bonusXp > 0)
                     winner.GrantXP(bonusXp, XpType.PvP, ACE.Entity.Enum.ShareType.None, "hometown capture reward");
 
@@ -678,6 +706,8 @@ namespace ACE.Server.Managers
             if (town.ConflictAttackerMonarchId.HasValue)
                 GetOrCreateSet(_activeConflictsByMonarch, town.ConflictAttackerMonarchId.Value).Remove(town.TownId);
 
+            _conflictAttackerAllegiance.Remove(town.TownId);
+
             town.ConflictPhase             = 0;
             town.ConflictAttackerMonarchId = null;
             town.ConflictAttackerName      = null;
@@ -724,14 +754,15 @@ namespace ACE.Server.Managers
 
         /// <summary>
         /// Computes the bindstone's starting HP based on the current level cap.
-        /// Designed so 3 players attacking unopposed can destroy it in ~22 minutes.
+        /// Designed so 3 players attacking unopposed can destroy it in ~18 minutes
+        /// (a 20% reduction from the original ~22-minute tuning).
         /// </summary>
         public static int ComputeBindstoneHp()
         {
             var xpCap    = RollingLevelCapManager.GetCurrentXpCap();
             int levelCap = RollingLevelCapManager.GetCurrentLevelCap(xpCap);
             float dpsPerPlayer = Math.Clamp(25f + 75f * (levelCap - 15f) / 115f, 25f, 100f);
-            return (int)(dpsPerPlayer * 3f * 1350f);
+            return (int)(dpsPerPlayer * 3f * 1350f * 0.8f);
         }
 
         /// <summary>

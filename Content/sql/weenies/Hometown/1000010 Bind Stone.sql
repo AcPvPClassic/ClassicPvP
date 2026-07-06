@@ -9,6 +9,7 @@
 -- Physical damage types (slash/pierce/bludgeon) are 30% resisted to keep melee/archer
 -- damage in the same ballpark as magic damage.
 -- HP is overridden at spawn by AllegianceHometownManager.ComputeBindstoneHp().
+-- HealthRate is 0 so it never passively regenerates; HP only moves via player-kill effects.
 -- ============================================================
 
 DELETE FROM `weenie` WHERE `class_Id` = 1000010;
@@ -35,6 +36,7 @@ VALUES (1000010,   1, TRUE) /* Stuck */;
 
 INSERT INTO `weenie_properties_float` (`object_Id`, `type`, `value`)
 VALUES (1000010,   1,       5) /* HeartbeatInterval */
+     , (1000010,   3,       0) /* HealthRate - 0 = no passive health regeneration (HP only changes via player-kill effects) */
      , (1000010,  12,       0) /* Shade */
      , (1000010,  13,       1) /* ArmorModVsSlash */
      , (1000010,  14,       1) /* ArmorModVsPierce */
