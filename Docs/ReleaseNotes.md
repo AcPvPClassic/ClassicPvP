@@ -56,7 +56,7 @@ The **Shimmering Skeleton Key** (from the Mythic Mystery Box) previously did not
 
 Two new morph gems let you re-roll the creature type on slayer/resistance gear:
 
-- **Slayer Morph Gem** — randomizes the creature-slayer type on a loot-gen weapon or caster (adding one if the weapon has none), or on loot-gen armor that has a Creature Slayer Rating.
+- **Slayer Morph Gem** — randomizes the creature-slayer type on a loot-gen weapon or caster that already has a slayer, or on loot-gen armor that has a Creature Slayer Rating.
 - **Creature Resistance Morph Gem** — randomizes the creature-resistance type on loot-gen armor/jewelry that has a Creature Resist Rating.
 
 Both are sold on **Anti Parazi** for **100 PK Trophies** each, and drop from **Rare Mystery Boxes** (~1.9% each) and **Mythic Mystery Boxes** (~11.5% each).

@@ -731,7 +731,7 @@ Killing the same player more than **3 times within a 1-hour window** suppresses 
 | Missile Defense Requirement Morph Gem | 400 | Removes the Missile Defense activation requirement from an item. |
 | Melee Defense Requirement Morph Gem | 400 | Removes the Melee Defense activation requirement from an item. |
 | Player Wield Requirement Morph Gem | 500 | Removes the wield restriction binding an item to a specific player. |
-| Slayer Morph Gem | 100 | Randomizes the creature-slayer type on a loot-gen weapon or caster (adding one if it has none), or on loot-gen armor with a Creature Slayer Rating. |
+| Slayer Morph Gem | 100 | Randomizes the creature-slayer type on a loot-gen weapon or caster that already has a slayer, or on loot-gen armor with a Creature Slayer Rating. |
 | Creature Resistance Morph Gem | 100 | Randomizes the creature-resistance type on loot-gen armor/jewelry that has a Creature Resist Rating. |
 | A Dick (Vitae Removal) | 1 | Eat it to remove your Vitae penalty (no XP granted). Does nothing if you have no penalty. |
 

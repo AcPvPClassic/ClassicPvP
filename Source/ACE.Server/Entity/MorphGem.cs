@@ -351,11 +351,13 @@ namespace ACE.Server.Entity
                     #region MorphGemCreatureSlayerRandom
                     case MorphGemCreatureSlayerRandom:
 
-                        //Only allow on loot gen weapons, casters or armor
-                        if(target.ItemType != ItemType.MeleeWeapon &&
-                            target.ItemType != ItemType.MissileWeapon &&
-                            target.ItemType != ItemType.Caster &&
-                            (target.ArmorLevel ?? 0) < 1)
+                        //Only allow on loot gen weapons, casters or armor that already has a weapon slayer or gear slayer
+                        if(( target.ItemType != ItemType.MeleeWeapon &&
+                             target.ItemType != ItemType.MissileWeapon &&
+                             target.ItemType != ItemType.Caster &&
+                             (target.ArmorLevel ?? 0) < 1) ||
+                             (!target.SlayerCreatureType.HasValue &&
+                              target.GearCreatureSlayerType == CreatureType.Invalid))
                         {
                             playerMsg = "This gem can only be used on loot generated weapons, casters with a Slayer or armor with a Creature Slayer Rating.";
                             player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
