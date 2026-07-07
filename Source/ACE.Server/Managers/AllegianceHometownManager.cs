@@ -502,7 +502,10 @@ namespace ACE.Server.Managers
             var entry = AllegianceHometownRegistry.GetById(townId);
             if (entry == null) return;
 
-            var mainLb = LandblockManager.GetLandblock(new ACE.Entity.LandblockId(entry.LandblockId), false);
+            // entry.LandblockId is the 16-bit landblock value; build the LandblockId from the
+            // bindstone Position so the landblock resolves correctly (a raw 16-bit value would
+            // be interpreted as landblock 0x0000).
+            var mainLb = LandblockManager.GetLandblock(entry.BindstonePosition.LandblockId, false);
             if (mainLb == null) return;
 
             // Collect all landblocks in the smite zone (main + adjacent)

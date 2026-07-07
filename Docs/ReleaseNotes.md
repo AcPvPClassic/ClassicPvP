@@ -1006,6 +1006,10 @@ The Bind Stone's health during Phase 2 has been reduced by **20%** across all le
 
 Global and Discord announcements for hometown assaults, captures, and defenses now name both the **attacking** and **defending allegiances**, rather than an individual player. For example: "The Dark Legion is attempting to wrest control of Yaraq from The Iron Fist! Phase 1 has begun." Allegiances without a custom name are identified by their monarch (e.g. "Bob's Allegiance").
 
+### 🏰 Hometown Control — Capture Rewards Now Awarded
+
+Fixed a bug where destroying a town's Bind Stone and capturing the town granted **no rewards** to the attacking allegiance, and failed to smite the losing defenders. The reward step was looking at the wrong landblock and silently bailing out. Attackers within range of the Bind Stone now correctly receive their capture rewards (PK Trophies, MMDs, a Phial of Bloody Tears, Darkbeat Keys, and bonus XP), and defeated defenders nearby are smited as intended.
+
 ### 🪄 Wand Monkeying Disabled in PvP
 
 A caster's **built-in spell** — the spell baked into a wand, orb, or other casting implement — now deals **no damage to other players**. This shuts down "wand monkeying," where players leaned on a caster's innate spell instead of casting their own war magic. Normal war magic cast from your spellbook is completely unaffected, and the change applies to PvP only — built-in caster spells still work as before against creatures.
