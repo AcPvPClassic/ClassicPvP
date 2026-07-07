@@ -1175,11 +1175,16 @@ namespace ACE.Server.Entity
                     return false;
             }
 
-            // No arena reward if any opposing arena player is a throwaway alt parked on an
-            // allegiance-mate's account (their account holds a character in this player's allegiance).
+            // Anti-alt-farming: deny rewards if an opposing arena player is a throwaway parked on an
+            // allegiance-mate's account. In arenas we deliberately apply this ONLY to opponents who
+            // are not themselves in your allegiance (different monarch) — legitimate same-allegiance
+            // matches are allowed to reward, still governed by the 15/day same-allegiance cap above.
+            // (Excluding same-monarch opponents here also avoids false positives when a genuine
+            // allegiance-mate simply happens to have another of their own characters in the allegiance.)
             foreach (var opponent in allArenaPlayers.Where(x =>
                          x.CharacterId != arenaPlayer.CharacterId &&
-                         x.TeamGuid != arenaPlayer.TeamGuid))
+                         x.TeamGuid != arenaPlayer.TeamGuid &&
+                         x.MonarchId != arenaPlayer.MonarchId))
             {
                 var opponentPlayer = PlayerManager.FindByGuid(new ObjectGuid(opponent.CharacterId));
                 if (opponentPlayer != null && player.VictimIsAllegianceMateAlt(opponentPlayer))

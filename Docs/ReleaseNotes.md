@@ -1043,3 +1043,15 @@ Killing another player out in the world can now drop a **PK Trophy** on their co
 - No trophy if the victim is above the level 126 cap, or more than **15 levels below** the killer.
 - No trophy if the killer and victim share the same monarch.
 - A given victim can only have **3 trophies** dropped on their corpse(s) per rolling hour, and **10 per day**.
+
+---
+
+## 🩹 Patch — July 7, 2026
+
+### 🏟️ Arena — Same-Allegiance Rewards Restored
+
+A recent anti-alt-farming change had unintentionally stopped **same-allegiance arena matches** from paying out any rewards. In the arena, that block now applies only when an opponent is **not** in your allegiance but is a throwaway parked on an account that holds one of your allegiance-mates. Fighting an actual member of your own allegiance in the arena rewards normally again — still subject to the existing limit of **15 same-allegiance rewards per day**.
+
+### 📦 Darkbeat Chest — Loot Quality Reduced
+
+The loot quality of Darkbeat's Lost Storage chest (opened with Darkbeat's Lost Storage Keys) has been reduced — its loot quality modifier drops from **0.5** to **0.425**, slightly lowering the average quality of the items it rolls.
