@@ -710,10 +710,10 @@ Killing the same player more than **3 times within a 1-hour window** suppresses 
 | Empyrean Tuning Fork | 25 | Randomizes the legendary cantrips on armor, jewelry, or shields that already have legendaries. One use per item. |
 | Slayer Upgrade Gem | 25 | Upgrades an existing slayer damage bonus to 1.8 on weapons that rolled a slayer via the tinkering lottery. |
 | Ancient Bottle | 50 | Absorbs PvP XP overflow up to 100M. Bonded & Attuned. |
-| Ancient Empyrean Tool | 50 | Guarantees the next tinker will not fail. |
+| Ancient Empyrean Tool | 75 | Guarantees the next tinker will not fail. |
 | Empyrean Jeweler's Sawblade | 50 | Randomizes the slot of a ring, bracelet, or necklace between finger, wrist, and neck. |
 | Oil of Creature Slaying | 75 | Adds a random slayer (1.8 damage bonus) to a weapon or magic caster that does not already have one. |
-| Skill and Attribute Reset Gem | 100 | Clears quest stamps for the Temple of Enlightenment and Temple of Forgetfulness. Each use costs an escalating number of PK Trophies (see below). Bonded & Attuned. |
+| Skill and Attribute Reset Gem | 50 | Clears quest stamps for the Temple of Enlightenment and Temple of Forgetfulness. Each use costs an escalating number of PK Trophies (see below). Bonded & Attuned. |
 
 ---
 
@@ -725,7 +725,7 @@ Killing the same player more than **3 times within a 1-hour window** suppresses 
 |------|-------------------|-------------|
 | Bounty Purchase Token | 100 | Used to purchase a Bounty Contract from the Bounty Hunter NPC. |
 | Writ of Pursuit | 200 | Inscribe with `PlayerName:Amount` and turn in to flag a player as a High Priority Target. |
-| Workmanship Morph Gem | 300 | Randomizes the Workmanship of a loot item (1–10). |
+| Workmanship Morph Gem | 500 | Randomizes the Workmanship of a loot item (1–10). |
 | Arcane Lore Morph Gem | 350 | 75% chance to reduce Arcane Lore requirement by 5–25; 15% chance of no effect; 10% chance to increase it by 5–15. |
 | Missile Defense Requirement Morph Gem | 400 | Removes the Missile Defense activation requirement from an item. |
 | Melee Defense Requirement Morph Gem | 400 | Removes the Melee Defense activation requirement from an item. |
