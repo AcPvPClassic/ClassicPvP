@@ -54,7 +54,7 @@ namespace ACE.Server.WorldObjects
                 }
             }
 
-            if (IsBusy || suicideInProgress)
+            if (IsBusy || Teleporting || suicideInProgress)
             {
                 SendWeenieError(WeenieError.YoureTooBusy);
                 OnAttackDone();
@@ -165,7 +165,7 @@ namespace ACE.Server.WorldObjects
             var launcher = GetEquippedMissileLauncher();
 
             var creature = target as Creature;
-            if (!IsAlive || IsBusy || MissileTarget == null || creature == null || !creature.IsAlive || suicideInProgress)
+            if (!IsAlive || IsBusy || Teleporting || MissileTarget == null || creature == null || !creature.IsAlive || suicideInProgress)
             {
                 OnAttackDone();
                 return;

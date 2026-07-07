@@ -1094,3 +1094,7 @@ The three **Town Control kill quests** (PKKILL_TC_1/5/30) have been disabled and
 ### 🗑️ Level Requirement Removal Morph Gem — Discontinued
 
 No item in the Infiltration era carries a level requirement, so this gem never had a real use. It's been pulled from sale on **Anti Parazi** and removed from the **Common** and **Rare Mystery Box** loot tables; the remaining weight in each was redistributed proportionally across the other entries.
+
+### 🏹 Shooting From Portal Space Fixed
+
+Fixed a long-standing exploit where an archer could enter combat and fire arrows while still in **portal space** — the "purple bubble" state before a character finishes materializing out of a portal or recall. Missile attacks are now blocked while teleporting, both at the moment an attack is started and mid-sequence if a portal is entered during a shot. Melee and magic already had this protection.
