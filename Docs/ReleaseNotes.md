@@ -1035,3 +1035,11 @@ Arena match XP payouts have been rebalanced:
 - **Draws:** 15% → **3.5%**
 
 FFA/Tugak podium finishes (2nd 25%, 3rd 15%), group results, and all item rewards (PK Trophies, Phials, Darkbeat Keys) are unchanged. Arena XP remains a fixed fraction of a level, independent of the seasonal rolling XP rate.
+
+### 🏆 Open-World PK Trophy Drops
+
+Killing another player out in the world can now drop a **PK Trophy** on their corpse. A few limits keep it from being farmed:
+
+- No trophy if the victim is above the level 126 cap, or more than **15 levels below** the killer.
+- No trophy if the killer and victim share the same monarch.
+- A given victim can only have **3 trophies** dropped on their corpse(s) per rolling hour, and **10 per day**.

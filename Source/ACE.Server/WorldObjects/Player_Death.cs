@@ -427,24 +427,21 @@ namespace ACE.Server.WorldObjects
                         globalPKDe += $" The kill occured{locationString}.";
                 }
 
-                // Kill streak tracking and bounty completion
-                if (Common.ConfigManager.Config.Server.WorldRuleset != Common.Ruleset.CustomDM)
+                // Kill streak tracking and bounty completion are not CustomDM-specific; they must run under all rule sets.
+                // Increment killer's streak; reset victim's streak. Same-allegiance kills, and
+                // kills of a throwaway alt parked on an allegiance-mate's account, are excluded
+                // so allegiance-mates can't inflate a streak or reset each other's.
+                if (!pkPlayer.IsSameAllegiance(this) && !pkPlayer.VictimIsAllegianceMateAlt(this))
                 {
-                    // Increment killer's streak; reset victim's streak. Same-allegiance kills, and
-                    // kills of a throwaway alt parked on an allegiance-mate's account, are excluded
-                    // so allegiance-mates can't inflate a streak or reset each other's.
-                    if (!pkPlayer.IsSameAllegiance(this) && !pkPlayer.VictimIsAllegianceMateAlt(this))
-                    {
-                        pkPlayer.PlayerKillStreak++;
-                        PlayerKillStreak = 0;
-                    }
-
-                    // Complete contracts only for hunters who actually earned this kill:
-                    // the credited killer, or a hunter who dealt enough damage while in
-                    // visible range of the target. Unrelated kills no longer complete contracts.
-                    foreach (var hunter in PlayerManager.GetAllOnline())
-                        hunter.MarkBountyComplete(this, pkPlayer);
+                    pkPlayer.PlayerKillStreak++;
+                    PlayerKillStreak = 0;
                 }
+
+                // Complete contracts only for hunters who actually earned this kill:
+                // the credited killer, or a hunter who dealt enough damage while in
+                // visible range of the target. Unrelated kills no longer complete contracts.
+                foreach (var hunter in PlayerManager.GetAllOnline())
+                    hunter.MarkBountyComplete(this, pkPlayer);
 
                 string webhookMsg = new String(globalPKDe);
 
@@ -1282,6 +1279,88 @@ namespace ACE.Server.WorldObjects
             dropItems.AddRange(pyreals);
 
             var destroyCoins = PropertyManager.GetBool("corpse_destroy_pyreals").Item;
+
+            // PK Trophy drop on death behavior
+            if (IsPKDeath(corpse.KillerId))
+            {
+                var shouldDropTrophy = true;
+
+                // Don't drop trophy if victim is over the level cap, or too far below the killer's level
+                var _killer = PlayerManager.FindByGuid(new ObjectGuid((uint)corpse.KillerId));
+                if (_killer != null)
+                {
+                    if (this.Level > 126 || this.Level < (_killer.Level ?? 0) - 15)
+                    {
+                        shouldDropTrophy = false;
+                    }
+
+                    // Don't drop trophy if killer is in same clan
+                    var victimMonarch = this.MonarchId != null ? this.MonarchId : this.Guid.Full;
+                    var killerMonarch = _killer.MonarchId != null ? _killer.MonarchId : _killer.Guid.Full;
+                    if (victimMonarch == killerMonarch)
+                    {
+                        shouldDropTrophy = false;
+                    }
+                }
+                else
+                {
+                    shouldDropTrophy = false;
+                }
+
+                // Don't drop trophy if three have already dropped within the last hour
+                if (LastPkTrophyDropTime.HasValue &&
+                    Last2PkTrophyDropTime.HasValue &&
+                    Last3PkTrophyDropTime.HasValue &&
+                    Last3PkTrophyDropTime.Value > (Time.GetUnixTime() - 3600))
+                {
+                    shouldDropTrophy = false;
+                }
+
+                // Don't drop trophy if 10 have already dropped today
+                if (PkTrophyDropDay.HasValue && PkTrophyDropsToday.HasValue)
+                {
+                    if (PkTrophyDropDay.Value >= Time.GetUnixTime(DateTime.Today) &&
+                        PkTrophyDropsToday >= 10)
+                    {
+                        shouldDropTrophy = false;
+                    }
+                }
+
+                if (shouldDropTrophy)
+                {
+                    var dropItem = WorldObjectFactory.CreateNewWorldObject(1000002);
+                    dropItem.SetStackSize(1);
+                    dropItems.Add(dropItem);
+
+                    if (!LastPkTrophyDropTime.HasValue)
+                    {
+                        SetProperty(PropertyFloat.LastPkTrophyDropTime, Time.GetUnixTime());
+                    }
+                    else if (!Last2PkTrophyDropTime.HasValue)
+                    {
+                        SetProperty(PropertyFloat.Last2PkTrophyDropTime, LastPkTrophyDropTime.Value);
+                        SetProperty(PropertyFloat.LastPkTrophyDropTime, Time.GetUnixTime());
+                    }
+                    else
+                    {
+                        SetProperty(PropertyFloat.Last3PkTrophyDropTime, Last2PkTrophyDropTime.Value);
+                        SetProperty(PropertyFloat.Last2PkTrophyDropTime, LastPkTrophyDropTime.Value);
+                        SetProperty(PropertyFloat.LastPkTrophyDropTime, Time.GetUnixTime());
+                    }
+
+                    if (!PkTrophyDropDay.HasValue ||
+                        PkTrophyDropDay < Time.GetUnixTime(DateTime.Today) ||
+                        !PkTrophyDropsToday.HasValue)
+                    {
+                        SetProperty(PropertyFloat.PkTrophyDropDay, Time.GetUnixTime(DateTime.Today));
+                        SetProperty(PropertyFloat.PkTrophyDropsToday, 1);
+                    }
+                    else
+                    {
+                        SetProperty(PropertyFloat.PkTrophyDropsToday, PkTrophyDropsToday.Value + 1);
+                    }
+                }
+            }
 
             // add items to corpse
             foreach (var dropItem in dropItems)

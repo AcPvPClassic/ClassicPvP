@@ -387,6 +387,13 @@ Jumping rapidly in succession triggers accelerated stamina drain. After exceedin
 ### Wand Monkeying Disabled
 A caster's **built-in spell** (the spell baked into a wand, orb, or other casting implement via its item spell) deals **no damage to other players**. This disables "wand monkeying" in PvP. Regular war magic cast from your own spellbook is unaffected, and built-in caster spells still function normally against creatures — the zero-damage rule applies only when the target is another player.
 
+### PK Trophy Drops
+Killing another player in open-world PvP has a chance to drop a **PK Trophy** on their corpse, subject to a few limits:
+
+- **Level range** — no trophy drops if the victim is above the level 126 cap, or if the victim is more than **15 levels below** the killer. This keeps low-level twinks from being farmed by much higher-level killers.
+- **Same allegiance** — no trophy drops if the killer and victim share the same monarch.
+- **Rate limit (victim-side)** — a given victim can have at most **3 trophies** dropped on their corpse(s) within a rolling **1-hour** window, and at most **10 per day**. Once either limit is hit, further kills on that victim stop producing trophies until the window/day resets.
+
 ---
 
 ## 🛡️ Enhanced Anti-Cheat

@@ -3403,6 +3403,36 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public int? VendorShopCreateListStackSize;
 
+        public double? LastPkTrophyDropTime
+        {
+            get => GetProperty(PropertyFloat.LastPkTrophyDropTime);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.LastPkTrophyDropTime); else SetProperty(PropertyFloat.LastPkTrophyDropTime, value.Value); }
+        }
+
+        public double? Last2PkTrophyDropTime
+        {
+            get => GetProperty(PropertyFloat.Last2PkTrophyDropTime);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.Last2PkTrophyDropTime); else SetProperty(PropertyFloat.Last2PkTrophyDropTime, value.Value); }
+        }
+
+        public double? Last3PkTrophyDropTime
+        {
+            get => GetProperty(PropertyFloat.Last3PkTrophyDropTime);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.Last3PkTrophyDropTime); else SetProperty(PropertyFloat.Last3PkTrophyDropTime, value.Value); }
+        }
+
+        public double? PkTrophyDropDay
+        {
+            get => GetProperty(PropertyFloat.PkTrophyDropDay);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.PkTrophyDropDay); else SetProperty(PropertyFloat.PkTrophyDropDay, value.Value); }
+        }
+
+        public double? PkTrophyDropsToday
+        {
+            get => GetProperty(PropertyFloat.PkTrophyDropsToday);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.PkTrophyDropsToday); else SetProperty(PropertyFloat.PkTrophyDropsToday, value.Value); }
+        }
+
         public double? MeleeDefenseCap
         {
             get => GetProperty(PropertyFloat.MeleeDefenseCap);

@@ -210,6 +210,11 @@ namespace ACE.Entity.Enum.Properties
         [SendOnLogin]
         WeaponAuraManaConv             = 171,
 
+        LastPkTrophyDropTime           = 172,
+        Last2PkTrophyDropTime          = 173,
+        PkTrophyDropDay                = 174,
+        PkTrophyDropsToday             = 175,
+
         /* Custom Properties */
         PCAPRecordedWorkmanship        = 8004,
         PCAPRecordedVelocityX          = 8010,
@@ -224,6 +229,7 @@ namespace ACE.Entity.Enum.Properties
 
         /* ClassicPvP */
         JumpTimer = 9004,
+        Last3PkTrophyDropTime = 9005,
 
         // CustomDM
         LeyLineTriggerChance           = 10001,
