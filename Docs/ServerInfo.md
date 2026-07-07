@@ -731,6 +731,8 @@ Killing the same player more than **3 times within a 1-hour window** suppresses 
 | Missile Defense Requirement Morph Gem | 400 | Removes the Missile Defense activation requirement from an item. |
 | Melee Defense Requirement Morph Gem | 400 | Removes the Melee Defense activation requirement from an item. |
 | Player Wield Requirement Morph Gem | 500 | Removes the wield restriction binding an item to a specific player. |
+| Slayer Morph Gem | 100 | Randomizes the creature-slayer type on a loot-gen weapon/caster (that has a slayer from the tinkering lottery or a morph gem) or on armor/jewelry with a Creature Slayer Rating. |
+| Creature Resistance Morph Gem | 100 | Randomizes the creature-resistance type on loot-gen armor/jewelry that has a Creature Resist Rating. |
 | A Dick (Vitae Removal) | 1 | Eat it to remove your Vitae penalty (no XP granted). Does nothing if you have no penalty. |
 
 > **Level Requirement Removal Morph Gem** has been discontinued — no item in the Infiltration era has a level requirement, so it never had a use.
@@ -816,44 +818,48 @@ Darkbeat's Lost Storage Key, Green Garnet Salvage, and the Level Requirement Rem
 
 | Item | Chance |
 |------|--------|
-| Workmanship Morph Gem | ~5.8% |
-| Missile Defense Requirement Morph Gem | ~5.8% |
-| Melee Requirement Morph Gem | ~5.8% |
-| Player Wield Requirement Morph Gem | ~5.8% |
-| Slayer Upgrade Morph Gem | ~5.8% |
-| Sunstone Salvage WS10 — Armor Rend | ~3.8% |
-| Red Garnet Salvage WS10 — Fire Rend | ~3.8% |
-| Black Garnet Salvage WS10 — Pierce Rend | ~3.8% |
-| Imperial Topaz Salvage WS10 — Slash Rend | ~3.8% |
-| Jet Salvage WS10 — Lightning Rend | ~3.8% |
-| Aquamarine Salvage WS10 — Cold Rend | ~3.8% |
-| White Sapphire Salvage WS10 — Bludgeon Rend | ~3.8% |
-| Emerald Salvage WS10 — Acid Rend | ~3.8% |
-| Fire Opal Salvage WS10 — Crippling Blow | ~3.8% |
-| Black Opal Salvage WS10 — Critical Strike | ~3.8% |
-| Bloodstone Salvage WS10 — Minor Endurance (jewelry only) | ~3.8% |
-| Sturdy Iron Keys ×3 | ~5.8% |
-| Darkbeat's Lost Storage Key | ~5.8% |
-| Mythic Mystery Box | ~5.8% |
-| MMDs ×5 | ~5.8% |
-| PK Trophies ×30 | ~5.8% |
+| Workmanship Morph Gem | ~5.6% |
+| Missile Defense Requirement Morph Gem | ~5.6% |
+| Melee Requirement Morph Gem | ~5.6% |
+| Player Wield Requirement Morph Gem | ~5.6% |
+| Slayer Upgrade Morph Gem | ~5.6% |
+| Slayer Morph Gem | ~1.9% |
+| Creature Resistance Morph Gem | ~1.9% |
+| Sunstone Salvage WS10 — Armor Rend | ~3.7% |
+| Red Garnet Salvage WS10 — Fire Rend | ~3.7% |
+| Black Garnet Salvage WS10 — Pierce Rend | ~3.7% |
+| Imperial Topaz Salvage WS10 — Slash Rend | ~3.7% |
+| Jet Salvage WS10 — Lightning Rend | ~3.7% |
+| Aquamarine Salvage WS10 — Cold Rend | ~3.7% |
+| White Sapphire Salvage WS10 — Bludgeon Rend | ~3.7% |
+| Emerald Salvage WS10 — Acid Rend | ~3.7% |
+| Fire Opal Salvage WS10 — Crippling Blow | ~3.7% |
+| Black Opal Salvage WS10 — Critical Strike | ~3.7% |
+| Bloodstone Salvage WS10 — Minor Endurance (jewelry only) | ~3.7% |
+| Sturdy Iron Keys ×3 | ~5.6% |
+| Darkbeat's Lost Storage Key | ~5.6% |
+| Mythic Mystery Box | ~5.6% |
+| MMDs ×5 | ~5.6% |
+| PK Trophies ×30 | ~5.6% |
 
-All salvage bags are full WS10 bags (100 units). Ancient Bottle no longer drops from Rare Mystery Boxes — it's Mythic-only now. The Slayer Upgrade Morph Gem moved in here from the Mythic Mystery Box, and the Level Requirement Removal Morph Gem no longer drops here at all.
+All salvage bags are full WS10 bags (100 units). Ancient Bottle no longer drops from Rare Mystery Boxes — it's Mythic-only now. The Slayer Upgrade Morph Gem moved in here from the Mythic Mystery Box, and the Level Requirement Removal Morph Gem no longer drops here at all. The Slayer Morph Gem and Creature Resistance Morph Gem appear here at their rarest (~1.9% each) — they're more common in the Mythic box.
 
 ### Mythic Mystery Box
 
 | Item | Chance |
 |------|--------|
-| Ancient Bottle (XP Bottle) | ~5.0% |
-| Impenetrability Morph Gem | ~15.0% |
-| Oil of Creature Slaying | ~15.0% |
-| Skill and Attribute Reset Gem | ~15.0% |
-| Imbue Altering Morph Gem | ~15.0% |
-| MMDs ×20 | ~15.0% |
-| PK Trophies ×250 | ~15.0% |
-| Shimmering Skeleton Key | ~5.0% |
+| Ancient Bottle (XP Bottle) | ~3.8% |
+| Impenetrability Morph Gem | ~11.5% |
+| Oil of Creature Slaying | ~11.5% |
+| Skill and Attribute Reset Gem | ~11.5% |
+| Imbue Altering Morph Gem | ~11.5% |
+| Slayer Morph Gem | ~11.5% |
+| Creature Resistance Morph Gem | ~11.5% |
+| MMDs ×20 | ~11.5% |
+| PK Trophies ×250 | ~11.5% |
+| Shimmering Skeleton Key | ~3.8% |
 
-The Slayer Upgrade Morph Gem moved out to the Rare Mystery Box; Oil of Creature Slaying takes its slot here.
+The Slayer Upgrade Morph Gem moved out to the Rare Mystery Box; Oil of Creature Slaying takes its slot here. The Slayer Morph Gem and Creature Resistance Morph Gem also drop here at ~11.5% each — far more likely than in the Rare box.
 
 > **Shimmering Skeleton Key** — a single-use key that unlocks **any** locked door or chest, no matter the lock. It crumbles to dust after one use and is **slippery**, so it drops on death (into your corpse for a killer to loot). Obtainable only from the Mythic Mystery Box.
 

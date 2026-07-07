@@ -191,4 +191,6 @@ VALUES (480641, 2,  5893,  1,  0, 1.0, False) /* Hoary Mattekar Robe for Wield *
      , (480641, 4, 480484,   -1, 0, 0, False) /* Missile Defense Requirement Morph Gem for Shop */
      , (480641, 4, 480483,   -1, 0, 0, False) /* Melee Defense Requirement Morph Gem for Shop */
      , (480641, 4, 480485,   -1, 0, 0, False) /* Player Wield Requirement Morph Gem for Shop */
+     , (480641, 4, 480610,   -1, 0, 0, False) /* Slayer Morph Gem for Shop */
+     , (480641, 4, 600039,   -1, 0, 0, False) /* Creature Resistance Morph Gem for Shop */
      , (480641, 4, 510001,   -1, 0, 0, False) /* A Dick (Vitae Removal, 1 PK Trophy) for Shop */;

@@ -35,24 +35,28 @@ VALUES (510004,   1, 0x02000A7F) /* Setup */
      , (510004,  52, 0x06001B2F) /* IconUnderlay */;
 
 /* -----------------------------------------------------------------------
-   Use emote table — 8 entries
+   Use emote table — 10 entries
    Weighted probability: XP Bottle weight 1, Skeleton Key weight 1,
-   morph gems weight 3, existing prizes weight 3
-   Total weight = 1 + 1 + (4×3) + (2×3) = 2 + 12 + 6 = 20
+   morph gems weight 3, existing prizes weight 3,
+   Slayer/Creature Resist randomizer gems weight 3 (more likely here
+   than in the Rare box)
+   Total weight = 1 + 1 + (6×3) + (2×3) = 2 + 18 + 6 = 26
 
    Item                              Weight   Individual %   Cumul prob
-   XP Bottle (Ancient Bottle)          1         5.0%          0.050
-   Impenetrability Morph Gem           3        15.0%          0.200
-   Oil of Creature Slaying             3        15.0%          0.350
-   Skill and Attribute Reset Gem       3        15.0%          0.500
-   Imbue Altering Morph Gem            3        15.0%          0.650
-   MMDs x20                            3        15.0%          0.800
-   PK Trophies x250                    3        15.0%          0.950
-   Shimmering Skeleton Key             1         5.0%          1.000
+   XP Bottle (Ancient Bottle)          1         3.8%          0.038
+   Impenetrability Morph Gem           3        11.5%          0.154
+   Oil of Creature Slaying             3        11.5%          0.269
+   Skill and Attribute Reset Gem       3        11.5%          0.385
+   Imbue Altering Morph Gem            3        11.5%          0.500
+   Slayer Morph Gem                    3        11.5%          0.615
+   Creature Resistance Morph Gem       3        11.5%          0.731
+   MMDs x20                            3        11.5%          0.846
+   PK Trophies x250                    3        11.5%          0.962
+   Shimmering Skeleton Key             1         3.8%          1.000
    ----------------------------------------------------------------------- */
 
 INSERT INTO `weenie_properties_emote` (`object_Id`, `category`, `probability`, `weenie_Class_Id`, `style`, `substyle`, `quest`, `vendor_Type`, `min_Health`, `max_Health`)
-VALUES (510004, 7 /* Use */, 0.050, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+VALUES (510004, 7 /* Use */, 0.038, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 SET @parent_id = LAST_INSERT_ID();
 
@@ -62,7 +66,7 @@ VALUES (@parent_id, 0, 18 /* DirectBroadcast */, 0, 1, NULL, 'You found an Ancie
      , (@parent_id, 2, 77 /* DeleteSelf */, 0, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 INSERT INTO `weenie_properties_emote` (`object_Id`, `category`, `probability`, `weenie_Class_Id`, `style`, `substyle`, `quest`, `vendor_Type`, `min_Health`, `max_Health`)
-VALUES (510004, 7 /* Use */, 0.200, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+VALUES (510004, 7 /* Use */, 0.154, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 SET @parent_id = LAST_INSERT_ID();
 
@@ -72,7 +76,7 @@ VALUES (@parent_id, 0, 18 /* DirectBroadcast */, 0, 1, NULL, 'You found an Impen
      , (@parent_id, 2, 77 /* DeleteSelf */, 0, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 INSERT INTO `weenie_properties_emote` (`object_Id`, `category`, `probability`, `weenie_Class_Id`, `style`, `substyle`, `quest`, `vendor_Type`, `min_Health`, `max_Health`)
-VALUES (510004, 7 /* Use */, 0.350, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+VALUES (510004, 7 /* Use */, 0.269, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 SET @parent_id = LAST_INSERT_ID();
 
@@ -82,7 +86,7 @@ VALUES (@parent_id, 0, 18 /* DirectBroadcast */, 0, 1, NULL, 'You found an Oil o
      , (@parent_id, 2, 77 /* DeleteSelf */, 0, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 INSERT INTO `weenie_properties_emote` (`object_Id`, `category`, `probability`, `weenie_Class_Id`, `style`, `substyle`, `quest`, `vendor_Type`, `min_Health`, `max_Health`)
-VALUES (510004, 7 /* Use */, 0.500, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+VALUES (510004, 7 /* Use */, 0.385, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 SET @parent_id = LAST_INSERT_ID();
 
@@ -92,7 +96,7 @@ VALUES (@parent_id, 0, 18 /* DirectBroadcast */, 0, 1, NULL, 'You found a Skill 
      , (@parent_id, 2, 77 /* DeleteSelf */, 0, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 INSERT INTO `weenie_properties_emote` (`object_Id`, `category`, `probability`, `weenie_Class_Id`, `style`, `substyle`, `quest`, `vendor_Type`, `min_Health`, `max_Health`)
-VALUES (510004, 7 /* Use */, 0.650, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+VALUES (510004, 7 /* Use */, 0.500, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 SET @parent_id = LAST_INSERT_ID();
 
@@ -102,7 +106,27 @@ VALUES (@parent_id, 0, 18 /* DirectBroadcast */, 0, 1, NULL, 'You found an Imbue
      , (@parent_id, 2, 77 /* DeleteSelf */, 0, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 INSERT INTO `weenie_properties_emote` (`object_Id`, `category`, `probability`, `weenie_Class_Id`, `style`, `substyle`, `quest`, `vendor_Type`, `min_Health`, `max_Health`)
-VALUES (510004, 7 /* Use */, 0.800, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+VALUES (510004, 7 /* Use */, 0.615, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+
+SET @parent_id = LAST_INSERT_ID();
+
+INSERT INTO `weenie_properties_emote_action` (`emote_Id`, `order`, `type`, `delay`, `extent`, `motion`, `message`, `test_String`, `min`, `max`, `min_64`, `max_64`, `min_Dbl`, `max_Dbl`, `stat`, `display`, `amount`, `amount_64`, `hero_X_P_64`, `percent`, `spell_Id`, `wealth_Rating`, `treasure_Class`, `treasure_Type`, `p_Script`, `sound`, `destination_Type`, `weenie_Class_Id`, `stack_Size`, `palette`, `shade`, `try_To_Bond`, `obj_Cell_Id`, `origin_X`, `origin_Y`, `origin_Z`, `angles_W`, `angles_X`, `angles_Y`, `angles_Z`)
+VALUES (@parent_id, 0, 18 /* DirectBroadcast */, 0, 1, NULL, 'You found a Slayer Morph Gem!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+     , (@parent_id, 1, 3 /* Give */, 0, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 480610 /* Slayer Morph Gem */, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+     , (@parent_id, 2, 77 /* DeleteSelf */, 0, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+
+INSERT INTO `weenie_properties_emote` (`object_Id`, `category`, `probability`, `weenie_Class_Id`, `style`, `substyle`, `quest`, `vendor_Type`, `min_Health`, `max_Health`)
+VALUES (510004, 7 /* Use */, 0.731, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+
+SET @parent_id = LAST_INSERT_ID();
+
+INSERT INTO `weenie_properties_emote_action` (`emote_Id`, `order`, `type`, `delay`, `extent`, `motion`, `message`, `test_String`, `min`, `max`, `min_64`, `max_64`, `min_Dbl`, `max_Dbl`, `stat`, `display`, `amount`, `amount_64`, `hero_X_P_64`, `percent`, `spell_Id`, `wealth_Rating`, `treasure_Class`, `treasure_Type`, `p_Script`, `sound`, `destination_Type`, `weenie_Class_Id`, `stack_Size`, `palette`, `shade`, `try_To_Bond`, `obj_Cell_Id`, `origin_X`, `origin_Y`, `origin_Z`, `angles_W`, `angles_X`, `angles_Y`, `angles_Z`)
+VALUES (@parent_id, 0, 18 /* DirectBroadcast */, 0, 1, NULL, 'You found a Creature Resistance Morph Gem!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+     , (@parent_id, 1, 3 /* Give */, 0, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 600039 /* Creature Resistance Morph Gem */, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+     , (@parent_id, 2, 77 /* DeleteSelf */, 0, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+
+INSERT INTO `weenie_properties_emote` (`object_Id`, `category`, `probability`, `weenie_Class_Id`, `style`, `substyle`, `quest`, `vendor_Type`, `min_Health`, `max_Health`)
+VALUES (510004, 7 /* Use */, 0.846, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 SET @parent_id = LAST_INSERT_ID();
 
@@ -112,7 +136,7 @@ VALUES (@parent_id, 0, 18 /* DirectBroadcast */, 0, 1, NULL, 'You found a stack 
      , (@parent_id, 2, 77 /* DeleteSelf */, 0, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 INSERT INTO `weenie_properties_emote` (`object_Id`, `category`, `probability`, `weenie_Class_Id`, `style`, `substyle`, `quest`, `vendor_Type`, `min_Health`, `max_Health`)
-VALUES (510004, 7 /* Use */, 0.950, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+VALUES (510004, 7 /* Use */, 0.962, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 SET @parent_id = LAST_INSERT_ID();
 

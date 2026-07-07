@@ -11,7 +11,7 @@ VALUES (600039,   1,       2048) /* ItemType - Gem */
      , (600039,  13,         10) /* StackUnitEncumbrance */
      , (600039,  16,     524296) /* ItemUseable - SourceContainedTargetContained */
      , (600039,  18,          1) /* UiEffects - Magical */
-     , (600039,  19,         15) /* Value */
+     , (600039,  19,        100) /* Value - costs 100 PK Trophies at Anti Parazi */
      , (600039,  65,        101) /* Placement - Resting */
      , (600039,  93,       1044) /* PhysicsState - Ethereal, IgnoreCollisions, Gravity */
      , (600039,  94,          33025) /* TargetType - Vestements */;

@@ -52,6 +52,15 @@ The **Shimmering Skeleton Key** (from the Mythic Mystery Box) previously did not
 - **Single use** — the key crumbles to dust after one unlock.
 - **Drops on death** — the key is slippery, so if you're slain it falls to your corpse for the killer to loot.
 
+### 💎 New Morph Gems — Slayer & Creature Resistance Randomizers
+
+Two new morph gems let you re-roll the creature type on slayer/resistance gear:
+
+- **Slayer Morph Gem** — randomizes the creature-slayer type on a loot-gen weapon or caster (one that already has a slayer from the tinkering lottery or a morph gem), or on armor/jewelry that has a Creature Slayer Rating.
+- **Creature Resistance Morph Gem** — randomizes the creature-resistance type on loot-gen armor/jewelry that has a Creature Resist Rating.
+
+Both are sold on **Anti Parazi** for **100 PK Trophies** each, and drop from **Rare Mystery Boxes** (~1.9% each) and **Mythic Mystery Boxes** (~11.5% each).
+
 ### 🏹 Shooting From Portal Space Fixed
 
 Fixed a long-standing exploit where an archer could enter combat and fire arrows while still in **portal space** — the "purple bubble" state before a character finishes materializing out of a portal or recall. Missile attacks are now blocked while teleporting, both at the moment an attack is started and mid-sequence if a portal is entered during a shot. Melee and magic already had this protection.
