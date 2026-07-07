@@ -1,7 +1,8 @@
 # 📜 ClassicPvP — Release Notes
 
-> **This is a historical changelog.** Changes are grouped into versioned sections (v1.01, v1.02, ...), newest first — the original launch content lives at the very bottom as **v1.00 (Launch Edition)**. Existing versions are not edited after release; new patches are added as a new version at the **top**. A version may collect multiple days' worth of changes before it's deployed — the version increments only on explicit instruction, not automatically per day.
+> **This is a running changelog**, not a reference doc. Changes are grouped into versioned sections (v1.01, v1.02, ...), newest first — the original launch content lives at the very bottom as **v1.00 (Launch Edition)**. Existing versions are not edited after release; new patches are added as a new version at the **top**. A version may collect multiple days' worth of changes before it's deployed — the version increments only on explicit instruction, not automatically per day.
 >
+> New here? See **[GettingStarted.md](GettingStarted.md)** for how to connect to the server.
 > For the current state of every mechanic (kept continuously up to date), see **[ServerInfo.md](ServerInfo.md)**.
 
 ---
