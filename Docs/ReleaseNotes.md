@@ -1,6 +1,6 @@
 # 📜 ClassicPvP — Release Notes
 
-> **This is a historical changelog.** Everything below is the **Launch Edition (July 3, 2026)** and is final — existing sections are not edited after release. New patches are **appended to the end** under their own versioned headers (v1.01, v1.02, ...), capturing the history of changes. A version may collect multiple days' worth of changes before it's deployed — the version increments only on explicit instruction, not automatically per day.
+> **This is a historical changelog.** Everything below is the **Launch Edition (July 3, 2026)** and is final — existing sections are not edited after release. New patches are added to the **top** under their own versioned headers (v1.01, v1.02, ...), with the newest version first and the earliest last, capturing the history of changes. A version may collect multiple days' worth of changes before it's deployed — the version increments only on explicit instruction, not automatically per day.
 >
 > For the current state of every mechanic (kept continuously up to date), see **[ServerInfo.md](ServerInfo.md)**.
 
@@ -892,103 +892,58 @@ The intent is simple: a Tinker is a maxed-out crafting workstation in character 
 
 ---
 
-## 🩹 v1.01 — July 3, 2026
+## 🩹 v1.07 — July 7, 2026
 
-### 👑 Allegiance Swearing — Monarch Fix
+### 💰 Darkbeat & Anti Parazi — Vendor Price Adjustments
 
-Fixed a bug that prevented certain monarchs from swearing allegiance. If you became a monarch because another character on your account swore to you with the `OfflineSwear` command — but you had never sworn allegiance to anyone yourself — the game would incorrectly block you from swearing into another allegiance, claiming another character on your account was sworn elsewhere.
+Costs on a few vendor items have been rebalanced:
 
-These monarchs can now swear allegiance normally. When a monarch swears in, their entire allegiance (including the account characters beneath them) follows along to the new monarch, so the one-allegiance-per-account rule is still honored. No character changes are needed — the fix applies to everyone automatically.
+- **Ancient Empyrean Tool** (Darkbeat): 50 → **75** Phials of Bloody Tears
+- **Skill and Attribute Reset Gem** (Darkbeat): 100 → **50** Phials of Bloody Tears
+- **Workmanship Morph Gem** (Anti Parazi): 300 → **500** PK Trophies
 
-### 🐗 Hot Dungeon Box Drops Reduced
+### 🤖 VirindiTank — Slow Buffing and Repeated Vulns/Banes Fixed
 
-Box drop rates from Hot Dungeon kills have been **reduced by roughly 75%**. Boxes were dropping more often than intended, so every Hot Dungeon's per-kill box chance has been scaled down while keeping the relative balance between dungeons intact (denser dungeons still drop fewer boxes per kill than sparse ones).
+Fixed the long-standing issues with **VirindiTank** on ClassicPvP: 1–2 second pauses between each buff, re-casting vulns on targets that were already vulned, and re-casting banes that were already on your armor.
 
-This affects only the random per-kill box drops. The guaranteed box awarded for a PK kill inside a Hot Dungeon is unchanged.
+The cause: the chat message that confirms a spell landed ("You cast Imperil Other VI on Drudge Slinker") had drifted from the retail format — it had gained a trailing period and material-prefixed item names (e.g. "your **Steel** Celdon Breastplate."). VTank parses that exact line to know a spell succeeded, so every enchantment cast looked like a failure to it: buffs stalled until VTank's internal timeout, and vulns/banes were cast again and again. War spells were unaffected because they don't produce that message, which is why hunting mostly worked while buffing didn't.
 
-### 🏟️ Arena Matchmaking — Low-Level Fix
+The message now matches retail exactly, and VTank registers casts immediately — buff cycles run at full speed and debuffs/banes are cast once.
 
-Fixed a bug that prevented low-level players from ever being matched into arena events. The level-range calculation used to pair players of similar levels miscalculated for anyone below level 20, producing an impossibly high minimum level that no opponent could satisfy.
+### 📦 Loot Box Rebalance
 
-As a result, a queue full of low-level players would never start a match no matter how many were waiting. Matchmaking now correctly pairs low-level players, and no character changes are needed — the fix applies automatically.
+The **A Box → Common/Rare/Mythic Mystery Box** loot chain has been rebalanced:
 
-### 🏟️ Arena Rewards — Fix for Losing a Match
+- **A Box** — Mythic Mystery Box chance reduced from 5% to **1%**; the freed 4% moves to the Common Mystery Box tier (60% → **64%**). Rare stays at 25%, A Dick stays at 10%.
+- **Common Mystery Box** — no longer drops Darkbeat's Lost Storage Key; its MMD reward cut from ×5 to **×1**.
+- **Rare Mystery Box** — Ancient Bottle removed (moved to Mythic only); gains Darkbeat's Lost Storage Key and the Slayer Upgrade Morph Gem (moved in from Mythic); MMDs cut from ×20 to **×5**, PK Trophies cut from ×100 to **×30**.
+- **Mythic Mystery Box** — Slayer Upgrade Morph Gem moved out to Rare, replaced by **Oil of Creature Slaying**; MMDs cut from ×50 to **×20**, PK Trophies cut from ×1000 to **×250**.
 
-Fixed a bug where players who lost an arena match by dying often received no end-of-match rewards. A death that ended the match wasn't being recorded at the moment it happened, so once the fallen player respawned the system mistook it for them leaving the arena early and disqualified them, which stripped their reward eligibility.
+### 🏆 PK Quest Reward Rebalance
 
-Deaths are now recorded correctly, so losers reliably receive their participation rewards (and kill/death totals are tracked properly). No character changes are needed — the fix applies automatically.
+Rewards across most arena, open-world, and bounty PK quests have been scaled down — lower XP percentages, Darkbeat Key counts, and PK Trophy/Box payouts on most tiers (open-world kill and bounty PK Trophy rewards saw the largest cuts). See [ServerInfo.md](ServerInfo.md#daily-pk-quest-rewards) for current values.
 
----
+The three **Town Control kill quests** (PKKILL_TC_1/5/30) have been disabled and no longer appear in daily quest rotation.
 
-## 🩹 v1.02 — July 4, 2026
+### 🗑️ Level Requirement Removal Morph Gem — Discontinued
 
-### 🏘️ Allegiance Hometown — Bind Stone Combat Fixes
+No item in the Infiltration era carries a level requirement, so this gem never had a real use. It's been pulled from sale on **Anti Parazi** and removed from the **Common** and **Rare Mystery Box** loot tables; the remaining weight in each was redistributed proportionally across the other entries.
 
-During a Phase 2 siege, the Bind Stone could not be attacked with missile weapons, shutting archers out of the fight entirely. Missile attacks now work against it. Physical damage against the Bind Stone was also out of balance, and has been retuned.
+### 🏹 Shooting From Portal Space Fixed
 
----
-
-## 🩹 v1.03 — July 4, 2026
-
-### 💰 Pyreal Stacks — Currency Fix
-
-Fixed a bug where some pyreal stacks would refuse to act as money — they wouldn't count toward your cash when you opened a vendor, couldn't be spent or sold, and couldn't be merged into another stack. The only way to get rid of an affected stack was to drop it on the ground.
-
-The cause was a leftover piece of logic from another ruleset that tagged certain coin stacks as "restricted" and quietly excluded them from your usable currency. That restriction should never apply on ClassicPvP, and it no longer does — every pyreal stack now counts as spendable money again.
-
-Any affected stacks already in your pack will start working the moment this patch goes live. If you still have a stubborn stack, simply merge it into a normal pyreal stack to clear the old tag. No character changes are needed — the fix applies automatically.
-
-### 🏟️ Arena — No Damage Until the Match Starts
-
-Fixed arena matches so that no damage can be dealt during the pre-match countdown after players are teleported into the arena. You can still cast beneficial spells — buffs, vulns, and other preparation — while you wait, but melee, missile, magic, and damage-over-time will not land on your opponent until the match officially begins. Everyone now starts the fight on equal footing.
-
-### 🏟️ Arena — Overtime Rules Now Enforced
-
-When an arena match reaches overtime, its healing restrictions are now actually applied. Chugging food and potions is disabled, and all other healing — heal-over-time spells, life-magic heals, and stamina-to-health transfers — is heavily reduced and continues to weaken as overtime goes on. Overtime now reliably drives a stalled match to a decisive finish instead of dragging on.
-
-### 🏟️ Arena — In-Match Damage Now Tracked
-
-Damage dealt and taken inside arena matches is now recorded again, so damage-based arena achievements and per-match combat stats work correctly.
-
-### 🏟️ Tugak War — Spell-Only Combat
-
-Tugak War is now fought exclusively with the **Martyr's Hecatomb** (Health Bolt) line of spells, tiers I through VII. Any other harmful spell you try to cast on an opponent now fails outright ("you cannot affect anyone"), and weapon attacks and damage-over-time do nothing inside a Tugak War match — everyone competes on equal footing using the same spell.
-
-### 🎯 Bounty — You Must Earn the Kill
-
-Fixed a bug where a bounty contract could complete even when you had no part in the kill. Previously, if anyone killed your target, your contract was marked complete — regardless of whether you were in the area or dealt any damage.
-
-Now a contract only completes if **you** earned the kill: either you land the killing blow, or you deal at least **25%** of the target's total damage **and** are within visible range of them when they die. Standing across the map while someone else does the work no longer counts.
-
-### 🩸 Anti Parazi — Burn Your Vitae for a PK Trophy
-
-Anti Parazi now sells **A Dick** for **1 PK Trophy**. Eat it and it burns away your **Vitae penalty** — "(Vitae Removed) Now get back in there and make me proud..." No XP is granted; it simply clears the penalty. If you have no Vitae penalty, eating it does nothing and the item is not consumed. Pick it up from his shop alongside his morph gems and bounty items.
-
-### ⚔️ PvP Reward XP — Decoupled from the Season Rate
-
-Custom PvP reward XP — **arena matches, PK quests, hometown captures, and open-world PK kills** — is no longer multiplied by the seasonal rolling XP rate. Previously these rewards were scaled by the same global rate that ramps from ~0.25× early in the season up to 3× at the end, which made them feel tiny in the opening weeks and would have inflated them dramatically later on.
-
-These rewards are now granted as **fixed percentages of your XP to the next level**, so a given result is worth the same fraction of a level all season long — they no longer shrink in the low-rate opening weeks, nor inflate late in the season when the rate climbs above 1×. The reward percentages themselves are unchanged (for example an arena 1v1 win grants 20% of a level, a loss 5%; a hometown capture grants 10%; an open-world PK kill grants 5–10%).
-
-### 🏰 Hometown Control — Phase 1 Timer Fix
-
-Fixed the Allegiance Hometown Phase 1 countdown, which announced "0s until Phase 2" after only one minute even though Phase 2 didn't begin until several minutes later. The countdown now matches the real Phase 1 hold duration.
+Fixed a long-standing exploit where an archer could enter combat and fire arrows while still in **portal space** — the "purple bubble" state before a character finishes materializing out of a portal or recall. Missile attacks are now blocked while teleporting, both at the moment an attack is started and mid-sequence if a portal is entered during a shot. Melee and magic already had this protection.
 
 ---
 
-## 🩹 v1.04 — July 5, 2026
+## 🩹 v1.06 — July 7, 2026
 
-### 🛡️ Anti-Cheat — Tighter Movement Speed Enforcement
+### 🏟️ Arena — Same-Allegiance Rewards Restored
 
-The server's movement speed enforcement has been improved to better catch client-side speed and quickness hacks. The checks are now terrain-aware: they account for legitimate movement over hills and uneven ground, which previously caused occasional rubber-banding for honest players, while holding a tighter limit on open ground where cheating is most obvious. The result is fewer false corrections during normal play and a smaller window for artificially fast movement to slip through. No action is needed on your part — the change applies automatically.
+A recent anti-alt-farming change had unintentionally stopped **same-allegiance arena matches** from paying out any rewards. In the arena, that block now applies only when an opponent is **not** in your allegiance but is a throwaway parked on an account that holds one of your allegiance-mates. Fighting an actual member of your own allegiance in the arena rewards normally again — still subject to the existing limit of **15 same-allegiance rewards per day**.
 
-### 🚪 Closed Doors No Longer Disconnect You
+### 📦 Darkbeat Chest — Loot Quality Reduced
 
-Walking into a closed door is now treated purely as a physical barrier — like bumping a wall. You're still stopped from passing through a closed door, but doing so will no longer count against you or risk a disconnect. This removes a rare case where players pressed against a door (usually from a brief mismatch over whether the door was open) could be disconnected by the anti-cheat system.
-
-### ⚗️ PvP XP Overflow — No Longer Lost at the Daily Cap
-
-Fixed a bug where PvP reward XP could silently vanish instead of filling your **Ancient Bottles**. Overflow was only being captured when your PvP category bucket was full; if you had already hit the **global daily XP cap** (or the maximum level), any PvP reward — arena wins, PK quests, hometown captures, open-world PK kills — was lost entirely, even with an empty bottle in your pack. Now PvP overflow always tops off an Ancient Bottle that has room, from every cap, matching how the system was always meant to work. If you have no bottle (or all are full), there is nothing to catch it, as before.
+The loot quality of Darkbeat's Lost Storage chest (opened with Darkbeat's Lost Storage Keys) has been reduced — its loot quality modifier drops from **0.5** to **0.425**, slightly lowering the average quality of the items it rolls.
 
 ---
 
@@ -1046,55 +1001,100 @@ Killing another player out in the world can now drop a **PK Trophy** on their co
 
 ---
 
-## 🩹 v1.06 — July 7, 2026
+## 🩹 v1.04 — July 5, 2026
 
-### 🏟️ Arena — Same-Allegiance Rewards Restored
+### 🛡️ Anti-Cheat — Tighter Movement Speed Enforcement
 
-A recent anti-alt-farming change had unintentionally stopped **same-allegiance arena matches** from paying out any rewards. In the arena, that block now applies only when an opponent is **not** in your allegiance but is a throwaway parked on an account that holds one of your allegiance-mates. Fighting an actual member of your own allegiance in the arena rewards normally again — still subject to the existing limit of **15 same-allegiance rewards per day**.
+The server's movement speed enforcement has been improved to better catch client-side speed and quickness hacks. The checks are now terrain-aware: they account for legitimate movement over hills and uneven ground, which previously caused occasional rubber-banding for honest players, while holding a tighter limit on open ground where cheating is most obvious. The result is fewer false corrections during normal play and a smaller window for artificially fast movement to slip through. No action is needed on your part — the change applies automatically.
 
-### 📦 Darkbeat Chest — Loot Quality Reduced
+### 🚪 Closed Doors No Longer Disconnect You
 
-The loot quality of Darkbeat's Lost Storage chest (opened with Darkbeat's Lost Storage Keys) has been reduced — its loot quality modifier drops from **0.5** to **0.425**, slightly lowering the average quality of the items it rolls.
+Walking into a closed door is now treated purely as a physical barrier — like bumping a wall. You're still stopped from passing through a closed door, but doing so will no longer count against you or risk a disconnect. This removes a rare case where players pressed against a door (usually from a brief mismatch over whether the door was open) could be disconnected by the anti-cheat system.
+
+### ⚗️ PvP XP Overflow — No Longer Lost at the Daily Cap
+
+Fixed a bug where PvP reward XP could silently vanish instead of filling your **Ancient Bottles**. Overflow was only being captured when your PvP category bucket was full; if you had already hit the **global daily XP cap** (or the maximum level), any PvP reward — arena wins, PK quests, hometown captures, open-world PK kills — was lost entirely, even with an empty bottle in your pack. Now PvP overflow always tops off an Ancient Bottle that has room, from every cap, matching how the system was always meant to work. If you have no bottle (or all are full), there is nothing to catch it, as before.
 
 ---
 
-## 🩹 v1.07 — July 7, 2026
+## 🩹 v1.03 — July 4, 2026
 
-### 💰 Darkbeat & Anti Parazi — Vendor Price Adjustments
+### 💰 Pyreal Stacks — Currency Fix
 
-Costs on a few vendor items have been rebalanced:
+Fixed a bug where some pyreal stacks would refuse to act as money — they wouldn't count toward your cash when you opened a vendor, couldn't be spent or sold, and couldn't be merged into another stack. The only way to get rid of an affected stack was to drop it on the ground.
 
-- **Ancient Empyrean Tool** (Darkbeat): 50 → **75** Phials of Bloody Tears
-- **Skill and Attribute Reset Gem** (Darkbeat): 100 → **50** Phials of Bloody Tears
-- **Workmanship Morph Gem** (Anti Parazi): 300 → **500** PK Trophies
+The cause was a leftover piece of logic from another ruleset that tagged certain coin stacks as "restricted" and quietly excluded them from your usable currency. That restriction should never apply on ClassicPvP, and it no longer does — every pyreal stack now counts as spendable money again.
 
-### 🤖 VirindiTank — Slow Buffing and Repeated Vulns/Banes Fixed
+Any affected stacks already in your pack will start working the moment this patch goes live. If you still have a stubborn stack, simply merge it into a normal pyreal stack to clear the old tag. No character changes are needed — the fix applies automatically.
 
-Fixed the long-standing issues with **VirindiTank** on ClassicPvP: 1–2 second pauses between each buff, re-casting vulns on targets that were already vulned, and re-casting banes that were already on your armor.
+### 🏟️ Arena — No Damage Until the Match Starts
 
-The cause: the chat message that confirms a spell landed ("You cast Imperil Other VI on Drudge Slinker") had drifted from the retail format — it had gained a trailing period and material-prefixed item names (e.g. "your **Steel** Celdon Breastplate."). VTank parses that exact line to know a spell succeeded, so every enchantment cast looked like a failure to it: buffs stalled until VTank's internal timeout, and vulns/banes were cast again and again. War spells were unaffected because they don't produce that message, which is why hunting mostly worked while buffing didn't.
+Fixed arena matches so that no damage can be dealt during the pre-match countdown after players are teleported into the arena. You can still cast beneficial spells — buffs, vulns, and other preparation — while you wait, but melee, missile, magic, and damage-over-time will not land on your opponent until the match officially begins. Everyone now starts the fight on equal footing.
 
-The message now matches retail exactly, and VTank registers casts immediately — buff cycles run at full speed and debuffs/banes are cast once.
+### 🏟️ Arena — Overtime Rules Now Enforced
 
-### 📦 Loot Box Rebalance
+When an arena match reaches overtime, its healing restrictions are now actually applied. Chugging food and potions is disabled, and all other healing — heal-over-time spells, life-magic heals, and stamina-to-health transfers — is heavily reduced and continues to weaken as overtime goes on. Overtime now reliably drives a stalled match to a decisive finish instead of dragging on.
 
-The **A Box → Common/Rare/Mythic Mystery Box** loot chain has been rebalanced:
+### 🏟️ Arena — In-Match Damage Now Tracked
 
-- **A Box** — Mythic Mystery Box chance reduced from 5% to **1%**; the freed 4% moves to the Common Mystery Box tier (60% → **64%**). Rare stays at 25%, A Dick stays at 10%.
-- **Common Mystery Box** — no longer drops Darkbeat's Lost Storage Key; its MMD reward cut from ×5 to **×1**.
-- **Rare Mystery Box** — Ancient Bottle removed (moved to Mythic only); gains Darkbeat's Lost Storage Key and the Slayer Upgrade Morph Gem (moved in from Mythic); MMDs cut from ×20 to **×5**, PK Trophies cut from ×100 to **×30**.
-- **Mythic Mystery Box** — Slayer Upgrade Morph Gem moved out to Rare, replaced by **Oil of Creature Slaying**; MMDs cut from ×50 to **×20**, PK Trophies cut from ×1000 to **×250**.
+Damage dealt and taken inside arena matches is now recorded again, so damage-based arena achievements and per-match combat stats work correctly.
 
-### 🏆 PK Quest Reward Rebalance
+### 🏟️ Tugak War — Spell-Only Combat
 
-Rewards across most arena, open-world, and bounty PK quests have been scaled down — lower XP percentages, Darkbeat Key counts, and PK Trophy/Box payouts on most tiers (open-world kill and bounty PK Trophy rewards saw the largest cuts). See [ServerInfo.md](ServerInfo.md#daily-pk-quest-rewards) for current values.
+Tugak War is now fought exclusively with the **Martyr's Hecatomb** (Health Bolt) line of spells, tiers I through VII. Any other harmful spell you try to cast on an opponent now fails outright ("you cannot affect anyone"), and weapon attacks and damage-over-time do nothing inside a Tugak War match — everyone competes on equal footing using the same spell.
 
-The three **Town Control kill quests** (PKKILL_TC_1/5/30) have been disabled and no longer appear in daily quest rotation.
+### 🎯 Bounty — You Must Earn the Kill
 
-### 🗑️ Level Requirement Removal Morph Gem — Discontinued
+Fixed a bug where a bounty contract could complete even when you had no part in the kill. Previously, if anyone killed your target, your contract was marked complete — regardless of whether you were in the area or dealt any damage.
 
-No item in the Infiltration era carries a level requirement, so this gem never had a real use. It's been pulled from sale on **Anti Parazi** and removed from the **Common** and **Rare Mystery Box** loot tables; the remaining weight in each was redistributed proportionally across the other entries.
+Now a contract only completes if **you** earned the kill: either you land the killing blow, or you deal at least **25%** of the target's total damage **and** are within visible range of them when they die. Standing across the map while someone else does the work no longer counts.
 
-### 🏹 Shooting From Portal Space Fixed
+### 🩸 Anti Parazi — Burn Your Vitae for a PK Trophy
 
-Fixed a long-standing exploit where an archer could enter combat and fire arrows while still in **portal space** — the "purple bubble" state before a character finishes materializing out of a portal or recall. Missile attacks are now blocked while teleporting, both at the moment an attack is started and mid-sequence if a portal is entered during a shot. Melee and magic already had this protection.
+Anti Parazi now sells **A Dick** for **1 PK Trophy**. Eat it and it burns away your **Vitae penalty** — "(Vitae Removed) Now get back in there and make me proud..." No XP is granted; it simply clears the penalty. If you have no Vitae penalty, eating it does nothing and the item is not consumed. Pick it up from his shop alongside his morph gems and bounty items.
+
+### ⚔️ PvP Reward XP — Decoupled from the Season Rate
+
+Custom PvP reward XP — **arena matches, PK quests, hometown captures, and open-world PK kills** — is no longer multiplied by the seasonal rolling XP rate. Previously these rewards were scaled by the same global rate that ramps from ~0.25× early in the season up to 3× at the end, which made them feel tiny in the opening weeks and would have inflated them dramatically later on.
+
+These rewards are now granted as **fixed percentages of your XP to the next level**, so a given result is worth the same fraction of a level all season long — they no longer shrink in the low-rate opening weeks, nor inflate late in the season when the rate climbs above 1×. The reward percentages themselves are unchanged (for example an arena 1v1 win grants 20% of a level, a loss 5%; a hometown capture grants 10%; an open-world PK kill grants 5–10%).
+
+### 🏰 Hometown Control — Phase 1 Timer Fix
+
+Fixed the Allegiance Hometown Phase 1 countdown, which announced "0s until Phase 2" after only one minute even though Phase 2 didn't begin until several minutes later. The countdown now matches the real Phase 1 hold duration.
+
+---
+
+## 🩹 v1.02 — July 4, 2026
+
+### 🏘️ Allegiance Hometown — Bind Stone Combat Fixes
+
+During a Phase 2 siege, the Bind Stone could not be attacked with missile weapons, shutting archers out of the fight entirely. Missile attacks now work against it. Physical damage against the Bind Stone was also out of balance, and has been retuned.
+
+---
+
+## 🩹 v1.01 — July 3, 2026
+
+### 👑 Allegiance Swearing — Monarch Fix
+
+Fixed a bug that prevented certain monarchs from swearing allegiance. If you became a monarch because another character on your account swore to you with the `OfflineSwear` command — but you had never sworn allegiance to anyone yourself — the game would incorrectly block you from swearing into another allegiance, claiming another character on your account was sworn elsewhere.
+
+These monarchs can now swear allegiance normally. When a monarch swears in, their entire allegiance (including the account characters beneath them) follows along to the new monarch, so the one-allegiance-per-account rule is still honored. No character changes are needed — the fix applies to everyone automatically.
+
+### 🐗 Hot Dungeon Box Drops Reduced
+
+Box drop rates from Hot Dungeon kills have been **reduced by roughly 75%**. Boxes were dropping more often than intended, so every Hot Dungeon's per-kill box chance has been scaled down while keeping the relative balance between dungeons intact (denser dungeons still drop fewer boxes per kill than sparse ones).
+
+This affects only the random per-kill box drops. The guaranteed box awarded for a PK kill inside a Hot Dungeon is unchanged.
+
+### 🏟️ Arena Matchmaking — Low-Level Fix
+
+Fixed a bug that prevented low-level players from ever being matched into arena events. The level-range calculation used to pair players of similar levels miscalculated for anyone below level 20, producing an impossibly high minimum level that no opponent could satisfy.
+
+As a result, a queue full of low-level players would never start a match no matter how many were waiting. Matchmaking now correctly pairs low-level players, and no character changes are needed — the fix applies automatically.
+
+### 🏟️ Arena Rewards — Fix for Losing a Match
+
+Fixed a bug where players who lost an arena match by dying often received no end-of-match rewards. A death that ended the match wasn't being recorded at the moment it happened, so once the fallen player respawned the system mistook it for them leaving the arena early and disqualified them, which stripped their reward eligibility.
+
+Deaths are now recorded correctly, so losers reliably receive their participation rewards (and kill/death totals are tracked properly). No character changes are needed — the fix applies automatically.
