@@ -1090,3 +1090,7 @@ The **A Box → Common/Rare/Mythic Mystery Box** loot chain has been rebalanced:
 Rewards across most arena, open-world, and bounty PK quests have been scaled down — lower XP percentages, Darkbeat Key counts, and PK Trophy/Box payouts on most tiers (open-world kill and bounty PK Trophy rewards saw the largest cuts). See [ServerInfo.md](ServerInfo.md#daily-pk-quest-rewards) for current values.
 
 The three **Town Control kill quests** (PKKILL_TC_1/5/30) have been disabled and no longer appear in daily quest rotation.
+
+### 🗑️ Level Requirement Removal Morph Gem — Discontinued
+
+No item in the Infiltration era carries a level requirement, so this gem never had a real use. It's been pulled from sale on **Anti Parazi** and removed from the **Common** and **Rare Mystery Box** loot tables; the remaining weight in each was redistributed proportionally across the other entries.

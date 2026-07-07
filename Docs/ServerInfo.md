@@ -731,8 +731,9 @@ Killing the same player more than **3 times within a 1-hour window** suppresses 
 | Missile Defense Requirement Morph Gem | 400 | Removes the Missile Defense activation requirement from an item. |
 | Melee Defense Requirement Morph Gem | 400 | Removes the Melee Defense activation requirement from an item. |
 | Player Wield Requirement Morph Gem | 500 | Removes the wield restriction binding an item to a specific player. |
-| Level Requirement Removal Morph Gem | 750 | Removes the level requirement from armor or jewelry (cannot be used on weapons). |
 | A Dick (Vitae Removal) | 1 | Eat it to remove your Vitae penalty (no XP granted). Does nothing if you have no penalty. |
+
+> **Level Requirement Removal Morph Gem** has been discontinued — no item in the Infiltration era has a level requirement, so it never had a use.
 
 > **Impenetrability Morph Gem** — not sold by either vendor. Obtainable only from **Mythic Mystery Boxes**.
 
@@ -798,48 +799,46 @@ The Common, Rare, and Mythic Mystery Boxes each contain a weighted loot table of
 | Missile Defense Requirement Morph Gem | ~2.9% |
 | Melee Requirement Morph Gem | ~2.9% |
 | Player Wield Requirement Morph Gem | ~2.9% |
-| Level Requirement Removal Morph Gem | ~2.9% |
-| Sturdy Iron Key | ~8.6% |
-| Arcane Lore Morph Gem | ~8.6% |
-| Steel Salvage (WS10, 100 units) | ~8.6% |
-| Granite Salvage (WS10, 100 units) | ~8.6% |
-| Iron Salvage (WS10, 100 units) | ~8.6% |
-| Opal Salvage (WS10, 100 units) | ~8.6% |
-| Rare Mystery Box | ~8.6% |
-| MMD ×1 | ~8.6% |
-| PK Trophies ×10 | ~8.6% |
-| Bounty Purchase Token | ~8.6% |
+| Sturdy Iron Key | ~8.8% |
+| Arcane Lore Morph Gem | ~8.8% |
+| Steel Salvage (WS10, 100 units) | ~8.8% |
+| Granite Salvage (WS10, 100 units) | ~8.8% |
+| Iron Salvage (WS10, 100 units) | ~8.8% |
+| Opal Salvage (WS10, 100 units) | ~8.8% |
+| Rare Mystery Box | ~8.8% |
+| MMD ×1 | ~8.8% |
+| PK Trophies ×10 | ~8.8% |
+| Bounty Purchase Token | ~8.8% |
 
-Darkbeat's Lost Storage Key and Green Garnet Salvage no longer drop from Common Mystery Boxes.
+Darkbeat's Lost Storage Key, Green Garnet Salvage, and the Level Requirement Removal Morph Gem no longer drop from Common Mystery Boxes.
 
 ### Rare Mystery Box
 
 | Item | Chance |
 |------|--------|
-| Workmanship Morph Gem | ~5.5% |
-| Missile Defense Requirement Morph Gem | ~5.5% |
-| Melee Requirement Morph Gem | ~5.5% |
-| Player Wield Requirement Morph Gem | ~5.5% |
-| Level Requirement Removal Morph Gem | ~5.5% |
-| Slayer Upgrade Morph Gem | ~5.5% |
-| Sunstone Salvage WS10 — Armor Rend | ~3.6% |
-| Red Garnet Salvage WS10 — Fire Rend | ~3.6% |
-| Black Garnet Salvage WS10 — Pierce Rend | ~3.6% |
-| Imperial Topaz Salvage WS10 — Slash Rend | ~3.6% |
-| Jet Salvage WS10 — Lightning Rend | ~3.6% |
-| Aquamarine Salvage WS10 — Cold Rend | ~3.6% |
-| White Sapphire Salvage WS10 — Bludgeon Rend | ~3.6% |
-| Emerald Salvage WS10 — Acid Rend | ~3.6% |
-| Fire Opal Salvage WS10 — Crippling Blow | ~3.6% |
-| Black Opal Salvage WS10 — Critical Strike | ~3.6% |
-| Bloodstone Salvage WS10 — Minor Endurance (jewelry only) | ~3.6% |
-| Sturdy Iron Keys ×3 | ~5.5% |
-| Darkbeat's Lost Storage Key | ~5.5% |
-| Mythic Mystery Box | ~5.5% |
-| MMDs ×5 | ~5.5% |
-| PK Trophies ×30 | ~5.5% |
+| Workmanship Morph Gem | ~5.8% |
+| Missile Defense Requirement Morph Gem | ~5.8% |
+| Melee Requirement Morph Gem | ~5.8% |
+| Player Wield Requirement Morph Gem | ~5.8% |
+| Slayer Upgrade Morph Gem | ~5.8% |
+| Sunstone Salvage WS10 — Armor Rend | ~3.8% |
+| Red Garnet Salvage WS10 — Fire Rend | ~3.8% |
+| Black Garnet Salvage WS10 — Pierce Rend | ~3.8% |
+| Imperial Topaz Salvage WS10 — Slash Rend | ~3.8% |
+| Jet Salvage WS10 — Lightning Rend | ~3.8% |
+| Aquamarine Salvage WS10 — Cold Rend | ~3.8% |
+| White Sapphire Salvage WS10 — Bludgeon Rend | ~3.8% |
+| Emerald Salvage WS10 — Acid Rend | ~3.8% |
+| Fire Opal Salvage WS10 — Crippling Blow | ~3.8% |
+| Black Opal Salvage WS10 — Critical Strike | ~3.8% |
+| Bloodstone Salvage WS10 — Minor Endurance (jewelry only) | ~3.8% |
+| Sturdy Iron Keys ×3 | ~5.8% |
+| Darkbeat's Lost Storage Key | ~5.8% |
+| Mythic Mystery Box | ~5.8% |
+| MMDs ×5 | ~5.8% |
+| PK Trophies ×30 | ~5.8% |
 
-All salvage bags are full WS10 bags (100 units). Ancient Bottle no longer drops from Rare Mystery Boxes — it's Mythic-only now — and the Slayer Upgrade Morph Gem moved in here from the Mythic Mystery Box.
+All salvage bags are full WS10 bags (100 units). Ancient Bottle no longer drops from Rare Mystery Boxes — it's Mythic-only now. The Slayer Upgrade Morph Gem moved in here from the Mythic Mystery Box, and the Level Requirement Removal Morph Gem no longer drops here at all.
 
 ### Mythic Mystery Box
 
