@@ -629,13 +629,28 @@ namespace ACE.Server.WorldObjects
 
                 if (casterCheck || target == this || caster != target)
                 {
-                    var casterName = casterCheck ? "You" : caster.NameWithMaterial;
-                    var targetName = target.NameWithMaterial;
-                    if (target == this)
-                        targetName = casterCheck ? "yourself" : "you";
+                    if (Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.CustomDM)
+                    {
+                        var casterName = casterCheck ? "You" : caster.NameWithMaterial;
+                        var targetName = target.NameWithMaterial;
+                        if (target == this)
+                            targetName = casterCheck ? "yourself" : "you";
 
-                    if(showMsg)
-                        player.SendChatMessage(player, $"{casterName} {(spell.IsQuickcastSpell ? "quickcast" : "cast")}{(casterCheck ? "" : "s")} {spell.NameWithMetaspellAdjectivesWithoutQuickcast} on {targetName}{suffix}.", ChatMessageType.Magic);
+                        if (showMsg)
+                            player.SendChatMessage(player, $"{casterName} {(spell.IsQuickcastSpell ? "quickcast" : "cast")}{(casterCheck ? "" : "s")} {spell.NameWithMetaspellAdjectivesWithoutQuickcast} on {targetName}{suffix}.", ChatMessageType.Magic);
+                    }
+                    else
+                    {
+                        // retail message format - VirindiTank parses this line to confirm an enchantment
+                        // landed, so it must match retail exactly: no trailing period, plain names
+                        var casterName = casterCheck ? "You" : caster.Name;
+                        var targetName = target.Name;
+                        if (target == this)
+                            targetName = casterCheck ? "yourself" : "you";
+
+                        if (showMsg)
+                            player.SendChatMessage(player, $"{casterName} cast {spell.Name} on {targetName}{suffix}", ChatMessageType.Magic);
+                    }
                 }
             }
 

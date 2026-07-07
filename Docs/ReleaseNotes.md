@@ -1067,3 +1067,11 @@ Costs on a few vendor items have been rebalanced:
 - **Ancient Empyrean Tool** (Darkbeat): 50 → **75** Phials of Bloody Tears
 - **Skill and Attribute Reset Gem** (Darkbeat): 100 → **50** Phials of Bloody Tears
 - **Workmanship Morph Gem** (Anti Parazi): 300 → **500** PK Trophies
+
+### 🤖 VirindiTank — Slow Buffing and Repeated Vulns/Banes Fixed
+
+Fixed the long-standing issues with **VirindiTank** on ClassicPvP: 1–2 second pauses between each buff, re-casting vulns on targets that were already vulned, and re-casting banes that were already on your armor.
+
+The cause: the chat message that confirms a spell landed ("You cast Imperil Other VI on Drudge Slinker") had drifted from the retail format — it had gained a trailing period and material-prefixed item names (e.g. "your **Steel** Celdon Breastplate."). VTank parses that exact line to know a spell succeeded, so every enchantment cast looked like a failure to it: buffs stalled until VTank's internal timeout, and vulns/banes were cast again and again. War spells were unaffected because they don't produce that message, which is why hunting mostly worked while buffing didn't.
+
+The message now matches retail exactly, and VTank registers casts immediately — buff cycles run at full speed and debuffs/banes are cast once.
