@@ -1002,9 +1002,9 @@ During a Phase 2 siege, the Bind Stone no longer passively regenerates health. I
 
 The Bind Stone's health during Phase 2 has been reduced by **20%** across all level caps. It still scales with the rolling level cap; it's simply a bit faster to bring down, shortening a clean unopposed siege from roughly 22 minutes to about 18.
 
-### 🏰 Hometown Control — Attacker's Allegiance Named in Announcements
+### 🏰 Hometown Control — Allegiances Named in Announcements
 
-Global and Discord announcements for hometown assaults, captures, and defenses now identify the attacker's **allegiance**, not just a player name. Messages read like "Alice (The Dark Legion) is assaulting Yaraq!" — and for allegiances without a custom name, the monarch is used as the identity (e.g. "Alice (Bob's Allegiance)").
+Global and Discord announcements for hometown assaults, captures, and defenses now name both the **attacking** and **defending allegiances**, rather than an individual player. For example: "The Dark Legion is attempting to wrest control of Yaraq from The Iron Fist! Phase 1 has begun." Allegiances without a custom name are identified by their monarch (e.g. "Bob's Allegiance").
 
 ### 🪄 Wand Monkeying Disabled in PvP
 

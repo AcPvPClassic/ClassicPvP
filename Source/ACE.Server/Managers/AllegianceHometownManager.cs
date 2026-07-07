@@ -51,12 +51,6 @@ namespace ACE.Server.Managers
         // town_id → real Bindstone WO cloaked during Phase 2
         private static readonly Dictionary<byte, WorldObjects.Bindstone> _phase2CloakedBindstones = new();
 
-        // town_id → bare attacker allegiance identity for the active conflict.
-        // ConflictAttackerName holds the "Player (Allegiance)" display label used in broadcasts;
-        // this holds the plain allegiance name used for ownership transfer and audit logging.
-        // In-memory only — conflicts never survive a restart (ConflictPhase is reset on load).
-        private static readonly Dictionary<byte, string> _conflictAttackerAllegiance = new();
-
         // monarch IDs permanently banned from attacking towns
         private static readonly System.Collections.Generic.HashSet<uint> _blacklist = new();
         private static readonly System.Collections.Generic.Dictionary<uint, ACE.Database.Models.Log.AllegianceHometownBlacklist> _blacklistEntries = new();
@@ -103,7 +97,6 @@ namespace ACE.Server.Managers
                 _captureProtection.Clear();
                 _latestEventByTown.Clear();
                 _phase2Proxies.Clear();
-                _conflictAttackerAllegiance.Clear();
                 _blacklist.Clear();
                 _blacklistEntries.Clear();
 
@@ -254,8 +247,8 @@ namespace ACE.Server.Managers
         /// Attempts to start Phase 1 for the given attacker allegiance on the given town.
         /// Returns false (with reason message) if blocked by cooldowns, protection, or conflict limits.
         /// </summary>
-        public static bool TryStartPhase1(byte townId, uint attackerMonarchId,
-            string attackerDisplayName, string attackerAllegianceName, out string failReason)
+        public static bool TryStartPhase1(byte townId, uint attackerMonarchId, string attackerName,
+            out string failReason)
         {
             failReason = null;
 
@@ -312,27 +305,25 @@ namespace ACE.Server.Managers
 
             town.ConflictPhase             = 1;
             town.ConflictAttackerMonarchId = attackerMonarchId;
-            town.ConflictAttackerName      = attackerDisplayName;
+            town.ConflictAttackerName      = attackerName;
             town.ConflictStartTime         = DateTime.UtcNow;
             town.Phase2StartTime           = null;
             SaveTown(town);
 
-            _conflictAttackerAllegiance[townId] = attackerAllegianceName;
-
             GetOrCreateSet(_activeConflictsByMonarch, attackerMonarchId).Add(townId);
 
-            // Log event (bare allegiance name, not the display label)
+            // Log event
             var evt = DatabaseManager.Log.StartAllegianceHometownEvent(
-                townId, attackerMonarchId, attackerAllegianceName,
+                townId, attackerMonarchId, attackerName,
                 town.OwnerMonarchId, defenderName);
             if (evt != null)
                 _latestEventByTown[townId] = evt;
 
             // Global announcement
-            var ownerPart = town.OwnerMonarchId.HasValue
-                ? $" (owned by {defenderName})"
-                : " (unowned)";
-            GlobalBroadcast($"{attackerDisplayName} is assaulting {town.TownName}{ownerPart}! Phase 1 has begun.");
+            var announcement = town.OwnerMonarchId.HasValue
+                ? $"{attackerName} is attempting to wrest control of {town.TownName} from {defenderName}! Phase 1 has begun."
+                : $"{attackerName} is assaulting {town.TownName} (unclaimed)! Phase 1 has begun.";
+            GlobalBroadcast(announcement);
 
             return true;
         }
@@ -379,6 +370,7 @@ namespace ACE.Server.Managers
         {
             var attackerMonarchId = town.ConflictAttackerMonarchId!.Value;
             var attackerName      = town.ConflictAttackerName;
+            var defenderName      = town.OwnerAllegianceName;
 
             // Set 3-hour cooldown
             _attackerCooldowns[(attackerMonarchId, town.TownId)] = DateTime.UtcNow.AddHours(3);
@@ -389,7 +381,7 @@ namespace ACE.Server.Managers
             // Clear conflict state
             ClearConflict(town);
 
-            GlobalBroadcast($"{attackerName} failed to assault {town.TownName}! The attack has been repelled.");
+            GlobalBroadcast($"{attackerName}'s assault on {town.TownName} has been repelled by {defenderName}!");
         }
 
         // -----------------------------------------------------------------------
@@ -410,7 +402,7 @@ namespace ACE.Server.Managers
                 DatabaseManager.Log.UpdateAllegianceHometownEvent(evt);
             }
 
-            GlobalBroadcast($"{town.ConflictAttackerName} has breached Phase 2 in {town.TownName}! The Bind Stone is under attack!");
+            GlobalBroadcast($"{town.ConflictAttackerName}'s assault on {town.TownName} has breached Phase 2. Will they claim victory over {town.OwnerAllegianceName}?");
         }
 
         /// <summary>Called when bindstone HP reaches 0 — attacker wins.</summary>
@@ -420,7 +412,6 @@ namespace ACE.Server.Managers
 
             var attackerMonarchId = town.ConflictAttackerMonarchId!.Value;
             var attackerName      = town.ConflictAttackerName;
-            var attackerAllegiance = _conflictAttackerAllegiance.TryGetValue(townId, out var an) ? an : attackerName;
             var prevOwnerName     = town.OwnerAllegianceName;
             var prevOwnerId       = town.OwnerMonarchId;
 
@@ -430,7 +421,7 @@ namespace ACE.Server.Managers
             GetOrCreateSet(_ownedByMonarch, attackerMonarchId).Add(town.TownId);
 
             town.OwnerMonarchId       = attackerMonarchId;
-            town.OwnerAllegianceName  = attackerAllegiance; // bare allegiance identity, not the display label
+            town.OwnerAllegianceName  = attackerName;
             town.CapturedAt           = DateTime.UtcNow;
 
             // Apply capture protection
@@ -457,6 +448,7 @@ namespace ACE.Server.Managers
 
             var attackerMonarchId = town.ConflictAttackerMonarchId!.Value;
             var attackerName      = town.ConflictAttackerName;
+            var defenderName      = town.OwnerAllegianceName;
 
             // 6-hour cooldown on the attacking allegiance for this town
             _attackerCooldowns[(attackerMonarchId, town.TownId)] = DateTime.UtcNow.AddHours(6);
@@ -470,7 +462,7 @@ namespace ACE.Server.Managers
             CloseLatestEvent(town.TownId, outcome: 1);
             ClearConflict(town);
 
-            GlobalBroadcast($"{town.TownName} has been defended! {attackerName} failed to capture the town.");
+            GlobalBroadcast($"{defenderName} has defended {town.TownName}! {attackerName} failed to capture the town.");
         }
 
         // -----------------------------------------------------------------------
@@ -705,8 +697,6 @@ namespace ACE.Server.Managers
         {
             if (town.ConflictAttackerMonarchId.HasValue)
                 GetOrCreateSet(_activeConflictsByMonarch, town.ConflictAttackerMonarchId.Value).Remove(town.TownId);
-
-            _conflictAttackerAllegiance.Remove(town.TownId);
 
             town.ConflictPhase             = 0;
             town.ConflictAttackerMonarchId = null;
