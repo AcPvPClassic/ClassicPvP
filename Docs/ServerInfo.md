@@ -299,15 +299,15 @@ Arenas run under specific combat restrictions that do not apply in the open worl
 
 | Type | XP (of level) | PK Trophies | Phials of Bloody Tears | Darkbeat Keys |
 |------|-----|-------------|----------------------|------------|
-| **1v1** | 20% | 5 | 1 | 1 |
-| **2v2** | 20% | 5 | 1 | 1 |
+| **1v1** | 10% | 5 | 1 | 1 |
+| **2v2** | 15% | 5 | 1 | 1 |
 | **FFA** | 35% | 5 | 3 | 5 |
 | **Tugak** | 35% | 5 | 3 | 5 |
 | **Group** | 30% (60% on a clean 1st-place win) | 5 per member | 1 per member | 2 per member |
 
 - Arena XP counts against your **PvP daily bucket**.
 - Eliminated players should stay online until the match ends to be eligible for rewards.
-- Arena XP is a **fixed percentage of your XP to the next level** and is not scaled by the seasonal rolling XP rate — the same result is worth the same fraction of a level all season long. (Losers of a 1v1/2v2 receive 5%.)
+- Arena XP is a **fixed percentage of your XP to the next level** and is not scaled by the seasonal rolling XP rate — the same result is worth the same fraction of a level all season long. Losers receive **3.5%** in 1v1/2v2, for FFA/Tugak non-podium finishes, and in a draw; FFA/Tugak **2nd** and **3rd** place receive 25% and 15%, and a **group loss** 10%.
 
 ### Daily PK Quest Rewards
 

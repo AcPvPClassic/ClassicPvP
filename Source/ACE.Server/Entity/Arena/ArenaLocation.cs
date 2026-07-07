@@ -705,7 +705,8 @@ namespace ACE.Server.Entity
                         {
                             case "1v1":
                             case "2v2":
-                                player.GrantLevelProportionalXpNoModifier(0.2, 0, 0, XpType.PvP);
+                                // 1v1 winners receive 10% of a level; 2v2 winners 15%.
+                                player.GrantLevelProportionalXpNoModifier(ActiveEvent.EventType.Equals("1v1") ? 0.1 : 0.15, 0, 0, XpType.PvP);
 
                                 if (player.MaximumLuminance != null)
                                     player.GrantLuminance(30000, XpType.PvP, ShareType.None);
@@ -905,7 +906,7 @@ namespace ACE.Server.Entity
                         {
                             case "1v1":
                             case "2v2":
-                                player.GrantLevelProportionalXpNoModifier(0.05, 0, 0, XpType.PvP);
+                                player.GrantLevelProportionalXpNoModifier(0.035, 0, 0, XpType.PvP);
 
                                 if (player.MaximumLuminance != null)
                                     player.GrantLuminance(5000, XpType.PvP, ShareType.None);
@@ -996,7 +997,7 @@ namespace ACE.Server.Entity
                                 }
                                 else
                                 {
-                                    player.GrantLevelProportionalXpNoModifier(0.05, 0, 0, XpType.PvP);
+                                    player.GrantLevelProportionalXpNoModifier(0.035, 0, 0, XpType.PvP);
 
                                     if (player.MaximumLuminance != null)
                                         player.GrantLuminance(5000, XpType.PvP, ShareType.None);
@@ -1246,7 +1247,7 @@ namespace ACE.Server.Entity
 
                     if (shouldReward)
                     {
-                        player.GrantLevelProportionalXpNoModifier(0.15, 1, long.MaxValue, XpType.PvP);
+                        player.GrantLevelProportionalXpNoModifier(0.035, 1, long.MaxValue, XpType.PvP);
 
                         if (new Random().NextDouble() > 0.75)
                         {
