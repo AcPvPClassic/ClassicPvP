@@ -1174,6 +1174,17 @@ namespace ACE.Server.Entity
                     return false;
             }
 
+            // No arena reward if any opposing arena player is a throwaway alt parked on an
+            // allegiance-mate's account (their account holds a character in this player's allegiance).
+            foreach (var opponent in allArenaPlayers.Where(x =>
+                         x.CharacterId != arenaPlayer.CharacterId &&
+                         x.TeamGuid != arenaPlayer.TeamGuid))
+            {
+                var opponentPlayer = PlayerManager.FindByGuid(new ObjectGuid(opponent.CharacterId));
+                if (opponentPlayer != null && player.VictimIsAllegianceMateAlt(opponentPlayer))
+                    return false;
+            }
+
             return true;
         }
 

@@ -451,8 +451,6 @@ namespace ACE.Server.Entity
             //         and track all non-owner allegiances present anywhere on the landblock.
             var nearCount          = new Dictionary<uint, int>();    // monarchId → players within 5m
             var allegianceIdentity = new Dictionary<uint, string>(); // monarchId → allegiance identity
-            var repNameNear        = new Dictionary<uint, string>(); // monarchId → representative attacker within 5m
-            var repNameAny         = new Dictionary<uint, string>(); // monarchId → representative attacker within 50m
             var allMonarchIds      = new System.Collections.Generic.HashSet<uint>(); // all non-owner allegiances on lb
 
             foreach (var player in GetPlayersNearBindstone(bindstonePos, 50f))
@@ -461,21 +459,19 @@ namespace ACE.Server.Entity
                 var monarchId = player.MonarchId ?? player.Guid.Full;
                 if (monarchId == ownerMonarchId) continue;
 
+                // Cannot attack a town owned by an allegiance that another character on your
+                // account belongs to — such players don't count toward starting an assault.
+                if (player.AccountHasAllegianceMember(ownerMonarchId)) continue;
+
                 allMonarchIds.Add(monarchId);
 
                 if (!allegianceIdentity.ContainsKey(monarchId))
                     allegianceIdentity[monarchId] = Managers.AllegianceHometownManager.GetAllegianceIdentity(player);
 
-                if (!repNameAny.ContainsKey(monarchId))
-                    repNameAny[monarchId] = player.Name;
-
                 if (player.Location.DistanceTo(bindstonePos) <= 5f)
                 {
                     nearCount.TryGetValue(monarchId, out var c);
                     nearCount[monarchId] = c + 1;
-
-                    if (!repNameNear.ContainsKey(monarchId))
-                        repNameNear[monarchId] = player.Name;
                 }
             }
 
@@ -488,17 +484,14 @@ namespace ACE.Server.Entity
             nearCount.TryGetValue(attackerMonarchId, out var nearPlayers);
             if (nearPlayers < 2) return;
 
-            // Prefer a bind-stone holder (within 5m) as the named attacker for the display label
-            var repName            = repNameNear.TryGetValue(attackerMonarchId, out var rn) ? rn : repNameAny[attackerMonarchId];
             var attackerAllegiance = allegianceIdentity[attackerMonarchId];
-            var attackerDisplay    = $"{repName} ({attackerAllegiance})";
 
-            if (Managers.AllegianceHometownManager.TryStartPhase1(registry.TownId, attackerMonarchId, attackerDisplay, attackerAllegiance, out _))
+            if (Managers.AllegianceHometownManager.TryStartPhase1(registry.TownId, attackerMonarchId, attackerAllegiance, out _))
             {
                 var holdMinutes = Managers.AllegianceHometownManager.Phase1DurationSeconds / 60.0;
                 EnqueueBroadcast(null, false, null, null,
                     new Network.GameMessages.Messages.GameMessageSystemChat(
-                        $"[{registry.TownName}] {attackerDisplay} has initiated a Phase 1 assault! Hold the bind stone for {holdMinutes:0.#} minute(s).",
+                        $"[{registry.TownName}] {attackerAllegiance} has initiated a Phase 1 assault! Hold the bind stone for {holdMinutes:0.#} minute(s).",
                         ACE.Entity.Enum.ChatMessageType.WorldBroadcast));
             }
         }

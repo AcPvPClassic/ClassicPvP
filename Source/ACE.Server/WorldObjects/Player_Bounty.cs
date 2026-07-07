@@ -606,6 +606,10 @@ namespace ACE.Server.WorldObjects
             if (!IsEligibleBountyKill(bountyTarget, killer))
                 return;
 
+            // No bounty credit for killing a throwaway alt parked on an allegiance-mate's account.
+            if (this.VictimIsAllegianceMateAlt(bountyTarget))
+                return;
+
             contract.SetState(BountyContract.BountyContractState.Completed, this);
             contract.BountyKillStreakCount = killStreak;
 

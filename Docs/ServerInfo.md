@@ -233,6 +233,16 @@ When this cascade propagates downward:
 - Characters sworn to another character **on the same account** as their patron are **not broken** from that bond — the same-account relationship is preserved.
 - The cascade continues through them, severing any **different-account** vassals further down the chain.
 
+### Allegiance-Mate Alt Rewards
+
+You cannot earn PvP rewards by killing a throwaway character parked on the account of one of your own allegiance mates. If the character you kill sits on an account that holds **another character in your allegiance**, that kill earns you nothing:
+
+- It does **not** count toward the season **PK-kills leaderboard**, your kill/death ratio, or your kill streak.
+- It does **not** advance **PK quest** or **bounty** progress.
+- In the **Arena**, if any opponent you defeat is such an alt, that match pays **no rewards**.
+
+The same principle governs hometown warfare: you cannot help attack a hometown **held by an allegiance that another character on your account belongs to**. Those characters do not count toward starting an assault, and their kills during a siege do not advance it.
+
 ---
 
 ## 🗡️ Same-Target Kill Diminishing Returns

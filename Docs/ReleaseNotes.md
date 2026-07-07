@@ -1013,3 +1013,9 @@ A caster's **built-in spell** — the spell baked into a wand, orb, or other cas
 ### 💰 Pyreal Coins Now Stack to 25,000
 
 Pyreal coins now stack up to **25,000** (up from 10,000), matching End of Retail. Fewer stacks means less pack clutter and easier trading. Your existing coin stacks are updated automatically — no action needed.
+
+### 🛡️ Alt-Farming — No Rewards for Killing Allegiance-Mates' Alts
+
+You can no longer farm PvP rewards off throwaway characters parked on your allegiance mates' accounts. If the character you kill sits on an account that holds another character in **your** allegiance, the kill now earns nothing: it does not count toward the season **PK-kills leaderboard**, your K/D, or your kill streak, and it does not advance **PK quests** or **bounty contracts**. The same applies in the **Arena** — if any opponent you defeat is one of these alts, the match pays out no rewards.
+
+This also extends to **hometown warfare**: you cannot help assault a hometown held by an allegiance that another character on your account belongs to. Those characters no longer count toward starting a siege, and their kills won't advance one.

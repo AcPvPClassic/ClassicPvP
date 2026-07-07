@@ -309,7 +309,13 @@ namespace ACE.Server.WorldObjects
                         {
                             var killerMonarchId = pkPlayer.Allegiance?.MonarchId;
                             if (killerMonarchId == ahTown.ConflictAttackerMonarchId)
-                                phase2Proxy.OnDefenderKilled();
+                            {
+                                // Killer is an attacker (a defender died). You cannot progress an
+                                // assault on a town owned by an allegiance that another character
+                                // on your account belongs to.
+                                if (!pkPlayer.AccountHasAllegianceMember(ahTown.OwnerMonarchId ?? 0))
+                                    phase2Proxy.OnDefenderKilled();
+                            }
                             else
                                 phase2Proxy.OnAttackerKilled();
                         }
@@ -323,8 +329,9 @@ namespace ACE.Server.WorldObjects
 
                 if (Common.ConfigManager.Config.Server.WorldRuleset != Common.Ruleset.CustomDM)
                 {
-                    // Same-allegiance kills do not count toward the PK leaderboard.
-                    if (!pkPlayer.IsSameAllegiance(this))
+                    // Same-allegiance kills, and kills of a throwaway alt parked on an
+                    // allegiance-mate's account, do not count toward the PK leaderboard.
+                    if (!pkPlayer.IsSameAllegiance(this) && !pkPlayer.VictimIsAllegianceMateAlt(this))
                         pkPlayer.PlayerKillsPk++;
 
                     if ((Location.Cell & 0xFFFF) < 0x100)
@@ -341,6 +348,7 @@ namespace ACE.Server.WorldObjects
                         this.Allegiance != null &&
                         this.Allegiance.MonarchId.HasValue &&
                         this.Allegiance.MonarchId != pkPlayer.Allegiance.MonarchId &&
+                        !pkPlayer.VictimIsAllegianceMateAlt(this) &&
                         IsDifferentIPAddress(pkPlayer);
 
                     if (isPkQuestEligible)
@@ -422,9 +430,10 @@ namespace ACE.Server.WorldObjects
                 // Kill streak tracking and bounty completion
                 if (Common.ConfigManager.Config.Server.WorldRuleset != Common.Ruleset.CustomDM)
                 {
-                    // Increment killer's streak; reset victim's streak. Same-allegiance kills are
-                    // excluded so allegiance-mates can't inflate a streak or reset each other's.
-                    if (!pkPlayer.IsSameAllegiance(this))
+                    // Increment killer's streak; reset victim's streak. Same-allegiance kills, and
+                    // kills of a throwaway alt parked on an allegiance-mate's account, are excluded
+                    // so allegiance-mates can't inflate a streak or reset each other's.
+                    if (!pkPlayer.IsSameAllegiance(this) && !pkPlayer.VictimIsAllegianceMateAlt(this))
                     {
                         pkPlayer.PlayerKillStreak++;
                         PlayerKillStreak = 0;
@@ -588,9 +597,11 @@ namespace ACE.Server.WorldObjects
                         killerPlayer._lastKillWasDiminished.Remove(Guid.Full);
                     }
 
-                    // Same-allegiance kills do not count toward season ranking or streaks.
+                    // Same-allegiance kills, and kills of a throwaway alt parked on an
+                    // allegiance-mate's account, do not count toward season ranking or streaks.
                     bool sameAllegiance = killerPlayer != null && killerPlayer.IsSameAllegiance(this);
-                    if (!killIsDiminished && !sameAllegiance)
+                    bool mateAlt = killerPlayer != null && killerPlayer.VictimIsAllegianceMateAlt(this);
+                    if (!killIsDiminished && !sameAllegiance && !mateAlt)
                     {
                         SeasonManager.RecordPkKill((uint)topDamager.Guid.Full, killerPlayer?.Name ?? topDamager.Name);
                         SeasonManager.RecordPkDeath((uint)Character.Id, Name);
