@@ -1,4 +1,5 @@
 using ACE.Common;
+using ACE.Common.Extensions;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Entity.Models;
@@ -26,6 +27,8 @@ namespace ACE.Server.Entity
         public const uint MorphGemRemoveMeleeDReq  = 480483;
         public const uint MorphGemRandomizeWeaponImbue = 480486;
         public const uint MorphGemRemovePlayerReq  = 480485;
+        public const uint MorphGemCreatureSlayerRandom = 480610;
+        public const uint MorphGemCreatureResistRandom = 600039;
         public const uint MorphGemSlayerUpgrade    = 480639;
         //public const uint MorphGemBurningCoal      = 480638;
         public const uint MorphGemImpen            = 490025;
@@ -58,6 +61,8 @@ namespace ACE.Server.Entity
             MorphGemRemoveMeleeDReq,
             MorphGemRandomizeWeaponImbue,
             MorphGemRemovePlayerReq,
+            MorphGemCreatureSlayerRandom,
+            MorphGemCreatureResistRandom,
             MorphGemSlayerUpgrade,
             MorphGemImpen,
             MorphGemJewelersSawblade,
@@ -342,6 +347,72 @@ namespace ACE.Server.Entity
                         break;
 
                     #endregion MorphGemRemovePlayerReq
+
+                    #region MorphGemCreatureSlayerRandom
+                    case MorphGemCreatureSlayerRandom:
+
+                        //For weapons and wands, require Slayer to be added from tinkering lotto
+                        if (target.ItemType == ItemType.MeleeWeapon || target.ItemType == ItemType.MissileWeapon || target.ItemType == ItemType.Caster)
+                        {
+                            var tinkerLottoLog = target.GetProperty(PropertyString.TinkerLottoLog);
+                            if (!String.IsNullOrEmpty(tinkerLottoLog) && tinkerLottoLog.Contains("Slayer") && target.SlayerCreatureType != null)
+                            {
+                                target.ApplyRandomSlayer(target.SlayerDamageBonus ?? 1.2, target.SlayerCreatureType.Value);
+                                playerMsg = $"The Morph Gem alters your weapon's slayer type to {target.SlayerCreatureType.ToDisplayString()}";
+                            }
+                            else
+                            {
+                                //Must be a slayer that was applied by tinker lotto
+                                playerMsg = $"The {source.Name} cannot be applied to your {target.NameWithMaterial} because it does not have an existing Slayer applied with a morph gem or won in the tinkering lottery";
+                                player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
+                                player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
+                                return;
+                            }
+                        }
+                        else if (target.GearCreatureSlayerType != CreatureType.Invalid && target.GearCreatureSlayerRating > 0)
+                        {
+                            target.GearCreatureSlayerType = target.GetRandomCreatureType(target.GearCreatureSlayerType);
+                            playerMsg = $"The Morph Gem alters your {target.NameWithMaterial} to have {target.GearCreatureSlayerType.ToDisplayString()} Slayer Rating {target.GearCreatureSlayerRating}";
+                        }
+                        else
+                        {
+                            playerMsg = "This gem can only be used on loot generated weapons or casters with a Slayer from the Tinkering Lottery or armor, jewelry or undies with a Creature Slayer Rating.";
+                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
+                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
+                            return;
+                        }
+
+                        //Send player message confirming the applied morph gem
+                        player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
+
+                        AddMorphGemLog(target, MorphGemCreatureSlayerRandom);
+                        break;
+
+                    #endregion MorphGemCreatureSlayerRandom
+
+                    #region MorphGemCreatureResistRandom
+                    case MorphGemCreatureResistRandom:
+
+                        if (target.GearCreatureResistType != CreatureType.Invalid && target.GearCreatureResistRating > 0)
+                        {
+                            target.GearCreatureResistType = target.GetRandomCreatureType(target.GearCreatureResistType);
+                            playerMsg = $"The Morph Gem alters your {target.NameWithMaterial} to have {target.GearCreatureResistType.ToDisplayString()} Resist Rating {target.GearCreatureResistRating}";
+                        }
+                        else
+                        {
+                            playerMsg = "This gem can only be used on loot generated armor, jewelry or undies with a Creature Resist Rating.";
+                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
+                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
+                            return;
+                        }
+
+                        //Send player message confirming the applied morph gem
+                        player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
+
+                        AddMorphGemLog(target, MorphGemCreatureResistRandom);
+                        break;
+
+                    #endregion MorphGemCreatureResistRandom
 
                     #region MorphGemSlayerUpgrade
                     case MorphGemSlayerUpgrade:
