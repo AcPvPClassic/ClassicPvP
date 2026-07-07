@@ -83,6 +83,23 @@ namespace ACE.Server.WorldObjects
                 return;
             }
 
+            // Vitae Removal consumable (sold by Anti Parazi for a PK Trophy). Burns the
+            // player's Vitae penalty with no XP granted (mirrors the "remove-vitae" command).
+            // Handled server-side rather than via an on-use emote. Returns early when there
+            // is no penalty so the item is not wasted; otherwise falls through to the normal
+            // eat sound + inventory consume below.
+            if (WeenieClassId == 510001)
+            {
+                if (!player.EnchantmentManager.HasVitae)
+                {
+                    player.SendTransientError("You have no Vitae penalty to remove.");
+                    return;
+                }
+
+                player.EnchantmentManager.RemoveVitae();
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat("(Vitae Removed) Now get back in there and make me proud...", ChatMessageType.Broadcast));
+            }
+
             // trying to use a dispel potion while pk timer is active
             // send error message and cancel - do not consume item
             if (SpellDID != null)

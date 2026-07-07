@@ -962,7 +962,7 @@ Now a contract only completes if **you** earned the kill: either you land the ki
 
 ### 🩸 Anti Parazi — Burn Your Vitae for a PK Trophy
 
-Anti Parazi now clears your **Vitae penalty** in exchange for a **PK Trophy**. Hand him a trophy directly (drag it onto him) and he removes your Vitae — "(Vitae Removed) Now get back in there and make me proud..." — taking a single trophy from the stack. This is separate from his shop: he still takes PK Trophies as currency for his morph gems and bounty items.
+Anti Parazi now sells **A Dick** for **1 PK Trophy**. Eat it and it burns away your **Vitae penalty** — "(Vitae Removed) Now get back in there and make me proud..." No XP is granted; it simply clears the penalty. If you have no Vitae penalty, eating it does nothing and the item is not consumed. Pick it up from his shop alongside his morph gems and bounty items.
 
 ### ⚔️ PvP Reward XP — Decoupled from the Season Rate
 

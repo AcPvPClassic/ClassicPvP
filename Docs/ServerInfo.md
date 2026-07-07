@@ -724,10 +724,11 @@ Killing the same player more than **3 times within a 1-hour window** suppresses 
 | Melee Defense Requirement Morph Gem | 400 | Removes the Melee Defense activation requirement from an item. |
 | Player Wield Requirement Morph Gem | 500 | Removes the wield restriction binding an item to a specific player. |
 | Level Requirement Removal Morph Gem | 750 | Removes the level requirement from armor or jewelry (cannot be used on weapons). |
+| A Dick (Vitae Removal) | 1 | Eat it to remove your Vitae penalty (no XP granted). Does nothing if you have no penalty. |
 
 > **Impenetrability Morph Gem** — not sold by either vendor. Obtainable only from **Mythic Mystery Boxes**.
 
-**Vitae Removal.** Beyond his shop, Anti Parazi will **remove your Vitae penalty** in exchange for **1 PK Trophy**. Give him a trophy directly (drag it onto him rather than buying) and he clears your Vitae, consuming a single trophy from the stack.
+**Vitae Removal.** Anti Parazi also stocks **A Dick**, a consumable that costs **1 PK Trophy**. Eat it to clear your **Vitae penalty** — no XP is granted, it just removes the penalty. If you have no Vitae penalty, eating it does nothing and the item is not consumed.
 
 ---
 
