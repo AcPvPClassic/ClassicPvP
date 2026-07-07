@@ -141,6 +141,12 @@ namespace ACE.Server.WorldObjects
                 enchantmentTickTimestamp = Time.GetFutureUnixTime(enchantmentTickInterval);
             }
 
+            // Bounty and Arena Observer are not CustomDM-specific; they must run under all rule sets.
+            BountyTick();
+
+            if (IsArenaObserver && !ArenaLocation.IsArenaLandblock(Location?.Landblock ?? 0))
+                ArenaManager.ExitArenaObserverMode(this);
+
             if (Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.CustomDM)
             {
                 if (leyLineAmuletsTickTimestamp == 0 || currentUnixTime > leyLineAmuletsTickTimestamp)
@@ -151,11 +157,6 @@ namespace ACE.Server.WorldObjects
                 }
 
                 DoTHotTick(currentUnixTime);
-
-                BountyTick();
-
-                if (IsArenaObserver && !ArenaLocation.IsArenaLandblock(Location?.Landblock ?? 0))
-                    ArenaManager.ExitArenaObserverMode(this);
 
                 if (PvPInciteTickTimestamp == 0)
                     PvPInciteTickTimestamp = Time.GetFutureUnixTime(PropertyManager.GetLong("bz_whispers_login_delay").Item);
