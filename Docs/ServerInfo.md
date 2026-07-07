@@ -315,15 +315,16 @@ In addition to the per-match rewards above, completing arena and PK milestones e
 
 | Quest | Threshold | Phials | PK Trophies |
 |-------|-----------|--------|-------------|
-| Participate in arena matches | 5 / 15 / 30 / 50 | 1 / 2 / 3 / 5 | 5 / 25 / 50 / 100 |
-| Win arena matches (any type) | 10 / 20 / 30 | 2 / 3 / 5 | 40 / 100 / 200 |
+| Participate in arena matches | 5 / 15 / 30 / 50 | 1 / 2 / 3 / 3 | 5 / 15 / 25 / 50 |
+| Win arena matches (any type) | 10 / 20 / 30 | 2 / 3 / 5 | 25 / 50 / 100 |
 | Tugak War — participate | 2 / 25 matches | 1 / 5 | 15 / 75 |
 | Tugak War — win | 1 / 20 wins | 1 / 5 | 25 / 75 |
 | Tugak War — top 3 | 1 | 1 | 15 |
-| Open world kills (opposing allegiance) | 10 / 30 | 1 / 3 | 20 / 100 |
-| Complete bounty contracts | 1 / 5 / 25 | 1 / 3 / 5 | 25 / 50 / 100 |
+| Open world kills (opposing allegiance) | 10 / 30 | 1 / 3 | 20 / 60 |
+| Complete bounty contracts | 1 / 5 / 25 | 1 / 3 / 5 | 15 / 35 / 100 |
 | Complete high priority bounties | 1 / 5 | 2 / 5 | 25 / 50 |
-| Town Control kills | 1 / 5 / 30 | — / 2 / 3 | 15 / 25 / 50 |
+
+Town Control kill quests (PKKILL_TC_1/5/30) have been disabled and no longer appear in rotation.
 
 ### Arena Ranking
 
@@ -787,55 +788,58 @@ The gem is consumed on use. If you do not have enough PK Trophies in your invent
 
 The Common, Rare, and Mythic Mystery Boxes each contain a weighted loot table of currencies, salvage, and morph gems.
 
+**A Box tiers.** Opening **A Box** rolls: 10% A Dick, 64% Common Mystery Box, 25% Rare Mystery Box, 1% Mythic Mystery Box.
+
 ### Common Mystery Box
 
 | Item | Chance |
 |------|--------|
-| Workmanship Morph Gem | ~2.4% |
-| Missile Defense Requirement Morph Gem | ~2.4% |
-| Melee Requirement Morph Gem | ~2.4% |
-| Player Wield Requirement Morph Gem | ~2.4% |
-| Level Requirement Removal Morph Gem | ~2.4% |
-| Darkbeat's Lost Storage Key | ~7.3% |
-| Sturdy Iron Key | ~7.3% |
-| Arcane Lore Morph Gem | ~7.3% |
-| Steel Salvage (WS10, 100 units) | ~7.3% |
-| Granite Salvage (WS10, 100 units) | ~7.3% |
-| Iron Salvage (WS10, 100 units) | ~7.3% |
-| Green Garnet Salvage (WS10, 100 units) | ~7.3% |
-| Opal Salvage (WS10, 100 units) | ~7.3% |
-| Rare Mystery Box | ~7.3% |
-| MMDs ×5 | ~7.3% |
-| PK Trophies ×10 | ~7.3% |
-| Bounty Purchase Token | ~7.3% |
+| Workmanship Morph Gem | ~2.9% |
+| Missile Defense Requirement Morph Gem | ~2.9% |
+| Melee Requirement Morph Gem | ~2.9% |
+| Player Wield Requirement Morph Gem | ~2.9% |
+| Level Requirement Removal Morph Gem | ~2.9% |
+| Sturdy Iron Key | ~8.6% |
+| Arcane Lore Morph Gem | ~8.6% |
+| Steel Salvage (WS10, 100 units) | ~8.6% |
+| Granite Salvage (WS10, 100 units) | ~8.6% |
+| Iron Salvage (WS10, 100 units) | ~8.6% |
+| Opal Salvage (WS10, 100 units) | ~8.6% |
+| Rare Mystery Box | ~8.6% |
+| MMD ×1 | ~8.6% |
+| PK Trophies ×10 | ~8.6% |
+| Bounty Purchase Token | ~8.6% |
+
+Darkbeat's Lost Storage Key and Green Garnet Salvage no longer drop from Common Mystery Boxes.
 
 ### Rare Mystery Box
 
 | Item | Chance |
 |------|--------|
-| Ancient Bottle (XP Bottle) | ~2.0% |
-| Workmanship Morph Gem | ~6.0% |
-| Missile Defense Requirement Morph Gem | ~6.0% |
-| Melee Requirement Morph Gem | ~6.0% |
-| Player Wield Requirement Morph Gem | ~6.0% |
-| Level Requirement Removal Morph Gem | ~6.0% |
-| Sunstone Salvage WS10 — Armor Rend | ~4.0% |
-| Red Garnet Salvage WS10 — Fire Rend | ~4.0% |
-| Black Garnet Salvage WS10 — Pierce Rend | ~4.0% |
-| Imperial Topaz Salvage WS10 — Slash Rend | ~4.0% |
-| Jet Salvage WS10 — Lightning Rend | ~4.0% |
-| Aquamarine Salvage WS10 — Cold Rend | ~4.0% |
-| White Sapphire Salvage WS10 — Bludgeon Rend | ~4.0% |
-| Emerald Salvage WS10 — Acid Rend | ~4.0% |
-| Fire Opal Salvage WS10 — Crippling Blow | ~4.0% |
-| Black Opal Salvage WS10 — Critical Strike | ~4.0% |
-| Bloodstone Salvage WS10 — Minor Endurance (jewelry only) | ~4.0% |
-| Sturdy Iron Keys ×3 | ~6.0% |
-| Mythic Mystery Box | ~6.0% |
-| MMDs ×20 | ~6.0% |
-| PK Trophies ×100 | ~6.0% |
+| Workmanship Morph Gem | ~5.5% |
+| Missile Defense Requirement Morph Gem | ~5.5% |
+| Melee Requirement Morph Gem | ~5.5% |
+| Player Wield Requirement Morph Gem | ~5.5% |
+| Level Requirement Removal Morph Gem | ~5.5% |
+| Slayer Upgrade Morph Gem | ~5.5% |
+| Sunstone Salvage WS10 — Armor Rend | ~3.6% |
+| Red Garnet Salvage WS10 — Fire Rend | ~3.6% |
+| Black Garnet Salvage WS10 — Pierce Rend | ~3.6% |
+| Imperial Topaz Salvage WS10 — Slash Rend | ~3.6% |
+| Jet Salvage WS10 — Lightning Rend | ~3.6% |
+| Aquamarine Salvage WS10 — Cold Rend | ~3.6% |
+| White Sapphire Salvage WS10 — Bludgeon Rend | ~3.6% |
+| Emerald Salvage WS10 — Acid Rend | ~3.6% |
+| Fire Opal Salvage WS10 — Crippling Blow | ~3.6% |
+| Black Opal Salvage WS10 — Critical Strike | ~3.6% |
+| Bloodstone Salvage WS10 — Minor Endurance (jewelry only) | ~3.6% |
+| Sturdy Iron Keys ×3 | ~5.5% |
+| Darkbeat's Lost Storage Key | ~5.5% |
+| Mythic Mystery Box | ~5.5% |
+| MMDs ×5 | ~5.5% |
+| PK Trophies ×30 | ~5.5% |
 
-All salvage bags are full WS10 bags (100 units).
+All salvage bags are full WS10 bags (100 units). Ancient Bottle no longer drops from Rare Mystery Boxes — it's Mythic-only now — and the Slayer Upgrade Morph Gem moved in here from the Mythic Mystery Box.
 
 ### Mythic Mystery Box
 
@@ -843,12 +847,14 @@ All salvage bags are full WS10 bags (100 units).
 |------|--------|
 | Ancient Bottle (XP Bottle) | ~5.0% |
 | Impenetrability Morph Gem | ~15.0% |
-| Slayer Upgrade Gem | ~15.0% |
+| Oil of Creature Slaying | ~15.0% |
 | Skill and Attribute Reset Gem | ~15.0% |
 | Imbue Altering Morph Gem | ~15.0% |
-| MMDs ×50 | ~15.0% |
-| PK Trophies ×1000 | ~15.0% |
+| MMDs ×20 | ~15.0% |
+| PK Trophies ×250 | ~15.0% |
 | Shimmering Skeleton Key | ~5.0% |
+
+The Slayer Upgrade Morph Gem moved out to the Rare Mystery Box; Oil of Creature Slaying takes its slot here.
 
 ---
 

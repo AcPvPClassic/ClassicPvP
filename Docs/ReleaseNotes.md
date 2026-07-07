@@ -1075,3 +1075,18 @@ Fixed the long-standing issues with **VirindiTank** on ClassicPvP: 1–2 second 
 The cause: the chat message that confirms a spell landed ("You cast Imperil Other VI on Drudge Slinker") had drifted from the retail format — it had gained a trailing period and material-prefixed item names (e.g. "your **Steel** Celdon Breastplate."). VTank parses that exact line to know a spell succeeded, so every enchantment cast looked like a failure to it: buffs stalled until VTank's internal timeout, and vulns/banes were cast again and again. War spells were unaffected because they don't produce that message, which is why hunting mostly worked while buffing didn't.
 
 The message now matches retail exactly, and VTank registers casts immediately — buff cycles run at full speed and debuffs/banes are cast once.
+
+### 📦 Loot Box Rebalance
+
+The **A Box → Common/Rare/Mythic Mystery Box** loot chain has been rebalanced:
+
+- **A Box** — Mythic Mystery Box chance reduced from 5% to **1%**; the freed 4% moves to the Common Mystery Box tier (60% → **64%**). Rare stays at 25%, A Dick stays at 10%.
+- **Common Mystery Box** — no longer drops Darkbeat's Lost Storage Key; its MMD reward cut from ×5 to **×1**.
+- **Rare Mystery Box** — Ancient Bottle removed (moved to Mythic only); gains Darkbeat's Lost Storage Key and the Slayer Upgrade Morph Gem (moved in from Mythic); MMDs cut from ×20 to **×5**, PK Trophies cut from ×100 to **×30**.
+- **Mythic Mystery Box** — Slayer Upgrade Morph Gem moved out to Rare, replaced by **Oil of Creature Slaying**; MMDs cut from ×50 to **×20**, PK Trophies cut from ×1000 to **×250**.
+
+### 🏆 PK Quest Reward Rebalance
+
+Rewards across most arena, open-world, and bounty PK quests have been scaled down — lower XP percentages, Darkbeat Key counts, and PK Trophy/Box payouts on most tiers (open-world kill and bounty PK Trophy rewards saw the largest cuts). See [ServerInfo.md](ServerInfo.md#daily-pk-quest-rewards) for current values.
+
+The three **Town Control kill quests** (PKKILL_TC_1/5/30) have been disabled and no longer appear in daily quest rotation.
