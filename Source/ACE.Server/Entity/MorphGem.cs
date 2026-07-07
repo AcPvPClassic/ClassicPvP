@@ -355,7 +355,7 @@ namespace ACE.Server.Entity
                         if(target.ItemType != ItemType.MeleeWeapon &&
                             target.ItemType != ItemType.MissileWeapon &&
                             target.ItemType != ItemType.Caster &&
-                            (target.ArmorLevel ?? 0) > 0)
+                            (target.ArmorLevel ?? 0) < 1)
                         {
                             playerMsg = "This gem can only be used on loot generated weapons, casters with a Slayer or armor with a Creature Slayer Rating.";
                             player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
@@ -366,7 +366,7 @@ namespace ACE.Server.Entity
                         //For weapons and wands
                         if (target.ItemType == ItemType.MeleeWeapon || target.ItemType == ItemType.MissileWeapon || target.ItemType == ItemType.Caster)
                         {
-                            target.ApplyRandomSlayer(target.SlayerDamageBonus ?? 1.2, target.SlayerCreatureType.Value);
+                            target.ApplyRandomSlayer(target.SlayerDamageBonus ?? 1.2, target.SlayerCreatureType.HasValue ? target.SlayerCreatureType.Value : CreatureType.Invalid);
                             playerMsg = $"The Morph Gem alters your weapon's slayer type to {target.SlayerCreatureType.ToDisplayString()}";
                             
                         }
