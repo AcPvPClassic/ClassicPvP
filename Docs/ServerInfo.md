@@ -855,6 +855,8 @@ All salvage bags are full WS10 bags (100 units). Ancient Bottle no longer drops 
 
 The Slayer Upgrade Morph Gem moved out to the Rare Mystery Box; Oil of Creature Slaying takes its slot here.
 
+> **Shimmering Skeleton Key** — a single-use key that unlocks **any** locked door or chest, no matter the lock. It crumbles to dust after one use and is **slippery**, so it drops on death (into your corpse for a killer to loot). Obtainable only from the Mythic Mystery Box.
+
 ---
 
 ## 🐗 Tusker Tusk & Olthoi Pincer Turn-In Timers
