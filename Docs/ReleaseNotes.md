@@ -1,6 +1,6 @@
 # 📜 ClassicPvP — Release Notes
 
-> **This is a historical changelog.** Everything below is the **Launch Edition (July 3, 2026)** and is final — existing sections are not edited after release. New patches are **appended to the end** under their own dated headers, capturing the history of changes.
+> **This is a historical changelog.** Everything below is the **Launch Edition (July 3, 2026)** and is final — existing sections are not edited after release. New patches are **appended to the end** under their own versioned headers (v1.01, v1.02, ...), capturing the history of changes. A version may collect multiple days' worth of changes before it's deployed — the version increments only on explicit instruction, not automatically per day.
 >
 > For the current state of every mechanic (kept continuously up to date), see **[ServerInfo.md](ServerInfo.md)**.
 
@@ -892,7 +892,7 @@ The intent is simple: a Tinker is a maxed-out crafting workstation in character 
 
 ---
 
-## 🩹 Patch — July 3, 2026
+## 🩹 v1.01 — July 3, 2026
 
 ### 👑 Allegiance Swearing — Monarch Fix
 
@@ -920,7 +920,7 @@ Deaths are now recorded correctly, so losers reliably receive their participatio
 
 ---
 
-## 🩹 Patch — July 4, 2026
+## 🩹 v1.02 — July 4, 2026
 
 ### 🏘️ Allegiance Hometown — Bind Stone Combat Fixes
 
@@ -928,7 +928,7 @@ During a Phase 2 siege, the Bind Stone could not be attacked with missile weapon
 
 ---
 
-## 🩹 Patch — July 4, 2026
+## 🩹 v1.03 — July 4, 2026
 
 ### 💰 Pyreal Stacks — Currency Fix
 
@@ -976,7 +976,7 @@ Fixed the Allegiance Hometown Phase 1 countdown, which announced "0s until Phase
 
 ---
 
-## 🩹 Patch — July 5, 2026
+## 🩹 v1.04 — July 5, 2026
 
 ### 🛡️ Anti-Cheat — Tighter Movement Speed Enforcement
 
@@ -992,7 +992,7 @@ Fixed a bug where PvP reward XP could silently vanish instead of filling your **
 
 ---
 
-## 🩹 Patch — July 6, 2026
+## 🩹 v1.05 — July 6, 2026
 
 ### 🏰 Hometown Control — Bind Stone No Longer Heals Over Time
 
@@ -1046,7 +1046,7 @@ Killing another player out in the world can now drop a **PK Trophy** on their co
 
 ---
 
-## 🩹 Patch — July 7, 2026
+## 🩹 v1.06 — July 7, 2026
 
 ### 🏟️ Arena — Same-Allegiance Rewards Restored
 
@@ -1055,3 +1055,15 @@ A recent anti-alt-farming change had unintentionally stopped **same-allegiance a
 ### 📦 Darkbeat Chest — Loot Quality Reduced
 
 The loot quality of Darkbeat's Lost Storage chest (opened with Darkbeat's Lost Storage Keys) has been reduced — its loot quality modifier drops from **0.5** to **0.425**, slightly lowering the average quality of the items it rolls.
+
+---
+
+## 🩹 v1.07 — July 7, 2026
+
+### 💰 Darkbeat & Anti Parazi — Vendor Price Adjustments
+
+Costs on a few vendor items have been rebalanced:
+
+- **Ancient Empyrean Tool** (Darkbeat): 50 → **75** Phials of Bloody Tears
+- **Skill and Attribute Reset Gem** (Darkbeat): 100 → **50** Phials of Bloody Tears
+- **Workmanship Morph Gem** (Anti Parazi): 300 → **500** PK Trophies

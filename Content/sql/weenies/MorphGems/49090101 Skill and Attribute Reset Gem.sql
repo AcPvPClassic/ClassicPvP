@@ -8,7 +8,7 @@ VALUES (49090101,   1,    2048) /* ItemType - Gem */
      , (49090101,   5,       5) /* EncumbranceVal */
      , (49090101,  16,       8) /* ItemUseable - Contained */
      , (49090101,  18,       1) /* UiEffects - Magical */
-     , (49090101,  19,     100) /* Value - costs 100 Phials of Bloody Tears from Darkbeat */
+     , (49090101,  19,     50) /* Value - costs 100 Phials of Bloody Tears from Darkbeat */
      , (49090101,  33,       1) /* Bonded - Bonded */
      , (49090101,  93,    1044) /* PhysicsState - Ethereal, IgnoreCollisions, Gravity */
      , (49090101, 114,       1) /* Attuned - Attuned */;
