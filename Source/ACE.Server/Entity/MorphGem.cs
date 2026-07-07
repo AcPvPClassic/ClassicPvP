@@ -26,7 +26,6 @@ namespace ACE.Server.Entity
         public const uint MorphGemRemoveMeleeDReq  = 480483;
         public const uint MorphGemRandomizeWeaponImbue = 480486;
         public const uint MorphGemRemovePlayerReq  = 480485;
-        public const uint MorphGemRemoveLevelReq   = 480609;
         public const uint MorphGemSlayerUpgrade    = 480639;
         //public const uint MorphGemBurningCoal      = 480638;
         public const uint MorphGemImpen            = 490025;
@@ -59,7 +58,6 @@ namespace ACE.Server.Entity
             MorphGemRemoveMeleeDReq,
             MorphGemRandomizeWeaponImbue,
             MorphGemRemovePlayerReq,
-            MorphGemRemoveLevelReq,
             MorphGemSlayerUpgrade,
             MorphGemImpen,
             MorphGemJewelersSawblade,
@@ -97,7 +95,6 @@ namespace ACE.Server.Entity
 
         private static readonly HashSet<uint> morphGemsAllowedNonLootGen = new HashSet<uint>()
         {
-            MorphGemRemoveLevelReq,
             MorphGemRemovePlayerReq,
             MorphGemJewelersSawblade,
             MorphGemImpen,
@@ -345,38 +342,6 @@ namespace ACE.Server.Entity
                         break;
 
                     #endregion MorphGemRemovePlayerReq
-
-                    #region MorphGemRemoveLevelReq
-                    case MorphGemRemoveLevelReq:
-
-                        if (!target.GetProperty(PropertyInt.WieldDifficulty).HasValue ||
-                            !target.GetProperty(PropertyInt.WieldRequirements).HasValue ||
-                            target.GetProperty(PropertyInt.WieldRequirements) != 7)
-                        {
-                            playerMsg = "The gem can only be applied to items that have a Level requirement";
-                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
-                            return;
-                        }
-
-                        if (target is MeleeWeapon || target is Caster || target is MissileLauncher)
-                        {
-                            playerMsg = "The gem can not be applied to weapons";
-                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
-                            return;
-                        }
-
-                        var origLevelReq = target.GetProperty(PropertyInt.WieldDifficulty);
-                        target.RemoveProperty(PropertyInt.WieldDifficulty);
-
-                        playerMsg = $"You apply the Morph Gem skillfully and have altered your item so it no longer requires level {origLevelReq} to wield";
-
-                        player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
-                        AddMorphGemLog(target, MorphGemRemoveLevelReq);
-                        break;
-
-                    #endregion MorphGemRemoveLevelReq
 
                     #region MorphGemSlayerUpgrade
                     case MorphGemSlayerUpgrade:
