@@ -61,6 +61,12 @@ Two new morph gems let you re-roll the creature type on slayer/resistance gear:
 
 Both are sold on **Anti Parazi** for **100 PK Trophies** each, and drop from **Rare Mystery Boxes** (~1.9% each) and **Mythic Mystery Boxes** (~11.5% each).
 
+### 🔧 Empyrean Tuning Fork — Impenetrability Fix
+
+Fixed a bug where the **Empyrean Tuning Fork** (which re-rolls the Major cantrips on armor) could apply **Major Heart Thirst** — a *weapon* damage cantrip — to armor, due to a mis-mapped spell ID.
+
+The bonus Impenetrability roll has also been reworked: if the item doesn't already have Impenetrability, there's now a **10% chance** to add one, split **1:3 Major** / **2:3 Minor** (~3.3% Major, ~6.7% Minor). Items that already carry Impenetrability are left alone so it never stacks.
+
 ### 🏹 Shooting From Portal Space Fixed
 
 Fixed a long-standing exploit where an archer could enter combat and fire arrows while still in **portal space** — the "purple bubble" state before a character finishes materializing out of a portal or recall. Missile attacks are now blocked while teleporting, both at the moment an attack is started and mid-sequence if a portal is entered during a shot. Melee and magic already had this protection.

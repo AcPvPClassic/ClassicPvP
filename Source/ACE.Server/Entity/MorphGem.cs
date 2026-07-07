@@ -1118,16 +1118,36 @@ namespace ACE.Server.Entity
                         bool cantripImpenSuccess = false;
                         if (target.ItemType != ItemType.Jewelry)
                         {
-                            var impenRandom = new Random();
-                            var impenRoll = impenRandom.Next(0, int.MaxValue);
-                            if (impenRoll % 7 == 0 && !newMajorList.Contains(2591))
-                            {
-                                if (newMajorList.Count < 4)
-                                    newMajorList.Add(2591);
-                                else
-                                    newMajorList[0] = 2591;
+                            var majorImpen = (int)SpellId.CANTRIPIMPENETRABILITY2; // 2592
+                            var minorImpen = (int)SpellId.CANTRIPIMPENETRABILITY1; // 2604
 
-                                cantripImpenSuccess = true;
+                            // Don't stack Impenetrability: skip if the item will already have the major
+                            // (among the rerolled majors) or already has the minor (among its minors)
+                            var alreadyHasImpen = newMajorList.Contains(majorImpen)
+                                                  || (target.MinorCantrips?.ContainsKey(minorImpen) ?? false);
+
+                            if (!alreadyHasImpen)
+                            {
+                                var impenRandom = new Random();
+
+                                // 10% overall chance to add an Impenetrability cantrip
+                                if (impenRandom.Next(0, 100) < 10)
+                                {
+                                    // major:minor split of 1:2 (one third major, two thirds minor)
+                                    if (impenRandom.Next(0, 3) == 0)
+                                    {
+                                        if (newMajorList.Count < 4)
+                                            newMajorList.Add(majorImpen);
+                                        else
+                                            newMajorList[0] = majorImpen;
+                                    }
+                                    else
+                                    {
+                                        target.Biota.GetOrAddKnownSpell(minorImpen, target.BiotaDatabaseLock, out _);
+                                    }
+
+                                    cantripImpenSuccess = true;
+                                }
                             }
                         }
 
