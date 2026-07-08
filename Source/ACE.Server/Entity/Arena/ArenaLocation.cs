@@ -735,9 +735,9 @@ namespace ACE.Server.Entity
                                     player.Session.Network.EnqueueSend(new GameMessageSystemChat("You have received one of Darkbeat's Lost Storage Keys", ChatMessageType.Broadcast));
                                 }
 
-                                if (new Random().NextDouble() > 0.75)
+                                if (new Random().NextDouble() > 0.95)
                                 {
-                                    var bonusCount = new Random().Next(1, 4);
+                                    var bonusCount = new Random().Next(1, 3);
                                     for (int i = 0; i < bonusCount; i++)
                                     {
                                         var bonusKey = WorldObjectFactory.CreateNewWorldObject(CustomWeenieId.DarkbeatKey);
