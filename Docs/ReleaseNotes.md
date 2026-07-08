@@ -21,11 +21,13 @@ Walking through walls, closed doors, and standing inside monsters remain blocked
 
 ### 🧪 XP Cap — Fixed Skill-Use Draining Your Unassigned XP
 
-Fixed a bug where fighting monsters while at the daily XP cap could slowly **reduce your unassigned experience**.
+Fixed a bug where, once you were at the daily XP cap, ordinary skill use could slowly **reduce your unassigned experience** — even while leeching or standing around.
 
-Skill proficiency (the XP you earn just by using your weapons and magic) is meant to be self-funding — it grants a little XP and immediately spends it to raise the skill. But once you hit the daily cap, the grant was blocked while the skill-up was still charged to your **banked, unspent XP** — so every proc quietly moved XP out of your pool and into the skills you were using.
+Skill proficiency (the XP you earn automatically just from *using* skills) is meant to be self-funding — it grants a little XP and immediately spends it to raise the skill. But once you hit the daily cap, the grant was blocked while the skill-up was still charged to your **banked, unspent XP** — so every proc quietly moved XP out of your pool and into whatever skill fired.
 
-No XP was ever destroyed — it went into legitimate skill ranks — but it was being spent without your say-so. Now, while you're capped, proficiency simply does nothing until the cap lifts, and your unassigned XP is left untouched. This applies per XP category, so a maxed-out **monster** cap no longer affects proficiency even if your quest or PvP XP still has room.
+The catch is that skills fire on their own without you doing anything active: your **defensive skills proc every time a monster swings at you**, and your magic skills proc while auto-buffing. So a character parked at a hunting spot in a fellowship — capped, taking hits all night — could wake up with their unassigned XP drained toward zero.
+
+No XP was ever destroyed — it went into legitimate skill ranks — but it was being spent without your say-so. Now, while a category is capped, proficiency for that category simply does nothing until the cap lifts, and your unassigned XP is left untouched. This is tracked per category, so a maxed-out **monster** cap no longer affects proficiency even if your quest or PvP XP still has room.
 
 ---
 
