@@ -608,6 +608,91 @@ namespace ACE.Server.WorldObjects
         }
 
         /// <summary>
+        /// Returns how much additional XP of <paramref name="xpType"/> the Infiltration rolling
+        /// cap will actually let this player gain right now, taking both the global cap and the
+        /// per-category daily budget into account. Returns <see cref="long.MaxValue"/> when no
+        /// rolling cap is active (i.e. the cap system does not constrain the grant).
+        ///
+        /// This is a side-effect-free projection of the same accounting <see cref="UpdateXpAndLevel"/>
+        /// performs — including the lazy per-cap-advancement bucket reset — so it must be kept in
+        /// sync with that logic. It lets self-funding XP sources (e.g. Proficiency, which grants XP
+        /// to the unassigned pool and then immediately spends it on a skill) avoid draining a
+        /// player's banked unassigned XP when their category's grant would be throttled to 0.
+        /// </summary>
+        public long GetRollingCapXpHeadroom(XpType xpType)
+        {
+            if (Common.ConfigManager.Config.Server.WorldRuleset != Common.Ruleset.Infiltration)
+                return long.MaxValue;
+
+            var rollingCapXp = RollingLevelCapManager.GetCurrentXpCap();
+            if (rollingCapXp <= 0)
+                return long.MaxValue;
+
+            var xpRemainingGlobal = rollingCapXp - (TotalExperience ?? 0);
+            if (xpRemainingGlobal <= 0)
+                return 0;
+
+            double questRatio   = PropertyManager.GetDouble("daily_quest_xp_category_ratio").Item;
+            double monsterRatio = PropertyManager.GetDouble("daily_monster_xp_category_ratio").Item;
+            double pvpRatio     = PropertyManager.GetDouble("daily_pvp_xp_category_ratio").Item;
+
+            // Mirror UpdateXpAndLevel's lazy reset: when the cap has advanced since our buckets were
+            // last reset, the daily budgets are recomputed from the remaining headroom and the
+            // spent-so-far counters are treated as cleared. Otherwise use the persisted buckets
+            // (with the same first-award fallback budget when a bucket has not been initialized yet).
+            long dailyMaxMonsterCat, dailyMaxQuestCat, dailyMaxPvpCat;
+            long spentMonster, spentQuest, spentPvp;
+            if (rollingCapXp != CapPreviousXpCap)
+            {
+                var xpRemainingAtReset = Math.Max(0L, rollingCapXp - (TotalExperience ?? 0));
+                dailyMaxQuestCat   = (long)(xpRemainingAtReset * questRatio);
+                dailyMaxMonsterCat = (long)(xpRemainingAtReset * monsterRatio);
+                dailyMaxPvpCat     = (long)(xpRemainingAtReset * pvpRatio);
+                spentQuest = spentMonster = spentPvp = 0;
+            }
+            else
+            {
+                dailyMaxQuestCat   = CapDailyMaxQuestCat   > 0 ? CapDailyMaxQuestCat   : (long)(rollingCapXp * questRatio);
+                dailyMaxMonsterCat = CapDailyMaxMonsterCat > 0 ? CapDailyMaxMonsterCat : (long)(rollingCapXp * monsterRatio);
+                dailyMaxPvpCat     = CapDailyMaxPvpCat     > 0 ? CapDailyMaxPvpCat     : (long)(rollingCapXp * pvpRatio);
+                spentQuest   = CapQuestXp;
+                spentMonster = CapMonsterXp;
+                spentPvp     = CapPvpXp;
+            }
+
+            long categoryRemaining;
+            switch (xpType)
+            {
+                case XpType.Quest:
+                case XpType.Emote:
+                case XpType.Exploration:
+                    categoryRemaining = Math.Max(0L, dailyMaxQuestCat - spentQuest);
+                    break;
+
+                case XpType.Kill:
+                case XpType.Fellowship:
+                case XpType.Allegiance:
+                case XpType.Proficiency:
+                    categoryRemaining = Math.Max(0L, dailyMaxMonsterCat - spentMonster);
+                    break;
+
+                case XpType.PvP:
+                    categoryRemaining = Math.Max(0L, dailyMaxPvpCat - spentPvp);
+                    break;
+
+                case XpType.Admin:
+                    // Admin XP bypasses per-category limits; only bounded by the global remaining.
+                    return xpRemainingGlobal;
+
+                default:
+                    categoryRemaining = 0;
+                    break;
+            }
+
+            return Math.Min(xpRemainingGlobal, categoryRemaining);
+        }
+
+        /// <summary>
         /// Optionally passes XP up the Allegiance tree
         /// </summary>
         private void UpdateXpAllegiance(long amount)

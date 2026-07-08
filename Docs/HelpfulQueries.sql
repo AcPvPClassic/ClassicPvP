@@ -248,3 +248,69 @@ WHERE kc.account_Id = vc.account_Id
   AND kl.killer_arena_player_id IS NULL
   AND kl.victim_arena_player_id IS NULL
 ORDER BY kl.kill_datetime DESC;
+
+
+-- =====================================================================================
+-- QUERY 8 -- XP integrity: available XP vs. (total XP - XP spent on skills/attributes)
+-- -------------------------------------------------------------------------------------
+-- AC keeps this invariant on every character:
+--
+--     TotalExperience = AvailableExperience + SUM(all XP spent on skills, attributes, vitals)
+--
+-- i.e. unassigned XP is exactly total earned minus everything poured into advancement.
+-- Every normal earn (total+=x, available+=x) and spend (available-=x, spent+=x) preserves
+-- it. This query recomputes the expected available XP from total minus spent and flags any
+-- character where the stored AvailableExperience disagrees -- genuine desync/corruption from
+-- ANY source. Runs across all player characters; a clean shard returns zero rows.
+--
+-- SCHEMA:
+--   biota_properties_int64      : type 1 = TotalExperience, type 2 = AvailableExperience (value)
+--   biota_properties_skill      : p_p       = XP spent on that skill
+--   biota_properties_attribute  : c_P_Spent = XP spent on that attribute
+--   biota_properties_attribute_2nd (vitals) : c_P_Spent = XP spent on that vital
+--
+-- discrepancy = stored_available - expected_available
+--   > 0  unassigned XP is HIGHER than it should be  (XP created from nowhere -- investigate first)
+--   < 0  unassigned XP is LOWER than it should be
+--
+-- KNOWN-LEGITIMATE negative discrepancies (NOT corruption -- these XP sinks are deducted from
+-- AvailableExperience but are not stored in the skill/attribute/vital spent buckets):
+--   * Augmentation purchases (AugmentationDevice deducts AvailableExperience directly)
+--   * Enlightenment / character resets (zero out AvailableExperience)
+--   * Admin XP adjustments and /delevel
+-- The Proficiency-at-XP-cap bug that motivated this query did NOT break the invariant (the
+-- drained XP went straight into skill p_p), so affected characters will NOT appear here.
+-- Treat any positive discrepancy, or a negative one you can't tie to the sinks above, as
+-- worth investigating.
+-- =====================================================================================
+SELECT
+    c.id                                 AS character_id,
+    c.name                               AS character_name,
+    c.account_Id,
+    a.accountName,
+    COALESCE(tot.value,   0)             AS total_xp,
+    COALESCE(avail.value, 0)             AS available_xp,
+    COALESCE(sk.spent, 0)                AS skill_xp_spent,
+    COALESCE(att.spent, 0)               AS attribute_xp_spent,
+    COALESCE(vit.spent, 0)               AS vital_xp_spent,
+    COALESCE(sk.spent,0) + COALESCE(att.spent,0) + COALESCE(vit.spent,0) AS total_xp_spent,
+    COALESCE(tot.value,0)
+        - (COALESCE(sk.spent,0) + COALESCE(att.spent,0) + COALESCE(vit.spent,0)) AS expected_available_xp,
+    COALESCE(avail.value,0)
+        - (COALESCE(tot.value,0)
+            - (COALESCE(sk.spent,0) + COALESCE(att.spent,0) + COALESCE(vit.spent,0))) AS discrepancy
+FROM classicpvp_shard.`character` c
+    LEFT JOIN classicpvp_auth.account a ON a.accountId = c.account_Id
+    LEFT JOIN classicpvp_shard.biota_properties_int64 tot
+         ON tot.object_Id = c.id AND tot.type = 1          -- TotalExperience
+    LEFT JOIN classicpvp_shard.biota_properties_int64 avail
+         ON avail.object_Id = c.id AND avail.type = 2      -- AvailableExperience
+    LEFT JOIN (SELECT object_Id, SUM(p_p)       AS spent FROM classicpvp_shard.biota_properties_skill        GROUP BY object_Id) sk
+         ON sk.object_Id = c.id
+    LEFT JOIN (SELECT object_Id, SUM(c_P_Spent) AS spent FROM classicpvp_shard.biota_properties_attribute     GROUP BY object_Id) att
+         ON att.object_Id = c.id
+    LEFT JOIN (SELECT object_Id, SUM(c_P_Spent) AS spent FROM classicpvp_shard.biota_properties_attribute_2nd GROUP BY object_Id) vit
+         ON vit.object_Id = c.id
+WHERE c.is_Deleted = 0
+HAVING discrepancy <> 0
+ORDER BY discrepancy DESC, ABS(discrepancy) DESC;

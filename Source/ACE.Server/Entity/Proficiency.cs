@@ -88,6 +88,20 @@ namespace ACE.Server.Entity
                 var maxLevel = Player.GetMaxLevel();
                 var remainingXP = player.GetRemainingXP(maxLevel).Value;
 
+                // Rolling XP cap (Infiltration): proficiency is self-funding — it grants XP to the
+                // unassigned pool (GrantXP below) and then immediately spends it on the skill
+                // (HandleActionRaiseSkill below). XpType.Proficiency counts against the monster-XP
+                // category, so if that category is capped — whether the whole cap is reached or only
+                // the monster daily budget is exhausted while quest/PvP still have room — the grant
+                // is throttled while the skill-raise would still spend pp from the player's existing
+                // banked unassigned XP, silently draining it on every proc while fighting monsters.
+                // Fold the actual monster-category headroom into the same clamp used for the
+                // max-level case so a capped player's proficiency award simply does nothing instead
+                // of costing them XP.
+                var capHeadroom = player.GetRollingCapXpHeadroom(XpType.Proficiency);
+                if (remainingXP > capHeadroom)
+                    remainingXP = capHeadroom;
+
                 if (totalXPGranted > remainingXP)
                 {
                     // checks and balances:

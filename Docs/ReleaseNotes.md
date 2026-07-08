@@ -19,6 +19,14 @@ The movement validation system has been overhauled to sharply reduce rubber-band
 
 Walking through walls, closed doors, and standing inside monsters remain blocked as before. No action is needed on your part — the changes apply automatically.
 
+### 🧪 XP Cap — Fixed Skill-Use Draining Your Unassigned XP
+
+Fixed a bug where fighting monsters while at the daily XP cap could slowly **reduce your unassigned experience**.
+
+Skill proficiency (the XP you earn just by using your weapons and magic) is meant to be self-funding — it grants a little XP and immediately spends it to raise the skill. But once you hit the daily cap, the grant was blocked while the skill-up was still charged to your **banked, unspent XP** — so every proc quietly moved XP out of your pool and into the skills you were using.
+
+No XP was ever destroyed — it went into legitimate skill ranks — but it was being spent without your say-so. Now, while you're capped, proficiency simply does nothing until the cap lifts, and your unassigned XP is left untouched. This applies per XP category, so a maxed-out **monster** cap no longer affects proficiency even if your quest or PvP XP still has room.
+
 ---
 
 ## 🩹 v1.07 — July 7, 2026
