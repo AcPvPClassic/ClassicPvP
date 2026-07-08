@@ -253,15 +253,33 @@ ORDER BY kl.kill_datetime DESC;
 -- =====================================================================================
 -- QUERY 8 -- XP integrity: available XP vs. (total XP - XP spent on skills/attributes)
 -- -------------------------------------------------------------------------------------
--- AC keeps this invariant on every character:
+-- The baseline AC bookkeeping identity is:
 --
---     TotalExperience = AvailableExperience + SUM(all XP spent on skills, attributes, vitals)
+--     TotalExperience = AvailableExperience + SUM(XP spent on skills, attributes, vitals)
 --
--- i.e. unassigned XP is exactly total earned minus everything poured into advancement.
--- Every normal earn (total+=x, available+=x) and spend (available-=x, spent+=x) preserves
--- it. This query recomputes the expected available XP from total minus spent and flags any
--- character where the stored AvailableExperience disagrees -- genuine desync/corruption from
--- ANY source. Runs across all player characters; a clean shard returns zero rows.
+-- Every earn (total+=x, available+=x) and spend (available-=x, spent+=x) preserves it.
+-- BUT the identity does NOT hold exactly, because of a deliberate offset:
+--
+--   *** Character-creation "trained skill" bonus (multiples of 526) ***
+--   Each skill you pick as TRAINED at character creation is handed a 5-rank head start =
+--   526 skill "PP" (biota_properties_skill.p_p), written straight into the skill's spent
+--   total WITHOUT ever passing through Total/Available (Player.TrainSkill applyCreationBonusXP,
+--   called from PlayerFactory). Specialized skills do NOT get this (their head start is an
+--   innate InitLevel, not PP). So a perfectly healthy character reads:
+--
+--       available = (total - spent) + 526 * (number of trained-at-creation skills)
+--
+--   e.g. a char that trained 10 skills at creation shows discrepancy = +5,260 = 526 * 10.
+--   This is exactly why the in-game `verify-xp` command ignores any diff that is a clean
+--   multiple of 526. It is intended retail behavior, NOT corruption.
+--
+-- Other legitimate reasons the stored available can sit BELOW (total - spent) -- these are XP
+-- sinks that leave AvailableExperience but are not captured in the p_p / c_P_Spent buckets, so
+-- this query CANNOT see them and will show them as a negative or non-526 discrepancy:
+--   * Augmentation purchases (AugmentationDevice deducts AvailableExperience directly)
+--   * Enlightenment / character resets, admin XP adjustments, /delevel
+-- For an aug-accurate, fully authoritative check, use the console command `verify-xp`
+-- (DeveloperFixCommands) -- it models aug cost and the VerifyXp correction property too.
 --
 -- SCHEMA:
 --   biota_properties_int64      : type 1 = TotalExperience, type 2 = AvailableExperience (value)
@@ -269,19 +287,13 @@ ORDER BY kl.kill_datetime DESC;
 --   biota_properties_attribute  : c_P_Spent = XP spent on that attribute
 --   biota_properties_attribute_2nd (vitals) : c_P_Spent = XP spent on that vital
 --
--- discrepancy = stored_available - expected_available
---   > 0  unassigned XP is HIGHER than it should be  (XP created from nowhere -- investigate first)
---   < 0  unassigned XP is LOWER than it should be
---
--- KNOWN-LEGITIMATE negative discrepancies (NOT corruption -- these XP sinks are deducted from
--- AvailableExperience but are not stored in the skill/attribute/vital spent buckets):
---   * Augmentation purchases (AugmentationDevice deducts AvailableExperience directly)
---   * Enlightenment / character resets (zero out AvailableExperience)
---   * Admin XP adjustments and /delevel
--- The Proficiency-at-XP-cap bug that motivated this query did NOT break the invariant (the
--- drained XP went straight into skill p_p), so affected characters will NOT appear here.
--- Treat any positive discrepancy, or a negative one you can't tie to the sinks above, as
--- worth investigating.
+-- This query reports the raw discrepancy but FILTERS OUT the benign creation-bonus rows
+-- (positive multiples of 526), leaving only the characters worth a closer look:
+--   discrepancy < 0                -> available is lower than even the naive baseline
+--                                     (augmentation spend, or genuine XP loss)
+--   discrepancy % 526 <> 0         -> a residual not explained by whole creation bonuses
+-- implied_creation_bonuses = discrepancy / 526 should land on a small whole number (~ the
+-- character's trained-skill count) for a clean character; fractions/odd values are the tell.
 -- =====================================================================================
 SELECT
     c.id                                 AS character_id,
@@ -298,7 +310,11 @@ SELECT
         - (COALESCE(sk.spent,0) + COALESCE(att.spent,0) + COALESCE(vit.spent,0)) AS expected_available_xp,
     COALESCE(avail.value,0)
         - (COALESCE(tot.value,0)
-            - (COALESCE(sk.spent,0) + COALESCE(att.spent,0) + COALESCE(vit.spent,0))) AS discrepancy
+            - (COALESCE(sk.spent,0) + COALESCE(att.spent,0) + COALESCE(vit.spent,0))) AS discrepancy,
+    ROUND(
+      (COALESCE(avail.value,0)
+        - (COALESCE(tot.value,0)
+            - (COALESCE(sk.spent,0) + COALESCE(att.spent,0) + COALESCE(vit.spent,0)))) / 526.0, 3) AS implied_creation_bonuses
 FROM classicpvp_shard.`character` c
     LEFT JOIN classicpvp_auth.account a ON a.accountId = c.account_Id
     LEFT JOIN classicpvp_shard.biota_properties_int64 tot
@@ -312,5 +328,6 @@ FROM classicpvp_shard.`character` c
     LEFT JOIN (SELECT object_Id, SUM(c_P_Spent) AS spent FROM classicpvp_shard.biota_properties_attribute_2nd GROUP BY object_Id) vit
          ON vit.object_Id = c.id
 WHERE c.is_Deleted = 0
-HAVING discrepancy <> 0
-ORDER BY discrepancy DESC, ABS(discrepancy) DESC;
+-- keep only rows NOT explained by whole trained-skill creation bonuses (526 * N, N >= 0)
+HAVING discrepancy < 0 OR (discrepancy % 526) <> 0
+ORDER BY discrepancy ASC;
