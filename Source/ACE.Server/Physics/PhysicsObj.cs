@@ -105,21 +105,53 @@ namespace ACE.Server.Physics
         public double PlayerCollisionCooldownUntil;
 
         /// <summary>
-        /// Pass-through packets consumed from the mob-collision grace budget
+        /// Seconds of mob-overlap consumed from the mob-collision grace budget
         /// (see <see cref="update_object_server_new"/>).  Refills at
         /// <see cref="CreatureGraceRefillPerSec"/>; accepts while below
         /// <see cref="CreatureGraceMaxSpent"/>.
+        /// The budget is measured in SECONDS of continuous overlap, not packets: packet
+        /// rates vary 10-35/s between clients, so a packet-counted budget lasted under a
+        /// second on fast machines and rubber-banded honest melees fighting inside packs.
         /// </summary>
         public float CreatureBlockGraceSpent;
 
-        /// <summary>Timestamp of the last mob-collision grace budget refill computation.</summary>
+        /// <summary>Timestamp of the last mob-collision grace budget refill/charge computation.</summary>
         public double LastCreatureGraceDecayTime;
 
-        /// <summary>Max mob pass-through packets accepted in a burst before enforcement.</summary>
-        private const float CreatureGraceMaxSpent = 15.0f;
+        /// <summary>Max seconds of continuous mob overlap accepted before enforcement.</summary>
+        private const float CreatureGraceMaxSpent = 3.0f;
 
-        /// <summary>Mob-collision grace budget refill rate, in packets per second.</summary>
-        private const float CreatureGraceRefillPerSec = 3.0f;
+        /// <summary>Mob-collision grace budget refill rate, in overlap-seconds per second.
+        /// Net drain while standing inside a mob = 1.0 - this, so continuous overlap is
+        /// enforced after MaxSpent / (1 - refill) ≈ 7.5 s and recovers over ~5 s.</summary>
+        private const float CreatureGraceRefillPerSec = 0.6f;
+
+        /// <summary>Max seconds charged to the mob grace budget per blocked packet, so a
+        /// burst of blocked packets after a gap can't drain the budget in one hit.</summary>
+        private const float CreatureGraceMaxChargePerPacket = 0.25f;
+
+        /// <summary>
+        /// Seconds of terrain-shortfall grace consumed (see <see cref="update_object_server_new"/>).
+        /// The server's slope/step solver can stop a sweep short of a position the client
+        /// legitimately walked to on hills and uneven terrain.  When the stop shows floor-like
+        /// contact (never a wall) and a small horizontal shortfall, the position is accepted
+        /// from this budget instead of rubber-banding.
+        /// </summary>
+        public float TerrainGraceSpent;
+
+        /// <summary>Timestamp of the last terrain grace budget refill/charge computation.</summary>
+        public double LastTerrainGraceTime;
+
+        /// <summary>Max seconds of continuous terrain-shortfall grace before enforcement.</summary>
+        private const float TerrainGraceMaxSpent = 2.0f;
+
+        /// <summary>Terrain grace budget refill rate, in seconds per second.</summary>
+        private const float TerrainGraceRefillPerSec = 0.5f;
+
+        /// <summary>Contact normals with Z at or above this are considered floor-like (walkable
+        /// slope limit is ~0.666; walls are ~0).  Only floor-like contact qualifies for terrain
+        /// grace, so passing through a wall or climbing a steep cliff face is never graced.</summary>
+        private const float TerrainGraceFloorNormalZ = 0.65f;
 
         public double UpdateTime;
         public Vector3 Velocity;
@@ -4506,10 +4538,23 @@ namespace ACE.Server.Physics
                     LastTransitionCreatureGraceUsed = false;
                     var _allBlockersAreCreatures = false;
                     var _anyPlayerBlocker        = false;
+                    var _allBlockersAreMeleeTarget = false;
                     if (fullTransition != null && !valid)
                     {
                         // Assume all-creatures until proven otherwise; a non-empty list is required.
                         _allBlockersAreCreatures = fullTransition.CollisionInfo.CollideObject.Count > 0;
+
+                        // Melee sticky contact: while attacking in melee, the client's sticky
+                        // system deliberately glues the player to the target's cylinder, so
+                        // constant server-side collision with that one creature (or player, in
+                        // PvP chases) is expected combat behavior, not a violation.  Track
+                        // whether every blocker IS the current attack target.
+                        var _meleeTargetGuid = 0u;
+                        if (player != null && player.CombatMode == ACE.Entity.Enum.CombatMode.Melee
+                            && player.AttackTarget is Creature _atkTarget && _atkTarget.IsAlive)
+                            _meleeTargetGuid = _atkTarget.Guid.Full;
+                        _allBlockersAreMeleeTarget = _meleeTargetGuid != 0 && _allBlockersAreCreatures;
+
                         var utcNow = DateTime.UtcNow;
                         foreach (var colObj in fullTransition.CollisionInfo.CollideObject)
                         {
@@ -4517,6 +4562,7 @@ namespace ACE.Server.Physics
                             if (wo == null)
                             {
                                 _allBlockersAreCreatures = false; // unclassifiable — conservative
+                                _allBlockersAreMeleeTarget = false;
                                 continue;
                             }
 
@@ -4534,6 +4580,9 @@ namespace ACE.Server.Physics
                                 _anyPlayerBlocker = true;
                             else if (!(wo is Creature))
                                 _allBlockersAreCreatures = false; // door/static/unknown object in the path
+
+                            if (wo.Guid.Full != _meleeTargetGuid)
+                                _allBlockersAreMeleeTarget = false;
                         }
                     }
 
@@ -4560,7 +4609,9 @@ namespace ACE.Server.Physics
                         // a wall involved in the same failed transition can never be bypassed —
                         // accept the position within tight bounds instead of rubber-banding.
                         var graceAccepted = false;
-                        if (_allBlockersAreCreatures && LScape.get_landcell(RequestPos.ObjCellID) == null)
+                        var terrainGraceAccepted = false;
+                        if ((_allBlockersAreCreatures || fullTransition != null && fullTransition.CollisionInfo.CollideObject.Count == 0)
+                            && LScape.get_landcell(RequestPos.ObjCellID) == null)
                         {
                             // A grace accept force-sets the client's claimed position via
                             // set_current_pos.  If the claimed cell cannot be resolved (landblock not
@@ -4570,7 +4621,21 @@ namespace ACE.Server.Physics
                             // invisible-attacker fixups) until a later clean move repairs it.  An
                             // unresolvable claimed cell is also exactly the case where enforcement is
                             // wanted, so fall through to the rubber-band instead.
-                            log.Warn($"{Name} - dynamic-collision grace denied: unresolvable request cell 0x{RequestPos.ObjCellID:X8}");
+                            log.Warn($"{Name} - collision grace denied: unresolvable request cell 0x{RequestPos.ObjCellID:X8}");
+                        }
+                        else if (_allBlockersAreMeleeTarget && TransitionClearsEnvironment())
+                        {
+                            // Every blocker is the player's current melee attack target.  Sticky
+                            // melee deliberately keeps the attacker glued to the target's cylinder,
+                            // so this contact is constant and expected for the entire fight — both
+                            // against mobs and while chasing a player in PvP.  Accept with NO budget
+                            // charge; charging would exhaust any budget within seconds of normal
+                            // combat.  Bounded: applies only to the single creature the player is
+                            // actively attacking in melee mode, the environment probe still rejects
+                            // any wall involvement, and the speed/avg checks still validate every
+                            // accepted packet.  Third-party body-blockers (not the attack target)
+                            // take the tight player-block path below.
+                            graceAccepted = true;
                         }
                         else if (_allBlockersAreCreatures && TransitionClearsEnvironment())
                         {
@@ -4590,31 +4655,97 @@ namespace ACE.Server.Physics
                             else
                             {
                                 // Mob-only block (e.g. running through a monster pack).  Leaky-bucket
-                                // budget: accept silently while fewer than CreatureGraceMaxSpent
-                                // passes are outstanding; spent passes refill at
-                                // CreatureGraceRefillPerSec.  A legitimate pack crossing (~1-2 s of
-                                // intermittent blocks) fits inside the budget and never rubber-bands.
-                                // A client that deletes mobs and tries to live inside them drains the
-                                // budget and is enforced from then on, creeping at only the refill
-                                // rate — and the geometry, speed, and average-speed checks still
-                                // apply to every accepted packet.
+                                // budget measured in seconds of overlap: each blocked packet charges
+                                // the real time elapsed since the last charge (capped per packet), so
+                                // the budget is packet-rate independent — a fast client at 30 packets/s
+                                // and a slow one at 10/s both get the same seconds of grace.  A
+                                // legitimate pack crossing or a melee fighting inside a pack stays
+                                // within the budget indefinitely because intermittent contact refills
+                                // faster than it drains.  A client that deletes mobs and stands inside
+                                // them drains the budget in ~7.5 s of continuous overlap and is
+                                // enforced from then on — with geometry, speed, and average-speed
+                                // checks still applying to every accepted packet.
                                 var elapsed = now - LastCreatureGraceDecayTime;
                                 if (LastCreatureGraceDecayTime > 0 && elapsed > 0)
                                     CreatureBlockGraceSpent = Math.Max(0.0f, CreatureBlockGraceSpent - (float)(elapsed * CreatureGraceRefillPerSec));
-                                LastCreatureGraceDecayTime = now;
 
                                 if (CreatureBlockGraceSpent < CreatureGraceMaxSpent)
                                 {
-                                    CreatureBlockGraceSpent += 1.0f;
+                                    var charge = LastCreatureGraceDecayTime > 0
+                                        ? (float)Math.Min(Math.Max(elapsed, 0.0), CreatureGraceMaxChargePerPacket)
+                                        : CreatureGraceMaxChargePerPacket;
+                                    CreatureBlockGraceSpent += Math.Max(charge, 0.02f);
                                     graceAccepted = true;
                                 }
+                                LastCreatureGraceDecayTime = now;
+                            }
+                        }
+                        else if (fullTransition != null && fullTransition.CollisionInfo.CollideObject.Count == 0)
+                        {
+                            // --- Terrain grace ---
+                            // No dynamic object blocked this transition: the sweep was stopped by
+                            // terrain/static geometry.  On hills and uneven ground the server's
+                            // slope/step solver routinely stops short of a position the client
+                            // legitimately walked to, and every such disagreement was a rubber-band.
+                            //
+                            // Accept the client position only when ALL of:
+                            //   • contact evidence exists and is exclusively floor-like (normal
+                            //     Z >= 0.65 — walls are ~0, so wall-walking is never graced, and
+                            //     climbing an unwalkable cliff face is never graced)
+                            //   • the horizontal shortfall is small (creep-bounded)
+                            //   • a leaky time budget has room (so even a hypothetical bypass can
+                            //     only creep briefly, then enforcement resumes)
+                            var ci = fullTransition.CollisionInfo;
+                            var anyNormal = false;
+                            var allFloorLike = true;
+                            if (ci.CollisionNormalValid && ci.CollisionNormal != System.Numerics.Vector3.Zero)
+                            {
+                                anyNormal = true;
+                                allFloorLike &= ci.CollisionNormal.Z >= TerrainGraceFloorNormalZ;
+                            }
+                            if (ci.ContactPlaneValid)
+                            {
+                                anyNormal = true;
+                                allFloorLike &= ci.ContactPlane.Normal.Z >= TerrainGraceFloorNormalZ;
+                            }
+
+                            // Z is absolute in AC coordinates (only X/Y are block-local), so the
+                            // vertical component of the shortfall is valid across cell boundaries.
+                            var dz = Math.Abs(fullTransition.SpherePath.EndPos.Frame.Origin.Z
+                                            - fullTransition.SpherePath.CurPos.Frame.Origin.Z);
+                            var horizontalShortfall = (float)Math.Sqrt(Math.Max(0.0f, dist * dist - dz * dz));
+
+                            if (anyNormal && allFloorLike && horizontalShortfall <= 1.25f && dist <= 4.0f)
+                            {
+                                var now = PhysicsTimer.CurrentTime;
+                                var elapsed = now - LastTerrainGraceTime;
+                                if (LastTerrainGraceTime > 0 && elapsed > 0)
+                                    TerrainGraceSpent = Math.Max(0.0f, TerrainGraceSpent - (float)(elapsed * TerrainGraceRefillPerSec));
+
+                                if (TerrainGraceSpent < TerrainGraceMaxSpent)
+                                {
+                                    var charge = LastTerrainGraceTime > 0
+                                        ? (float)Math.Min(Math.Max(elapsed, 0.0), 0.25)
+                                        : 0.25f;
+                                    TerrainGraceSpent += Math.Max(charge, 0.02f);
+                                    terrainGraceAccepted = true;
+                                }
+                                LastTerrainGraceTime = now;
                             }
                         }
 
-                        if (graceAccepted)
+                        if (graceAccepted || terrainGraceAccepted)
                         {
                             set_current_pos(RequestPos);
-                            LastTransitionCreatureGraceUsed = true;
+                            if (graceAccepted)
+                                LastTransitionCreatureGraceUsed = true;
+                            if (terrainGraceAccepted)
+                            {
+                                // The geometry anti-cheat flag was set above for this same failed
+                                // transition; the grace has classified it as benign terrain
+                                // disagreement, so don't let the geometry check score/rubber-band it.
+                                LastTransitionHitGeometry = false;
+                            }
                         }
                         else
                         {

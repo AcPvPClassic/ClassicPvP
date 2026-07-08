@@ -798,6 +798,9 @@ namespace ACE.Server.Managers
 
                 ("ah_capture_protection_hours", new Property<double>(24.0, "Hours a freshly captured Allegiance Hometown town is protected from re-attack.")),
 
+                ("movement_avg_ceiling_3s", new Property<double>(1.30, "anti-cheat: 3-second average-speed window ceiling, as a multiplier over the time-integrated legitimate movement allowance (4.0 x effective run rate per segment). Violations score when sustained average exceeds this. Lower = stricter. Legit strafe-running is already budgeted separately; keep >= ~1.2 for burst headroom (downhill, lag catch-up)")),
+                ("movement_avg_ceiling_15s", new Property<double>(1.15, "anti-cheat: 15-second average-speed window ceiling, as a multiplier over the time-integrated legitimate movement allowance (4.0 x effective run rate per segment). The primary sustained-speed-hack detector: a +20% quickness hack exceeds the default and alerts every window; the violation streak escalator kicks sustained offenders within minutes. Lower = stricter; do not set below ~1.08")),
+
                 ("cantrip_drop_rate", new Property<double>(1.0, "Scales the chance for cantrips to drop in each tier. Defaults to 1.0, as per end of retail")),
                 ("cloak_cooldown_seconds", new Property<double>(5.0, "The number of seconds between possible cloak procs.")),
                 ("cloak_max_proc_base", new Property<double>(0.25, "The max proc chance of a cloak.")),

@@ -9,6 +9,16 @@
 
 ## 🩹 v1.08 (in development)
 
+### 🛡️ Movement Anti-Cheat — Terrain- and Combat-Aware
+
+The movement validation system has been overhauled to sharply reduce rubber-banding for honest players while tightening detection of speed cheats:
+
+- **Hills and uneven terrain** no longer cause rubber-banding. The server now recognizes when a position disagreement is just terrain (running up and down slopes) rather than an attempt to walk through walls, and lets legitimate movement flow.
+- **Fighting in monster packs** is much smoother. Melee characters no longer get snapped around while brawling inside a group of mobs, and colliding with the specific enemy you're attacking — including chasing a player in PvP — is now treated as normal combat contact instead of a violation.
+- **Speed cheat detection is tighter.** Sustained artificially fast movement — even modest boosts — is now reliably detected, alerted on, and removed. Legitimate movement techniques are specifically accounted for and unaffected.
+
+Walking through walls, closed doors, and standing inside monsters remain blocked as before. No action is needed on your part — the changes apply automatically.
+
 ---
 
 ## 🩹 v1.07 — July 7, 2026

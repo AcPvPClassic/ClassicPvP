@@ -916,6 +916,21 @@ namespace ACE.Server.WorldObjects
                                     currentMaxSpeed *= 1.8f;
                             }
 
+                            // --- Budget floor: full-rate coverage over the elapsed time ---
+                            // enforcementDeltaTime spans any packets that failed physics validation
+                            // (common on hills, where the slope solver stops short and zeroes the
+                            // physics velocity, killing the velocity-rescue term above).  Guarantee
+                            // the budget always covers what a legitimate runner could travel in the
+                            // elapsed time (capped at 1.5 s so long pauses can't bank a teleport):
+                            // true speed = 4.0 * runRate, 1.248x when strafing (the engine's own
+                            // strafe-run multiplier), plus 25% headroom.  A cheater pacing packets
+                            // to ride this floor still exceeds the average-speed windows, which
+                            // integrate the same per-segment allowance without the headroom.
+                            var sideStepping = PhysicsObj.get_minterp()?.RawState.SideStepCommand != (uint)MotionCommand.Invalid;
+                            var effectiveRate = GetRunRate() * (sideStepping ? 1.248f : 1.0f);
+                            var floorBudget = 4.0f * effectiveRate * Math.Min(enforcementDeltaTime, 1.5f) * 1.25f + 2.0f;
+                            currentMaxSpeed = Math.Max(currentMaxSpeed, floorBudget);
+
                             if (currentMaxSpeed < PrevMovementUpdateMaxSpeed && PrevMovementUpdateMaxSpeed > 25.0f)
                             {
                                 // We were going really fast and now we are slowing down but we might still have some inertia.
@@ -1076,9 +1091,18 @@ namespace ACE.Server.WorldObjects
                             MovementWindowBuffer[MovementWindowBuffer.Count - 1].Pos.Distance2D(newPosition) > 100.0f)
                             MovementWindowBuffer.Clear();
 
-                        // RunRate is sampled per-entry so the window ceiling can use the max across the
-                        // window — see the MovementWindowBuffer declaration for why.
-                        MovementWindowBuffer.Add((currentTime, new ACE.Entity.Position(newPosition), GetRunRate()));
+                        // The EFFECTIVE run rate is sampled per-entry: server-side GetRunRate(), times
+                        // the engine's own 1.248x strafe-run multiplier when a sidestep command is
+                        // active.  The average-speed windows integrate these samples into a
+                        // time-weighted allowance, so a legitimate glitch-runner (strafe+forward at
+                        // 1.248x) gets strafe-rate allowance only for the segments they actually
+                        // strafed, while a quickness-cheating forward runner is measured against
+                        // plain forward speed.  Rates are server-authoritative; the client can at
+                        // most fake the sidestep flag, which caps its benefit at what legitimate
+                        // strafe-running already achieves.
+                        var _bufSideStep = PhysicsObj.get_minterp()?.RawState.SideStepCommand != (uint)MotionCommand.Invalid;
+                        var _bufEffRate = GetRunRate() * (_bufSideStep ? 1.248f : 1.0f);
+                        MovementWindowBuffer.Add((currentTime, new ACE.Entity.Position(newPosition), _bufEffRate));
                         // Prune entries older than the longest window (15 s).
                         while (MovementWindowBuffer.Count > 0 && currentTime - MovementWindowBuffer[0].Timestamp > 15.0)
                             MovementWindowBuffer.RemoveAt(0);
@@ -1089,31 +1113,29 @@ namespace ACE.Server.WorldObjects
                         // trip the per-packet budget.
                         if (PropertyManager.GetBool("enforce_player_movement_avg").Item)
                         {
-                            // Convert run rate to world-coordinate units/sec.
-                            // GetRunRate() returns a dimensionless multiplier (1.0–4.5), not a speed.
-                            // The engine's conversion is speed = runRate * 4.0 units/sec: the server's
-                            // own walk/run prediction above uses (runRate * 4.0f * deltaTime), and
-                            // MovementSystem.GetRunRate caps at 4.5 = the known 18 units/sec max run
-                            // speed.  (An earlier revision anchored this on 1.8f * runRate — the
-                            // per-packet scale factor, NOT a speed — putting the ceilings *below*
-                            // normal running speed and kicking legitimate players constantly.)
+                            // The window compares travelled horizontal distance against a
+                            // TIME-INTEGRATED allowance: for each segment between consecutive
+                            // samples, a legitimate player could cover at most
+                            //   4.0 * effectiveRate * segmentTime
+                            // (4.0 * runRate is the engine's speed conversion — its own walk/run
+                            // prediction uses runRate * 4.0f * deltaTime — and effectiveRate folds
+                            // in the 1.248x strafe-run multiplier for segments where the player was
+                            // actually strafing).  This replaces the earlier flat max-rate ceiling:
+                            // rate changes mid-window (buff expiry, road exit, exhaustion, toggling
+                            // strafe) are each budgeted at their own rate for their own duration,
+                            // so no transient can misprice the whole window.
                             //
-                            // The ceiling uses the MAX run rate sampled across the window, not the
-                            // current one: when run rate drops mid-window (run/road buff expiring,
-                            // stamina exhaustion), the movement already in the window was made at the
-                            // old faster rate and would otherwise read as a violation for up to 15 s.
-                            // Server-side rates are authoritative, so a client cannot inflate this.
-                            //
-                            // Ceiling multipliers over true sustained speed (4.0 * maxRunRate):
-                            //   3 s  : 1.4x — headroom for short legitimate bursts (downhill, jump
-                            //          momentum, post-lag catch-up, rubber-band round-trips)
-                            //   15 s : 1.25x — bursts wash out over 15 s; sustaining >25% over normal
-                            //          run speed for that long is not legitimate movement
-                            // Detection floor: sustained ~1.5x+ speed kicks within a minute or two;
-                            // ~1.3x logs/alerts without kicking (deliberate wiggle room).
+                            // Ceiling multipliers over that allowance (server properties):
+                            //   movement_avg_ceiling_3s  (default 1.30) — headroom for short bursts
+                            //     (downhill, jump momentum, post-lag catch-up)
+                            //   movement_avg_ceiling_15s (default 1.15) — bursts wash out over 15 s
+                            // A +20% quickness hack lands above the 15 s ceiling and alerts every
+                            // window; the violation streak escalator below turns any SUSTAINED
+                            // overage into a kick within minutes, while an isolated burst scores
+                            // once and decays.
 
                             // Local function: evaluate one window and return true if a kick was triggered.
-                            bool EvalSpeedWindow(double windowSecs, float ceilingMultiplier, float scoreMultiplier, float scoreCap, string violationType, ref double lastScoreTime)
+                            bool EvalSpeedWindow(double windowSecs, float ceilingMultiplier, float scoreMultiplier, float scoreCap, string violationType, ref double lastScoreTime, ref int violationStreak)
                             {
                                 // A single burst keeps the trailing average elevated for seconds, and
                                 // this runs on every movement packet — without a cooldown one breach
@@ -1138,29 +1160,40 @@ namespace ACE.Server.WorldObjects
                                          - MovementWindowBuffer[startIdx].Timestamp;
                                 if (span < 0.5) return false;
 
-                                // Cumulative step-wise displacement so round-trip teleport patterns are caught.
-                                // Horizontal only, matching the per-packet check.  Removing vertical
-                                // terrain noise from the cumulative sum means a hilly route no longer
-                                // inflates the measured average, so the existing ceiling catches a real
-                                // hack on any terrain without tightening the threshold itself.
+                                // Cumulative step-wise displacement so round-trip teleport patterns are
+                                // caught, horizontal only (vertical terrain noise excluded).  Each
+                                // segment's allowance uses the effective rate sampled at its start;
+                                // segment time is capped at 1.5 s (matching the per-packet budget
+                                // floor) so packet gaps can't bank a large allowance for later.
                                 float totalDist = 0f;
-                                var maxWindowRunRate = 0.0f;
+                                float totalAllowed = 0f;
                                 for (int i = startIdx; i < MovementWindowBuffer.Count - 1; i++)
                                 {
                                     totalDist += MovementWindowBuffer[i].Pos.Distance2D(MovementWindowBuffer[i + 1].Pos);
-                                    maxWindowRunRate = Math.Max(maxWindowRunRate, MovementWindowBuffer[i].RunRate);
+                                    var segTime = (float)(MovementWindowBuffer[i + 1].Timestamp - MovementWindowBuffer[i].Timestamp);
+                                    totalAllowed += 4.0f * MovementWindowBuffer[i].RunRate * Math.Min(segTime, 1.5f);
                                 }
-                                maxWindowRunRate = Math.Max(maxWindowRunRate, MovementWindowBuffer[MovementWindowBuffer.Count - 1].RunRate);
 
-                                var avgWindowMaxSpeed = 4.0f * maxWindowRunRate * ceilingMultiplier;
-
-                                var avgSpeed = (float)(totalDist / span);
-                                if (avgSpeed <= avgWindowMaxSpeed) return false;
+                                var allowedDist = totalAllowed * ceilingMultiplier;
+                                if (allowedDist <= 0f || totalDist <= allowedDist)
+                                {
+                                    violationStreak = 0; // clean evaluation — sustained pattern broken
+                                    return false;
+                                }
 
                                 lastScoreTime = currentTime;
+                                violationStreak++;
 
-                                var overage = (avgSpeed / avgWindowMaxSpeed) - 1.0f;
-                                var suspicionGain = Math.Min(overage * scoreMultiplier, scoreCap);
+                                // For logging, express both sides as average speeds over the span.
+                                var avgSpeed = (float)(totalDist / span);
+                                var avgWindowMaxSpeed = (float)(allowedDist / span);
+
+                                // Proportional gain for large overages; the streak floor (+3 per
+                                // consecutive violated window, capped at the score cap) ensures a
+                                // small-but-SUSTAINED overage escalates to a kick over a few minutes
+                                // instead of being permanently cancelled by heartbeat score decay.
+                                var overage = (totalDist / allowedDist) - 1.0f;
+                                var suspicionGain = Math.Min(Math.Max(overage * scoreMultiplier, violationStreak * 3.0f), scoreCap);
                                 MovementSuspicionScore += suspicionGain;
 
                                 log.Warn($"{Name} - AVG SPEED VIOLATION ({windowSecs:0}s window) - AvgSpeed: {avgSpeed:0.00}/{avgWindowMaxSpeed:0.00} SuspicionScore: {MovementSuspicionScore:0.0}");
@@ -1199,11 +1232,14 @@ namespace ACE.Server.WorldObjects
                             }
 
                             // Evaluate short window first; if it kicks, skip long window.
-                            // Score multipliers are tuned against overage relative to the corrected
-                            // (higher) ceilings: a 2x speed hack gains ~ +10/3s + +15/15s and kicks in
-                            // ~15-20 s; a 1.5x hack kicks in about a minute; ~1.3x logs without kicking.
-                            if (EvalSpeedWindow(3.0, 1.4f, 25.0f, 10.0f, "speed_avg_3s", ref _lastSpeedAvg3sScoreTime)) return false;
-                            if (EvalSpeedWindow(15.0, 1.25f, 40.0f, 15.0f, "speed_avg_15s", ref _lastSpeedAvg15sScoreTime)) return false;
+                            // A 2x speed hack gains ~ +10/3s + +15/15s and kicks in ~15-20 s; a 1.5x
+                            // hack kicks in under a minute; a sustained +20% quickness hack alerts on
+                            // every 15 s window and the streak escalator kicks it within a few
+                            // minutes.  An isolated burst scores once and decays.
+                            var _ceiling3s  = (float)PropertyManager.GetDouble("movement_avg_ceiling_3s").Item;
+                            var _ceiling15s = (float)PropertyManager.GetDouble("movement_avg_ceiling_15s").Item;
+                            if (EvalSpeedWindow(3.0, _ceiling3s, 25.0f, 10.0f, "speed_avg_3s", ref _lastSpeedAvg3sScoreTime, ref _speedAvg3sViolationStreak)) return false;
+                            if (EvalSpeedWindow(15.0, _ceiling15s, 40.0f, 15.0f, "speed_avg_15s", ref _lastSpeedAvg15sScoreTime, ref _speedAvg15sViolationStreak)) return false;
                         }
 
                         // --- Script detection: inter-packet timing regularity ---
@@ -1706,17 +1742,18 @@ namespace ACE.Server.WorldObjects
                 // of physics steps, making dist >> currentMaxSpeed and triggering a false speed violation.
                 //
                 // Fix: on a physics failure while speed-checking is active, advance Location to wherever
-                // physics placed the player and reset the timing baseline.  SnapPos is intentionally NOT
-                // advanced here — it stays at the last clean accepted position so any rollback still
-                // returns the player to a confirmed-good point.
+                // physics placed the player.  SnapPos is intentionally NOT advanced here — it stays at
+                // the last clean accepted position so any rollback still returns the player to a
+                // confirmed-good point.  LastPlayerMovementCheckTime is deliberately NOT reset: the next
+                // successful packet's deltaTime then spans the failure period, and the speed check's
+                // budget floor (full run-rate coverage over elapsed time) absorbs the distance the
+                // client legitimately covered while the server was rejecting transitions — previously
+                // a hill fight ended with a huge dist measured against a single-packet budget.
                 if (!success && EnforceMovementSpeed && !Teleporting)
                 {
                     var _physPos = PhysicsObj?.Position?.ACEPosition();
                     if (_physPos != null && _physPos.Cell != 0)
-                    {
                         Location = _physPos;
-                        LastPlayerMovementCheckTime = currentTime;
-                    }
                 }
 
                 if (!success) return false;

@@ -146,6 +146,14 @@ namespace ACE.Server.WorldObjects
         private double _lastSpeedAvg3sScoreTime;
         private double _lastSpeedAvg15sScoreTime;
 
+        /// <summary>Consecutive violated evaluations of each average-speed window.  A clean
+        /// evaluation resets the streak.  Sustained small overages (e.g. a +20% quickness hack)
+        /// gain a +3-per-streak score floor so they escalate to a kick over a few minutes
+        /// instead of being permanently cancelled by heartbeat score decay; honest players never
+        /// sustain a streak because one clean window resets it.</summary>
+        private int _speedAvg3sViolationStreak;
+        private int _speedAvg15sViolationStreak;
+
         /// <summary>Unix timestamp of the last time the packet-rate check added to the suspicion score.
         /// The packet-rate check evaluates on every clean tick; without this throttle a brief burst over
         /// the limit would score on every packet. Scoring is limited to once per second.</summary>

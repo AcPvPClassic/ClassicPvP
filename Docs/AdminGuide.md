@@ -511,13 +511,17 @@ All movement checks are **disabled by default**. Enable `enforce_player_movement
 
 | Property | What It Detects |
 |---|---|
-| `enforce_player_movement_avg` | Sliding-window average horizontal speed over 3 s and 15 s windows, measured against true run speed (`4.0 × run rate` units/s — the engine's own conversion). The 3 s window fires above **1.4×** normal (headroom for downhill, jump momentum, lag catch-up); the 15 s window fires above **1.25×** (bursts wash out over 15 s). Detection floor: sustained ~1.5×+ speed kicks within a minute or two; ~1.3× logs/alerts without kicking. False-positive protections: the ceiling uses the **max** run rate sampled across the window (immune to buff-expiry / road-exit / exhaustion transients), the window buffer is **cleared on every teleport** (portal hops never count as travelled distance), scoring is suppressed during rubber-band recovery, and each window scores **at most once per its own length** — a single breach can no longer fire dozens of times per second and insta-kick |
+| `enforce_player_movement_avg` | Sliding-window average horizontal speed over 3 s and 15 s windows, measured against a **time-integrated allowance**: each segment between samples is budgeted at `4.0 × effective run rate × segment time`, where effective rate is the server-side run rate times the engine's own **1.248× strafe-run multiplier** for segments where the player was actually strafing. Legit glitch-runners are budgeted correctly; a quickness-cheating forward runner is measured against plain forward speed. Ceilings are configurable: `movement_avg_ceiling_3s` (default **1.30**, burst headroom) and `movement_avg_ceiling_15s` (default **1.15**, the primary sustained-hack detector — a +20% quickness hack alerts every window). A **violation streak escalator** (+3 score floor per consecutive violated window, reset by one clean window) turns sustained small overages into a kick within minutes, while isolated bursts score once and decay. False-positive protections: per-segment rates absorb buff-expiry/road-exit/exhaustion transients, the buffer is cleared on every teleport, scoring is suppressed during rubber-band recovery, and each window scores at most once per its own length |
 | `enforce_player_movement_raycast` | Geometry collision — flags positions the physics engine cannot reach without passing through solid geometry (wall-walk, out-of-bounds). 2-second cooldown after first hit prevents cascade false kicks in tight corridors |
 | `enforce_player_jump_height` | Jump apex cap via InqJumpVelocity(Strength, Jump). Fires if apex exceeds max height × 1.5 (50% lag fudge). Same-landblock only |
 | `enforce_player_door_collision` | Closed-door collision. Rubber-bands the player back so they cannot pass through a closed door. **Enforcement only — no suspicion score and no kick**; a closed door is treated like a wall (a player leaning on one, often from door-state desync, is simply stopped). Logging is throttled to once per 5 s per player |
 | `enforce_player_spawn_collision` | Spawn overlap detection. +4 score — lowest weight. Server-side spawn timing can coincide |
 
 > **Speed checks measure horizontal distance.** Both the per-packet `speed_packet` check and the `enforce_player_movement_avg` windows compare *horizontal* (2-D) displacement against the run budget, since run rate governs horizontal ground speed. This removes the false positives that used to fire on slopes (where the vertical climb inflated 3-D distance past the budget): climbing a hill can no longer exceed the flat budget, so the budget itself can be held tight on flat ground where a client-side quickness hack is most visible. Downhill and airborne momentum are still covered by the server-computed physics velocity, which the client cannot spoof.
+>
+> **Per-packet budget floor.** The `speed_packet` budget is never below `4.0 × effective run rate × elapsed time (capped 1.5 s) × 1.25` — full legitimate-speed coverage of the time since the last checked packet. This absorbs the post-physics-failure catch-up case (hills zero the physics velocity and the next packet spans several rejected ones) without loosening steady-state detection. Pacing packets to ride the floor doesn't evade detection: the average-speed windows integrate the same allowance without the headroom.
+>
+> **Terrain grace (physics engine).** With `enforce_player_movement` on, the engine no longer rubber-bands every terrain disagreement: when a failed transition has **no dynamic blockers**, all contact evidence is **floor-like** (contact/collision normal Z ≥ 0.65 — walls are ~0, cliffs below the walkable limit), and the horizontal shortfall is ≤ 1.25 units, the client position is accepted from a leaky time budget (2 s capacity, 0.5/s refill). Hills and uneven ground stop rubber-banding honest players; wall-walks and cliff-climbs are never graced because their contact normals are not floor-like, and even a hypothetical bypass can only creep briefly before the budget enforces.
 
 ### Script Detection Checks
 
@@ -543,9 +547,10 @@ The split exists so legitimate-but-unusual movement (glitch-running, high framer
 
 **Dynamic-collision grace (mobs and players):** server-side creature positions drift from what each client renders, so a player running through a monster pack legitimately paths through gaps their client sees while the server sweeps into a mob it thinks is there. When a movement packet is blocked *only* by creatures — verified by re-probing the path with object collisions ignored, so any wall involved in the block always enforces — the position is accepted silently instead of rubber-banded, within bounds:
 
-- **Mob-only blocks:** a budget of ~15 accepted pass-through packets, refilling at 3/s. A normal pack crossing fits inside the budget and never rubber-bands. A client that deletes mobs and tries to stand inside them or run mob trains continuously drains the budget and is enforced from then on (creeping at only the refill rate), with geometry, speed, and average-speed checks still applying to every accepted packet.
-- **Blocks involving another player:** one free pass, then a 500 ms enforcement window — deliberate PK body-blocking remains effective while one-shot desync traps do not.
-- Walls and static objects (doors, chests) get no grace under any circumstances.
+- **Melee attack target:** blocks caused *exclusively* by the creature (or player) the attacker is actively meleeing are accepted with **no budget charge** — sticky melee deliberately glues the attacker to the target's cylinder, so that contact is constant and expected for the whole fight. This covers both PvE melee inside packs and PvP chases. Bounded: only the single current attack target qualifies, the environment probe still rejects any wall involvement, and speed/avg checks validate every accepted packet. Third-party body-blockers take the tight player path below.
+- **Mob-only blocks:** a leaky budget measured in **seconds of overlap** (3 s capacity, 0.6/s refill; each blocked packet charges real elapsed time, capped 0.25 s/packet), so it is packet-rate independent — a fast client at 30 packets/s no longer burns the budget in under a second. Pack crossings and melee combat inside packs stay within budget indefinitely (intermittent contact refills faster than it drains); a client that deletes mobs and stands inside them is enforced after ~7.5 s of continuous overlap, with geometry, speed, and average-speed checks still applying to every accepted packet.
+- **Blocks involving another player** (other than your melee target): one free pass, then a 500 ms enforcement window — deliberate PK body-blocking remains effective while one-shot desync traps do not.
+- Walls and static objects (doors, chests) get no grace under any circumstances. (Terrain slope/step disagreements have their own floor-normal-gated grace — see the Physics-Based Checks note above; wall contact never qualifies.)
 
 ### Suspicion Score System
 
@@ -554,8 +559,8 @@ Score accumulates on each violation and decays during clean movement: −3 per h
 | Violation Type | Score Gain |
 |---|---|
 | `speed_packet` | `overage × 10`, max 15 (borderline: ×0.5) |
-| `speed_avg_3s` | proportional, max 10 — at most once per 3 s |
-| `speed_avg_15s` | proportional, max 15 — at most once per 15 s |
+| `speed_avg_3s` | proportional with +3/consecutive-window streak floor, max 10 — at most once per 3 s |
+| `speed_avg_15s` | proportional with +3/consecutive-window streak floor, max 15 — at most once per 15 s |
 | `geometry` | +5 |
 | `jump_height` | `overage × 10`, max 15 |
 | `door_ghost` | none — enforcement only (rubber-band, no score/kick) |
