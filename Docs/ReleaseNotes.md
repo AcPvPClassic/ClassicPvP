@@ -7,7 +7,11 @@
 
 ---
 
-## 🩹 v1.09 (in development)
+## 🩹 v1.10 (in development)
+
+---
+
+## 🩹 v1.09 — July 9, 2026
 
 ### 🏟️ New Arena — Rat Lair
 
