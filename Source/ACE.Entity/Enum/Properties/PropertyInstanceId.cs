@@ -71,11 +71,13 @@ namespace ACE.Entity.Enum.Properties
         PetOwner                         = 44,
         [Ephemeral]
         PetDevice                        = 45,
-        AllegianceForcedBreakMonarchId   = 46,
-        AllegianceReswearMonarchId       = 47,
 
         /* Custom Properties */
         PCAPRecordedObjectIID            = 8000,
-        PCAPRecordedParentIID            = 8008
+        PCAPRecordedParentIID            = 8008,
+
+        /* ClassicPvP — kept above 10000 to avoid colliding with future ACE standard values */
+        AllegianceForcedBreakMonarchId   = 20001,
+        AllegianceReswearMonarchId       = 20002
     }
 }
