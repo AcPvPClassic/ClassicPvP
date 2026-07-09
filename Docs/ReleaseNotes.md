@@ -7,7 +7,11 @@
 
 ---
 
-## 🩹 v1.08 (in development)
+## 🩹 v1.09 (in development)
+
+---
+
+## 🩹 v1.08 — July 9, 2026
 
 ### 🛡️ Movement Anti-Cheat — Terrain- and Combat-Aware
 
