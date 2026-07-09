@@ -625,7 +625,10 @@ To take a town owned by a rival allegiance, use the Bind Stone to begin the assa
 - Failing to reach Phase 2 within 60 minutes announces a global failure and applies a **3-hour cooldown** on that town for your allegiance
 
 **Phase 2 — Destroy the Bind Stone (30 minutes)**
-- The Bind Stone becomes attackable — hit it with melee or missile weapons to chip down its HP (it takes reduced damage from physical attacks)
+- The Bind Stone becomes attackable — chip down its HP with melee, missile, or war magic
+- **All damage types are equal** — no element (slashing, fire, cold, etc.) is more or less effective than another, for both physical and magic
+- **Melee and missile damage is reduced** so that a weapon user's DPS stays in line with a mage's, rather than vastly outpacing it. War magic is unaffected
+- **Damage falls off with distance** — attacks deal full damage within **15 meters** of the Bind Stone, taper off beyond that, and deal **nothing past 20 meters**. You must fight up close to bring it down
 - Bind Stone HP scales with the current rolling level cap
 - Each kill on the defending allegiance in the combat zone deals **5% max HP** bonus damage to the Bind Stone
 - Each kill on the attacking allegiance in the combat zone **heals the Bind Stone** by 5% max HP

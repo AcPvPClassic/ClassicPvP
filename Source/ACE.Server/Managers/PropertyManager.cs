@@ -790,13 +790,17 @@ namespace ACE.Server.Managers
                 ("bounty_max_contracts",                  new Property<long>(3,          "Maximum number of active bounty contracts a hunter can hold at once.")),
 
                 // Allegiance Hometown
-                ("ah_phase1_seconds",                     new Property<long>(240,        "Seconds an attacking allegiance must hold the bind stone (2+ attackers within 5m, no enemy interruption) to complete Phase 1 and start Phase 2."))
+                ("ah_phase1_seconds",                     new Property<long>(240,        "Seconds an attacking allegiance must hold the bind stone (2+ attackers within 5m, no enemy interruption) to complete Phase 1 and start Phase 2.")),
+
+                // Allegiance swearing
+                ("allegiance_free_same_chain_reswears",   new Property<long>(3,          "Number of times a character may break and re-swear back into the SAME allegiance without starting the swear cooldown (for re-arranging chain order). Once exhausted, the cooldown applies. Resets when the character genuinely changes allegiance."))
                 );
 
         public static readonly ReadOnlyDictionary<string, Property<double>> DefaultDoubleProperties =
             DictOf(
 
                 ("ah_capture_protection_hours", new Property<double>(24.0, "Hours a freshly captured Allegiance Hometown town is protected from re-attack.")),
+                ("ah_bindstone_weapon_dmg_mod", new Property<double>(0.35, "Multiplier applied to melee/missile (physical) damage dealt to the Phase 2 Bind Stone proxy. War magic is unaffected (it runs through a separate path). Lower = more physical resistance. 1.0 disables the reduction.")),
 
                 ("movement_avg_ceiling_3s", new Property<double>(1.30, "anti-cheat: 3-second average-speed window ceiling, as a multiplier over the time-integrated legitimate movement allowance (4.0 x effective run rate per segment). Violations score when sustained average exceeds this. Lower = stricter. Legit strafe-running is already budgeted separately; keep >= ~1.2 for burst headroom (downhill, lag catch-up)")),
                 ("movement_avg_ceiling_15s", new Property<double>(1.15, "anti-cheat: 15-second average-speed window ceiling, as a multiplier over the time-integrated legitimate movement allowance (4.0 x effective run rate per segment). The primary sustained-speed-hack detector: a +20% quickness hack exceeds the default and alerts every window; the violation streak escalator kicks sustained offenders within minutes. Lower = stricter; do not set below ~1.08")),

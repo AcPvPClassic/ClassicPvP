@@ -763,14 +763,22 @@ namespace ACE.Server.Managers
         /// </summary>
         public static int GetKillEffect(int bindstoneMaxHp) => (int)(bindstoneMaxHp * 0.05f);
 
+        // Bind stone damage falloff: full damage inside this radius (meters)...
+        public const float BindstoneFullDamageRadius = 15f;
+        // ...linear falloff to zero at this radius; no damage beyond it.
+        public const float BindstoneZeroDamageRadius = 20f;
+
         /// <summary>
-        /// Distance-based damage multiplier for attacks on the bindstone.
-        /// 100% at ≤5m, halves every 5m beyond that.
+        /// Distance-based damage multiplier for attacks on the Phase 2 bind stone.
+        /// Full damage within <see cref="BindstoneFullDamageRadius"/>, linear falloff to zero at
+        /// <see cref="BindstoneZeroDamageRadius"/>, and no damage beyond — forcing attackers to hold
+        /// the stone at close range rather than snipe it. Applies to weapon and war-magic damage alike.
         /// </summary>
         public static float GetDistanceMultiplier(float distanceMeters)
         {
-            if (distanceMeters <= 5f) return 1f;
-            return MathF.Pow(0.5f, (distanceMeters - 5f) / 5f);
+            if (distanceMeters <= BindstoneFullDamageRadius) return 1f;
+            if (distanceMeters >= BindstoneZeroDamageRadius) return 0f;
+            return (BindstoneZeroDamageRadius - distanceMeters) / (BindstoneZeroDamageRadius - BindstoneFullDamageRadius);
         }
     }
 

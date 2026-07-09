@@ -6,8 +6,8 @@
 -- Non-aggressive, stuck in place, no loot, no XP.
 -- Death triggers attacker victory via BindstoneCreatureProxy.OnDeath override.
 -- Low attributes and defense skills so attacks and spells always land.
--- Physical damage types (slash/pierce/bludgeon) are 30% resisted to keep melee/archer
--- damage in the same ballpark as magic damage.
+-- All 7 elemental resists are equal so no damage type is favored; melee/missile (physical)
+-- damage is scaled down to magic levels by the ah_bindstone_weapon_dmg_mod server property.
 -- HP is overridden at spawn by AllegianceHometownManager.ComputeBindstoneHp().
 -- HealthRate is 0 so it never passively regenerates; HP only moves via player-kill effects.
 -- ============================================================
@@ -47,13 +47,17 @@ VALUES (1000010,   1,       5) /* HeartbeatInterval */
      , (1000010,  19,       1) /* ArmorModVsElectric */
      , (1000010,  39,       1) /* DefaultScale */
      , (1000010,  54,       3) /* UseRadius */
-     , (1000010,  64,    0.70) /* ResistSlash       - 30% physical resist */
-     , (1000010,  65,    0.70) /* ResistPierce      - 30% physical resist */
-     , (1000010,  66,    0.70) /* ResistBludgeon    - 30% physical resist */
-     , (1000010,  67,       1) /* ResistFire        - no resistance */
-     , (1000010,  68,       1) /* ResistCold        - no resistance */
-     , (1000010,  69,       1) /* ResistAcid        - no resistance */
-     , (1000010,  70,       1) /* ResistElectric    - no resistance */
+     -- All 7 damage-type resists are equal (1.0) so every element hits the same for BOTH
+     -- physical and magic (these Resist* values are shared by weapon and war-magic damage).
+     -- Physical (melee/missile) is instead brought down uniformly by the ah_bindstone_weapon_dmg_mod
+     -- server property in DamageEvent, which does not touch magic.
+     , (1000010,  64,       1) /* ResistSlash       - no elemental resist */
+     , (1000010,  65,       1) /* ResistPierce      - no elemental resist */
+     , (1000010,  66,       1) /* ResistBludgeon    - no elemental resist */
+     , (1000010,  67,       1) /* ResistFire        - no elemental resist */
+     , (1000010,  68,       1) /* ResistCold        - no elemental resist */
+     , (1000010,  69,       1) /* ResistAcid        - no elemental resist */
+     , (1000010,  70,       1) /* ResistElectric    - no elemental resist */
      , (1000010,  71,       1) /* ResistHealthBoost */
      , (1000010,  72,       0) /* ResistStaminaDrain */
      , (1000010,  73,       1) /* ResistStaminaBoost */

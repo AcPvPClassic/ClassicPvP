@@ -1050,6 +1050,16 @@ namespace ACE.Server.Entity
                 }
             }
 
+            // Bindstone proxy (Phase 2): scale down melee/missile (physical) damage so weapon DPS
+            // stays comparable to war magic. This path handles weapon damage only — war magic runs
+            // through SpellProjectile and is untouched. Applied last so it is uniform across all
+            // damage types and cannot be stripped by Vulnerability the way armor can.
+            if (defender is WorldObjects.BindstoneCreatureProxy)
+            {
+                Damage *= (float)PropertyManager.GetDouble("ah_bindstone_weapon_dmg_mod", 0.35).Item;
+                Damage *= AllegianceHometownManager.GetDistanceMultiplier((float)defender.Location.DistanceTo(attacker.Location));
+            }
+
             return Damage;
         }
 

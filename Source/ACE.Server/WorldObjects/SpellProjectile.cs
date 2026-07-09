@@ -907,6 +907,12 @@ namespace ACE.Server.WorldObjects
             {
                 ShowInfo(target, Spell, attackSkill, criticalChance, criticalHit, critDefended, overpower, weaponCritDamageMod, skillBonus, baseDamage, critDamageBonus, elementalDamageMod, slayerMod, weaponResistanceMod, resistanceMod, absorbMod, LifeProjectileDamage, lifeMagicDamage, finalDamage);
             }
+
+            // Bindstone proxy (Phase 2): war-magic damage falls off with distance too, so mages
+            // must hold the stone at close range rather than snipe it (mirrors the weapon path).
+            if (target is BindstoneCreatureProxy && sourcePlayer != null)
+                finalDamage *= ACE.Server.Managers.AllegianceHometownManager.GetDistanceMultiplier((float)target.Location.DistanceTo(sourcePlayer.Location));
+
             return finalDamage;
             }
             catch (Exception ex)

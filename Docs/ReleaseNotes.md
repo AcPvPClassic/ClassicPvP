@@ -29,6 +29,14 @@ The catch is that skills fire on their own without you doing anything active: yo
 
 No XP was ever destroyed — it went into legitimate skill ranks — but it was being spent without your say-so. Now, while a category is capped, proficiency for that category simply does nothing until the cap lifts, and your unassigned XP is left untouched. This is tracked per category, so a maxed-out **monster** cap no longer affects proficiency even if your quest or PvP XP still has room.
 
+### 🏘️ Hometown Control — Bind Stone Combat Rebalance
+
+Phase 2 Bind Stone combat has been retuned so every class contributes fairly, instead of fire-arrow archers deleting the stone in seconds:
+
+- **All damage types are now equal.** No element (slashing, fire, cold, acid, etc.) is more or less effective than any other against the Bind Stone — for both physical attacks and war magic. Previously the elemental damage types bypassed the physical resistance, letting elemental arrows hit far harder than they should.
+- **Melee and missile damage is reduced** so a weapon user's DPS stays in line with a mage's rather than dwarfing it. War magic is unaffected — mages deal the same as before.
+- **Damage now falls off with distance.** Attacks deal full damage within **15 meters** of the Bind Stone, taper off beyond that, and deal **nothing past 20 meters** — for weapons and magic alike. You have to fight up close to bring it down, which keeps attackers exposed to the defenders.
+
 ---
 
 ## 🩹 v1.07 — July 7, 2026
