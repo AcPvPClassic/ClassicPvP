@@ -75,6 +75,29 @@ namespace ACE.Server.WorldObjects
         }
 
         /// <summary>
+        /// The monarch GUID this character's free same-allegiance re-swear allowance applies to.
+        /// Set whenever a genuine (cooldown-consuming) swear completes. Breaking and re-swearing
+        /// back into this same monarch's chain is free (does not start a cooldown) until
+        /// AllegianceReswearCount reaches allegiance_free_same_chain_reswears, letting players
+        /// re-arrange the order of their chain without penalty while still capping abuse.
+        /// </summary>
+        public uint? AllegianceReswearMonarchId
+        {
+            get => GetProperty(PropertyInstanceId.AllegianceReswearMonarchId);
+            set { if (!value.HasValue) RemoveProperty(PropertyInstanceId.AllegianceReswearMonarchId); else SetProperty(PropertyInstanceId.AllegianceReswearMonarchId, value.Value); }
+        }
+
+        /// <summary>
+        /// Number of free same-allegiance re-swears this character has consumed against
+        /// AllegianceReswearMonarchId. Reset to 0 on a genuine allegiance change.
+        /// </summary>
+        public int AllegianceReswearCount
+        {
+            get => GetProperty(PropertyInt.AllegianceReswearCount) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt.AllegianceReswearCount); else SetProperty(PropertyInt.AllegianceReswearCount, value); }
+        }
+
+        /// <summary>
         /// This flag indicates if a player can pass up allegiance XP
         /// </summary>
         public bool ExistedBeforeAllegianceXpChanges
@@ -105,7 +128,7 @@ namespace ACE.Server.WorldObjects
             if (patron == null || patron.IsPendingDeletion || patron.IsDeleted)
                 return;
 
-            if (!IsPledgable(patron)) return;
+            if (!IsPledgable(patron, isOfflineSwear: true)) return;
 
             log.Debug($"[ALLEGIANCE] {Name} ({Level}) swearing allegiance to {patron.Name} ({patron.Level})");
 
@@ -117,9 +140,8 @@ namespace ACE.Server.WorldObjects
 
             ExistedBeforeAllegianceXpChanges = (patron.Level ?? 1) >= (Level ?? 1);
 
-            // Record when this swear happened. IsPledgable only checks the cooldown if this is non-null,
-            // so the first oath (when it was null) was free; subsequent oaths will be gated.
-            AllegianceSwearTimestamp = Time.GetUnixTime();
+            // OfflineSwear (same-account organization) is exempt from the re-swear cooldown, so it
+            // neither starts a cooldown (AllegianceSwearTimestamp is left untouched) nor is gated by one.
 
             // Clear forced-break exemption now that the swear succeeded
             AllegianceForcedBreakMonarchId = null;
@@ -179,8 +201,7 @@ namespace ACE.Server.WorldObjects
 
             ExistedBeforeAllegianceXpChanges = (patron.Level ?? 1) >= (Level ?? 1);
 
-            // Record swear timestamp (first oath was free because timestamp was null in IsPledgable)
-            AllegianceSwearTimestamp = Time.GetUnixTime();
+            ApplySwearCooldown(monarchGuid);
             AllegianceForcedBreakMonarchId = null;
 
             // handle special case: monarch swearing into another allegiance
@@ -214,6 +235,45 @@ namespace ACE.Server.WorldObjects
 
             if (GetCharacterOption(CharacterOption.ListenToAllegianceChat) && Allegiance != null)
                 JoinTurbineChatChannel("Allegiance");
+        }
+
+        /// <summary>
+        /// Applies the re-swear cooldown bookkeeping after a successful online swear.
+        /// Breaking and re-swearing back into the same monarch's chain (to re-arrange chain order)
+        /// is free until the allegiance_free_same_chain_reswears allowance is exhausted; those free
+        /// re-swears leave the cooldown timestamp untouched. A genuine swear (first oath, allegiance
+        /// change, or a re-swear past the free allowance) starts the cooldown, and a genuine
+        /// allegiance change re-bases the free-reswear allowance onto the new monarch.
+        /// </summary>
+        private void ApplySwearCooldown(uint monarchGuid)
+        {
+            // A forced-break re-swear into the original chain keeps its prior behavior: it is exempt
+            // from being blocked (handled in IsPledgable) but still starts a fresh cooldown and does
+            // not consume a voluntary same-chain re-swear. (AllegianceForcedBreakMonarchId is cleared
+            // by the caller after this returns.)
+            bool forcedBreakReswear = AllegianceForcedBreakMonarchId.HasValue &&
+                                      AllegianceForcedBreakMonarchId.Value == monarchGuid;
+
+            var freeReswears = PropertyManager.GetLong("allegiance_free_same_chain_reswears").Item;
+            bool sameChain = AllegianceReswearMonarchId.HasValue &&
+                             AllegianceReswearMonarchId.Value == monarchGuid;
+
+            if (!forcedBreakReswear && sameChain && AllegianceReswearCount < freeReswears)
+            {
+                // Free same-allegiance re-swear: consume one, leave the cooldown timestamp untouched.
+                AllegianceReswearCount++;
+                return;
+            }
+
+            // Genuine swear, forced-break re-swear, or exhausted free re-swears: start the cooldown.
+            AllegianceSwearTimestamp = Time.GetUnixTime();
+
+            // A genuine allegiance change re-bases the free-reswear allowance onto the new monarch.
+            if (!sameChain)
+            {
+                AllegianceReswearMonarchId = monarchGuid;
+                AllegianceReswearCount = 0;
+            }
         }
 
         /// <summary>
@@ -387,7 +447,7 @@ namespace ACE.Server.WorldObjects
         /// <summary>
         /// Returns TRUE if this player can swear to the target guid
         /// </summary>
-        public bool IsPledgable(IPlayer target)
+        public bool IsPledgable(IPlayer target, bool isOfflineSwear = false)
         {
             // the client doesn't seem to display most of these werrors,
             // so we also send similar messages as text
@@ -526,17 +586,25 @@ namespace ACE.Server.WorldObjects
             // Swear cooldown: first oath (AllegianceSwearTimestamp == null) is always free.
             // Subsequent oaths require waiting allegiance_swear_cooldown_days days,
             // unless this player was force-broken from the same monarch chain (ForcedBreakMonarchId matches).
-            if (AllegianceSwearTimestamp.HasValue)
+            // OfflineSwear (same-account organization) is always exempt from the cooldown.
+            if (!isOfflineSwear && AllegianceSwearTimestamp.HasValue)
             {
                 var cooldownDays   = PropertyManager.GetDouble("allegiance_swear_cooldown_days").Item;
                 var cooldownExpiry = DateTimeOffset.FromUnixTimeSeconds((long)AllegianceSwearTimestamp.Value).UtcDateTime.AddDays(cooldownDays);
 
                 if (DateTime.UtcNow < cooldownExpiry)
                 {
-                    bool exempt = AllegianceForcedBreakMonarchId.HasValue &&
-                                  AllegianceForcedBreakMonarchId.Value == targetMonarchId;
+                    bool forcedBreakExempt = AllegianceForcedBreakMonarchId.HasValue &&
+                                             AllegianceForcedBreakMonarchId.Value == targetMonarchId;
 
-                    if (!exempt)
+                    // Re-swearing back into the same allegiance (to re-arrange chain order) is free
+                    // until the free-reswear allowance is exhausted for this monarch.
+                    var freeReswears = PropertyManager.GetLong("allegiance_free_same_chain_reswears").Item;
+                    bool sameChainExempt = AllegianceReswearMonarchId.HasValue &&
+                                           AllegianceReswearMonarchId.Value == targetMonarchId &&
+                                           AllegianceReswearCount < freeReswears;
+
+                    if (!forcedBreakExempt && !sameChainExempt)
                     {
                         var remaining = cooldownExpiry - DateTime.UtcNow;
                         var days      = (int)Math.Ceiling(remaining.TotalDays);

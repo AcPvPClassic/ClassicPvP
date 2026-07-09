@@ -207,6 +207,8 @@ You can swear allegiance to another character on your own account using the `/Of
 
 All normal allegiance rules apply — the target must be higher or equal level, must not already be your vassal, and the account-wide allegiance lock still applies (both characters must end up in the same monarch's chain).
 
+`/OfflineSwear` is **exempt from the swear cooldown**: it never starts a cooldown and is never blocked by one, so you can freely organize your own account's characters into a chain at any time.
+
 ---
 
 ## 🤝 Allegiance Swear Restrictions
@@ -222,8 +224,10 @@ All characters on a single account must belong to the **same monarch's allegianc
 After swearing allegiance, a **30-day cooldown** applies before you can swear again.
 
 - Your **first oath ever** is free — no cooldown is set.
+- **Re-arranging your own chain is free (three times).** You may break and swear back into the **same allegiance** — for example, swearing under a different patron beneath the same monarch — up to **three times** without triggering the cooldown. Once those three are used up, the normal cooldown applies. Genuinely swearing into a **different** allegiance still costs the cooldown, and doing so refreshes your three free re-swears for the new allegiance.
 - The cooldown applies to voluntary changes only. If your patron or someone above them in the chain **breaks their oath**, causing you to be broken from your allegiance involuntarily, you can re-swear back into the **original allegiance chain** without waiting.
 - If your **monarch moves their entire allegiance** by swearing to a new patron, that is their oath change — your relationship to your own patron is unchanged and no cooldown is triggered for you.
+- Swearing to a character on your **own account** with `/OfflineSwear` never counts against the cooldown (see [above](#-swearing-allegiance-to-same-account-characters)).
 
 ### Break Cascade & Account Protection
 

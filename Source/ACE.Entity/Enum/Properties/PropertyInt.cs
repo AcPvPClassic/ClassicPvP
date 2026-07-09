@@ -687,6 +687,7 @@ namespace ACE.Entity.Enum.Properties
         PlayerKillStreak                         = 20009,  // Current consecutive PK kill count without dying
         BountyKillStreakCount                    = 20010,  // Kill streak count at time of bounty completion (on a BountyContract item)
         BountyContractStateRaw                   = 20011,  // BountyContractState enum stored as int (on a BountyContract item)
+        AllegianceReswearCount                   = 20012,  // Free same-allegiance re-swears used against AllegianceReswearMonarchId (chain re-arranging)
     }
 
     public static class PropertyIntExtensions
