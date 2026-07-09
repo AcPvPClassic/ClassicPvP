@@ -9,6 +9,10 @@
 
 ## 🩹 v1.09 (in development)
 
+### 🏟️ New Arena — Rat Lair
+
+A new arena location, **Rat Lair**, has been added to the queue. It hosts **1v1**, **2v2**, and **Tugak** matches. When you queue for those formats you may now be matched into either Rat Lair or the existing arena — the system picks an open location automatically.
+
 ### 🏠 Housing — Purchase Requirements Removed
 
 Housing purchase gates have been lifted:

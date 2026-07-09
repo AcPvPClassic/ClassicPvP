@@ -1382,6 +1382,12 @@ namespace ACE.Server.Entity
             aCave.ArenaName = "A Cave";
             locList.Add(aCave.LandblockId, aCave);
 
+            var ratLair = new ArenaLocation();
+            ratLair.LandblockId = 0x01D9;
+            ratLair.SupportedEventTypes = new List<string>() { "1v1", "2v2", "tugak" };
+            ratLair.ArenaName = "Rat Lair";
+            locList.Add(ratLair.LandblockId, ratLair);
+
             //var pklArena = new ArenaLocation();
             //pklArena.LandblockId = 0x0067;
             //pklArena.SupportedEventTypes = new List<string>() { "ffa", "group", "tugak" };
@@ -1419,6 +1425,7 @@ namespace ACE.Server.Entity
                     _arenaLandblocks = new List<uint>()
                     {
                         0x018B, //A Cave
+                        0x01D9, //Rat Lair
                         //0x0067, // PKL Arena
                         //0x007F, // Binding Realm
                         //0x0145, // Bone Lair
@@ -1528,6 +1535,14 @@ namespace ACE.Server.Entity
                         new Position(0x018B018A, 41.873562f, -17.906517f, 0.005000f, 0f, 0f, -0.379880f, 0.925036f), // 0x018B018A [41.873562 -17.906517 0.005000] 0.925036 0.000000 0.000000 -0.379880
                         new Position(0x018B01A7, 58.693562f, -18.457191f, 0.005000f, 0f, 0f, 0.319989f, 0.947421f), // 0x018B01A7 [58.693562 -18.457191 0.005000] 0.947421 0.000000 0.000000 0.319989
                     });//A Cave
+
+                    _arenaLocationStartingPositions.Add(0x01D9, new List<Position>()
+                    {
+                        new Position(0x01D90102, 22.458916f, -24.787766f, 0.005000f, 0f, 0f, -0.690152f, 0.723665f), // 0x01D90102 [22.458916 -24.787766 0.005000] 0.723665 0.000000 0.000000 -0.690152
+                        new Position(0x01D90112, 38.709148f, -25.670763f, 0.005000f, 0f, 0f, -0.728054f, -0.685520f), // 0x01D90112 [38.709148 -25.670763 0.005000] -0.685520 0.000000 0.000000 -0.728054
+                        new Position(0x01D9010A, 30.201702f, -16.127213f, 0.005000f, 0f, 0f, -0.999959f, -0.009022f), // 0x01D9010A [30.201702 -16.127213 0.005000] -0.009022 0.000000 0.000000 -0.999959
+                        new Position(0x01D9010B, 29.965298f, -33.662392f, 0.005000f, 0f, 0f, 0.003121f, -0.999995f), // 0x01D9010B [29.965298 -33.662392 0.005000] -0.999995 0.000000 0.000000 0.003121
+                    });//Rat Lair
                 }
 
                 return _arenaLocationStartingPositions;
