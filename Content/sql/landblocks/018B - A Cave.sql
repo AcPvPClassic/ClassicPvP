@@ -39,21 +39,25 @@ INSERT INTO `landblock_instance_link` (`parent_GUID`, `child_GUID`, `last_Modifi
 VALUES (0x7018B03B, 0x7018B036, '2005-02-09 10:00:00')/* Tibri the Cavedweller (3607/tibrithecavedweller) - Level: 40 - Generates - Smock(2589/smock) / Breeches(2602/breechesloose) / Boots(2606/boots) */;
 
 INSERT INTO `landblock_instance` (`guid`, `weenie_Class_Id`, `obj_Cell_Id`, `origin_X`, `origin_Y`, `origin_Z`, `angles_W`, `angles_X`, `angles_Y`, `angles_Z`, `is_Link_Child`, `last_Modified`)
-VALUES (0x7018B03C, 4200156, 0x018B0194, 49.9298, -26.7753, 0, 0.021508, 0, 0, -0.999769, False, '2026-06-16 20:25:04'); /* Death Zone Melee(4200156/ace4200156-DeathZoneMelee) - Level: 999 */
-/* @teleloc 0x018B0194 [49.929798 -26.775299 0.000000] 0.021508 0.000000 0.000000 -0.999769 */
+VALUES (0x7018B053, 42025456, 0x018B0197, 49.8959, -25.4499, -0.068, 0.043729, 0, 0, -0.999044, False, '2026-07-09 14:24:49'); /* Reinforced Door(42025456/unopenabledoor) - Locked(999999) */
+/* @teleloc 0x018B0197 [49.895901 -25.449900 -0.068000] 0.043729 0.000000 0.000000 -0.999044 */
 
 INSERT INTO `landblock_instance` (`guid`, `weenie_Class_Id`, `obj_Cell_Id`, `origin_X`, `origin_Y`, `origin_Z`, `angles_W`, `angles_X`, `angles_Y`, `angles_Z`, `is_Link_Child`, `last_Modified`)
-VALUES (0x7018B03D, 4200156, 0x018B018B, 41.3601, -30.3008, 0, -0.790481, 0, 0, 0.612486, False, '2026-06-16 20:38:45'); /* Death Zone Melee(4200156/ace4200156-DeathZoneMelee) - Level: 999 */
-/* @teleloc 0x018B018B [41.360100 -30.300800 0.000000] -0.790481 0.000000 0.000000 0.612486 */
+VALUES (0x7018B054, 4200155, 0x018B0194, 48.5161, -27.9876, 0, 0.731606, 0, 0, -0.681727, False, '2026-07-09 15:34:14'); /* Death Zone(4200155/ace4200155-DeathZoneHotspot) */
+/* @teleloc 0x018B0194 [48.516102 -27.987600 0.000000] 0.731606 0.000000 0.000000 -0.681727 */
 
 INSERT INTO `landblock_instance` (`guid`, `weenie_Class_Id`, `obj_Cell_Id`, `origin_X`, `origin_Y`, `origin_Z`, `angles_W`, `angles_X`, `angles_Y`, `angles_Z`, `is_Link_Child`, `last_Modified`)
-VALUES (0x7018B03E, 4200156, 0x018B01A8, 60.4584, -30.5744, 0, 0.761311, 0, 0, 0.648388, False, '2026-06-16 20:38:50'); /* Death Zone Melee(4200156/ace4200156-DeathZoneMelee) - Level: 999 */
-/* @teleloc 0x018B01A8 [60.458401 -30.574400 0.000000] 0.761311 0.000000 0.000000 0.648388 */
+VALUES (0x7018B055, 4200155, 0x018B0194, 52.4881, -28.1331, 0, -0.863327, 0, 0, -0.504646, False, '2026-07-09 15:34:22'); /* Death Zone(4200155/ace4200155-DeathZoneHotspot) */
+/* @teleloc 0x018B0194 [52.488098 -28.133101 0.000000] -0.863327 0.000000 0.000000 -0.504646 */
 
 INSERT INTO `landblock_instance` (`guid`, `weenie_Class_Id`, `obj_Cell_Id`, `origin_X`, `origin_Y`, `origin_Z`, `angles_W`, `angles_X`, `angles_Y`, `angles_Z`, `is_Link_Child`, `last_Modified`)
-VALUES (0x7018B03F, 4200156, 0x018B0199, 49.4224, -38.8015, 0, 0.991913, 0, 0, -0.126918, False, '2026-06-16 20:38:55'); /* Death Zone Melee(4200156/ace4200156-DeathZoneMelee) - Level: 999 */
-/* @teleloc 0x018B0199 [49.422401 -38.801498 0.000000] 0.991913 0.000000 0.000000 -0.126918 */
+VALUES (0x7018B056, 4200155, 0x018B0194, 46.3557, -29.6281, 0, -0.963496, 0, 0, 0.267722, False, '2026-07-09 15:34:29'); /* Death Zone(4200155/ace4200155-DeathZoneHotspot) */
+/* @teleloc 0x018B0194 [46.355701 -29.628099 0.000000] -0.963496 0.000000 0.000000 0.267722 */
 
 INSERT INTO `landblock_instance` (`guid`, `weenie_Class_Id`, `obj_Cell_Id`, `origin_X`, `origin_Y`, `origin_Z`, `angles_W`, `angles_X`, `angles_Y`, `angles_Z`, `is_Link_Child`, `last_Modified`)
-VALUES (0x7018B040, 4200155, 0x018B0195, 50.3081, -34.56, 0, 0.999773, 0, 0, 0.02129, False, '2026-06-16 20:39:02'); /* Death Zone(4200155/ace4200155-DeathZoneMagic) - Level: 999 */
-/* @teleloc 0x018B0195 [50.308102 -34.560001 0.000000] 0.999773 0.000000 0.000000 0.021290 */
+VALUES (0x7018B057, 4200155, 0x018B0194, 53.7903, -30.0492, 0, -0.942263, 0, 0, -0.334874, False, '2026-07-09 15:34:32'); /* Death Zone(4200155/ace4200155-DeathZoneHotspot) */
+/* @teleloc 0x018B0194 [53.790298 -30.049200 0.000000] -0.942263 0.000000 0.000000 -0.334874 */
+
+INSERT INTO `landblock_instance` (`guid`, `weenie_Class_Id`, `obj_Cell_Id`, `origin_X`, `origin_Y`, `origin_Z`, `angles_W`, `angles_X`, `angles_Y`, `angles_Z`, `is_Link_Child`, `last_Modified`)
+VALUES (0x7018B058, 4200155, 0x018B0194, 50.4917, -27.4995, 0, 0.029971, 0, 0, 0.999551, False, '2026-07-09 19:06:00'); /* Death Zone(4200155/ace4200155-DeathZoneHotspot) */
+/* @teleloc 0x018B0194 [50.491699 -27.499500 0.000000] 0.029971 0.000000 0.000000 0.999551 */
