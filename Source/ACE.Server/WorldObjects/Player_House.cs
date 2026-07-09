@@ -62,10 +62,14 @@ namespace ACE.Server.WorldObjects
 
             if (slumlord.MinLevel != null)
             {
+                var minLevel = PropertyManager.GetLong("house_min_level", -1).Item;
+                if (minLevel == -1)
+                    minLevel = slumlord.MinLevel.Value;
+
                 var playerLevel = Level ?? 1;
-                if (playerLevel < slumlord.MinLevel)
+                if (minLevel > 0 && playerLevel < minLevel)
                 {
-                    Session.Network.EnqueueSend(new GameEventWeenieErrorWithString(Session, WeenieErrorWithString.YouMustBeAboveLevel_ToBuyHouse, slumlord.MinLevel.ToString()));
+                    Session.Network.EnqueueSend(new GameEventWeenieErrorWithString(Session, WeenieErrorWithString.YouMustBeAboveLevel_ToBuyHouse, minLevel.ToString()));
                     log.Info($"[HOUSE] {Name}.HandleActionBuyHouse(): Failed pre-purchase requirement - MinLevel");
                     return;
                 }

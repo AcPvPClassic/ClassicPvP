@@ -543,6 +543,7 @@ namespace ACE.Server.Managers
                 PropertyManager.ModifyBool("house_per_char", true);
 
                 PropertyManager.ModifyLong("mansion_min_rank", -1);
+                PropertyManager.ModifyLong("house_min_level", 0);
                 PropertyManager.ModifyLong("fellowship_even_share_level", 80);
 
                 PropertyManager.ModifyBool("show_dat_warning", true);
@@ -741,6 +742,7 @@ namespace ACE.Server.Managers
                 ("corpse_spam_limit", new Property<long>(15, "the number of corpses a player is allowed to leave on a landblock at one time")),
                 ("default_subscription_level", new Property<long>(1, "retail defaults to 1, 1 = standard subscription (same as 2 and 3), 4 grants ToD pre-order bonus item Asheron's Benediction")),
                 ("fellowship_even_share_level", new Property<long>(50, "level when fellowship XP sharing is no longer restricted")),
+                ("house_min_level", new Property<long>(-1, "overrides the default character level required to purchase a house. -1 uses the slumlord's value, 0 disables the level restriction entirely")),
                 ("mansion_min_rank", new Property<long>(6, "overrides the default allegiance rank required to own a mansion")),
                 ("max_chars_per_account", new Property<long>(11, "retail defaults to 11, client supports up to 20")),
                 ("pk_timer", new Property<long>(20, "the number of seconds where a player cannot perform certain actions (ie. teleporting) after becoming involved in a PK battle")),

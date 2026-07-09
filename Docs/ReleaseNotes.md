@@ -9,6 +9,10 @@
 
 ## 🩹 v1.09 (in development)
 
+### 🏠 Housing — Level Requirement Removed
+
+The minimum character level requirement to purchase a house has been removed. You can now buy any dwelling regardless of your level (the account-age and other purchase requirements were already lifted on ClassicPvP).
+
 ---
 
 ## 🩹 v1.08 — July 9, 2026
