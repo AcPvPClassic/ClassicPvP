@@ -29,6 +29,14 @@ namespace ACE.Server.WorldObjects
             // If CycleTime is less than 1, player has a very bad time.
             if ((CycleTime ?? 0) < 1)
                 CycleTime = 1;
+
+            // A death zone's proximity scan is driven off Heartbeat. If this weenie has heartbeats
+            // disabled, force them on so the scan loop can start (and self-heal) reliably.
+            if (IsDeathZone && NextHeartbeatTime == double.MaxValue)
+            {
+                HeartbeatInterval = 1.0f;
+                ReinitializeHeartbeats();
+            }
         }
 
         private HashSet<ObjectGuid> Creatures = new HashSet<ObjectGuid>();
@@ -144,6 +152,98 @@ namespace ACE.Server.WorldObjects
         {
             get => GetProperty(PropertyBool.AffectsAis) ?? false;
             set { if (!value) RemoveProperty(PropertyBool.AffectsAis); else SetProperty(PropertyBool.AffectsAis, value); }
+        }
+
+        // --- Death Zone (proximity kill) ---------------------------------------------------------
+        // A standard hotspot only harms creatures that physically collide with its geometry, so a
+        // player who jumps clears the collision volume and passes through unharmed. When UseRadius is
+        // set (> 0), this hotspot instead runs its own fast scan loop and kills any player within that
+        // horizontal radius, independent of collision -- jumping no longer bypasses it.
+
+        /// <summary>
+        /// Horizontal radius (in meters) within which a death-zone hotspot instantly kills players.
+        /// Backed by PropertyFloat.UseRadius. When null or &lt;= 0, this behaves as a normal hotspot.
+        /// </summary>
+        public double? DeathZoneRadius
+        {
+            get => GetProperty(PropertyFloat.UseRadius);
+            set { if (value == null) RemoveProperty(PropertyFloat.UseRadius); else SetProperty(PropertyFloat.UseRadius, (double)value); }
+        }
+
+        public bool IsDeathZone => (DeathZoneRadius ?? 0) > 0;
+
+        // How often the proximity scan runs. Fast enough that a sprinting player cannot cross the
+        // zone between scans. Cheap for a handful of hallway blockers; do not set radius on hundreds.
+        private const double DeathZoneScanInterval = 0.25;
+
+        private bool DeathZoneLoopRunning = false;
+
+        /// <summary>
+        /// Proximity death zones self-drive on a fast scan loop rather than waiting on physics
+        /// collision, so a jumping player who clears the collision volume is still killed. The loop is
+        /// (re)started from Heartbeat, which makes it self-healing if it is ever interrupted.
+        /// </summary>
+        public override void Heartbeat(double currentUnixTime)
+        {
+            if (IsDeathZone && !DeathZoneLoopRunning)
+                StartDeathZoneLoop();
+
+            base.Heartbeat(currentUnixTime);
+        }
+
+        private void StartDeathZoneLoop()
+        {
+            DeathZoneLoopRunning = true;
+
+            var loop = new ActionChain();
+            loop.AddDelaySeconds(DeathZoneScanInterval);
+            loop.AddAction(this, () =>
+            {
+                // Stop cleanly if the zone was disabled or the object left the world; the next
+                // Heartbeat will restart the loop if the object is still around and still a death zone.
+                if (!IsDeathZone || PhysicsObj == null || CurrentLandblock == null)
+                {
+                    DeathZoneLoopRunning = false;
+                    return;
+                }
+
+                ScanAndKillNearbyPlayers();
+                StartDeathZoneLoop();
+            });
+            loop.EnqueueChain();
+        }
+
+        private void ScanAndKillNearbyPlayers()
+        {
+            if (!IsHot) return;
+
+            if (PhysicsObj?.ObjMaint == null || Location == null)
+                return;
+
+            var radius = DeathZoneRadius ?? 0;
+            var radiusSq = radius * radius;
+
+            var damageType = _DamageType.HasValue ? DamageType : DamageType.Bludgeon;
+
+            foreach (var player in PhysicsObj.ObjMaint.GetVisiblePlayersValuesAsPlayer())
+            {
+                if (player == null || player.IsDead || player.Teleporting || player.Location == null)
+                    continue;
+
+                // Horizontal (X/Y) distance only -- Z is ignored so a jumping player is still caught.
+                if (Location.Distance2DSquared(player.Location) > radiusSq)
+                    continue;
+
+                // Guaranteed kill. TakeDamage still honors Invincible / lifestone protection /
+                // no-damage landblocks, so those safety systems are not overridden.
+                player.TakeDamage(this, damageType, player.Health.Current, Server.Entity.BodyPart.Foot);
+
+                if (!Visibility)
+                    EnqueueBroadcast(new GameMessageSound(Guid, Sound.TriggerActivated, 1.0f));
+
+                if (ActivationResponse.HasFlag(ActivationResponse.Emote))
+                    OnEmote(player);
+            }
         }
 
         private void Activate()
