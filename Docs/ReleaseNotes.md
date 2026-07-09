@@ -39,10 +39,10 @@ Phase 2 Bind Stone combat has been retuned so every class contributes fairly, in
 
 ### 👑 Allegiance Swearing — Re-Arranging Your Chain
 
-Two changes make it easier to organize your allegiance without burning the 30-day swear cooldown:
+Two changes make it easier to organize your allegiance without burning the 7-day swear cooldown:
 
 - **Same-account swearing is now cooldown-free.** Using `/OfflineSwear` to swear to another character on your own account no longer starts the swear cooldown and is never blocked by one. Organizing your own alts into a chain is always free.
-- **Three free re-swears within your own allegiance.** You can now break and swear back into the **same allegiance** up to **three times** without triggering the cooldown — enough to re-arrange the order of your chain (for example, swearing under a different patron beneath the same monarch). Once those three are used up, the normal 30-day cooldown applies. Genuinely swearing into a *different* allegiance still costs the cooldown, and doing so refreshes your three free re-swears for the new allegiance.
+- **Three free re-swears within your own allegiance.** You can now break and swear back into the **same allegiance** up to **three times** without triggering the cooldown — enough to re-arrange the order of your chain (for example, swearing under a different patron beneath the same monarch). Once those three are used up, the normal 7-day cooldown applies. Genuinely swearing into a *different* allegiance still costs the cooldown, and doing so refreshes your three free re-swears for the new allegiance.
 
 This keeps chain organization flexible while still preventing players from rapidly breaking and re-swearing to farm reward mechanics.
 

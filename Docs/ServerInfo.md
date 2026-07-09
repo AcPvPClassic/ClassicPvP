@@ -221,7 +221,7 @@ All characters on a single account must belong to the **same monarch's allegianc
 
 ### Swear Cooldown
 
-After swearing allegiance, a **30-day cooldown** applies before you can swear again.
+After swearing allegiance, a **7-day cooldown** applies before you can swear again.
 
 - Your **first oath ever** is free — no cooldown is set.
 - **Re-arranging your own chain is free (three times).** You may break and swear back into the **same allegiance** — for example, swearing under a different patron beneath the same monarch — up to **three times** without triggering the cooldown. Once those three are used up, the normal cooldown applies. Genuinely swearing into a **different** allegiance still costs the cooldown, and doing so refreshes your three free re-swears for the new allegiance.
