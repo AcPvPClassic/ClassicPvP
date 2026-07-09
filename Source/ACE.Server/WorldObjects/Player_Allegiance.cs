@@ -277,6 +277,27 @@ namespace ACE.Server.WorldObjects
         }
 
         /// <summary>
+        /// Records the monarch of the allegiance a player is leaving on a break, so a later re-swear
+        /// back into that same chain is recognized as a same-allegiance re-swear (free until the
+        /// allegiance_free_same_chain_reswears cap). Called for whichever player is being detached, in
+        /// both break directions. Without this the anchor is only set on a genuine swear, so anyone who
+        /// last swore before this feature shipped (AllegianceReswearMonarchId == null) would be denied
+        /// their free re-swears. Only (re)initializes when the anchor points at a different allegiance,
+        /// so the free-reswear count survives repeated break/re-swear cycles within the same chain.
+        /// </summary>
+        private static void RecordReswearAnchorOnBreak(IPlayer player, uint priorMonarchId)
+        {
+            if (player == null || priorMonarchId == 0)
+                return;
+
+            if (player.GetProperty(PropertyInstanceId.AllegianceReswearMonarchId) != priorMonarchId)
+            {
+                player.SetProperty(PropertyInstanceId.AllegianceReswearMonarchId, priorMonarchId);
+                player.RemoveProperty(PropertyInt.AllegianceReswearCount);
+            }
+        }
+
+        /// <summary>
         /// Handle monarch swearing into another allegiance
         /// </summary>
         public void HandleMonarchSwear()
@@ -344,6 +365,9 @@ namespace ACE.Server.WorldObjects
 
                 }, false);
 
+                // Record the allegiance the kicked vassal is leaving so they can re-swear back for free
+                RecordReswearAnchorOnBreak(target, priorMonarchId);
+
                 target.SaveBiotaToDatabase();
             }
             else
@@ -360,6 +384,9 @@ namespace ACE.Server.WorldObjects
                     node.Player.SaveBiotaToDatabase();
 
                 }, false);
+
+                // Record the allegiance we're leaving so we can re-swear back for free
+                RecordReswearAnchorOnBreak(this, priorMonarchId);
 
                 SaveBiotaToDatabase();
             }
@@ -1665,6 +1692,10 @@ namespace ACE.Server.WorldObjects
 
             player.PatronId = null;
             player.UpdateProperty(PropertyInstanceId.Monarch, null, true);
+
+            // Record the allegiance the booted player is leaving so they can re-swear back for free
+            RecordReswearAnchorOnBreak(player, Allegiance.MonarchId ?? 0);
+            player.SaveBiotaToDatabase();
 
             // walk the allegiance tree from this node, update monarch ids
             Allegiance.Members.TryGetValue(player.Guid, out var targetNode);
