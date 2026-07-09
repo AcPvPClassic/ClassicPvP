@@ -542,7 +542,7 @@ namespace ACE.Server.Managers
                 PropertyManager.ModifyBool("house_30day_cooldown", false);
                 PropertyManager.ModifyBool("house_per_char", true);
 
-                PropertyManager.ModifyLong("mansion_min_rank", -1);
+                PropertyManager.ModifyLong("mansion_min_rank", 0);
                 PropertyManager.ModifyLong("house_min_level", 0);
                 PropertyManager.ModifyLong("fellowship_even_share_level", 80);
 

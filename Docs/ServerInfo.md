@@ -78,13 +78,12 @@ The intent is simple: no multi-boxing, no alt-army farming, no market manipulati
 ClassicPvP relaxes the retail purchase requirements so housing is broadly accessible:
 
 - **No character level requirement.** You can buy any dwelling regardless of your level.
-- **No account-age requirement.** The 15-day account age gate does not apply.
+- **No account-age requirement.** The 15-day account age gate does not apply to any house.
+- **No allegiance-rank requirement.** Mansions can be purchased without any allegiance rank.
 - **No purchase cooldown.** The 30-day wait between purchases does not apply.
 - **One house per character** (rather than one per account).
 
-Allegiance-rank requirements on mansions still follow each slumlord's configuration.
-
-> **For admins:** the level requirement is controlled by the `house_min_level` property (`-1` uses the slumlord's value, `0` disables it, `>0` sets a custom minimum); ClassicPvP defaults it to `0`.
+> **For admins:** the level requirement is controlled by the `house_min_level` property and the mansion rank requirement by `mansion_min_rank` (for each: `-1` uses the slumlord's value, `0` disables it, `>0` sets a custom minimum). ClassicPvP defaults both to `0`.
 
 ---
 

@@ -9,9 +9,13 @@
 
 ## 🩹 v1.09 (in development)
 
-### 🏠 Housing — Level Requirement Removed
+### 🏠 Housing — Purchase Requirements Removed
 
-The minimum character level requirement to purchase a house has been removed. You can now buy any dwelling regardless of your level (the account-age and other purchase requirements were already lifted on ClassicPvP).
+Housing purchase gates have been lifted:
+
+- **No minimum character level** to purchase any house — buy any dwelling regardless of your level.
+- **No allegiance rank required** to purchase a mansion.
+- **No account-age limit** on buying any house.
 
 ---
 
