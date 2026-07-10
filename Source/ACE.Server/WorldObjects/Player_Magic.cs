@@ -932,7 +932,9 @@ namespace ACE.Server.WorldObjects
             if (pk_error != null)
                 castingPreCheckStatus = CastingPreCheckStatus.InvalidPKStatus;
 
-            if (target.Teleporting)
+            // target is null for untargeted spells (e.g. war magic ring/wall spells);
+            // guard against NRE here so FinishCast() still runs and the caster isn't left stuck
+            if (target != null && target.Teleporting)
             {
                 if (spell.NumProjectiles == 0)
                     SendTransientError($"You fail to affect {target.Name} because they are in portal space");

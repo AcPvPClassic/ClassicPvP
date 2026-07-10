@@ -9,6 +9,10 @@
 
 ## 🩹 v1.10 (in development)
 
+### 🐛 War Magic — Ring & Wall Spells No Longer Bug You Out
+
+Casting a **ring** or **wall** war magic spell could leave your character stuck in the casting state, forcing a relog to recover. This is fixed — these spells now cast cleanly like any other war magic.
+
 ---
 
 ## 🩹 v1.09 — July 9, 2026
