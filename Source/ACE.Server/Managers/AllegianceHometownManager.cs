@@ -433,7 +433,7 @@ namespace ACE.Server.Managers
             UncloakPhase2Bindstone(townId);
 
             // Capture rewards: attackers win, defenders smited
-            DistributeRewards(townId, attackerMonarchId, prevOwnerId);
+            DistributeRewards(townId, attackerMonarchId, prevOwnerId, isDefense: false);
 
             ClearConflict(town);
 
@@ -457,7 +457,7 @@ namespace ACE.Server.Managers
 
             // Defense rewards: defenders win, attackers smited
             var defenderMonarchId = town.OwnerMonarchId;
-            DistributeRewards(townId, defenderMonarchId ?? 0, attackerMonarchId);
+            DistributeRewards(townId, defenderMonarchId ?? 0, attackerMonarchId, isDefense: true);
 
             CloseLatestEvent(town.TownId, outcome: 1);
             ClearConflict(town);
@@ -494,8 +494,12 @@ namespace ACE.Server.Managers
         /// <paramref name="winnerMonarchId"/> identifies whose allegiance wins and receives rewards.
         /// <paramref name="loserMonarchId"/> identifies whose allegiance loses (smited and receives no reward).
         /// </para>
+        /// <para>
+        /// <paramref name="isDefense"/> selects the reward tier: defenders (holding the town) receive a
+        /// larger payout than attackers (who also gain the town itself on capture).
+        /// </para>
         /// </summary>
-        public static void DistributeRewards(byte townId, uint winnerMonarchId, uint? loserMonarchId)
+        public static void DistributeRewards(byte townId, uint winnerMonarchId, uint? loserMonarchId, bool isDefense)
         {
             if (!_towns.TryGetValue(townId, out var town)) return;
 
@@ -548,9 +552,15 @@ namespace ACE.Server.Managers
 
             if (winnerPlayers.Count == 0) return;
 
-            // Pool: 40–120 PK Trophies, 10–30 MMDs — split by player count
-            int totalTrophies = ThreadSafeRandom.Next(40, 120);
-            int totalMmds     = ThreadSafeRandom.Next(10, 30);
+            // Reward tiers. Attackers also gain the town itself on capture, so the loot pool is
+            // weighted toward defenders to give allegiances a reason to show up and hold.
+            //                     Attackers  Defenders
+            int totalTrophies = isDefense ? 80  : 40;   // PK Trophy pool (split by player count)
+            int totalMmds     = isDefense ? 40  : 20;   // MMD pool (split by player count)
+            double xpPct      = isDefense ? 0.15 : 0.05; // fraction of XP-to-next-level (flat per player)
+            int phials        = isDefense ? 1   : 0;    // Phial of Bloody Tears (flat per player)
+            int darkbeatKeys  = isDefense ? 2   : 0;    // Darkbeat Keys (flat per player)
+
             int perTrophies   = Math.Max(1, totalTrophies / winnerPlayers.Count);
             int perMmds       = Math.Max(1, totalMmds     / winnerPlayers.Count);
 
@@ -562,22 +572,31 @@ namespace ACE.Server.Managers
                 // MMDs (stackable)
                 GiveStacked(winner, 20630u, perMmds);
 
-                // 1 Phial of Bloody Tears
-                GiveSingle(winner, CustomWeenieId.PhialOfBloodyTears);
+                // Phials of Bloody Tears
+                for (int k = 0; k < phials; k++)
+                    GiveSingle(winner, CustomWeenieId.PhialOfBloodyTears);
 
-                // 3 Darkbeat Keys
-                for (int k = 0; k < 3; k++)
+                // Darkbeat Keys
+                for (int k = 0; k < darkbeatKeys; k++)
                     GiveSingle(winner, CustomWeenieId.DarkbeatKey);
 
-                // 10% of XP to next level (fixed reward; GrantXP already bypasses the season xp_modifier)
+                // Bonus XP toward next level (fixed reward; GrantXP already bypasses the season xp_modifier)
                 var level = winner.Level ?? 1;
                 var xpBand = (long)winner.GetXPBetweenLevels(level, level + 1);
-                var bonusXp = (long)Math.Round(xpBand * 0.10);
+                var bonusXp = (long)Math.Round(xpBand * xpPct);
                 if (bonusXp > 0)
                     winner.GrantXP(bonusXp, XpType.PvP, ACE.Entity.Enum.ShareType.None, "hometown capture reward");
 
+                var extras = new System.Collections.Generic.List<string>
+                {
+                    $"{perTrophies} PK Trophy/Trophies",
+                    $"{perMmds} MMD(s)"
+                };
+                if (phials > 0)       extras.Add($"{phials} Phial(s) of Bloody Tears");
+                if (darkbeatKeys > 0) extras.Add($"{darkbeatKeys} Darkbeat Key(s)");
+
                 winner.Session.Network.EnqueueSend(new GameMessageSystemChat(
-                    $"[Hometown] You received {perTrophies} PK Trophy/Trophies, {perMmds} MMD(s), 1 Phial of Bloody Tears, and 3 Darkbeat Keys for your service!",
+                    $"[Hometown] You received {string.Join(", ", extras)} for your service!",
                     ChatMessageType.Magic));
             }
         }

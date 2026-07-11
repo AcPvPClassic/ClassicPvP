@@ -9,6 +9,20 @@
 
 ## 🩹 v1.10 (in development)
 
+### 🏘️ Hometown Control — Capture & Defense Rewards Rebalanced
+
+Hometown battle rewards now differ by side, with **defenders paid more than attackers**. A successful capture already hands the attackers the town itself, so the loot pool is weighted toward the allegiance that shows up to hold the line.
+
+| Reward | Attackers (capture) | Defenders (hold) |
+|---|---|---|
+| PK Trophies (split among winners) | 40 | 80 |
+| MMDs (split among winners) | 20 | 40 |
+| XP to next level (per player) | 5% | 15% |
+| Phials of Bloody Tears (per player) | — | 1 |
+| Darkbeat Keys (per player) | — | 2 |
+
+Eligibility is unchanged — winners within 100 meters of the Bind Stone share the rewards, and losing PKs in range are still smited.
+
 ### 🐛 War Magic — Ring & Wall Spells No Longer Bug You Out
 
 Casting a **ring** or **wall** war magic spell could leave your character stuck in the casting state, forcing a relog to recover. This is fixed — these spells now cast cleanly like any other war magic.

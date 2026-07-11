@@ -665,13 +665,15 @@ Two allegiances cannot attack the same town simultaneously. An allegiance can ma
 
 ### Rewards
 
-Winners within **100 meters of the Bind Stone** (on the town landblock or an adjacent one) at the moment of resolution receive:
+Winners within **100 meters of the Bind Stone** (on the town landblock or an adjacent one) at the moment of resolution share the rewards. **Defenders are rewarded more generously than attackers** — attackers already gain the town itself on a successful capture, so holding a town pays out the larger loot:
 
-- **40–120 PK Trophies** split among eligible players
-- **10–30 MMDs** split among eligible players
-- **1 Phial of Bloody Tears** per player
-- **3 Darkbeat Keys** per player
-- **10% of XP to next level** per player
+| Reward | Attackers (capture) | Defenders (hold) |
+|---|---|---|
+| PK Trophies (split among players) | 40 | 80 |
+| MMDs (split among players) | 20 | 40 |
+| XP to next level (per player) | 5% | 15% |
+| Phials of Bloody Tears (per player) | — | 1 |
+| Darkbeat Keys (per player) | — | 2 |
 
 Losing allegiance PKs within **100 meters of the Bind Stone** at the moment of resolution are **smited**.
 
