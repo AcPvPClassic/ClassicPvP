@@ -31,6 +31,10 @@ Casting a **ring** or **wall** war magic spell could leave your character stuck 
 
 You can now swear allegiance to a **lower-level** character. No allegiance XP is passed up to that patron until they surpass their vassal's level, at which point passup begins automatically.
 
+### 💎 Morph Gems — Remove Defense Requirements from Covenant & Quest Gear
+
+The **Melee Defense** and **Missile Defense** requirement-removal gems can now be applied to **covenant and quest items**, not just loot-generated gear. If a target has no matching defense requirement to remove, you'll now get a clear message saying so instead of a generic failure.
+
 ---
 
 ## 🩹 v1.09 — July 9, 2026
