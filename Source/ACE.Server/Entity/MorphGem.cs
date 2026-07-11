@@ -101,6 +101,8 @@ namespace ACE.Server.Entity
         private static readonly HashSet<uint> morphGemsAllowedNonLootGen = new HashSet<uint>()
         {
             MorphGemRemovePlayerReq,
+            MorphGemRemoveMissileDReq,
+            MorphGemRemoveMeleeDReq,
             MorphGemJewelersSawblade,
             MorphGemImpen,
         };
@@ -243,6 +245,8 @@ namespace ACE.Server.Entity
 
                         if (target.ItemSkillLimit != Skill.MissileDefense || target.ItemSkillLevelLimit == null)
                         {
+                            playerMsg = $"Your {target.NameWithMaterial} does not currently have a Missile Defense requirement to remove.";
+                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
                             player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
                             return;
                         }
@@ -263,6 +267,8 @@ namespace ACE.Server.Entity
 
                         if (target.ItemSkillLimit != Skill.MeleeDefense || target.ItemSkillLevelLimit == null)
                         {
+                            playerMsg = $"Your {target.NameWithMaterial} does not currently have a Melee Defense requirement to remove.";
+                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
                             player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
                             return;
                         }
