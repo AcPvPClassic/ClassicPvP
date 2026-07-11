@@ -910,7 +910,7 @@ namespace ACE.Server.WorldObjects
 
             // Bindstone proxy (Phase 2): war-magic damage falls off with distance too, so mages
             // must hold the stone at close range rather than snipe it (mirrors the weapon path).
-            if (target is BindstoneCreatureProxy && sourcePlayer != null)
+            if (target.WeenieClassId == ACE.Database.CustomWeenieId.BindstoneCreatureProxy && sourcePlayer != null)
                 finalDamage *= ACE.Server.Managers.AllegianceHometownManager.GetDistanceMultiplier((float)target.Location.DistanceTo(sourcePlayer.Location));
 
             return finalDamage;

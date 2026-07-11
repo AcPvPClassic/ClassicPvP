@@ -219,7 +219,7 @@ namespace ACE.Server.Entity
                 return 0.0f;
 
             // Bindstone proxy (Phase 2) — only PK players may deal damage; pets and NPKs deal zero
-            if (defender is WorldObjects.BindstoneCreatureProxy)
+            if (defender.WeenieClassId == ACE.Database.CustomWeenieId.BindstoneCreatureProxy)
             {
                 if (playerAttacker == null || !playerAttacker.IsPK)
                     return 0.0f;
@@ -1052,11 +1052,16 @@ namespace ACE.Server.Entity
 
             // Bindstone proxy (Phase 2): scale down melee/missile (physical) damage so weapon DPS
             // stays comparable to war magic. This path handles weapon damage only — war magic runs
-            // through SpellProjectile and is untouched. Applied last so it is uniform across all
-            // damage types and cannot be stripped by Vulnerability the way armor can.
-            if (defender is WorldObjects.BindstoneCreatureProxy)
+            // through SpellProjectile and is untouched. Melee and missile have separate multipliers,
+            // chosen by weapon skill (Bow/Crossbow/Thrown = missile; everything else = melee).
+            // Applied last so it is uniform across all damage types and cannot be stripped by
+            // Vulnerability the way armor can.
+            if (defender.WeenieClassId == ACE.Database.CustomWeenieId.BindstoneCreatureProxy)
             {
-                Damage *= (float)PropertyManager.GetDouble("ah_bindstone_weapon_dmg_mod", 0.35).Item;
+                var isMissile = Weapon != null &&
+                    (Weapon.WeaponSkill == Skill.Bow || Weapon.WeaponSkill == Skill.Crossbow || Weapon.WeaponSkill == Skill.ThrownWeapon);
+                var dmgModProp = isMissile ? "ah_bindstone_missile_dmg_mod" : "ah_bindstone_melee_dmg_mod";
+                Damage *= (float)PropertyManager.GetDouble(dmgModProp, 0.35).Item;
                 Damage *= AllegianceHometownManager.GetDistanceMultiplier((float)defender.Location.DistanceTo(attacker.Location));
             }
 
