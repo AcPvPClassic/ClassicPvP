@@ -193,6 +193,7 @@ A few things to know:
 - Passup XP counts against your **Monster bucket** (same pool as creature kills). If you're actively grinding and also receiving heavy passup from your vassals, both compete for that budget.
 - Passup cascades **automatically up the chain** the moment the XP is originally earned — your patron receives a share, their patron a smaller share, and so on up the tree (see the chain mechanics below). What does **not** happen is a *second* cascade when you personally collect your held passup: the lump sum delivered to you on login is not treated as freshly-earned XP, so receiving it does not generate new passup up your own chain.
 - The amount of passup you can get at a time without spending it is 4.2 billion xp. If you accumulate that much and don't spend any you will start losing new earnings. 
+- You may swear allegiance to a **lower-level patron**, but no passup is generated to them until they surpass their vassal's level. Once the patron out-levels the vassal, passup for that link begins automatically.
 
 ### XP Chain Mechanics (Loyalty & Leadership)
 
