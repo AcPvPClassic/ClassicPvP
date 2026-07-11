@@ -96,13 +96,27 @@ namespace ACE.Server.Physics
         public bool LastTransitionCreatureGraceUsed;
 
         /// <summary>
-        /// Unix timestamp after which the next player-involved collision block is enforced.
-        /// Set to <c>now + 0.5s</c> each time a block involving another Player is silently
-        /// accepted (the free-pass window).  Within the window, subsequent player-involved
-        /// blocks are enforced normally so a deliberate body-blocker still stops the moving
-        /// player.  Resets naturally when real time advances past the stored value.
+        /// Seconds of player-overlap consumed from the player-collision grace budget
+        /// (see <see cref="update_object_server_new"/>).  Applies only to blocks caused
+        /// purely by other players.  Deliberately tiny compared to the mob budget:
+        /// incidental brushes in a crowd are absorbed, but a deliberate body-blocker
+        /// standing in the path drains it in ~1/3 s of continuous contact and blocks
+        /// solidly from then on.  Refills at <see cref="PlayerGraceRefillPerSec"/>;
+        /// accepts while below <see cref="PlayerGraceMaxSpent"/>.
         /// </summary>
-        public double PlayerCollisionCooldownUntil;
+        public float PlayerBlockGraceSpent;
+
+        /// <summary>Timestamp of the last player-collision grace budget refill/charge computation.</summary>
+        public double LastPlayerGraceDecayTime;
+
+        /// <summary>Max seconds of continuous player overlap accepted before enforcement.</summary>
+        private const float PlayerGraceMaxSpent = 0.3f;
+
+        /// <summary>Player-collision grace budget refill rate, in overlap-seconds per second.</summary>
+        private const float PlayerGraceRefillPerSec = 0.15f;
+
+        /// <summary>Max seconds charged to the player grace budget per blocked packet.</summary>
+        private const float PlayerGraceMaxChargePerPacket = 0.1f;
 
         /// <summary>
         /// Seconds of mob-overlap consumed from the mob-collision grace budget
@@ -4538,6 +4552,7 @@ namespace ACE.Server.Physics
                     LastTransitionCreatureGraceUsed = false;
                     var _allBlockersAreCreatures = false;
                     var _anyPlayerBlocker        = false;
+                    var _anyMobBlocker           = false;
                     var _allBlockersAreMeleeTarget = false;
                     if (fullTransition != null && !valid)
                     {
@@ -4566,6 +4581,14 @@ namespace ACE.Server.Physics
                                 continue;
                             }
 
+                            // Spell projectiles are not barriers — an incoming spell registers in the
+                            // movement sweep of the player it targets, but it hits them regardless of
+                            // whether the movement packet is accepted.  Fully transparent to
+                            // classification so getting shot at doesn't void the grace or the melee
+                            // sticky exemption.
+                            if (wo is SpellProjectile)
+                                continue;
+
                             // Option N: closed door the player passed through.
                             if (wo is Door door && !door.IsOpen)
                                 LastTransitionHitClosedDoor = true;
@@ -4578,7 +4601,9 @@ namespace ACE.Server.Physics
 
                             if (wo is Player)
                                 _anyPlayerBlocker = true;
-                            else if (!(wo is Creature))
+                            else if (wo is Creature)
+                                _anyMobBlocker = true;
+                            else
                                 _allBlockersAreCreatures = false; // door/static/unknown object in the path
 
                             if (wo.Guid.Full != _meleeTargetGuid)
@@ -4601,7 +4626,7 @@ namespace ACE.Server.Physics
                     }
                     else if (dist > 0.1)
                     {
-                        // --- Dynamic-collision grace ---
+                        // --- Dynamic-collision & terrain grace ---
                         // Server-side creature/player positions drift from what each client renders,
                         // so a client can legitimately path through a gap it sees while the server
                         // sweeps into a mob or player it thinks is there.  When the block was caused
@@ -4610,7 +4635,16 @@ namespace ACE.Server.Physics
                         // accept the position within tight bounds instead of rubber-banding.
                         var graceAccepted = false;
                         var terrainGraceAccepted = false;
-                        if ((_allBlockersAreCreatures || fullTransition != null && fullTransition.CollisionInfo.CollideObject.Count == 0)
+                        string graceDeny = null; // diagnostic: why grace was refused (movement_debug_chat)
+
+                        if (!PropertyManager.GetBool("movement_collision_grace").Item)
+                        {
+                            // Master kill switch: reverts blocked movement to stock always-rubber-band
+                            // enforcement (mob budget, player budget, melee sticky exemption, and
+                            // terrain grace all off).  Detection and scoring checks are unaffected.
+                            graceDeny = "disabled";
+                        }
+                        else if ((_allBlockersAreCreatures || fullTransition != null && fullTransition.CollisionInfo.CollideObject.Count == 0)
                             && LScape.get_landcell(RequestPos.ObjCellID) == null)
                         {
                             // A grace accept force-sets the client's claimed position via
@@ -4622,62 +4656,89 @@ namespace ACE.Server.Physics
                             // unresolvable claimed cell is also exactly the case where enforcement is
                             // wanted, so fall through to the rubber-band instead.
                             log.Warn($"{Name} - collision grace denied: unresolvable request cell 0x{RequestPos.ObjCellID:X8}");
+                            graceDeny = "unresolvable cell";
                         }
-                        else if (_allBlockersAreMeleeTarget && TransitionClearsEnvironment())
+                        else if (_allBlockersAreCreatures)
                         {
-                            // Every blocker is the player's current melee attack target.  Sticky
-                            // melee deliberately keeps the attacker glued to the target's cylinder,
-                            // so this contact is constant and expected for the entire fight — both
-                            // against mobs and while chasing a player in PvP.  Accept with NO budget
-                            // charge; charging would exhaust any budget within seconds of normal
-                            // combat.  Bounded: applies only to the single creature the player is
-                            // actively attacking in melee mode, the environment probe still rejects
-                            // any wall involvement, and the speed/avg checks still validate every
-                            // accepted packet.  Third-party body-blockers (not the attack target)
-                            // take the tight player-block path below.
-                            graceAccepted = true;
-                        }
-                        else if (_allBlockersAreCreatures && TransitionClearsEnvironment())
-                        {
-                            var now = PhysicsTimer.CurrentTime;
-                            if (_anyPlayerBlocker)
+                            if (!TransitionClearsEnvironment())
                             {
-                                // Another player is (part of) the block.  Deliberate PK body-blocking
-                                // is a legitimate mechanic, so stay tight: one free pass, then a
-                                // 500 ms enforcement window.  Transient desync resolves within the
-                                // window; a real body-blocker keeps blocking.
-                                if (now >= PlayerCollisionCooldownUntil)
-                                {
-                                    PlayerCollisionCooldownUntil = now + 0.5;
-                                    graceAccepted = true;
-                                }
+                                // A wall/static object is involved in the same failed transition —
+                                // never grace through it.
+                                graceDeny = "wall in path";
+                            }
+                            else if (_allBlockersAreMeleeTarget)
+                            {
+                                // Every blocker is the player's current melee attack target.  Sticky
+                                // melee deliberately keeps the attacker glued to the target's cylinder,
+                                // so this contact is constant and expected for the entire fight — both
+                                // against mobs and while chasing a player in PvP.  Accept with NO budget
+                                // charge; charging would exhaust any budget within seconds of normal
+                                // combat.  Bounded: applies only to the single creature the player is
+                                // actively attacking in melee mode, the environment probe still rejects
+                                // any wall involvement, and the speed/avg checks still validate every
+                                // accepted packet.  Third-party body-blockers (not the attack target)
+                                // take the budget paths below.
+                                graceAccepted = true;
                             }
                             else
                             {
-                                // Mob-only block (e.g. running through a monster pack).  Leaky-bucket
-                                // budget measured in seconds of overlap: each blocked packet charges
-                                // the real time elapsed since the last charge (capped per packet), so
-                                // the budget is packet-rate independent — a fast client at 30 packets/s
-                                // and a slow one at 10/s both get the same seconds of grace.  A
-                                // legitimate pack crossing or a melee fighting inside a pack stays
-                                // within the budget indefinitely because intermittent contact refills
-                                // faster than it drains.  A client that deletes mobs and stands inside
-                                // them drains the budget in ~7.5 s of continuous overlap and is
-                                // enforced from then on — with geometry, speed, and average-speed
-                                // checks still applying to every accepted packet.
-                                var elapsed = now - LastCreatureGraceDecayTime;
-                                if (LastCreatureGraceDecayTime > 0 && elapsed > 0)
-                                    CreatureBlockGraceSpent = Math.Max(0.0f, CreatureBlockGraceSpent - (float)(elapsed * CreatureGraceRefillPerSec));
-
-                                if (CreatureBlockGraceSpent < CreatureGraceMaxSpent)
+                                var now = PhysicsTimer.CurrentTime;
+                                if (_anyPlayerBlocker && !_anyMobBlocker)
                                 {
-                                    var charge = LastCreatureGraceDecayTime > 0
-                                        ? (float)Math.Min(Math.Max(elapsed, 0.0), CreatureGraceMaxChargePerPacket)
-                                        : CreatureGraceMaxChargePerPacket;
-                                    CreatureBlockGraceSpent += Math.Max(charge, 0.02f);
-                                    graceAccepted = true;
+                                    // Blocked purely by other players.  Deliberate PK body-blocking is
+                                    // a legitimate mechanic, so this budget is deliberately tiny:
+                                    // incidental brushes in a crowd are absorbed and refill quickly,
+                                    // but a body-blocker standing in the path drains it in ~1/3 s of
+                                    // continuous contact and blocks solidly from then on.  Time-based
+                                    // like the mob budget so client packet rate doesn't matter.
+                                    var pElapsed = now - LastPlayerGraceDecayTime;
+                                    if (LastPlayerGraceDecayTime > 0 && pElapsed > 0)
+                                        PlayerBlockGraceSpent = Math.Max(0.0f, PlayerBlockGraceSpent - (float)(pElapsed * PlayerGraceRefillPerSec));
+
+                                    if (PlayerBlockGraceSpent < PlayerGraceMaxSpent)
+                                    {
+                                        var charge = LastPlayerGraceDecayTime > 0
+                                            ? (float)Math.Min(Math.Max(pElapsed, 0.0), PlayerGraceMaxChargePerPacket)
+                                            : PlayerGraceMaxChargePerPacket;
+                                        PlayerBlockGraceSpent += Math.Max(charge, 0.02f);
+                                        graceAccepted = true;
+                                    }
+                                    else
+                                        graceDeny = $"player budget {PlayerBlockGraceSpent:0.00}/{PlayerGraceMaxSpent:0.00}s";
+                                    LastPlayerGraceDecayTime = now;
                                 }
-                                LastCreatureGraceDecayTime = now;
+                                else
+                                {
+                                    // Mob-only or MIXED player+mob block.  Group hunting constantly
+                                    // produces blocked packets containing both a mob and a fellow
+                                    // player; routing those to the strict player rule rubber-banded
+                                    // fellowships fighting around packs, so any mob involvement uses
+                                    // this lenient budget.  Leaky-bucket measured in seconds of
+                                    // overlap: each blocked packet charges the real time elapsed since
+                                    // the last charge (capped per packet), so the budget is packet-rate
+                                    // independent.  A legitimate pack crossing or a melee fighting
+                                    // inside a pack stays within the budget indefinitely because
+                                    // intermittent contact refills faster than it drains.  A client
+                                    // that deletes mobs and stands inside them drains the budget in
+                                    // ~7.5 s of continuous overlap and is enforced from then on — with
+                                    // geometry, speed, and average-speed checks still applying to
+                                    // every accepted packet.
+                                    var elapsed = now - LastCreatureGraceDecayTime;
+                                    if (LastCreatureGraceDecayTime > 0 && elapsed > 0)
+                                        CreatureBlockGraceSpent = Math.Max(0.0f, CreatureBlockGraceSpent - (float)(elapsed * CreatureGraceRefillPerSec));
+
+                                    if (CreatureBlockGraceSpent < CreatureGraceMaxSpent)
+                                    {
+                                        var charge = LastCreatureGraceDecayTime > 0
+                                            ? (float)Math.Min(Math.Max(elapsed, 0.0), CreatureGraceMaxChargePerPacket)
+                                            : CreatureGraceMaxChargePerPacket;
+                                        CreatureBlockGraceSpent += Math.Max(charge, 0.02f);
+                                        graceAccepted = true;
+                                    }
+                                    else
+                                        graceDeny = $"mob budget {CreatureBlockGraceSpent:0.00}/{CreatureGraceMaxSpent:0.00}s";
+                                    LastCreatureGraceDecayTime = now;
+                                }
                             }
                         }
                         else if (fullTransition != null && fullTransition.CollisionInfo.CollideObject.Count == 0)
@@ -4730,8 +4791,18 @@ namespace ACE.Server.Physics
                                     TerrainGraceSpent += Math.Max(charge, 0.02f);
                                     terrainGraceAccepted = true;
                                 }
+                                else
+                                    graceDeny = $"terrain budget {TerrainGraceSpent:0.00}/{TerrainGraceMaxSpent:0.00}s";
                                 LastTerrainGraceTime = now;
                             }
+                            else
+                                graceDeny = "terrain shape/shortfall";
+                        }
+                        else
+                        {
+                            // Collision list contains a door, static object, or unclassifiable
+                            // entry — no grace applies to those.
+                            graceDeny = "non-creature blocker";
                         }
 
                         if (graceAccepted || terrainGraceAccepted)
@@ -4753,6 +4824,26 @@ namespace ACE.Server.Physics
                             WeenieObj.WorldObject.Sequences.GetNextSequence(SequenceType.ObjectForcePosition);
                             WeenieObj.WorldObject.SendUpdatePosition();
                             success = false;
+                        }
+
+                        // Grace diagnostics: with movement_debug_chat enabled, show each budget-charged
+                        // accept (with budget level) and every denial (with reason) in the player's
+                        // chat.  Melee sticky-target accepts are deliberately not shown — they fire on
+                        // nearly every packet of normal melee combat and would flood the window.
+                        if (player != null && PropertyManager.GetBool("movement_debug_chat").Item)
+                        {
+                            string _dbg = null;
+                            if (terrainGraceAccepted)
+                                _dbg = $"grace terrain {TerrainGraceSpent:0.00}/{TerrainGraceMaxSpent:0.00}s";
+                            else if (graceAccepted && !_allBlockersAreMeleeTarget)
+                                _dbg = _anyPlayerBlocker && !_anyMobBlocker
+                                    ? $"grace player {PlayerBlockGraceSpent:0.00}/{PlayerGraceMaxSpent:0.00}s"
+                                    : $"grace mob {CreatureBlockGraceSpent:0.00}/{CreatureGraceMaxSpent:0.00}s";
+                            else if (graceDeny != null)
+                                _dbg = $"grace DENY ({graceDeny}) dist={dist:0.00}";
+
+                            if (_dbg != null)
+                                player.Session?.Network.EnqueueSend(new GameMessageSystemChat($"[AC DBG] {_dbg}", ChatMessageType.Help));
                         }
                     }
                 }
