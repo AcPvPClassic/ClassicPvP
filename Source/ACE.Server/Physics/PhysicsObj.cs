@@ -4637,11 +4637,22 @@ namespace ACE.Server.Physics
                         var terrainGraceAccepted = false;
                         string graceDeny = null; // diagnostic: why grace was refused (movement_debug_chat)
 
-                        if (!PropertyManager.GetBool("movement_collision_grace").Item)
+                        // movement_collision_grace: master switch for the leniency SYSTEM — the mob and
+                        // player budgets, the melee sticky exemption, and terrain grace.  Off = stock
+                        // always-rubber-band on every blocked move.
+                        var graceEnabled = PropertyManager.GetBool("movement_collision_grace").Item;
+                        // enforce_player_dynamic_collision: whether mobs and OTHER PLAYERS block player
+                        // movement at all.  Off = a block caused purely by dynamic objects (no wall
+                        // involvement, proven by the ethereal probe) is accepted unconditionally, so
+                        // players phase through mobs and each other.  Walls, static objects, and the
+                        // speed checks still enforce, so faking a position to teleport a short distance
+                        // through geometry is still caught.  Independent of movement_collision_grace.
+                        var dynamicCollisionEnforced = PropertyManager.GetBool("enforce_player_dynamic_collision").Item;
+
+                        if (!graceEnabled && dynamicCollisionEnforced)
                         {
-                            // Master kill switch: reverts blocked movement to stock always-rubber-band
-                            // enforcement (mob budget, player budget, melee sticky exemption, and
-                            // terrain grace all off).  Detection and scoring checks are unaffected.
+                            // Full stock enforcement: no leniency and dynamic collisions enforced — every
+                            // blocked move rubber-bands.  Detection and scoring checks are unaffected.
                             graceDeny = "disabled";
                         }
                         else if ((_allBlockersAreCreatures || fullTransition != null && fullTransition.CollisionInfo.CollideObject.Count == 0)
@@ -4663,8 +4674,17 @@ namespace ACE.Server.Physics
                             if (!TransitionClearsEnvironment())
                             {
                                 // A wall/static object is involved in the same failed transition —
-                                // never grace through it.
+                                // never grace through it.  This is the short-distance-teleport /
+                                // wall-clip guard, enforced regardless of enforce_player_dynamic_collision.
                                 graceDeny = "wall in path";
+                            }
+                            else if (!dynamicCollisionEnforced)
+                            {
+                                // enforce_player_dynamic_collision is off: mobs and other players do not
+                                // block player movement.  No wall is involved (probe cleared), so the
+                                // block was purely a dynamic object the client rendered elsewhere —
+                                // accept unconditionally, no budget.
+                                graceAccepted = true;
                             }
                             else if (_allBlockersAreMeleeTarget)
                             {
@@ -4776,7 +4796,13 @@ namespace ACE.Server.Physics
                                             - fullTransition.SpherePath.CurPos.Frame.Origin.Z);
                             var horizontalShortfall = (float)Math.Sqrt(Math.Max(0.0f, dist * dist - dz * dz));
 
-                            if (anyNormal && allFloorLike && horizontalShortfall <= 1.25f && dist <= 4.0f)
+                            if (!graceEnabled)
+                            {
+                                // Terrain grace is part of the leniency system; master switch is off
+                                // (only reachable here with dynamic collision also off).
+                                graceDeny = "disabled";
+                            }
+                            else if (anyNormal && allFloorLike && horizontalShortfall <= 1.25f && dist <= 4.0f)
                             {
                                 var now = PhysicsTimer.CurrentTime;
                                 var elapsed = now - LastTerrainGraceTime;
@@ -4835,6 +4861,8 @@ namespace ACE.Server.Physics
                             string _dbg = null;
                             if (terrainGraceAccepted)
                                 _dbg = $"grace terrain {TerrainGraceSpent:0.00}/{TerrainGraceMaxSpent:0.00}s";
+                            else if (graceAccepted && !dynamicCollisionEnforced)
+                                _dbg = "grace dynamic-collision-off";
                             else if (graceAccepted && !_allBlockersAreMeleeTarget)
                                 _dbg = _anyPlayerBlocker && !_anyMobBlocker
                                     ? $"grace player {PlayerBlockGraceSpent:0.00}/{PlayerGraceMaxSpent:0.00}s"

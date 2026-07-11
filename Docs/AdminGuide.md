@@ -507,6 +507,7 @@ All movement checks are **disabled by default**. Enable `enforce_player_movement
 | `movement_violation_webhook` | Discord webhook URL for real-time alerts. Leave blank to disable |
 | `movement_packet_rate_limit` | Max movement packets/sec before flood detection fires (default: 75). Legitimate players reach ~35/s on fast machines and while glitch-running; do not set at or below ~40 |
 | `movement_collision_grace` | **Master switch for ALL collision-grace leniency** (default: true): mob pack pass-through budget, player-brush budget, melee sticky-target exemption, and terrain/hill shortfall grace. Set false to revert blocked movement to stock always-rubber-band enforcement. Does NOT affect any detection or scoring checks — those are governed by their own `enforce_*` properties |
+| `enforce_player_dynamic_collision` | Whether mobs and **other players** block player movement (default: true). Set false to let players phase through creatures and each other: a move blocked *purely* by dynamic objects (no wall involved, proven by the ethereal probe) is accepted with no rubber-band and no budget. **Walls, static objects, and the speed checks still enforce**, so keep `enforce_player_movement` on and short-distance teleport/wall-clip is still prevented. Independent of `movement_collision_grace` |
 
 ### Physics-Based Checks
 
@@ -554,6 +555,14 @@ The split exists so legitimate-but-unusual movement (glitch-running, high framer
 - **Spell projectiles are transparent to classification:** an incoming spell registers in the target's movement sweep, but it isn't a barrier — it hits whether or not the packet is accepted. Projectiles therefore never void the grace or the melee exemption (previously, getting shot at while moving through mobs forced a rubber-band).
 - Walls and static objects (doors, chests) get no grace under any circumstances. (Terrain slope/step disagreements have their own floor-normal-gated grace — see the Physics-Based Checks note above; wall contact never qualifies.)
 - **Kill switch:** `/modifybool movement_collision_grace false` disables every grace above at once (including terrain grace) and reverts blocked movement to stock always-rubber-band enforcement, without touching any detection/scoring checks.
+- **Turning off dynamic collision entirely:** `/modifybool enforce_player_dynamic_collision false` goes further than the grace budgets — mobs and other players stop blocking player movement altogether (any block caused purely by dynamic objects is accepted, no budget). Because the ethereal probe still requires the path to be wall-free, and the per-packet/average speed checks still validate distance, faking a position to teleport a short distance through geometry is still caught. This is the setting for "I want the anti-teleport protection of `enforce_player_movement`, but I don't want players ever rubber-banded by mobs or other players." It is independent of `movement_collision_grace`:
+
+| `movement_collision_grace` | `enforce_player_dynamic_collision` | Mob/player blocks | Wall/terrain blocks |
+|---|---|---|---|
+| true (default) | true (default) | budgets + melee exemption | terrain grace, else rubber-band |
+| **true** | **false** | **never rubber-band** | terrain grace, else rubber-band |
+| false | true | rubber-band (stock) | rubber-band (stock) |
+| false | false | never rubber-band | rubber-band (stock, hills included) |
 - **Diagnostics:** with `movement_debug_chat` enabled, every budget-charged grace accept (with budget level) and every grace denial (with reason: wall in path, budget exhausted, non-creature blocker, terrain shape, unresolvable cell, disabled) is shown in the player's chat window.
 
 ### Suspicion Score System
