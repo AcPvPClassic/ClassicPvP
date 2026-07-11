@@ -331,3 +331,236 @@ WHERE c.is_Deleted = 0
 -- keep only rows NOT explained by whole trained-skill creation bonuses (526 * N, N >= 0)
 HAVING discrepancy < 0 OR (discrepancy % 526) <> 0
 ORDER BY discrepancy ASC;
+
+
+-- =====================================================================================
+-- MULTI-ACCOUNT / SIMULTANEOUS-PLAY INVESTIGATION  (Queries 9-14)
+-- -------------------------------------------------------------------------------------
+-- Purpose: validate a report that several *named characters* are really one person
+-- running several accounts at once. Worked example uses 'Altar Boy','Altar Girl',
+-- 'Altar They' -- replace the name list (it appears in each query) to reuse.
+--
+-- ADDITIONAL SCHEMA (classicpvp_log session logging; see Database/Base/LogBase.sql):
+--   character_login_log   : accountId, accountName, characterId, characterName, sessionIP,
+--                           loginDateTime, logoutDateTime  (one INSERT per character login;
+--                           logoutDateTime UPDATEd on logout). This is the populated source.
+--   account_session_log   : same shape at the account level, but NOT currently written by the
+--                           server -- do not query it, it is empty. Everything below uses
+--                           character_login_log instead. (In AC only one character per account
+--                           is online at a time, so per-character rows == per-account sessions.)
+--   classicpvp_auth.account.create_I_P_ntoa / last_Login_I_P_ntoa = readable IP views
+--   classicpvp_auth.account_ip_change_log : per-account IP churn audit
+--
+-- IMPORTANT INTERPRETIVE NOTE -- why the binding table alone proves nothing here:
+--   account_ip_binding has UNIQUE keys on BOTH ip_address AND account_id, so it stores
+--   only each account's ONE currently-bound IP and can never show two accounts on one IP.
+--   Three real accounts on one household IP would be *rejected at login* unless you granted
+--   an allowance/whitelist (see AdminGuide "One-Account-Per-IP Enforcement"). So evidence
+--   of sharing lives in the LOG tables (every observed IP + every session window), not the
+--   binding table. Read the signals together: a shared/lockstep-rotating IP PLUS near-total
+--   simultaneous-session overlap PLUS synchronized logins is about as conclusive as logs get.
+--   Any one signal alone is circumstantial (households, ISP pools, shared evenings).
+-- =====================================================================================
+
+
+-- =====================================================================================
+-- QUERY 9 -- Resolve the three names -> characters, accounts, current bound IP
+-- -------------------------------------------------------------------------------------
+-- If all three names collapse to ONE accountId, the report is trivially confirmed and you
+-- can stop. The interesting case is three DISTINCT accounts -- that is what 10-14 test.
+-- =====================================================================================
+SELECT
+    c.name                               AS character_name,
+    c.id                                 AS character_id,
+    c.account_Id,
+    a.accountName,
+    a.create_Time                        AS account_created,
+    a.create_I_P_ntoa                    AS account_create_ip,
+    a.last_Login_I_P_ntoa                AS account_last_login_ip,
+    b.ip_address                         AS current_bound_ip,
+    b.bound_at,
+    b.bound_by
+FROM classicpvp_shard.`character` c
+    LEFT JOIN classicpvp_auth.account            a ON a.accountId  = c.account_Id
+    LEFT JOIN classicpvp_auth.account_ip_binding b ON b.account_id = c.account_Id
+WHERE c.name IN ('Altar Boy','Altar Girl','Altar They')
+ORDER BY c.name;
+
+
+-- =====================================================================================
+-- QUERY 10 -- Every IP each of the three accounts has ever connected from
+-- -------------------------------------------------------------------------------------
+-- Full per-account IP history from the character login log (NOT deduped like the binding
+-- table). Counts character logins per IP.
+-- =====================================================================================
+SELECT
+    s.accountId,
+    s.accountName,
+    s.sessionIP,
+    COUNT(*)              AS logins,
+    MIN(s.loginDateTime)  AS first_seen,
+    MAX(s.loginDateTime)  AS last_seen
+FROM classicpvp_log.character_login_log s
+WHERE s.accountId IN (
+        SELECT c.account_Id FROM classicpvp_shard.`character` c
+        WHERE c.name IN ('Altar Boy','Altar Girl','Altar They'))
+GROUP BY s.accountId, s.accountName, s.sessionIP
+ORDER BY s.accountId, logins DESC;
+
+
+-- =====================================================================================
+-- QUERY 11 -- IPs shared by 2+ of the three accounts
+-- -------------------------------------------------------------------------------------
+-- Suggestive, not conclusive on its own (households / rotating ISP pools). Pair with the
+-- timing queries below.
+-- =====================================================================================
+WITH tgt AS (
+    SELECT DISTINCT c.account_Id AS accountId
+    FROM classicpvp_shard.`character` c
+    WHERE c.name IN ('Altar Boy','Altar Girl','Altar They')
+)
+SELECT
+    s.sessionIP,
+    COUNT(DISTINCT s.accountId)                                                   AS accounts_on_ip,
+    GROUP_CONCAT(DISTINCT s.accountName ORDER BY s.accountName SEPARATOR ', ')    AS accounts,
+    MIN(s.loginDateTime)                                                          AS first_seen,
+    MAX(s.loginDateTime)                                                          AS last_seen
+FROM classicpvp_log.character_login_log s
+    JOIN tgt ON tgt.accountId = s.accountId
+GROUP BY s.sessionIP
+HAVING accounts_on_ip >= 2
+ORDER BY accounts_on_ip DESC, last_seen DESC;
+
+
+-- =====================================================================================
+-- QUERY 12 -- *** Overlapping (simultaneous) sessions -- strongest evidence ***
+-- -------------------------------------------------------------------------------------
+-- "Played three accounts at once" = login->logout windows overlap in wall-clock time.
+-- A household plays at *similar* times; one person multi-boxing plays in *overlapping*
+-- windows, session after session. NULL logout (still online / crash) treated as NOW().
+-- overlap_seconds = length of the concurrent window for each pair of sessions.
+-- =====================================================================================
+WITH tgt AS (
+    SELECT DISTINCT c.account_Id AS accountId
+    FROM classicpvp_shard.`character` c
+    WHERE c.name IN ('Altar Boy','Altar Girl','Altar They')
+),
+sess AS (
+    SELECT s.accountId, s.accountName, s.characterName, s.sessionIP,
+           s.loginDateTime                     AS login_at,
+           COALESCE(s.logoutDateTime, NOW())   AS logout_at
+    FROM classicpvp_log.character_login_log s
+        JOIN tgt USING (accountId)
+)
+SELECT
+    a.accountName AS acct_a, a.characterName AS char_a, a.login_at AS a_login, a.logout_at AS a_logout,
+    b.accountName AS acct_b, b.characterName AS char_b, b.login_at AS b_login, b.logout_at AS b_logout,
+    (a.sessionIP = b.sessionIP) AS same_ip,
+    TIMESTAMPDIFF(SECOND,
+        GREATEST(a.login_at, b.login_at),
+        LEAST(a.logout_at, b.logout_at)) AS overlap_seconds
+FROM sess a
+    JOIN sess b
+      ON a.accountId < b.accountId          -- distinct accounts, each pair once
+     AND a.login_at < b.logout_at           -- windows overlap
+     AND b.login_at < a.logout_at
+ORDER BY overlap_seconds DESC;
+
+
+-- =====================================================================================
+-- QUERY 13 -- How habitual is the overlap? (share of each account's playtime spent
+--             online at the same moment as another of the three)
+-- -------------------------------------------------------------------------------------
+-- pct_time_overlapped near 90-100% for all three, and rarely online alone, is very hard
+-- to explain as three independent people. Two roommates typically land ~30-60%.
+-- =====================================================================================
+WITH tgt AS (
+    SELECT DISTINCT c.account_Id AS accountId
+    FROM classicpvp_shard.`character` c
+    WHERE c.name IN ('Altar Boy','Altar Girl','Altar They')
+),
+sess AS (
+    SELECT s.accountId, s.accountName,
+           s.loginDateTime                   AS login_at,
+           COALESCE(s.logoutDateTime, NOW()) AS logout_at
+    FROM classicpvp_log.character_login_log s
+        JOIN tgt USING (accountId)
+),
+overlaps AS (
+    SELECT a.accountId,
+           SUM(TIMESTAMPDIFF(SECOND,
+                GREATEST(a.login_at, b.login_at),
+                LEAST(a.logout_at, b.logout_at))) AS overlap_secs
+    FROM sess a
+        JOIN sess b
+          ON a.accountId <> b.accountId
+         AND a.login_at < b.logout_at
+         AND b.login_at < a.logout_at
+    GROUP BY a.accountId
+),
+totals AS (
+    SELECT accountId,
+           ANY_VALUE(accountName)                            AS accountName,
+           COUNT(*)                                          AS session_count,
+           SUM(TIMESTAMPDIFF(SECOND, login_at, logout_at))   AS total_secs
+    FROM sess
+    GROUP BY accountId
+)
+SELECT
+    t.accountId,
+    t.accountName,
+    t.session_count,
+    ROUND(t.total_secs / 3600, 1)                     AS total_hours,
+    ROUND(COALESCE(o.overlap_secs, 0) / 3600, 1)      AS overlapped_hours,
+    ROUND(100 * COALESCE(o.overlap_secs, 0)
+               / NULLIF(t.total_secs, 0), 1)          AS pct_time_overlapped
+FROM totals t
+    LEFT JOIN overlaps o ON o.accountId = t.accountId
+ORDER BY pct_time_overlapped DESC;
+
+
+-- =====================================================================================
+-- QUERY 14 -- Near-synchronous logins + account-creation & IP-churn profile
+-- -------------------------------------------------------------------------------------
+-- 14a: logins of two different target accounts within 120s of each other -- the classic
+--      "launch three clients back to back" fingerprint. Repeated tight clusters = strong.
+-- =====================================================================================
+WITH tgt AS (
+    SELECT s.accountId, s.accountName, s.characterName, s.loginDateTime
+    FROM classicpvp_log.character_login_log s
+    WHERE s.accountId IN (
+        SELECT c.account_Id FROM classicpvp_shard.`character` c
+        WHERE c.name IN ('Altar Boy','Altar Girl','Altar They'))
+)
+SELECT
+    a.accountName AS acct_a, a.characterName AS char_a, a.loginDateTime AS login_a,
+    b.accountName AS acct_b, b.characterName AS char_b, b.loginDateTime AS login_b,
+    ABS(TIMESTAMPDIFF(SECOND, a.loginDateTime, b.loginDateTime)) AS secs_apart
+FROM tgt a
+    JOIN tgt b
+      ON a.accountId < b.accountId
+     AND ABS(TIMESTAMPDIFF(SECOND, a.loginDateTime, b.loginDateTime)) <= 120
+ORDER BY secs_apart;
+
+-- 14b: creation proximity, creation IP, and IP-change volume. Accounts made minutes apart
+--      from the same create_ip, and/or churning IPs in lockstep (VPN rotation to dodge the
+--      one-account-per-IP check), corroborate the same-person conclusion.
+SELECT
+    a.accountId,
+    a.accountName,
+    a.create_Time,
+    a.create_I_P_ntoa                    AS create_ip,
+    a.last_Login_I_P_ntoa                AS last_login_ip,
+    a.last_Login_Time,
+    a.total_Times_Logged_In,
+    COUNT(l.id)                          AS ip_changes,
+    SUM(COALESCE(l.auto_banned, 0))      AS auto_bans,
+    MAX(l.changed_at)                    AS last_ip_change
+FROM classicpvp_auth.account a
+    LEFT JOIN classicpvp_auth.account_ip_change_log l ON l.account_id = a.accountId
+WHERE a.accountId IN (
+        SELECT c.account_Id FROM classicpvp_shard.`character` c
+        WHERE c.name IN ('Altar Boy','Altar Girl','Altar They'))
+GROUP BY a.accountId, a.accountName, a.create_Time, a.create_I_P_ntoa,
+         a.last_Login_I_P_ntoa, a.last_Login_Time, a.total_Times_Logged_In
+ORDER BY a.create_Time;
