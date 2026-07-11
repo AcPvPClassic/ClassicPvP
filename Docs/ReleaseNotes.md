@@ -7,7 +7,11 @@
 
 ---
 
-## 🩹 v1.10 (in development)
+## 🩹 v1.11 (in development)
+
+---
+
+## 🩹 v1.10 — July 9, 2026
 
 ### 🏘️ Hometown Control — Capture & Defense Rewards Rebalanced
 
