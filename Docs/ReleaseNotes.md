@@ -27,6 +27,10 @@ Eligibility is unchanged — winners within 100 meters of the Bind Stone share t
 
 Casting a **ring** or **wall** war magic spell could leave your character stuck in the casting state, forcing a relog to recover. This is fixed — these spells now cast cleanly like any other war magic.
 
+### 👑 Allegiance — Swear to a Lower-Level Patron
+
+You can now swear allegiance to a **lower-level** character. No allegiance XP is passed up to that patron until they surpass their vassal's level, at which point passup begins automatically.
+
 ---
 
 ## 🩹 v1.09 — July 9, 2026

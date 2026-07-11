@@ -522,7 +522,11 @@ namespace ACE.Server.WorldObjects
                 return false;
             }
 
-            if (Common.ConfigManager.Config.Server.WorldRuleset != Common.Ruleset.EoR)
+            // Swearing to a lower-level patron is retail behavior: it is allowed, and no allegiance XP
+            // passes up until the patron surpasses the vassal's level (handled automatically via
+            // ExistedBeforeAllegianceXpChanges, set at swear time and flipped in AllegianceNode.OnLevelUp).
+            // Server operators can disable this and require patron >= vassal level via allow_swear_to_lower_level.
+            if (!PropertyManager.GetBool("allow_swear_to_lower_level").Item)
             {
                 // patron must currently be greater or equal level
                 if (target.Level < Level)
