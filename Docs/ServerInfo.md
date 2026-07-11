@@ -617,6 +617,7 @@ Each dungeon in the pool has a **level bracket** (minimum and maximum server lev
 | **XP Multiplier** | All monster and PK kills inside the dungeon have their XP multiplied (multiplier varies per dungeon, ranging from 1.5× to 4×). The multiplier is applied before fellowship sharing. |
 | **Double Loot** | Monster corpses receive two independent loot rolls, effectively doubling item generation. |
 | **A Box** | Each monster kill has a per-dungeon configurable chance to drop **A Box** on the corpse. |
+| **Salvage Bonus** | Salvaging items while standing inside a Hot Dungeon yields **double the material** (2× units). Applies to whatever you salvage there, regardless of where the items were looted. |
 | **PK Rewards** | When a PK kill occurs inside a Hot Dungeon between players of **different allegiances**, the victim's corpse will contain a **Phial of Bloody Tears** and **A Box**. |
 
 ---

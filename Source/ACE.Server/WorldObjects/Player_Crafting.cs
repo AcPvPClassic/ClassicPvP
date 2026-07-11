@@ -383,6 +383,11 @@ namespace ACE.Server.WorldObjects
 
             addStructure = (int)Math.Round(addStructure * PropertyManager.GetDouble("salvage_amount_multiplier").Item);
 
+            // Hot Dungeon bonus: significantly boost salvage yield while the player is
+            // physically inside an active hot dungeon.
+            if (Location != null && HotDungeonManager.IsHotDungeon(Location.LandblockId.Landblock, out _))
+                addStructure = (int)Math.Round(addStructure * PropertyManager.GetDouble("hot_dungeon_salvage_multiplier").Item);
+
             // Ensure at least 1 unit
             addStructure = Math.Max(addStructure, 1);
 

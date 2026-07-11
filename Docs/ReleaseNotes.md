@@ -9,6 +9,10 @@
 
 ## 🩹 v1.11 (in development)
 
+### 🔥 Hot Dungeons — Salvage Bonus
+
+Salvaging items while you're **inside an active Hot Dungeon** now yields **double the material** (2× units). It applies to whatever you salvage there, no matter where the items were originally looted — so it's worth hauling your salvage runs into a Hot Dungeon before breaking everything down.
+
 ---
 
 ## 🩹 v1.10 — July 9, 2026
