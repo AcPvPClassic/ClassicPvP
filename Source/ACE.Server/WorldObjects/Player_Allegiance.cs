@@ -589,23 +589,30 @@ namespace ACE.Server.WorldObjects
             }
 
             // Account-wide allegiance lock: all characters on this account must share the same monarch.
-            var targetMonarchId = target.MonarchId ?? target.Guid.Full;
-            var accountPlayers  = PlayerManager.GetAccountPlayers(Account.AccountId);
+            // Resolve monarchs through the Allegiance object (rebuilt from real patron/vassal links)
+            // rather than the raw Monarch property, which can be left stale on a detached character and
+            // would otherwise wrongly block an account whose characters are actually unsworn.
+            var targetAllegiance = AllegianceManager.GetAllegiance(target);
+            var targetMonarchId  = targetAllegiance?.MonarchId ?? target.Guid.Full;
+
+            var accountPlayers = PlayerManager.GetAccountPlayers(Account.AccountId);
             foreach (var kvp in accountPlayers)
             {
                 var sibling = kvp.Value;
                 if (sibling.Guid == Guid) continue;
 
-                var siblingMonarchId = sibling.MonarchId;
-                if (!siblingMonarchId.HasValue) continue;
+                var siblingAllegiance = AllegianceManager.GetAllegiance(sibling);
+                if (siblingAllegiance?.MonarchId == null) continue;  // sibling is not actually in an allegiance
+
+                var siblingMonarchId = siblingAllegiance.MonarchId.Value;
 
                 // Skip siblings that belong to this player's own allegiance (their monarch is this
                 // player). If this player is a monarch swearing into another allegiance,
                 // HandleMonarchSwear cascades the entire sub-tree — including these account siblings —
                 // to the new monarch, so they will share the same monarch once the swear completes.
-                if (siblingMonarchId.Value == Guid.Full) continue;
+                if (siblingMonarchId == Guid.Full) continue;
 
-                if (siblingMonarchId.Value != targetMonarchId)
+                if (siblingMonarchId != targetMonarchId)
                 {
                     Session.Network.EnqueueSend(new GameMessageSystemChat(
                         "Another character on your account is sworn to a different allegiance. All characters on an account must belong to the same allegiance.",
@@ -1749,10 +1756,11 @@ namespace ACE.Server.WorldObjects
                 if (player?.Account == null) return;
 
                 var accountPlayers = PlayerManager.GetAccountPlayers(player.Account.AccountId);
+                // Resolve each sibling's monarch through the Allegiance object rather than the raw
+                // Monarch property, which can be left stale on a detached character.
                 bool hasConflict = accountPlayers.Values.Any(ap =>
                     ap.Guid != player.Guid &&
-                    ap.MonarchId.HasValue &&
-                    ap.MonarchId.Value == oldMonarchId);
+                    AllegianceManager.GetAllegiance(ap)?.MonarchId == oldMonarchId);
 
                 if (hasConflict && node.Patron != null)
                     conflicted.Add(node);
