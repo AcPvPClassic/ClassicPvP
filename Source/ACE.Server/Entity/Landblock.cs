@@ -307,7 +307,7 @@ namespace ACE.Server.Entity
             {
                 if (!player.IsPK) continue;
 
-                var allegianceMonarchId = player.MonarchId ?? player.Guid.Full;
+                var allegianceMonarchId = Managers.AllegianceManager.GetAllegiance(player)?.MonarchId ?? player.Guid.Full;
                 if (allegianceMonarchId == attackerMonarchId)
                 {
                     if (player.Location.DistanceTo(bindstonePos) <= 5f)
@@ -456,7 +456,7 @@ namespace ACE.Server.Entity
             foreach (var player in GetPlayersNearBindstone(bindstonePos, 50f))
             {
                 if (!player.IsPK) continue;
-                var monarchId = player.MonarchId ?? player.Guid.Full;
+                var monarchId = Managers.AllegianceManager.GetAllegiance(player)?.MonarchId ?? player.Guid.Full;
                 if (monarchId == ownerMonarchId) continue;
 
                 // Cannot attack a town owned by an allegiance that another character on your

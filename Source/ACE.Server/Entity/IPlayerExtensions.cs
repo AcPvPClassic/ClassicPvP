@@ -27,8 +27,8 @@ namespace ACE.Server.Entity
         /// </summary>
         public static bool IsSameAllegiance(this IPlayer playerA, IPlayer playerB)
         {
-            var monarchA = playerA.MonarchId ?? playerA.Guid.Full;
-            var monarchB = playerB.MonarchId ?? playerB.Guid.Full;
+            var monarchA = AllegianceManager.GetAllegiance(playerA)?.MonarchId ?? playerA.Guid.Full;
+            var monarchB = AllegianceManager.GetAllegiance(playerB)?.MonarchId ?? playerB.Guid.Full;
             return monarchA == monarchB;
         }
 
@@ -49,7 +49,7 @@ namespace ACE.Server.Entity
 
             return accountPlayers.Values.Any(p =>
                 p.Guid != player.Guid &&
-                ((p.MonarchId ?? p.Guid.Full) == monarchId));
+                ((AllegianceManager.GetAllegiance(p)?.MonarchId ?? p.Guid.Full) == monarchId));
         }
 
         /// <summary>

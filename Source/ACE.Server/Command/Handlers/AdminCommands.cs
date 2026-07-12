@@ -6151,7 +6151,7 @@ namespace ACE.Server.Command.Handlers
                         CommandHandlerHelper.WriteOutputInfo(session, $"Player '{playerName}' not found.");
                         return;
                     }
-                    var monarchId = target.MonarchId ?? target.Guid.Full;
+                    var monarchId = Managers.AllegianceManager.GetAllegiance(target)?.MonarchId ?? target.Guid.Full;
                     var allegianceName = (target as WorldObjects.Player)?.Allegiance?.AllegianceName ?? target.Name;
                     var reason = parameters.Length >= 3 ? string.Join(" ", parameters, 2, parameters.Length - 2) : null;
                     var addedBy = session?.Player?.Name ?? "Console";
@@ -6177,7 +6177,7 @@ namespace ACE.Server.Command.Handlers
                         CommandHandlerHelper.WriteOutputInfo(session, $"Player '{playerName}' not found.");
                         return;
                     }
-                    var monarchId = target.MonarchId ?? target.Guid.Full;
+                    var monarchId = Managers.AllegianceManager.GetAllegiance(target)?.MonarchId ?? target.Guid.Full;
 
                     if (Managers.AllegianceHometownManager.RemoveBlacklist(monarchId))
                         CommandHandlerHelper.WriteOutputInfo(session, $"Removed monarchId={monarchId:X8} from the hometown blacklist.");
