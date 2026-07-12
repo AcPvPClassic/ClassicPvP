@@ -9,6 +9,12 @@
 
 ## 🩹 v1.11 (in development)
 
+### 🎯 Bounties — Completion Now Pays You Back
+
+Completing a bounty contract now **refunds 100 PK Trophies** — the full cost of the Bounty Purchase Token — so a successful hunt pays for itself. This is on top of your PK-quest progress, and High Priority (Writ of Pursuit) contracts still pay their custom reward on top of the refund.
+
+To balance this, the consolation payout when a contract **expires** (target no longer available) has been reduced to **25 PK Trophies**.
+
 ### 🔥 Hot Dungeons — Salvage Bonus
 
 Salvaging items while you're **inside an active Hot Dungeon** now yields **double the material** (2× units). It applies to whatever you salvage there, no matter where the items were originally looted — so it's worth hauling your salvage runs into a Hot Dungeon before breaking everything down.

@@ -443,7 +443,9 @@ The Bounty System is a player-driven PvP economy that creates persistent, target
 1. Visit the **Bounty Hunter NPC** with a **Bounty Purchase Token**.
 2. You receive a **Bounty Contract** for a randomly assigned eligible PK player (drawn from online players, excluding your own allegiance and players on cooldown with you).
 3. Hunt your target. Kill them to mark the contract complete.
-4. Return the completed contract to the Bounty Hunter NPC to collect your reward.
+4. Return the completed contract to the Bounty Hunter NPC. Completing a bounty **refunds 100 PK Trophies** — the full cost of the Purchase Token — so a successful hunt pays for itself. High Priority contracts pay the custom Writ of Pursuit reward on top of this.
+
+If a contract **expires** (for example, the target is no longer available), returning it to the Bounty Hunter NPC compensates you **25 PK Trophies** for your time.
 
 ### Rules & Restrictions
 - You must be in a **whitelisted allegiance** to participate in the bounty system.
@@ -460,7 +462,7 @@ If you spot your bounty target in the world (or they spot you), their **PK timer
 Any player can place a **bounty with a custom reward** on a specific enemy using a **Writ of Pursuit**:
 
 1. Obtain a Writ of Pursuit item.
-2. Inscribe it in the format: `PlayerName:Amount`
+2. Inscribe it in the format: `PlayerName:Amount`. The reward amount must be between **200** and **1000** PK Trophies.
 3. Turn it in to the Bounty Hunter NPC along with the specified currency amount.
 4. That player is flagged as a **High Priority Target** server-wide.
 5. Any player who already has a contract on that target sees their contract upgraded.

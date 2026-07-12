@@ -210,6 +210,16 @@ namespace ACE.Server.WorldObjects
 
                 SendNpcResponse(npc, $"You have successfully turned in your bounty for player \"{bountyTarget.Name}\".");
 
+                // Refund the cost of the purchase token to the hunter on a successful completion
+                var completionReward = BountyContract.BountyCompletionRewardAmount;
+                if (completionReward > 0)
+                {
+                    var bountyCurrencyWeenie = BountyContract.BountyCurrencyWeenie;
+                    SendNpcResponse(npc,
+                        $"You have been rewarded {bountyCurrencyWeenie.BuildAmountString(completionReward)} for completing the bounty.",
+                        () => GiveFromEmote(npc, BountyContract.BountyCurrencyWcid, amount: completionReward));
+                }
+
                 if (result.IsHighPriorityTarget && rewardAmount.HasValue && rewardCurrencyWcid.HasValue)
                 {
                     var wopCurrencyWeenie  = DatabaseManager.World.GetOrThrowCachedWeenie((uint)rewardCurrencyWcid.Value);
