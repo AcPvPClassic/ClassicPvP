@@ -2323,6 +2323,34 @@ namespace ACE.Server.Entity
             if (dungeon != null)
                 return dungeon.Name;
 
+            // Not a named dungeon. The position is flagged Indoors because the target is
+            // standing inside an environment cell (cell >= 0x100), but that cell may just be
+            // a building, hut, or tunnel stamped onto an outdoor landblock rather than a true
+            // underground dungeon. In that case the landblock is still on the surface map, so
+            // we can hand back its map coordinates (accurate to within the landblock) instead
+            // of a bare id that the player can't act on.
+            try
+            {
+                var physicsLandblock = LScape.get_landblock(pos.LandblockId.Raw);
+                if (physicsLandblock != null && !physicsLandblock.IsDungeon)
+                {
+                    // resolve to the landblock center as an outdoor cell so GetMapCoordStr
+                    // can compute coords (the env-cell-relative X/Y can't be trusted here)
+                    var surfacePos = new Position(pos);
+                    surfacePos.LandblockId = new LandblockId((pos.LandblockId.Raw & 0xFFFF0000) | 0x0001);
+                    surfacePos.PositionX = Position.BlockLength / 2;
+                    surfacePos.PositionY = Position.BlockLength / 2;
+
+                    var coords = surfacePos.GetMapCoordStr();
+                    if (coords != null)
+                        return $"{coords} (inside a structure)";
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"GetLocString: failed resolving surface coords for 0x{pos.Cell:X8}: {ex}");
+            }
+
             return $"Dungeon (0x{pos.Landblock:X4} / Cell 0x{pos.Cell:X8})";
         }
     }

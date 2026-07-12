@@ -15,6 +15,10 @@ Completing a bounty contract now **refunds 100 PK Trophies** — the full cost o
 
 To balance this, the consolation payout when a contract **expires** (target no longer available) has been reduced to **25 PK Trophies**.
 
+### 🎯 Bounties — Better Location Hints for Targets Inside Buildings
+
+The bounty location finder used to give up and print a raw landblock/cell id whenever your target ducked inside a building, hut, or tunnel — even out on the open landscape, where the radar also hides your coordinates. It now recognizes those surface structures and reports the **map coordinates** of the spot (e.g. `9.7N, 40.9E (inside a structure)`), accurate to within the immediate area. Genuine underground dungeons still resolve to their name, and only truly unmapped dungeons fall back to an id.
+
 ### 🔥 Hot Dungeons — Salvage Bonus
 
 Salvaging items while you're **inside an active Hot Dungeon** now yields **double the material** (2× units). It applies to whatever you salvage there, no matter where the items were originally looted — so it's worth hauling your salvage runs into a Hot Dungeon before breaking everything down.
