@@ -7,7 +7,11 @@
 
 ---
 
-## 🩹 v1.11 (in development)
+## 🩹 v1.12 (in development)
+
+---
+
+## 🩹 v1.11 — July 12, 2026
 
 ### 🎯 Bounties — Completion Now Pays You Back
 
