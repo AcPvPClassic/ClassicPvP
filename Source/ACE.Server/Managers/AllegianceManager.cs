@@ -94,6 +94,26 @@ namespace ACE.Server.Managers
         }
 
         /// <summary>
+        /// Returns the monarch of the allegiance the player is a GENUINE member of, or null when the
+        /// player is not actually in an allegiance.
+        ///
+        /// GetAllegiance only follows the player's Monarch pointer, and allegiance membership is
+        /// rebuilt from real Patron/Vassal links — so a character with a stale Monarch property (e.g.
+        /// detached but never cleared) can resolve to a still-live allegiance it is not a member of.
+        /// This verifies the player appears in that allegiance's Members before trusting the monarch.
+        /// </summary>
+        public static uint? GetVerifiedMonarchId(IPlayer player)
+        {
+            if (player == null) return null;
+
+            var allegiance = GetAllegiance(player);
+            if (allegiance?.Members == null || !allegiance.Members.ContainsKey(player.Guid))
+                return null;
+
+            return allegiance.MonarchId;
+        }
+
+        /// <summary>
         /// Returns the AllegianceNode for a Player
         /// </summary>
         public static AllegianceNode GetAllegianceNode(IPlayer player)

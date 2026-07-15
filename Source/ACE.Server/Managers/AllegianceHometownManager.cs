@@ -529,7 +529,7 @@ namespace ACE.Server.Managers
                 foreach (var p in lb.GetPlayers())
                 {
                     if (!p.IsPK) continue;
-                    var monarchId = AllegianceManager.GetAllegiance(p)?.MonarchId ?? p.Guid.Full;
+                    var monarchId = AllegianceManager.GetVerifiedMonarchId(p) ?? p.Guid.Full;
                     if (monarchId == winnerMonarchId && p.Location.DistanceTo(bindstonePos) <= 100f)
                         winnerPlayers.Add(p);
                 }
@@ -543,7 +543,7 @@ namespace ACE.Server.Managers
                     foreach (var p in lb.GetPlayers())
                     {
                         if (!p.IsPK) continue;
-                        var monarchId = AllegianceManager.GetAllegiance(p)?.MonarchId ?? p.Guid.Full;
+                        var monarchId = AllegianceManager.GetVerifiedMonarchId(p) ?? p.Guid.Full;
                         if (monarchId == loserMonarchId.Value && p.Location.DistanceTo(bindstonePos) <= 100f)
                             p.Smite(p);
                     }

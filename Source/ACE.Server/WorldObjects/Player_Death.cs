@@ -564,8 +564,8 @@ namespace ACE.Server.WorldObjects
                 try
                 {
                     var killerPlayer = topDamager.TryGetAttacker() as Player;
-                    var victimMonarchId = AllegianceManager.GetAllegiance(this)?.MonarchId;
-                    var killerMonarchId = killerPlayer != null ? AllegianceManager.GetAllegiance(killerPlayer)?.MonarchId : null;
+                    var victimMonarchId = AllegianceManager.GetVerifiedMonarchId(this);
+                    var killerMonarchId = killerPlayer != null ? AllegianceManager.GetVerifiedMonarchId(killerPlayer) : null;
 
                     if (ArenaLocation.IsArenaLandblock(Location.Landblock))
                     {
