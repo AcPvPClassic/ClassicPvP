@@ -901,6 +901,47 @@ namespace ACE.Server.Managers
             return true;
         }
 
+        /// <summary>
+        /// Silences a character in global chat channels (General/Trade/LFG/Society/Olthoi/Roleplay) indefinitely.
+        /// Local say, emotes, and tells are unaffected. The gag is per-character; unlike the Doctide variant it does not track IPs.
+        /// </summary>
+        public static bool GlobalChatGagPlayer(Player issuer, string playerName)
+        {
+            var player = FindByName(playerName);
+
+            if (player == null)
+                return false;
+
+            player.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.IsGlobalChatGagged, true);
+            player.SaveBiotaToDatabase();
+
+            // Notify the target directly if they're online
+            var onlinePlayer = GetOnlinePlayer(player.Guid);
+            onlinePlayer?.SendGlobalChatGagNotice();
+
+            BroadcastToAuditChannel(issuer, $"{issuer.Name} has global chat gagged {player.Name}.");
+
+            return true;
+        }
+
+        public static bool GlobalChatUnGagPlayer(Player issuer, string playerName)
+        {
+            var player = FindByName(playerName);
+
+            if (player == null)
+                return false;
+
+            player.RemoveProperty(ACE.Entity.Enum.Properties.PropertyBool.IsGlobalChatGagged);
+            player.SaveBiotaToDatabase();
+
+            var onlinePlayer = GetOnlinePlayer(player.Guid);
+            onlinePlayer?.SendGlobalChatUngagNotice();
+
+            BroadcastToAuditChannel(issuer, $"{issuer.Name} has ungagged global chat for {player.Name}.");
+
+            return true;
+        }
+
         public static void BootAllPlayers()
         {
             foreach (var player in GetAllOnline().Where(p => p.Session.AccessLevel < AccessLevel.Advocate))

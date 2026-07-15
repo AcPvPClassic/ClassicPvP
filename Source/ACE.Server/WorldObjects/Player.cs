@@ -1243,6 +1243,24 @@ namespace ACE.Server.WorldObjects
             Session.Network.EnqueueSend(new GameEventCommunicationTransientString(Session, msg), new GameMessageSystemChat(msg, ChatMessageType.WorldBroadcast));
         }
 
+        public void SendGlobalChatGagError()
+        {
+            var msg = "You are unable to talk in global chat because your global chat privileges have been suspended.";
+            Session.Network.EnqueueSend(new GameEventCommunicationTransientString(Session, msg), new GameMessageSystemChat(msg, ChatMessageType.WorldBroadcast));
+        }
+
+        public void SendGlobalChatGagNotice()
+        {
+            var msg = "Your global chat privileges have been suspended. You can still speak locally and send tells.";
+            Session.Network.EnqueueSend(new GameEventCommunicationTransientString(Session, msg), new GameMessageSystemChat(msg, ChatMessageType.WorldBroadcast));
+        }
+
+        public void SendGlobalChatUngagNotice()
+        {
+            var msg = "Your global chat privileges have been restored.";
+            Session.Network.EnqueueSend(new GameEventCommunicationTransientString(Session, msg), new GameMessageSystemChat(msg, ChatMessageType.WorldBroadcast));
+        }
+
         public void HandleActionEmote(string message)
         {
             if (!IsGagged)

@@ -221,5 +221,8 @@ namespace ACE.Entity.Enum.Properties
         IsPendingArenaObserver = 19031,
         HasArenaRareDmgBuff = 19032,
         HasArenaRareDmgReductionBuff = 19033,
+
+        // Global chat gag - silences a character in global chat channels only (say/emote/tell still work)
+        IsGlobalChatGagged = 19034,
     }
 }

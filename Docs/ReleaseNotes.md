@@ -9,6 +9,10 @@
 
 ## 🩹 v1.12 (in development)
 
+### 🔇 Moderation — Global Chat Gag
+
+Added a `@globalchatgag` / `@globalchatungag` admin command that silences a character in the global chat channels (General/Trade/LFG/Society/Olthoi/Roleplay) only — local say, emotes, and tells still work. The gag persists across logout.
+
 ---
 
 ## 🩹 v1.11 — July 12, 2026
