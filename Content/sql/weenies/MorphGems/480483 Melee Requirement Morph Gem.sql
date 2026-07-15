@@ -9,6 +9,7 @@ VALUES (480483,   1,       2048) /* ItemType - Gem */
      , (480483,  11,          1) /* MaxStackSize */
      , (480483,  12,          1) /* StackSize */
      , (480483,  13,         10) /* StackUnitEncumbrance */
+     , (480483,  15,        400) /* StackUnitValue - matches Value */
      , (480483,  16,     524296) /* ItemUseable - SourceContainedTargetContained */
      , (480483,  18,          1) /* UiEffects - Magical */
      , (480483,  19,         400) /* Value */

@@ -32,14 +32,14 @@ namespace ACE.Server.Network.GameEvent.Events
                 var pluralName = altCurrency.GetPluralName();
 
                 // the total amount of alternate currency the player currently has.
-                // NOTE: by the time this packet is built after a purchase, the currency has already
-                // been removed from inventory synchronously (FinalizeBuyTransaction -> SpendCurrency
-                // runs before ApproachVendor), so GetNumInventoryItemsOfWCID already reflects the
-                // post-purchase amount. Adding altCurrencySpent back would bake the pre-purchase
-                // amount into the packet, which then races against the inventory stack-update
-                // messages on the client and makes the vendor show a stale/incorrect count.
+                // NOTE: by the time this packet is built after a purchase, SpendCurrency has already
+                // removed the spent currency from inventory synchronously, so GetNumInventoryItemsOfWCID
+                // returns the post-purchase amount. We add altCurrencySpent back to send the
+                // pre-purchase amount, because the client independently applies the inventory
+                // stack-update from the purchase to this vendor count; sending the already-decremented
+                // amount makes the client decrement it a second time and display double the deduction.
                 var altCurrencyInInventory = (uint)session.Player.GetNumInventoryItemsOfWCID(vendor.AlternateCurrency.Value, true);
-                Writer.Write(altCurrencyInInventory);
+                Writer.Write(altCurrencyInInventory + altCurrencySpent);
 
                 // the plural name of alt currency
                 Writer.WriteString16L(pluralName);

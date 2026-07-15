@@ -9,6 +9,7 @@ VALUES (600039,   1,       2048) /* ItemType - Gem */
      , (600039,  11,          1) /* MaxStackSize */
      , (600039,  12,          1) /* StackSize */
      , (600039,  13,         10) /* StackUnitEncumbrance */
+     , (600039,  15,        100) /* StackUnitValue - costs 100 PK Trophies at Anti Parazi */
      , (600039,  16,     524296) /* ItemUseable - SourceContainedTargetContained */
      , (600039,  18,          1) /* UiEffects - Magical */
      , (600039,  19,        100) /* Value - costs 100 PK Trophies at Anti Parazi */
