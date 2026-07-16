@@ -93,25 +93,32 @@ ClassicPvP uses a **server-wide rolling level cap**. Every player on the server 
 
 The cap opens at **level 15** on launch day. The early season moves fast — you're gaining several levels a day — then the pace slows as you approach the endgame.
 
-**Week-by-week milestones:**
+> **Reading the tables below:** two things to know.
+>
+> - **Everything advances _daily_, not weekly.** The level cap and the XP rate both step forward **once every day**, shortly after midnight UTC — the server checks every 15 minutes, so the new values land within 15 minutes of the UTC date rolling over. The tables list rows a week apart only because a 121-row table is unreadable — they are sampled milestones, not the schedule. Every day in between gets its own increase; use `/season status` to see today's exact values.
+> - **Every "Day N" is the season day as `/season status` displays it** — launch day is **Day 1**, and the season runs through **Day 121**.
+
+**Sample milestones** (one row per week — the cap still rises every single day):
 
 | Season Day | Level Cap |
 |------------|-----------|
-| Launch (Day 0) | **15** |
-| Day 7 | 36 |
-| Day 14 | 57 |
-| Day 21 | 69 |
-| Day 28 | 80 |
-| Day 35 | 90 |
-| Day 42 | 101 |
-| Day 49 | 111 |
-| Day 56 | 121 |
-| **~Day 60** | **126 — level cap reached** |
-| Days 60–120 | Post-cap XP grind |
-| Day 121+ | Season cap frozen |
+| Launch (Day 1) | **15** |
+| Day 8 | 36 |
+| Day 15 | 57 |
+| Day 22 | 69 |
+| Day 29 | 80 |
+| Day 36 | 90 |
+| Day 43 | 101 |
+| Day 50 | 111 |
+| Day 57 | 121 |
+| **Day 61** | **126 — level cap reached** |
+| Days 61–121 | Post-cap XP grind |
+| After Day 121 | Season cap frozen |
+
+The cap climbs **every day**, in three phases: **+3 levels/day** through Day 16, then **+1.5/day** through Day 46, then **+1.4/day** until it reaches 126 on Day 61. (Fractional caps round up, so a +1.5/day phase alternates between +1 and +2 in practice.) The 21-level jump between the Day 1 and Day 8 rows above is simply seven consecutive daily +3s, not a single weekly unlock.
 
 **What happens after level 126?**
-The level cap tops out at 126 (the Infiltration-era maximum). Once that's reached, the rolling cap continues — but now as a raw XP ceiling rather than a level. This extra XP goes toward investing in skills and attributes beyond the level cap. This post-cap grind phase runs until approximately day 120, after which the ceiling is frozen for the rest of the season.
+The level cap tops out at 126 (the Infiltration-era maximum). Once that's reached, the rolling cap continues — but now as a raw XP ceiling rather than a level. This extra XP goes toward investing in skills and attributes beyond the level cap. This post-cap grind phase runs from Day 61 to Day 121, growing linearly to the season's total-XP ceiling, after which it is frozen for the rest of the season.
 
 ### 📊 Rolling XP Rate Bonus
 
@@ -119,21 +126,63 @@ As the season progresses and the level cap rises, the global XP rate bonus incre
 
 The bonus starts low in the opening days, holds near 1× (normal rate) through the mid-season, and then accelerates sharply toward the end. Players grinding during the final weeks of the season earn XP significantly faster than those who played only in the early days.
 
-**How the rate scales:**
+Like the level cap, **the XP rate recalculates once per day** within 15 minutes of midnight UTC — the two are updated together on the same daily tick, so they always advance at the same moment. The rate is a smooth curve evaluated at each new day, so it creeps up a little every single day rather than jumping on a weekly schedule.
+
+**How the rate scales** (sampled weekly for readability — the rate changes daily):
 
 | Season Stage | Approx. Level Cap | XP Rate |
 |---|---|---|
-| Launch (Day 0) | 15 | **0.25×** |
-| Day 7 | 36 | ~0.39× |
-| Day 14 | 57 | ~0.52× |
-| Day 21 | 69 | ~0.66× |
-| Day ~44 | 101 | **1.0×** (normal rate) |
-| Day 63 | 126 (level cap reached) | ~1.56× |
-| Day 84 | post-cap XP grind | ~2.24× |
-| **Day 96** | post-cap XP grind | **3.0×** |
-| Days 96–120 | post-cap XP grind | **3.0×** (maintained) |
+| Launch (Day 1) | 15 | **0.25×** |
+| Day 8 | 36 | ~0.31× |
+| Day 15 | 57 | ~0.40× |
+| Day 22 | 69 | ~0.51× |
+| Day 43 | 101 | ~0.96× |
+| **Day 45** | 104 | **1.0×** (normal rate) |
+| Day 61 | 126 (level cap reached) | ~1.50× |
+| Day 85 | post-cap XP grind | ~2.44× |
+| **Day 97** | post-cap XP grind | **3.0×** |
+| Days 97–121 | post-cap XP grind | **3.0×** (maintained) |
 
-The rate accelerates on a quadratic curve — the gains are small at first and ramp up faster as the season matures. By the time level cap is reached (~day 60), you are already earning at 1.5× base rate. The last stretch of the season hits 3× and holds there through the final weeks.
+**What a week actually looks like, day by day**
+
+To make the daily cadence concrete, here is every day between the Day 8 and Day 15 rows of the table above — the two rows are seven separate daily steps apart, not one weekly jump:
+
+| Season Day | Level Cap | XP Rate |
+|---|---|---|
+| Day 8 | 36 | 0.31× |
+| Day 9 | 39 | 0.33× |
+| Day 10 | 42 | 0.34× |
+| Day 11 | 45 | 0.35× |
+| Day 12 | 48 | 0.36× |
+| Day 13 | 51 | 0.37× |
+| Day 14 | 54 | 0.39× |
+| Day 15 | 57 | 0.40× |
+
+**How the curve is built**
+
+The rate follows a quadratic curve across the season. Let `t` be your progress through the season as a fraction — that is, `t = (Day − 1) / 120`, so `t = 0` on Day 1 and `t = 1` on Day 121. The rate is then:
+
+```
+rate = 3.151·t² + 0.917·t + 0.25     (clamped to a 0.25 floor and a 3.0× ceiling)
+```
+
+(Those two coefficients are what the default 3× maximum works out to; a different configured maximum produces different ones — see below.)
+
+Those coefficients aren't chosen by hand — they're solved from **three anchor points** the curve is required to pass through:
+
+| Anchor | `t` | Season Day | XP Rate |
+|---|---|---|---|
+| Season start | 0 | Day 1 | 0.25× |
+| Normal rate | 100/275 ≈ 0.364 | ~Day 45 | 1.0× |
+| Maximum rate | 220/275 = 0.800 | Day 97 | 3.0× (the configured max) |
+
+The middle anchor falls partway through Day 44–45; since the rate only updates once per day, Day 45 is the first day you actually see 1.0× (Day 43 sits at 0.96×).
+
+Fitting a parabola through the start and maximum anchors while forcing it to hit exactly 1.0× at the middle anchor determines the curve completely. Because the coefficients are re-derived from these anchors every time the rate updates, an admin changing the maximum rate reshapes the whole curve on the next daily tick — the 1.0× crossing stays on Day 45 and the new maximum still lands on Day 97.
+
+The `100/275` and `220/275` fractions are inherited from the original design, which anchored the curve to levels 100 and 220 on a 275-level scale. ClassicPvP caps at level 126, so the curve is anchored to **season progress** instead, keeping the same shape.
+
+Past Day 97 the curve is clamped, so the rate holds at 3× through the end of the season. The practical shape: gains are small and nearly linear at first, and the quadratic term takes over late — by the time the level cap is reached on Day 61 you're already at 1.5×, and the last 25 days of the season run at a flat 3×.
 
 The maximum rate (3×) is configurable by admins and may change between seasons.
 
@@ -665,7 +714,7 @@ Two allegiances cannot attack the same town simultaneously. An allegiance can ma
 |---|---|
 | Phase 1 timeout (failed to reach Phase 2) | 3 hours — attacking allegiance only |
 | Phase 2 failure (Bind Stone survived) | 6 hours — attacking allegiance only |
-| Successful capture | 24 hours — new owner protected from attack (configurable) |
+| Successful capture | 8 hours — new owner protected from attack (configurable) |
 
 ### Rewards
 
