@@ -9,6 +9,12 @@
 
 ## 🩹 v1.12 (in development)
 
+### 🏘️ Hometown Control — Capture Protection Reduced to 8 Hours
+
+A town that has just been captured is now protected from re-attack for **8 hours**, down from 24. Towns come back into play the same day they change hands, so a capture holds the map for an evening rather than a full day.
+
+*Applied as a live server config change ahead of this release — it is already in effect in production, not waiting on the v1.12 deploy.*
+
 ### 🔇 Moderation — Global Chat Gag
 
 Added a `@globalchatgag` / `@globalchatungag` admin command that silences a character in the global chat channels (General/Trade/LFG/Society/Olthoi/Roleplay) only — local say, emotes, and tells still work. The gag persists across logout.

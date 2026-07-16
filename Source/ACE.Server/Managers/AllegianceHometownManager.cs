@@ -39,7 +39,7 @@ namespace ACE.Server.Managers
         // covers both phase-1-timeout cooldowns and phase-2-failure cooldowns
         private static readonly Dictionary<(uint, byte), DateTime> _attackerCooldowns = new();
 
-        // per-town: monarch_id → cooldown expiry after a successful capture (24h default)
+        // per-town: monarch_id → cooldown expiry after a successful capture (8h default)
         private static readonly Dictionary<byte, DateTime> _captureProtection = new();
 
         // latest event per town (for audit log cache)
@@ -137,7 +137,7 @@ namespace ACE.Server.Managers
                     // Restore capture protection: if captured_at is within the protection window, honour it
                     if (row.CapturedAt.HasValue)
                     {
-                        var protectionWindowHours = PropertyManager.GetDouble("ah_capture_protection_hours", 24.0).Item;
+                        var protectionWindowHours = PropertyManager.GetDouble("ah_capture_protection_hours", 8.0).Item;
                         var expiry = row.CapturedAt.Value.AddHours(protectionWindowHours);
                         if (expiry > DateTime.UtcNow)
                             _captureProtection[row.TownId] = expiry;
@@ -425,7 +425,7 @@ namespace ACE.Server.Managers
             town.CapturedAt           = DateTime.UtcNow;
 
             // Apply capture protection
-            var protectionHours = PropertyManager.GetDouble("ah_capture_protection_hours", 24.0).Item;
+            var protectionHours = PropertyManager.GetDouble("ah_capture_protection_hours", 8.0).Item;
             _captureProtection[town.TownId] = DateTime.UtcNow.AddHours(protectionHours);
 
             CloseLatestEvent(town.TownId, outcome: 0);

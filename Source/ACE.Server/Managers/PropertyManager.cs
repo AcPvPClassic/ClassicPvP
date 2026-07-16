@@ -805,7 +805,7 @@ namespace ACE.Server.Managers
         public static readonly ReadOnlyDictionary<string, Property<double>> DefaultDoubleProperties =
             DictOf(
 
-                ("ah_capture_protection_hours", new Property<double>(24.0, "Hours a freshly captured Allegiance Hometown town is protected from re-attack.")),
+                ("ah_capture_protection_hours", new Property<double>(8.0, "Hours a freshly captured Allegiance Hometown town is protected from re-attack.")),
                 ("ah_bindstone_melee_dmg_mod", new Property<double>(0.35, "Multiplier applied to melee damage dealt to the Phase 2 Bind Stone proxy (any weapon skill that is not Bow/Crossbow/Thrown, including unarmed). War magic is unaffected (separate path). Lower = more resistance. 1.0 disables the reduction.")),
                 ("ah_bindstone_missile_dmg_mod", new Property<double>(0.35, "Multiplier applied to missile damage dealt to the Phase 2 Bind Stone proxy (Bow, Crossbow, or Thrown Weapon skill). War magic is unaffected (separate path). Lower = more resistance. 1.0 disables the reduction.")),
 
