@@ -467,6 +467,11 @@ Killing another player in open-world PvP has a chance to drop a **PK Trophy** on
 ### Corpse Looting Rights
 When you're killed by another player, your corpse is initially **locked to your killer** — only they (or someone you've `/permit`ted) may loot it. Once the corpse has decayed for roughly **20 minutes**, it opens up and **any** player can take whatever remains. Because corpses in arena landblocks are set to rot fast (a few minutes), they reach that open state almost immediately — so arena kills are effectively free-for-all loot the moment they drop.
 
+### Shields Stay Active Out of Combat
+An equipped shield contributes its armor level to your defense **even in peace mode** — you don't have to be in combat stance for the shield to protect you. The normal shield rules still apply: it only mitigates attacks coming from your **front** (a 180° frontal arc — anything hitting you from the side or behind ignores the shield), and it works against **both other players and monsters**. There is no shield skill on the Infiltration ruleset, so nothing needs to be trained or specialized — simply wielding a shield is enough.
+
+**Exception:** inside a **1v1 arena**, this does not apply — your shield only counts while you're actually in combat stance.
+
 ---
 
 ## 🛡️ Enhanced Anti-Cheat

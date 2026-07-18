@@ -967,26 +967,16 @@ namespace ACE.Server.WorldObjects
 
             var player = this as Player;
 
-            // OOC Shield: shield specialists can block in non-combat stance during PvP
-            // (Infiltration ruleset only; disabled in 1v1 arenas)
-            if (Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.Infiltration && CombatMode == CombatMode.NonCombat)
+            // OOC Shield (Infiltration): an equipped shield mitigates damage from the
+            // front regardless of combat stance, with no shield skill requirement.
+            // Applies to both PvP and PvE. Exception: disabled inside 1v1 arena events,
+            // where the shield still requires combat stance to be active.
+            if (Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.Infiltration
+                && CombatMode == CombatMode.NonCombat
+                && player != null)
             {
-                var mustBeInCombatStance = true;
-
-                var attackerPlayer = attacker as Player;
-                if (player != null && attackerPlayer != null)
-                {
-                    var arenaEvent = ArenaManager.GetArenaEventByLandblock(this.Location.Landblock);
-                    if (arenaEvent == null || !arenaEvent.EventType.Equals("1v1"))
-                    {
-                        bool hasShield = this.Skills?.ContainsKey(Skill.Shield) ?? false;
-                        bool isShieldSpec = hasShield && this.Skills[Skill.Shield]?.AdvancementClass == SkillAdvancementClass.Specialized;
-                        if (isShieldSpec)
-                            mustBeInCombatStance = false;
-                    }
-                }
-
-                if (mustBeInCombatStance)
+                var arenaEvent = ArenaManager.GetArenaEventByLandblock(this.Location.Landblock);
+                if (arenaEvent != null && arenaEvent.EventType.Equals("1v1"))
                     return 1.0f;
             }
 

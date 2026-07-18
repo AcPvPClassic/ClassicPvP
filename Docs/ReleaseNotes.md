@@ -9,6 +9,12 @@
 
 ## 🩹 v1.13 (in development)
 
+### 🛡️ Shields Now Protect You Out of Combat
+
+Your equipped shield now adds its armor level to your defense **even in peace mode** — you no longer have to be in combat stance for the shield to count. As always, it only blocks attacks coming from your **front** (a 180° frontal arc), and it now does so against **both players and monsters**. No shield skill is required — just wield a shield.
+
+The one exception is the **1v1 arena**, where shields still only work while you're in combat stance.
+
 ---
 
 ## 🩹 v1.12 — July 17, 2026
