@@ -9,6 +9,10 @@
 
 ## 🩹 v1.12 (in development)
 
+### 🔧 Tinkers — Locked Out of PK XP and Arenas
+
+Tinker characters (`/FlagTinker`) are dedicated crafters, and are now fully excluded from PvP progression. A Tinker can no longer **earn any PK XP** from any source — player kills, Ancient Bottle drains, PK quests, and PK gems all yield nothing — and can no longer **join arena events**. This closes the door on using a locked-down, vitae-immune crafter as a risk-free PvP alt.
+
 ### 🏘️ Hometown Control — Capture Protection Reduced to 8 Hours
 
 A town that has just been captured is now protected from re-attack for **8 hours**, down from 24. Towns come back into play the same day they change hands, so a capture holds the map for an evening rather than a full day.

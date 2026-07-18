@@ -356,6 +356,12 @@ namespace ACE.Server.WorldObjects
                 return;
             }
 
+            // Tinker-flagged characters (dedicated crafters) never earn PvP/PK XP from any source:
+            // player kills, Ancient Bottle drains, PK quests, gems, arena rewards, or hometown captures.
+            // Returning here also suppresses the Ancient Bottle overflow that would otherwise fire in UpdateXpAndLevel.
+            if (IsTinker && xpType == XpType.PvP)
+                return;
+
             if (IsOlthoiPlayer)
             {
                 if (HasVitae)

@@ -2743,6 +2743,12 @@ namespace ACE.Server.Command.Handlers
                 }
             }
 
+            if (player.IsTinker)
+            {
+                isSuccess = false;
+                return "Tinker characters cannot join arena events.";
+            }
+
             var minLevel = PropertyManager.GetLong("arenas_min_level").Item;
             if (player.Level < minLevel)
             {

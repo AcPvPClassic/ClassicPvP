@@ -977,5 +977,7 @@ When you flag a Tinker, the character is instantly transformed:
 - 🛡️ **No vitae on death.** Tinker characters never suffer the vitae experience penalty when they die — a mistake at the crafting bench or a stray death costs you nothing.
 - 🔒 **Skills are locked.** A Tinker cannot train or specialize any new skills. Your crafting kit is set the moment you flag, and that's your loadout for good.
 - 👑 **No allegiance passup.** A Tinker does not pass XP up the allegiance chain to its patron.
+- ⚔️ **No PK XP.** A Tinker never earns PvP/PK experience from any source — player kills, Ancient Bottle drains, PK quests, and PK gems all yield nothing. Tinkers are crafters, not combatants.
+- 🏟️ **No arenas.** A Tinker cannot join arena events. Attempting to queue returns "Tinker characters cannot join arena events."
 
 The intent is simple: a Tinker is a maxed-out crafting workstation in character form. Flag one, park it in your allegiance, and let it handle all your tinkering, salvaging, and item work.
