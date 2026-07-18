@@ -7,7 +7,11 @@
 
 ---
 
-## 🩹 v1.12 (in development)
+## 🩹 v1.13 (in development)
+
+---
+
+## 🩹 v1.12 — July 17, 2026
 
 ### ⚰️ Arena Corpses — Faster Rot and Open to Everyone
 
