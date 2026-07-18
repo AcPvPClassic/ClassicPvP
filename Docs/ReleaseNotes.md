@@ -15,6 +15,12 @@ Corpses left in an **arena landblock** now decay much faster than in the open wo
 
 This rides on a broader looting rule that now applies everywhere: a player-kill corpse, initially locked to its killer, **opens up to all players after it has decayed for about 20 minutes**. Arena corpses hit that threshold almost immediately thanks to their short rot timer.
 
+### 🔧 Tinkers — Arcane Lore Specialization and Major Cantrips on the Trinket
+
+Tinker characters (`/FlagTinker`) now get **Arcane Lore specialized and maxed** alongside their crafting skills — no more falling short on appraising or using high-spellcraft gear. Their **Tinkering Trinket** now also carries **Major cantrips** for all six attributes and the four tinkering skills (Item, Weapon, Armor, and Magic Item Tinkering), stacking on top of its existing level-7 aptitude buffs.
+
+**Existing Tinkers:** just re-run `/FlagTinker` on your Tinker to receive these upgrades — it's safe to run again and resets nothing. If your trinket is equipped, re-equip it (or relog) to apply the new cantrips.
+
 ### 🔧 Tinkers — Locked Out of PK XP and Arenas
 
 Tinker characters (`/FlagTinker`) are dedicated crafters, and are now fully excluded from PvP progression. A Tinker can no longer **earn any PK XP** from any source — player kills, Ancient Bottle drains, PK quests, and PK gems all yield nothing — and can no longer **join arena events**. This closes the door on using a locked-down, vitae-immune crafter as a risk-free PvP alt.

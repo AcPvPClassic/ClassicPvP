@@ -2,6 +2,7 @@ using System.Collections.Generic;
 
 using ACE.DatLoader;
 using ACE.Entity.Enum;
+using ACE.Entity.Models;
 using ACE.Server.Factories;
 using ACE.Server.Network.GameMessages.Messages;
 
@@ -14,7 +15,9 @@ namespace ACE.Server.WorldObjects
         // -------------------------------------------------------------------------
 
         /// <summary>
-        /// Crafting skills that a Tinker character has auto-specialized and maxed.
+        /// Crafting/support skills that a Tinker character has auto-specialized and maxed.
+        /// The eight crafting skills plus Arcane Lore (needed to appraise and use high-spellcraft
+        /// tinkering gear).
         /// </summary>
         public static readonly List<Skill> TinkerSkills = new List<Skill>
         {
@@ -26,6 +29,32 @@ namespace ACE.Server.WorldObjects
             Skill.Lockpick,
             Skill.Fletching,
             Skill.Cooking,
+            Skill.ArcaneLore,
+        };
+
+        /// <summary>
+        /// Class id of the Tinkering Trinket granted on flagging.
+        /// </summary>
+        private const uint TinkeringTrinketWcid = 8142017u;
+
+        /// <summary>
+        /// Major cantrips added to the Tinkering Trinket: all six attributes and the four
+        /// tinkering skills. These stack on top of the trinket's built-in level-7 aptitude buffs.
+        /// </summary>
+        public static readonly List<SpellId> TinkerTrinketCantrips = new List<SpellId>
+        {
+            // Major attribute cantrips
+            SpellId.CANTRIPSTRENGTH2,
+            SpellId.CANTRIPENDURANCE2,
+            SpellId.CANTRIPCOORDINATION2,
+            SpellId.CANTRIPQUICKNESS2,
+            SpellId.CANTRIPFOCUS2,
+            SpellId.CANTRIPWILLPOWER2,
+            // Major tinkering-skill cantrips (Expertise line)
+            SpellId.CANTRIPITEMEXPERTISE2,
+            SpellId.CANTRIPMAGICITEMEXPERTISE2,
+            SpellId.CANTRIPARMOREXPERTISE2,
+            SpellId.CANTRIPWEAPONEXPERTISE2,
         };
 
         /// <summary>
@@ -69,12 +98,14 @@ namespace ACE.Server.WorldObjects
         /// Flags the character as a Tinker, specializing and maxing all crafting skills,
         /// untraining all offensive combat skills, and maxing all attributes.
         /// This is irreversible.
+        /// <para/>
+        /// Safe to re-run on an already-flagged Tinker: every step is idempotent, so an existing
+        /// Tinker can re-issue /FlagTinker to pick up later additions (e.g. Arcane Lore, the trinket
+        /// cantrips) that were introduced after they first flagged.
         /// </summary>
         public void FlagAsTinker()
         {
-            // Guard: cannot flag as Tinker more than once
-            if (IsTinker)
-                return;
+            var wasAlreadyTinker = IsTinker;
 
             GameplayMode = GameplayModes.Tinker;
 
@@ -142,15 +173,59 @@ namespace ACE.Server.WorldObjects
                 new GameMessagePrivateUpdateVital(this, Stamina),
                 new GameMessagePrivateUpdateVital(this, Mana));
 
-            // --- Grant Tinkering Trinket ---
-            var trinket = WorldObjectFactory.CreateNewWorldObject(8142017u);
-            if (trinket != null)
-                TryCreateInInventoryWithNetworking(trinket);
+            // --- Tinkering Trinket ---
+            // Ensure the character has a Tinkering Trinket carrying the Major cantrips. Upgrade any
+            // trinkets they already hold (inventory or equipped) in place; only grant a fresh one if
+            // none exist. This lets a pre-existing Tinker repair a trinket that predates the cantrips.
+            var trinkets = GetInventoryItemsOfWCID(TinkeringTrinketWcid) ?? new List<WorldObject>();
+            foreach (var equipped in EquippedObjects.Values)
+            {
+                if (equipped.WeenieClassId == TinkeringTrinketWcid)
+                    trinkets.Add(equipped);
+            }
 
-            Session.Network.EnqueueSend(new GameMessageSystemChat(
-                "You have been designated as a Tinker. Your crafting skills have been fully specialized and all combat skills have been removed. " +
-                "This character may not train or specialize new skills, and will not suffer a vitae penalty on death.",
-                ChatMessageType.Broadcast));
+            if (trinkets.Count == 0)
+            {
+                var trinket = WorldObjectFactory.CreateNewWorldObject(TinkeringTrinketWcid);
+                if (trinket != null)
+                {
+                    AddTrinketCantrips(trinket);
+                    TryCreateInInventoryWithNetworking(trinket);
+                }
+            }
+            else
+            {
+                foreach (var trinket in trinkets)
+                {
+                    AddTrinketCantrips(trinket);
+                    trinket.SaveBiotaToDatabase();
+                }
+            }
+
+            if (wasAlreadyTinker)
+            {
+                Session.Network.EnqueueSend(new GameMessageSystemChat(
+                    "Your Tinker designation has been refreshed. Arcane Lore is now specialized and maxed, and your Tinkering Trinket has been upgraded with Major cantrips. " +
+                    "If the trinket is equipped, re-equip it (or log out and back in) to apply the new cantrips.",
+                    ChatMessageType.Broadcast));
+            }
+            else
+            {
+                Session.Network.EnqueueSend(new GameMessageSystemChat(
+                    "You have been designated as a Tinker. Your crafting skills have been fully specialized and all combat skills have been removed. " +
+                    "This character may not train or specialize new skills, and will not suffer a vitae penalty on death.",
+                    ChatMessageType.Broadcast));
+            }
+        }
+
+        /// <summary>
+        /// Adds the Major attribute and tinkering-skill cantrips to a Tinkering Trinket instance.
+        /// Idempotent: GetOrAddKnownSpell will not create duplicate entries.
+        /// </summary>
+        private void AddTrinketCantrips(WorldObject trinket)
+        {
+            foreach (var cantrip in TinkerTrinketCantrips)
+                trinket.Biota.GetOrAddKnownSpell((int)cantrip, trinket.BiotaDatabaseLock, out _);
         }
     }
 }

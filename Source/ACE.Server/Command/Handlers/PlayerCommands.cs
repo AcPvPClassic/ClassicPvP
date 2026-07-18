@@ -1113,10 +1113,12 @@ namespace ACE.Server.Command.Handlers
         {
             var player = session.Player;
 
-            // Already a Tinker
+            // Already a Tinker: re-run to apply the latest Tinker upgrades (e.g. Arcane Lore
+            // specialization, trinket cantrips) for characters flagged before those were added.
+            // The eligibility checks below are for initial designation only and are skipped here.
             if (player.IsTinker)
             {
-                player.Session.Network.EnqueueSend(new GameMessageSystemChat("This character is already a Tinker.", ChatMessageType.Broadcast));
+                player.FlagAsTinker();
                 return;
             }
 

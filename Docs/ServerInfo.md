@@ -971,10 +971,12 @@ Log in a **brand-new level 1 character** and type `/FlagTinker`. That's it. The 
 
 When you flag a Tinker, the character is instantly transformed:
 
-- ✅ **All eight crafting skills are specialized and maxed** — Item Tinkering, Weapon Tinkering, Armor Tinkering, Magic Item Tinkering, Alchemy, Lockpick, Fletching, and Cooking.
+- ✅ **All eight crafting skills plus Arcane Lore are specialized and maxed** — Item Tinkering, Weapon Tinkering, Armor Tinkering, Magic Item Tinkering, Alchemy, Lockpick, Fletching, Cooking, and Arcane Lore.
 - ✅ **All attributes are maxed** (Strength, Endurance, Coordination, Quickness, Focus, Self) and your health, stamina, and mana are refreshed to full.
-- ✅ **A Tinkering Trinket** is placed in your inventory.
+- ✅ **A Tinkering Trinket** is placed in your inventory. It buffs all six attributes and every crafting skill (level-7 aptitudes) and additionally carries **Major cantrips** for all six attributes and the four tinkering skills (Item, Weapon, Armor, and Magic Item Tinkering).
 - ❌ **All combat skills are removed** — every weapon skill, shield, and all offensive magic (War, Void, Life, Creature Enchantment, Item Enchantment) is untrained. A Tinker is not built to fight.
+
+> 🔁 **Already a Tinker?** Re-run `/FlagTinker` on an existing Tinker to pick up the latest upgrades (Arcane Lore specialization and the trinket's Major cantrips). It's safe to run again — nothing is reset. If your trinket is equipped, re-equip it or relog to apply the new cantrips.
 
 ### Living as a Tinker
 
