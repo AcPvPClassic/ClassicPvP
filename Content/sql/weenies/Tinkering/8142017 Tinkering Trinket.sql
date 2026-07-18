@@ -57,4 +57,16 @@ INSERT INTO `weenie_properties_spell_book` (`object_Id`, `spell`, `probability`)
 , (8142017, 2270, 2) /* Lockpick Mastery Other VII */
 , (8142017, 2276, 2) /* Magic Item Tinkering Expertise Other VII */
 , (8142017, 2324, 2) /* Weapon Tinkering Expertise Other VII */
+/* Major cantrips — attributes */
+, (8142017, 2576, 2) /* Major Strength */
+, (8142017, 2573, 2) /* Major Endurance */
+, (8142017, 2572, 2) /* Major Coordination */
+, (8142017, 2575, 2) /* Major Quickness */
+, (8142017, 2574, 2) /* Major Focus */
+, (8142017, 2577, 2) /* Major Willpower */
+/* Major cantrips — tinkering skills */
+, (8142017, 2517, 2) /* Major Item Tinkering */
+, (8142017, 2523, 2) /* Major Magic Item Tinkering */
+, (8142017, 2503, 2) /* Major Armor Tinkering */
+, (8142017, 2535, 2) /* Major Weapon Tinkering */
 ;
