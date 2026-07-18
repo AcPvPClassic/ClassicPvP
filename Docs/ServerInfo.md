@@ -362,6 +362,7 @@ Arenas run under specific combat restrictions that do not apply in the open worl
 - **Ineptitude spells are suppressed.** Creature enchantment debuffs (inepts) and all item enchantment spells are blocked in arena matches. Only the three defense-lowering spell categories are permitted — Magic Defense Lowering, Melee Defense Lowering, and Missile Defense Lowering. This prevents NPC pets, item procs, or other external debuff sources from influencing match outcomes.
 - **Healing kit bonuses are capped in 1v1 matches.** The skill bonus from a healing kit is capped at 150 effective bonus skill, and the restoration multiplier is capped at 1.5×. High-end healing kits still function — they just can't fully carry a fight in the structured 1v1 format.
 - **Tugak War is spell-only.** In Tugak War the only weapon is the **Martyr's Hecatomb** (Health Bolt) line of spells, tiers I through VII. Any other harmful spell you try to cast on an opponent simply fails ("you cannot affect anyone"), and weapon attacks and damage-over-time do nothing — everyone fights on equal footing with the same spell.
+- **Corpses rot fast and are open to everyone.** A corpse left in an arena landblock decays far faster than in the open world (a few minutes rather than an hour or more), and it is **lootable by anyone**, not just the killer. Grab a fallen opponent's drops quickly — your rivals can loot them too. (See **Corpse Looting Rights** below for the general rule this is based on.)
 
 ### Arena Rewards (Winners)
 
@@ -462,6 +463,9 @@ Killing another player in open-world PvP has a chance to drop a **PK Trophy** on
 - **Level range** — no trophy drops if the victim is above the level 126 cap, or if the victim is more than **15 levels below** the killer. This keeps low-level twinks from being farmed by much higher-level killers.
 - **Same allegiance** — no trophy drops if the killer and victim share the same monarch.
 - **Rate limit (victim-side)** — a given victim can have at most **3 trophies** dropped on their corpse(s) within a rolling **1-hour** window, and at most **10 per day**. Once either limit is hit, further kills on that victim stop producing trophies until the window/day resets.
+
+### Corpse Looting Rights
+When you're killed by another player, your corpse is initially **locked to your killer** — only they (or someone you've `/permit`ted) may loot it. Once the corpse has decayed for roughly **20 minutes**, it opens up and **any** player can take whatever remains. Because corpses in arena landblocks are set to rot fast (a few minutes), they reach that open state almost immediately — so arena kills are effectively free-for-all loot the moment they drop.
 
 ---
 

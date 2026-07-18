@@ -9,6 +9,12 @@
 
 ## 🩹 v1.12 (in development)
 
+### ⚰️ Arena Corpses — Faster Rot and Open to Everyone
+
+Corpses left in an **arena landblock** now decay much faster than in the open world (a few minutes instead of an hour or more), and they're **lootable by anyone** — not just the killer. Loot your fallen opponents quickly, because your rivals can grab their drops too.
+
+This rides on a broader looting rule that now applies everywhere: a player-kill corpse, initially locked to its killer, **opens up to all players after it has decayed for about 20 minutes**. Arena corpses hit that threshold almost immediately thanks to their short rot timer.
+
 ### 🔧 Tinkers — Locked Out of PK XP and Arenas
 
 Tinker characters (`/FlagTinker`) are dedicated crafters, and are now fully excluded from PvP progression. A Tinker can no longer **earn any PK XP** from any source — player kills, Ancient Bottle drains, PK quests, and PK gems all yield nothing — and can no longer **join arena events**. This closes the door on using a locked-down, vitae-immune crafter as a risk-free PvP alt.
