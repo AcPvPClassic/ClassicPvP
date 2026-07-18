@@ -53,7 +53,74 @@ namespace ACE.Server.Entity
         /// <summary>
         /// Flag indicates if this landblock is permanently loaded (for example, towns on high-traffic servers)
         /// </summary>
-        public bool Permaload = false;
+        public bool Permaload { get; private set; } = false;
+
+        /// <summary>
+        /// UTC time at which a timed permaload expires, or null when the permaload is permanent
+        /// (config preloads). Set this instead of holding a landblock open forever: if whatever
+        /// asked for the permaload fails to clean up, the deadline still releases the landblock.
+        /// </summary>
+        public DateTime? PermaloadEndDate { get; private set; } = null;
+
+        private readonly object permaloadLock = new object();
+
+        /// <summary>
+        /// Marks this landblock permaloaded so it neither goes dormant nor unloads while empty.
+        /// A null endDate means permanent. A permanent permaload always wins over a timed one, and
+        /// a timed request never shortens a deadline that is already further out — so overlapping
+        /// callers can't cut each other short.
+        /// </summary>
+        public void SetPermaload(DateTime? endDate = null)
+        {
+            lock (permaloadLock)
+            {
+                if (endDate == null)
+                {
+                    PermaloadEndDate = null;
+                    Permaload = true;
+                    return;
+                }
+
+                // Already held open permanently — a deadline would only weaken it.
+                if (Permaload && PermaloadEndDate == null)
+                    return;
+
+                if (PermaloadEndDate == null || endDate.Value > PermaloadEndDate.Value)
+                    PermaloadEndDate = endDate;
+
+                Permaload = true;
+            }
+        }
+
+        /// <summary>
+        /// Releases a timed permaload early. Permanent permaloads are left alone, so a caller
+        /// tidying up its own temporary permaload can never unpin a landblock that the server
+        /// config wants held open.
+        /// </summary>
+        public void ClearTimedPermaload()
+        {
+            lock (permaloadLock)
+            {
+                if (!Permaload || PermaloadEndDate == null)
+                    return;
+
+                Permaload = false;
+                PermaloadEndDate = null;
+            }
+        }
+
+        private void CheckPermaloadExpiry(DateTime thisHeartBeat)
+        {
+            lock (permaloadLock)
+            {
+                if (!Permaload || PermaloadEndDate == null || thisHeartBeat < PermaloadEndDate.Value)
+                    return;
+
+                log.Debug($"Landblock {Id.Landblock:X4}: timed permaload expired, releasing.");
+                Permaload = false;
+                PermaloadEndDate = null;
+            }
+        }
 
         /// <summary>
         /// Flag indicates if this landblock has no keep alive objects
@@ -498,15 +565,17 @@ namespace ACE.Server.Entity
 
         private void SpawnPhase2Proxy(Entity.AllegianceHometown.AllegianceHometownRegistry.TownEntry entry)
         {
-            // Permaload this landblock so it never goes dormant or unloads while the proxy is alive
-            Permaload = true;
+            // Hold this landblock loaded so it never goes dormant or unloads while the proxy is
+            // alive. The deadline is the backstop: if Phase 2 ends badly and nothing lifts the
+            // permaload, the landblock still releases itself rather than staying pinned forever.
+            SetPermaload(DateTime.UtcNow.Add(Managers.AllegianceHometownManager.Phase2PermaloadDuration));
 
             var proxy = WorldObjectFactory.CreateNewWorldObject(ACE.Database.CustomWeenieId.BindstoneCreatureProxy)
                         as WorldObjects.BindstoneCreatureProxy;
             if (proxy == null)
             {
                 log.Error($"[AllegianceHometown] Failed to create BindstoneCreatureProxy (wcid {ACE.Database.CustomWeenieId.BindstoneCreatureProxy}) for {entry.TownName}.");
-                Permaload = false;
+                ClearTimedPermaload();
                 return;
             }
 
@@ -1257,6 +1326,8 @@ namespace ACE.Server.Entity
                         }
                     }
                 }
+
+                CheckPermaloadExpiry(thisHeartBeat);
 
                 if (!Permaload && HasNoKeepAliveObjects)
                 {

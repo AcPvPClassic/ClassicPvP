@@ -492,7 +492,11 @@ namespace ACE.Server.Managers
         /// <summary>
         /// Returns a reference to a landblock, loading the landblock if not already active
         /// </summary>
-        public static Landblock GetLandblock(LandblockId landblockId, bool loadAdjacents, bool permaload = false)
+        /// <param name="permaloadEndDate">
+        /// When permaload is set, an optional UTC expiry after which the landblock releases itself
+        /// and can unload normally again. Null permaloads the landblock permanently.
+        /// </param>
+        public static Landblock GetLandblock(LandblockId landblockId, bool loadAdjacents, bool permaload = false, DateTime? permaloadEndDate = null)
         {
             Landblock landblock;
 
@@ -531,14 +535,14 @@ namespace ACE.Server.Managers
                 }
 
                 if (permaload)
-                    landblock.Permaload = true;
+                    landblock.SetPermaload(permaloadEndDate);
 
                 // load adjacents, if applicable
                 if (loadAdjacents)
                 {
                     var adjacents = GetAdjacentIDs(landblock);
                     foreach (var adjacent in adjacents)
-                        GetLandblock(adjacent, false, permaload);
+                        GetLandblock(adjacent, false, permaload, permaloadEndDate);
 
                     setAdjacents = true;
                 }

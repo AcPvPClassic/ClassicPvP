@@ -27,6 +27,21 @@ namespace ACE.Server.Managers
         public static bool IsInitialized { get; private set; }
 
         // town_id → current DB row (mutable, kept in sync with DB)
+        /// <summary>
+        /// Guards every collection below, and the AllegianceHometownTown objects inside _towns.
+        /// Each town's landblock ticks on its own landblock group, and LandblockManager runs those
+        /// groups through Parallel.ForEach — so TickPhase1, the Phase 2 proxy heartbeats, the proxy
+        /// death chains, and the player/admin commands all reach this state concurrently.
+        ///
+        /// Hold this only across in-memory work. Database writes block on a round-trip and the
+        /// broadcast/reward paths call into PlayerManager, LandblockManager and world objects, so
+        /// they must happen outside the lock: doing otherwise stalls landblock threads on the
+        /// database and risks a lock-order deadlock. The pattern throughout is to decide and mutate
+        /// under the lock, capture what's needed into locals, then do the callouts after releasing.
+        /// (Monitor is reentrant, so the locked private helpers are safe to call from locked code.)
+        /// </summary>
+        private static readonly object _lock = new object();
+
         private static readonly Dictionary<byte, AllegianceHometownTown> _towns = new();
 
         // monarch_id → set of town_ids that allegiance currently owns
@@ -65,6 +80,21 @@ namespace ACE.Server.Managers
             PropertyManager.GetLong("ah_phase1_seconds", 240).Item;
 
         /// <summary>
+        /// How long the attackers have to destroy the bind stone before the defenders win Phase 2.
+        /// Configurable via the "ah_phase2_minutes" server property (default 30).
+        /// </summary>
+        public static TimeSpan Phase2Duration =>
+            TimeSpan.FromMinutes(PropertyManager.GetLong("ah_phase2_minutes", 30).Item);
+
+        /// <summary>
+        /// How long a hometown landblock is held loaded once Phase 2 starts. Derived from
+        /// Phase2Duration so raising the phase length can't leave the landblock unloading
+        /// underneath a live conflict; the margin covers the death sequence and payout.
+        /// </summary>
+        public static TimeSpan Phase2PermaloadDuration =>
+            Phase2Duration + TimeSpan.FromMinutes(5);
+
+        /// <summary>
         /// A human-readable identity for a player's allegiance: the custom allegiance name if
         /// one is set, otherwise "{Monarch}'s Allegiance". Falls back to the player's own name
         /// when no allegiance or monarch name is available.
@@ -90,62 +120,76 @@ namespace ACE.Server.Managers
         {
             try
             {
-                _towns.Clear();
-                _ownedByMonarch.Clear();
-                _activeConflictsByMonarch.Clear();
-                _attackerCooldowns.Clear();
-                _captureProtection.Clear();
-                _latestEventByTown.Clear();
-                _phase2Proxies.Clear();
-                _blacklist.Clear();
-                _blacklistEntries.Clear();
+                // Read from the database before taking the lock.
+                var blacklistRows = DatabaseManager.Log.GetAllAllegianceHometownBlacklist();
+                var rows          = DatabaseManager.Log.GetAllAllegianceHometownTowns();
 
-                foreach (var bl in DatabaseManager.Log.GetAllAllegianceHometownBlacklist())
+                // Towns left mid-conflict by a shutdown; persisted after the lock is released.
+                var conflictsToClear = new List<AllegianceHometownTown>();
+                int townCount;
+
+                lock (_lock)
                 {
-                    _blacklist.Add(bl.MonarchId);
-                    _blacklistEntries[bl.MonarchId] = bl;
+                    _towns.Clear();
+                    _ownedByMonarch.Clear();
+                    _activeConflictsByMonarch.Clear();
+                    _attackerCooldowns.Clear();
+                    _captureProtection.Clear();
+                    _latestEventByTown.Clear();
+                    _phase2Proxies.Clear();
+                    _blacklist.Clear();
+                    _blacklistEntries.Clear();
+
+                    foreach (var bl in blacklistRows)
+                    {
+                        _blacklist.Add(bl.MonarchId);
+                        _blacklistEntries[bl.MonarchId] = bl;
+                    }
+
+                    // Index by town_id; fill in any missing rows from registry
+                    foreach (var entry in AllegianceHometownRegistry.All.Values)
+                    {
+                        var row = rows.FirstOrDefault(r => r.TownId == entry.TownId);
+                        if (row == null)
+                        {
+                            row = new AllegianceHometownTown { TownId = entry.TownId, TownName = entry.TownName };
+                        }
+                        _towns[entry.TownId] = row;
+
+                        // Rebuild ownership index
+                        if (row.OwnerMonarchId.HasValue)
+                            GetOrCreateSet(_ownedByMonarch, row.OwnerMonarchId.Value).Add(row.TownId);
+
+                        // Any town that was in-conflict when server shut down: clear conflict state
+                        // (Phase 1/2 cannot survive a server restart gracefully)
+                        if (row.ConflictPhase != 0)
+                        {
+                            row.ConflictPhase             = 0;
+                            row.ConflictAttackerMonarchId = null;
+                            row.ConflictAttackerName      = null;
+                            row.ConflictStartTime         = null;
+                            row.Phase2StartTime           = null;
+                            conflictsToClear.Add(row);
+                        }
+
+                        // Restore capture protection: if captured_at is within the protection window, honour it
+                        if (row.CapturedAt.HasValue)
+                        {
+                            var protectionWindowHours = PropertyManager.GetDouble("ah_capture_protection_hours", 8.0).Item;
+                            var expiry = row.CapturedAt.Value.AddHours(protectionWindowHours);
+                            if (expiry > DateTime.UtcNow)
+                                _captureProtection[row.TownId] = expiry;
+                        }
+                    }
+
+                    townCount = _towns.Count;
                 }
 
-                var rows = DatabaseManager.Log.GetAllAllegianceHometownTowns();
-
-                // Index by town_id; fill in any missing rows from registry
-                foreach (var entry in AllegianceHometownRegistry.All.Values)
-                {
-                    var row = rows.FirstOrDefault(r => r.TownId == entry.TownId);
-                    if (row == null)
-                    {
-                        row = new AllegianceHometownTown { TownId = entry.TownId, TownName = entry.TownName };
-                    }
-                    _towns[entry.TownId] = row;
-
-                    // Rebuild ownership index
-                    if (row.OwnerMonarchId.HasValue)
-                        GetOrCreateSet(_ownedByMonarch, row.OwnerMonarchId.Value).Add(row.TownId);
-
-                    // Any town that was in-conflict when server shut down: clear conflict state
-                    // (Phase 1/2 cannot survive a server restart gracefully)
-                    if (row.ConflictPhase != 0)
-                    {
-                        row.ConflictPhase             = 0;
-                        row.ConflictAttackerMonarchId = null;
-                        row.ConflictAttackerName      = null;
-                        row.ConflictStartTime         = null;
-                        row.Phase2StartTime           = null;
-                        DatabaseManager.Log.UpdateAllegianceHometownTown(row);
-                    }
-
-                    // Restore capture protection: if captured_at is within the protection window, honour it
-                    if (row.CapturedAt.HasValue)
-                    {
-                        var protectionWindowHours = PropertyManager.GetDouble("ah_capture_protection_hours", 8.0).Item;
-                        var expiry = row.CapturedAt.Value.AddHours(protectionWindowHours);
-                        if (expiry > DateTime.UtcNow)
-                            _captureProtection[row.TownId] = expiry;
-                    }
-                }
+                foreach (var row in conflictsToClear)
+                    DatabaseManager.Log.UpdateAllegianceHometownTown(row);
 
                 IsInitialized = true;
-                log.Info($"[AllegianceHometown] Initialized with {_towns.Count} town(s).");
+                log.Info($"[AllegianceHometown] Initialized with {townCount} town(s).");
             }
             catch (Exception ex)
             {
@@ -159,36 +203,84 @@ namespace ACE.Server.Managers
 
         public static AllegianceHometownTown GetTown(byte townId)
         {
-            _towns.TryGetValue(townId, out var t);
-            return t;
+            lock (_lock)
+            {
+                _towns.TryGetValue(townId, out var t);
+                return t;
+            }
         }
 
-        public static IReadOnlyCollection<AllegianceHometownTown> GetAllTowns() => _towns.Values;
+        /// <summary>
+        /// Snapshot of every town. Returns a copy — handing out the live collection would let a
+        /// caller enumerate it while another landblock thread writes to it.
+        /// </summary>
+        public static IReadOnlyCollection<AllegianceHometownTown> GetAllTowns()
+        {
+            lock (_lock)
+                return _towns.Values.ToList();
+        }
+
+        /// <summary>
+        /// Phase 2 state for a town, read atomically. The Phase 2 proxy heartbeat runs on a
+        /// landblock thread while conflicts resolve on others, so it reads through this rather than
+        /// pulling fields off a shared town object mid-update.
+        /// </summary>
+        public static bool TryGetPhase2Status(byte townId, out DateTime phase2StartTime, out string attackerName, out string townName)
+        {
+            lock (_lock)
+            {
+                if (!_towns.TryGetValue(townId, out var t) || t.ConflictPhase != 2 || !t.Phase2StartTime.HasValue)
+                {
+                    phase2StartTime = default;
+                    attackerName    = null;
+                    townName        = null;
+                    return false;
+                }
+
+                phase2StartTime = t.Phase2StartTime.Value;
+                attackerName    = t.ConflictAttackerName;
+                townName        = t.TownName;
+                return true;
+            }
+        }
 
         public static IReadOnlyCollection<byte> GetOwnedTownIds(uint monarchId)
         {
-            _ownedByMonarch.TryGetValue(monarchId, out var s);
-            return (IReadOnlyCollection<byte>)s ?? Array.Empty<byte>();
+            lock (_lock)
+            {
+                _ownedByMonarch.TryGetValue(monarchId, out var s);
+                return s != null ? s.ToList() : (IReadOnlyCollection<byte>)Array.Empty<byte>();
+            }
         }
 
         public static int GetOwnedTownCount(uint monarchId)
         {
-            _ownedByMonarch.TryGetValue(monarchId, out var s);
-            return s?.Count ?? 0;
+            lock (_lock)
+            {
+                _ownedByMonarch.TryGetValue(monarchId, out var s);
+                return s?.Count ?? 0;
+            }
         }
 
         public static bool IsInConflict(byte townId)
         {
-            _towns.TryGetValue(townId, out var t);
-            return t != null && t.ConflictPhase != 0;
+            lock (_lock)
+            {
+                _towns.TryGetValue(townId, out var t);
+                return t != null && t.ConflictPhase != 0;
+            }
         }
 
-        public static bool IsTownProtected(byte townId) =>
-            _captureProtection.TryGetValue(townId, out var exp) && exp > DateTime.UtcNow;
+        public static bool IsTownProtected(byte townId)
+        {
+            lock (_lock)
+                return _captureProtection.TryGetValue(townId, out var exp) && exp > DateTime.UtcNow;
+        }
 
         public static bool ClearTownProtection(byte townId)
         {
-            return _captureProtection.Remove(townId);
+            lock (_lock)
+                return _captureProtection.Remove(townId);
         }
 
         /// <summary>
@@ -198,24 +290,24 @@ namespace ACE.Server.Managers
         /// </summary>
         public static string GetAttackBlockReason(byte townId, uint attackerMonarchId)
         {
-            if (!_towns.TryGetValue(townId, out var town)) return null;
-
-            if (_blacklist.Contains(attackerMonarchId))
-                return "Your allegiance has been suspended from hometown warfare.";
-
-            if (town.OwnerMonarchId == attackerMonarchId)
-                return null; // owner — handled separately by caller
-
-            if (IsTownProtected(townId))
+            lock (_lock)
             {
-                var remaining = _captureProtection[townId] - DateTime.UtcNow;
-                return $"This town cannot be attacked for another {FormatTimeSpan(remaining)}.";
+                if (!_towns.TryGetValue(townId, out var town)) return null;
+
+                if (_blacklist.Contains(attackerMonarchId))
+                    return "Your allegiance has been suspended from hometown warfare.";
+
+                if (town.OwnerMonarchId == attackerMonarchId)
+                    return null; // owner — handled separately by caller
+
+                if (_captureProtection.TryGetValue(townId, out var exp) && exp > DateTime.UtcNow)
+                    return $"This town cannot be attacked for another {FormatTimeSpan(exp - DateTime.UtcNow)}.";
+
+                if (HasAttackerCooldown(attackerMonarchId, townId, out var cd))
+                    return $"Your allegiance cannot attack {town.TownName} for another {FormatTimeSpan(cd)}.";
+
+                return null;
             }
-
-            if (HasAttackerCooldown(attackerMonarchId, townId, out var cd))
-                return $"Your allegiance cannot attack {town.TownName} for another {FormatTimeSpan(cd)}.";
-
-            return null;
         }
 
         // -----------------------------------------------------------------------
@@ -224,19 +316,25 @@ namespace ACE.Server.Managers
 
         public static bool HasAttackerCooldown(uint monarchId, byte townId, out TimeSpan remaining)
         {
-            if (_attackerCooldowns.TryGetValue((monarchId, townId), out var exp) && exp > DateTime.UtcNow)
+            lock (_lock)
             {
-                remaining = exp - DateTime.UtcNow;
-                return true;
+                if (_attackerCooldowns.TryGetValue((monarchId, townId), out var exp) && exp > DateTime.UtcNow)
+                {
+                    remaining = exp - DateTime.UtcNow;
+                    return true;
+                }
+                remaining = TimeSpan.Zero;
+                return false;
             }
-            remaining = TimeSpan.Zero;
-            return false;
         }
 
         public static int GetActiveConflictCount(uint monarchId)
         {
-            _activeConflictsByMonarch.TryGetValue(monarchId, out var s);
-            return s?.Count ?? 0;
+            lock (_lock)
+            {
+                _activeConflictsByMonarch.TryGetValue(monarchId, out var s);
+                return s?.Count ?? 0;
+            }
         }
 
         // -----------------------------------------------------------------------
@@ -252,77 +350,90 @@ namespace ACE.Server.Managers
         {
             failReason = null;
 
-            if (!_towns.TryGetValue(townId, out var town))
+            AllegianceHometownTown town;
+            string defenderName;
+            uint?  defenderMonarchId;
+            string townName;
+
+            lock (_lock)
             {
-                failReason = "Unknown town.";
-                return false;
+                if (!_towns.TryGetValue(townId, out town))
+                {
+                    failReason = "Unknown town.";
+                    return false;
+                }
+
+                // Blacklisted allegiances cannot attack
+                if (_blacklist.Contains(attackerMonarchId))
+                {
+                    failReason = "Your allegiance has been suspended from hometown warfare.";
+                    return false;
+                }
+
+                // Can't attack your own town
+                if (town.OwnerMonarchId == attackerMonarchId)
+                {
+                    failReason = "Your allegiance already owns that town.";
+                    return false;
+                }
+
+                // Town already in conflict
+                if (town.ConflictPhase != 0)
+                {
+                    failReason = "That town is already under attack.";
+                    return false;
+                }
+
+                // Town is under capture protection
+                if (_captureProtection.TryGetValue(townId, out var exp) && exp > DateTime.UtcNow)
+                {
+                    failReason = $"That town cannot be attacked for another {FormatTimeSpan(exp - DateTime.UtcNow)}.";
+                    return false;
+                }
+
+                // Attacker cooldown (phase-1 timeout or phase-2 failure)
+                if (HasAttackerCooldown(attackerMonarchId, townId, out var cd))
+                {
+                    failReason = $"Your allegiance cannot attack {town.TownName} for another {FormatTimeSpan(cd)}.";
+                    return false;
+                }
+
+                // Simultaneous attack limit
+                if (GetActiveConflictCount(attackerMonarchId) >= MaxSimultaneousAttacks)
+                {
+                    failReason = $"Your allegiance is already attacking {MaxSimultaneousAttacks} towns.";
+                    return false;
+                }
+
+                defenderName      = town.OwnerAllegianceName;
+                defenderMonarchId = town.OwnerMonarchId;
+                townName          = town.TownName;
+
+                town.ConflictPhase             = 1;
+                town.ConflictAttackerMonarchId = attackerMonarchId;
+                town.ConflictAttackerName      = attackerName;
+                town.ConflictStartTime         = DateTime.UtcNow;
+                town.Phase2StartTime           = null;
+
+                GetOrCreateSet(_activeConflictsByMonarch, attackerMonarchId).Add(townId);
             }
 
-            // Blacklisted allegiances cannot attack
-            if (_blacklist.Contains(attackerMonarchId))
-            {
-                failReason = "Your allegiance has been suspended from hometown warfare.";
-                return false;
-            }
-
-            // Can't attack your own town
-            if (town.OwnerMonarchId == attackerMonarchId)
-            {
-                failReason = "Your allegiance already owns that town.";
-                return false;
-            }
-
-            // Town already in conflict
-            if (town.ConflictPhase != 0)
-            {
-                failReason = "That town is already under attack.";
-                return false;
-            }
-
-            // Town is under capture protection
-            if (IsTownProtected(townId))
-            {
-                var remaining = _captureProtection[townId] - DateTime.UtcNow;
-                failReason = $"That town cannot be attacked for another {FormatTimeSpan(remaining)}.";
-                return false;
-            }
-
-            // Attacker cooldown (phase-1 timeout or phase-2 failure)
-            if (HasAttackerCooldown(attackerMonarchId, townId, out var cd))
-            {
-                failReason = $"Your allegiance cannot attack {town.TownName} for another {FormatTimeSpan(cd)}.";
-                return false;
-            }
-
-            // Simultaneous attack limit
-            if (GetActiveConflictCount(attackerMonarchId) >= MaxSimultaneousAttacks)
-            {
-                failReason = $"Your allegiance is already attacking {MaxSimultaneousAttacks} towns.";
-                return false;
-            }
-
-            var defenderName = town.OwnerAllegianceName;
-
-            town.ConflictPhase             = 1;
-            town.ConflictAttackerMonarchId = attackerMonarchId;
-            town.ConflictAttackerName      = attackerName;
-            town.ConflictStartTime         = DateTime.UtcNow;
-            town.Phase2StartTime           = null;
-            SaveTown(town);
-
-            GetOrCreateSet(_activeConflictsByMonarch, attackerMonarchId).Add(townId);
+            SaveTownDb(town);
 
             // Log event
             var evt = DatabaseManager.Log.StartAllegianceHometownEvent(
                 townId, attackerMonarchId, attackerName,
-                town.OwnerMonarchId, defenderName);
+                defenderMonarchId, defenderName);
             if (evt != null)
-                _latestEventByTown[townId] = evt;
+            {
+                lock (_lock)
+                    _latestEventByTown[townId] = evt;
+            }
 
             // Global announcement
-            var announcement = town.OwnerMonarchId.HasValue
-                ? $"{attackerName} is attempting to wrest control of {town.TownName} from {defenderName}! Phase 1 has begun."
-                : $"{attackerName} is assaulting {town.TownName} (unclaimed)! Phase 1 has begun.";
+            var announcement = defenderMonarchId.HasValue
+                ? $"{attackerName} is attempting to wrest control of {townName} from {defenderName}! Phase 1 has begun."
+                : $"{attackerName} is assaulting {townName} (unclaimed)! Phase 1 has begun.";
             GlobalBroadcast(announcement);
 
             return true;
@@ -338,13 +449,21 @@ namespace ACE.Server.Managers
             bool enemyOnLandblock,      // any non-attacker PK on the landblock
             ref double accumulatedSeconds)
         {
-            if (!_towns.TryGetValue(townId, out var town) || town.ConflictPhase != 1)
-                return Phase1TickResult.NotActive;
+            bool timedOut;
 
-            // Timeout check
-            if (DateTime.UtcNow - town.ConflictStartTime.Value > TimeSpan.FromHours(1))
+            lock (_lock)
             {
-                HandlePhase1Timeout(town);
+                if (!_towns.TryGetValue(townId, out var town) || town.ConflictPhase != 1 || !town.ConflictStartTime.HasValue)
+                    return Phase1TickResult.NotActive;
+
+                timedOut = DateTime.UtcNow - town.ConflictStartTime.Value > TimeSpan.FromHours(1);
+            }
+
+            // Timeout check. HandlePhase1Timeout broadcasts and writes to the database, so it runs
+            // outside the lock and re-checks the town state under it.
+            if (timedOut)
+            {
+                HandlePhase1Timeout(townId);
                 accumulatedSeconds = 0;
                 return Phase1TickResult.TimedOut;
             }
@@ -366,22 +485,33 @@ namespace ACE.Server.Managers
             return Phase1TickResult.Progressing;
         }
 
-        private static void HandlePhase1Timeout(AllegianceHometownTown town)
+        private static void HandlePhase1Timeout(byte townId)
         {
-            var attackerMonarchId = town.ConflictAttackerMonarchId!.Value;
-            var attackerName      = town.ConflictAttackerName;
-            var defenderName      = town.OwnerAllegianceName;
+            AllegianceHometownTown town;
+            string attackerName, defenderName, townName;
 
-            // Set 3-hour cooldown
-            _attackerCooldowns[(attackerMonarchId, town.TownId)] = DateTime.UtcNow.AddHours(3);
+            lock (_lock)
+            {
+                // Re-check under the lock: another thread may have resolved this conflict between
+                // the tick's timeout test and this call.
+                if (!_towns.TryGetValue(townId, out town) || town.ConflictPhase != 1 || !town.ConflictAttackerMonarchId.HasValue)
+                    return;
 
-            // Close audit event
-            CloseLatestEvent(town.TownId, outcome: 2);
+                var attackerMonarchId = town.ConflictAttackerMonarchId.Value;
+                attackerName = town.ConflictAttackerName;
+                defenderName = town.OwnerAllegianceName;
+                townName     = town.TownName;
 
-            // Clear conflict state
-            ClearConflict(town);
+                // Set 3-hour cooldown
+                _attackerCooldowns[(attackerMonarchId, town.TownId)] = DateTime.UtcNow.AddHours(3);
 
-            GlobalBroadcast($"{attackerName}'s assault on {town.TownName} has been repelled by {defenderName}!");
+                ClearConflictState(town);
+            }
+
+            CloseLatestEvent(townId, outcome: 2);
+            SaveTownDb(town);
+
+            GlobalBroadcast($"{attackerName}'s assault on {townName} has been repelled by {defenderName}!");
         }
 
         // -----------------------------------------------------------------------
@@ -390,79 +520,128 @@ namespace ACE.Server.Managers
 
         public static void StartPhase2(byte townId)
         {
-            if (!_towns.TryGetValue(townId, out var town) || town.ConflictPhase != 1) return;
+            AllegianceHometownTown town;
+            AllegianceHometownEvent evt;
+            string attackerName, defenderName, townName;
 
-            town.ConflictPhase  = 2;
-            town.Phase2StartTime = DateTime.UtcNow;
-            SaveTown(town);
-
-            if (_latestEventByTown.TryGetValue(townId, out var evt))
+            lock (_lock)
             {
-                evt.Phase2StartTime = town.Phase2StartTime;
-                DatabaseManager.Log.UpdateAllegianceHometownEvent(evt);
+                if (!_towns.TryGetValue(townId, out town) || town.ConflictPhase != 1) return;
+
+                town.ConflictPhase   = 2;
+                town.Phase2StartTime = DateTime.UtcNow;
+
+                attackerName = town.ConflictAttackerName;
+                defenderName = town.OwnerAllegianceName;
+                townName     = town.TownName;
+
+                if (_latestEventByTown.TryGetValue(townId, out evt))
+                    evt.Phase2StartTime = town.Phase2StartTime;
             }
 
-            GlobalBroadcast($"{town.ConflictAttackerName}'s assault on {town.TownName} has breached Phase 2. Will they claim victory over {town.OwnerAllegianceName}?");
+            SaveTownDb(town);
+
+            if (evt != null)
+                DatabaseManager.Log.UpdateAllegianceHometownEvent(evt);
+
+            GlobalBroadcast($"{attackerName}'s assault on {townName} has breached Phase 2. Will they claim victory over {defenderName}?");
         }
 
         /// <summary>Called when bindstone HP reaches 0 — attacker wins.</summary>
         public static void HandleAttackerVictory(byte townId)
         {
-            if (!_towns.TryGetValue(townId, out var town)) return;
+            AllegianceHometownTown town;
+            uint   attackerMonarchId;
+            string attackerName, prevOwnerName, townName;
+            uint?  prevOwnerId;
 
-            var attackerMonarchId = town.ConflictAttackerMonarchId!.Value;
-            var attackerName      = town.ConflictAttackerName;
-            var prevOwnerName     = town.OwnerAllegianceName;
-            var prevOwnerId       = town.OwnerMonarchId;
+            lock (_lock)
+            {
+                if (!_towns.TryGetValue(townId, out town)) return;
 
-            // Transfer ownership
-            if (prevOwnerId.HasValue)
-                GetOrCreateSet(_ownedByMonarch, prevOwnerId.Value).Remove(town.TownId);
-            GetOrCreateSet(_ownedByMonarch, attackerMonarchId).Add(town.TownId);
+                // Already resolved, or resolved without an attacker on record — nothing to award, and
+                // dereferencing the attacker below would throw and strand the proxy mid-cleanup.
+                if (town.ConflictPhase != 2 || !town.ConflictAttackerMonarchId.HasValue)
+                {
+                    log.Warn($"[AllegianceHometown] HandleAttackerVictory({townId}) with ConflictPhase={town.ConflictPhase} and attacker={town.ConflictAttackerMonarchId?.ToString() ?? "none"}; ignoring.");
+                    return;
+                }
 
-            town.OwnerMonarchId       = attackerMonarchId;
-            town.OwnerAllegianceName  = attackerName;
-            town.CapturedAt           = DateTime.UtcNow;
+                attackerMonarchId = town.ConflictAttackerMonarchId.Value;
+                attackerName      = town.ConflictAttackerName;
+                prevOwnerName     = town.OwnerAllegianceName;
+                prevOwnerId       = town.OwnerMonarchId;
+                townName          = town.TownName;
 
-            // Apply capture protection
-            var protectionHours = PropertyManager.GetDouble("ah_capture_protection_hours", 8.0).Item;
-            _captureProtection[town.TownId] = DateTime.UtcNow.AddHours(protectionHours);
+                // Transfer ownership
+                if (prevOwnerId.HasValue)
+                    GetOrCreateSet(_ownedByMonarch, prevOwnerId.Value).Remove(town.TownId);
+                GetOrCreateSet(_ownedByMonarch, attackerMonarchId).Add(town.TownId);
 
-            CloseLatestEvent(town.TownId, outcome: 0);
+                town.OwnerMonarchId       = attackerMonarchId;
+                town.OwnerAllegianceName  = attackerName;
+                town.CapturedAt           = DateTime.UtcNow;
+
+                // Apply capture protection
+                var protectionHours = PropertyManager.GetDouble("ah_capture_protection_hours", 8.0).Item;
+                _captureProtection[town.TownId] = DateTime.UtcNow.AddHours(protectionHours);
+
+                // Ownership is transferred and the conflict closed atomically — a reader must never
+                // see the town owned by the attacker while it is still flagged in conflict.
+                ClearConflictState(town);
+            }
+
+            SaveTownDb(town);
+            CloseLatestEvent(townId, outcome: 0);
 
             UncloakPhase2Bindstone(townId);
 
             // Capture rewards: attackers win, defenders smited
             DistributeRewards(townId, attackerMonarchId, prevOwnerId, isDefense: false);
 
-            ClearConflict(town);
-
             var ownerPart = prevOwnerId.HasValue ? $" from {prevOwnerName}" : "";
-            GlobalBroadcast($"{attackerName} has captured {town.TownName}{ownerPart}!");
+            GlobalBroadcast($"{attackerName} has captured {townName}{ownerPart}!");
         }
 
         /// <summary>Called when Phase 2 timer expires with bindstone still alive — defender wins.</summary>
         public static void HandleDefenderVictory(byte townId)
         {
-            if (!_towns.TryGetValue(townId, out var town)) return;
+            AllegianceHometownTown town;
+            uint   attackerMonarchId;
+            uint?  defenderMonarchId;
+            string attackerName, defenderName, townName;
 
-            var attackerMonarchId = town.ConflictAttackerMonarchId!.Value;
-            var attackerName      = town.ConflictAttackerName;
-            var defenderName      = town.OwnerAllegianceName;
+            lock (_lock)
+            {
+                if (!_towns.TryGetValue(townId, out town)) return;
 
-            // 6-hour cooldown on the attacking allegiance for this town
-            _attackerCooldowns[(attackerMonarchId, town.TownId)] = DateTime.UtcNow.AddHours(6);
+                if (town.ConflictPhase != 2 || !town.ConflictAttackerMonarchId.HasValue)
+                {
+                    log.Warn($"[AllegianceHometown] HandleDefenderVictory({townId}) with ConflictPhase={town.ConflictPhase} and attacker={town.ConflictAttackerMonarchId?.ToString() ?? "none"}; ignoring.");
+                    return;
+                }
+
+                attackerMonarchId = town.ConflictAttackerMonarchId.Value;
+                attackerName      = town.ConflictAttackerName;
+                defenderName      = town.OwnerAllegianceName;
+                defenderMonarchId = town.OwnerMonarchId;
+                townName          = town.TownName;
+
+                // 6-hour cooldown on the attacking allegiance for this town
+                _attackerCooldowns[(attackerMonarchId, town.TownId)] = DateTime.UtcNow.AddHours(6);
+
+                ClearConflictState(town);
+            }
+
+            SaveTownDb(town);
+            CloseLatestEvent(townId, outcome: 1);
 
             UncloakPhase2Bindstone(townId);
 
             // Defense rewards: defenders win, attackers smited
-            var defenderMonarchId = town.OwnerMonarchId;
             DistributeRewards(townId, defenderMonarchId ?? 0, attackerMonarchId, isDefense: true);
 
-            CloseLatestEvent(town.TownId, outcome: 1);
-            ClearConflict(town);
-
-            GlobalBroadcast($"{defenderName} has defended {town.TownName}! {attackerName} failed to capture the town.");
+            GlobalBroadcast($"{defenderName} has defended {townName}! {attackerName} failed to capture the town.");
         }
 
         // -----------------------------------------------------------------------
@@ -471,16 +650,24 @@ namespace ACE.Server.Managers
 
         public static void ClaimTown(byte townId, uint monarchId, string allegianceName)
         {
-            if (!_towns.TryGetValue(townId, out var town)) return;
+            AllegianceHometownTown town;
+            string townName;
 
-            GetOrCreateSet(_ownedByMonarch, monarchId).Add(town.TownId);
+            lock (_lock)
+            {
+                if (!_towns.TryGetValue(townId, out town)) return;
 
-            town.OwnerMonarchId      = monarchId;
-            town.OwnerAllegianceName = allegianceName;
-            town.CapturedAt          = DateTime.UtcNow;
-            SaveTown(town);
+                GetOrCreateSet(_ownedByMonarch, monarchId).Add(town.TownId);
 
-            GlobalBroadcast($"{allegianceName} has claimed {town.TownName}!");
+                town.OwnerMonarchId      = monarchId;
+                town.OwnerAllegianceName = allegianceName;
+                town.CapturedAt          = DateTime.UtcNow;
+                townName                 = town.TownName;
+            }
+
+            SaveTownDb(town);
+
+            GlobalBroadcast($"{allegianceName} has claimed {townName}!");
         }
 
         // -----------------------------------------------------------------------
@@ -501,7 +688,12 @@ namespace ACE.Server.Managers
         /// </summary>
         public static void DistributeRewards(byte townId, uint winnerMonarchId, uint? loserMonarchId, bool isDefense)
         {
-            if (!_towns.TryGetValue(townId, out var town)) return;
+            // Existence check only — everything below hands out rewards through the landblock and
+            // player subsystems, so no manager state is held while it runs.
+            lock (_lock)
+            {
+                if (!_towns.ContainsKey(townId)) return;
+            }
 
             var entry = AllegianceHometownRegistry.GetById(townId);
             if (entry == null) return;
@@ -629,31 +821,136 @@ namespace ACE.Server.Managers
         // Phase 2 creature proxy registry
         // -----------------------------------------------------------------------
 
+        /// <summary>Audit outcome for a conflict closed without a winner (handler failure or admin reset).</summary>
+        private const byte OutcomeForced = 3;
+
+        /// <summary>
+        /// Last-resort close for a conflict whose normal outcome handler failed. Awards nothing —
+        /// it only puts the town back in a state where it can be attacked again, so a failure can
+        /// never leave a town locked in Phase 2 forever. Does not touch the proxy; callers that own
+        /// one are responsible for despawning it.
+        /// </summary>
+        public static void ForceEndConflict(byte townId)
+        {
+            AllegianceHometownTown town;
+            string townName;
+
+            lock (_lock)
+            {
+                if (!_towns.TryGetValue(townId, out town)) return;
+                townName = town.TownName;
+                ClearConflictState(town);
+            }
+
+            // Best-effort from here: the conflict is already closed in memory, so a failure below
+            // can't leave the town locked.
+            try
+            {
+                SaveTownDb(town);
+                UncloakPhase2Bindstone(townId);
+                CloseLatestEvent(townId, OutcomeForced);
+            }
+            catch (Exception ex)
+            {
+                log.Error($"[AllegianceHometown] Exception force-ending conflict for town {townId}. Ex: {ex}");
+            }
+
+            GlobalBroadcast($"The assault on {townName} has ended inconclusively.");
+        }
+
+        /// <summary>
+        /// Operator recovery: tears a town's conflict all the way back to peace — despawns the
+        /// Phase 2 proxy, restores the real bindstone, releases the landblock, and clears the
+        /// conflict. Awards nothing to either side and leaves ownership untouched. Safe to call on
+        /// a town with no conflict running. Returns true if there was a conflict to clear.
+        /// </summary>
+        public static bool ResetTown(byte townId, string resetBy)
+        {
+            AllegianceHometownTown town;
+            BindstoneCreatureProxy proxy;
+            bool   hadConflict;
+            string townName;
+
+            lock (_lock)
+            {
+                if (!_towns.TryGetValue(townId, out town)) return false;
+
+                hadConflict = town.ConflictPhase != 0;
+                townName    = town.TownName;
+
+                // Claim the proxy and clear the conflict in one step, so a concurrent resolve on a
+                // landblock thread finds nothing left to act on.
+                _phase2Proxies.Remove(townId, out proxy);
+
+                if (hadConflict)
+                    ClearConflictState(town);
+            }
+
+            if (proxy != null)
+            {
+                try
+                {
+                    proxy.AdminDespawn();
+                }
+                catch (Exception ex)
+                {
+                    log.Error($"[AllegianceHometown] Exception despawning proxy during reset of town {townId}. Ex: {ex}");
+                }
+            }
+
+            try
+            {
+                UncloakPhase2Bindstone(townId);
+            }
+            catch (Exception ex)
+            {
+                log.Error($"[AllegianceHometown] Exception uncloaking bindstone during reset of town {townId}. Ex: {ex}");
+            }
+
+            if (hadConflict)
+            {
+                SaveTownDb(town);
+                CloseLatestEvent(townId, OutcomeForced);
+                GlobalBroadcast($"The conflict at {townName} has been reset by an administrator.");
+            }
+
+            log.Warn($"[AllegianceHometown] Town {townId} ({townName}) reset by {resetBy}. hadConflict={hadConflict}");
+            return hadConflict;
+        }
+
         public static void RegisterPhase2Proxy(byte townId, BindstoneCreatureProxy proxy)
         {
-            _phase2Proxies[townId] = proxy;
+            lock (_lock)
+                _phase2Proxies[townId] = proxy;
         }
 
         public static void UnregisterPhase2Proxy(byte townId)
         {
-            _phase2Proxies.Remove(townId);
+            lock (_lock)
+                _phase2Proxies.Remove(townId);
         }
 
         public static BindstoneCreatureProxy GetPhase2Proxy(byte townId)
         {
-            _phase2Proxies.TryGetValue(townId, out var proxy);
-            return proxy;
+            lock (_lock)
+            {
+                _phase2Proxies.TryGetValue(townId, out var proxy);
+                return proxy;
+            }
         }
 
         // -----------------------------------------------------------------------
         // Blacklist management
         // -----------------------------------------------------------------------
 
-        public static bool IsBlacklisted(uint monarchId) => _blacklist.Contains(monarchId);
+        public static bool IsBlacklisted(uint monarchId)
+        {
+            lock (_lock)
+                return _blacklist.Contains(monarchId);
+        }
 
         public static bool AddBlacklist(uint monarchId, string allegianceName, string reason, string addedBy)
         {
-            if (_blacklist.Contains(monarchId)) return false;
             var entry = new ACE.Database.Models.Log.AllegianceHometownBlacklist
             {
                 MonarchId      = monarchId,
@@ -662,47 +959,67 @@ namespace ACE.Server.Managers
                 AddedBy        = addedBy,
                 AddedAt        = DateTime.UtcNow
             };
-            _blacklist.Add(monarchId);
-            _blacklistEntries[monarchId] = entry;
+
+            lock (_lock)
+            {
+                if (!_blacklist.Add(monarchId)) return false;
+                _blacklistEntries[monarchId] = entry;
+            }
+
             DatabaseManager.Log.AddAllegianceHometownBlacklist(entry);
             return true;
         }
 
         public static bool RemoveBlacklist(uint monarchId)
         {
-            if (!_blacklist.Remove(monarchId)) return false;
-            _blacklistEntries.Remove(monarchId);
+            lock (_lock)
+            {
+                if (!_blacklist.Remove(monarchId)) return false;
+                _blacklistEntries.Remove(monarchId);
+            }
+
             DatabaseManager.Log.RemoveAllegianceHometownBlacklist(monarchId);
             return true;
         }
 
+        /// <summary>Snapshot of the blacklist — a copy, so callers can enumerate it safely.</summary>
         public static System.Collections.Generic.IReadOnlyDictionary<uint, ACE.Database.Models.Log.AllegianceHometownBlacklist> GetBlacklist()
-            => _blacklistEntries;
+        {
+            lock (_lock)
+                return new Dictionary<uint, ACE.Database.Models.Log.AllegianceHometownBlacklist>(_blacklistEntries);
+        }
 
         public static void RegisterPhase2CloakedBindstone(byte townId, WorldObjects.Bindstone bindstone)
         {
-            _phase2CloakedBindstones[townId] = bindstone;
+            lock (_lock)
+                _phase2CloakedBindstones[townId] = bindstone;
         }
 
         public static void UncloakPhase2Bindstone(byte townId)
         {
-            if (_phase2CloakedBindstones.TryGetValue(townId, out var bs))
-            {
-                bs.Visibility  = false;
-                bs.Cloaked     = (bool?)false;
-                bs.Ethereal    = (bool?)false;
-                bs.NoDraw      = (bool?)false;
-                bs.Attackable  = true;
-                bs.EnqueueBroadcastPhysicsState();
-                // Send CreateObject so all nearby clients who lack it in their tracking get it back
-                bs.EnqueueBroadcast(false, new GameMessageCreateObject(bs));
-                _phase2CloakedBindstones.Remove(townId);
+            WorldObjects.Bindstone bs;
 
-                // Lift permaload so the landblock can unload normally when empty again
-                var lb = bs.CurrentLandblock;
-                if (lb != null)
-                    lb.Permaload = false;
+            // Claim the bindstone under the lock so two threads resolving the same conflict can't
+            // both run the uncloak; everything below touches world objects and must stay outside it.
+            lock (_lock)
+            {
+                if (!_phase2CloakedBindstones.Remove(townId, out bs))
+                    return;
             }
+
+            bs.Visibility  = false;
+            bs.Cloaked     = (bool?)false;
+            bs.Ethereal    = (bool?)false;
+            bs.NoDraw      = (bool?)false;
+            bs.Attackable  = true;
+            bs.EnqueueBroadcastPhysicsState();
+            // Send CreateObject so all nearby clients who lack it in their tracking get it back
+            bs.EnqueueBroadcast(false, new GameMessageCreateObject(bs));
+
+            // Lift the Phase 2 permaload so the landblock can unload normally when empty again.
+            // Only the timed permaload is dropped — a landblock the config preloads permanently
+            // stays pinned.
+            bs.CurrentLandblock?.ClearTimedPermaload();
         }
 
         // -----------------------------------------------------------------------
@@ -711,11 +1028,23 @@ namespace ACE.Server.Managers
 
         public static void SaveTown(AllegianceHometownTown town)
         {
-            _towns[town.TownId] = town;
+            lock (_lock)
+                _towns[town.TownId] = town;
+
+            SaveTownDb(town);
+        }
+
+        /// <summary>Persists a town. Blocks on the database — never call this holding _lock.</summary>
+        private static void SaveTownDb(AllegianceHometownTown town)
+        {
             DatabaseManager.Log.UpdateAllegianceHometownTown(town);
         }
 
-        private static void ClearConflict(AllegianceHometownTown town)
+        /// <summary>
+        /// Returns a town to peace in memory only. Callers must hold _lock, and are responsible for
+        /// persisting the town afterwards via SaveTownDb.
+        /// </summary>
+        private static void ClearConflictState(AllegianceHometownTown town)
         {
             if (town.ConflictAttackerMonarchId.HasValue)
                 GetOrCreateSet(_activeConflictsByMonarch, town.ConflictAttackerMonarchId.Value).Remove(town.TownId);
@@ -725,14 +1054,19 @@ namespace ACE.Server.Managers
             town.ConflictAttackerName      = null;
             town.ConflictStartTime         = null;
             town.Phase2StartTime           = null;
-            SaveTown(town);
         }
 
         private static void CloseLatestEvent(byte townId, byte outcome)
         {
-            if (!_latestEventByTown.TryGetValue(townId, out var evt)) return;
-            evt.EventEndTime = DateTime.UtcNow;
-            evt.Outcome      = outcome;
+            AllegianceHometownEvent evt;
+
+            lock (_lock)
+            {
+                if (!_latestEventByTown.TryGetValue(townId, out evt)) return;
+                evt.EventEndTime = DateTime.UtcNow;
+                evt.Outcome      = outcome;
+            }
+
             DatabaseManager.Log.UpdateAllegianceHometownEvent(evt);
         }
 

@@ -6306,6 +6306,49 @@ namespace ACE.Server.Command.Handlers
                 CommandHandlerHelper.WriteOutputInfo(session, $"{match.TownName} was not under capture protection.");
         }
 
+        [CommandHandler("ahreset", AccessLevel.Admin, CommandHandlerFlag.None, 0,
+            "Reset a hometown's conflict state, despawning the bind stone proxy and returning the town to peace.",
+            "<town name or part> — omit to list towns with a conflict in progress\n" +
+            "Awards nothing to either side and leaves ownership unchanged. Use when a conflict is stuck.")]
+        public static void HandleAhReset(Session session, params string[] parameters)
+        {
+            var allTowns = Managers.AllegianceHometownManager.GetAllTowns();
+
+            if (parameters.Length == 0)
+            {
+                var active = allTowns.Where(t => t.ConflictPhase != 0).ToList();
+                if (active.Count == 0)
+                {
+                    CommandHandlerHelper.WriteOutputInfo(session, "No towns currently have a conflict in progress.");
+                    return;
+                }
+                var sb = new System.Text.StringBuilder();
+                sb.AppendLine("Towns with a conflict in progress:");
+                foreach (var t in active)
+                {
+                    var proxy = Managers.AllegianceHometownManager.GetPhase2Proxy(t.TownId);
+                    var hp    = proxy != null ? $", proxy HP {proxy.Health.Current:N0}/{proxy.Health.MaxValue:N0}" : ", no proxy";
+                    sb.AppendLine($"  [{t.TownId}] {t.TownName} — phase {t.ConflictPhase}, attacked by {t.ConflictAttackerName ?? "unknown"}{hp}");
+                }
+                CommandHandlerHelper.WriteOutputInfo(session, sb.ToString());
+                return;
+            }
+
+            var search = string.Join(" ", parameters).ToLower();
+            var match  = allTowns.FirstOrDefault(t => t.TownName.ToLower().Contains(search));
+            if (match == null)
+            {
+                CommandHandlerHelper.WriteOutputInfo(session, $"No town found matching '{search}'.");
+                return;
+            }
+
+            var resetBy = session?.Player?.Name ?? "console";
+            if (Managers.AllegianceHometownManager.ResetTown(match.TownId, resetBy))
+                CommandHandlerHelper.WriteOutputInfo(session, $"{match.TownName} has been reset. The conflict is cleared and the town can be attacked again.");
+            else
+                CommandHandlerHelper.WriteOutputInfo(session, $"{match.TownName} had no conflict in progress. Any stray proxy has been cleaned up.");
+        }
+
         #endregion Allegiance Hometown Testing Admin Commands
 
         #region Loot to Weenie Export

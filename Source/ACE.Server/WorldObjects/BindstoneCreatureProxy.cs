@@ -35,6 +35,49 @@ namespace ACE.Server.WorldObjects
         }
 
         // -----------------------------------------------------------------------
+        // Non-PK rejection — the stone strikes back
+        // -----------------------------------------------------------------------
+
+        /// <summary>
+        /// Only PK players may harm the bind stone. Anyone else (NPK, pets, wandering monsters)
+        /// has their attack turned back on them: the stone takes nothing and the attacker eats
+        /// the full amount. Every damage path must call this — melee/missile via DamageEvent and
+        /// war magic via SpellProjectile, which applies damage without going through TakeDamage.
+        /// Returns true if the attack was rejected, in which case the caller must deal 0 damage.
+        /// </summary>
+        public bool TryReflectNonPkAttack(WorldObject source, DamageType damageType, float amount)
+        {
+            var attacker = source as Creature ?? source?.ProjectileSource as Creature;
+
+            if (attacker is Player playerAttacker && playerAttacker.IsPK)
+                return false;
+
+            if (attacker == null || !attacker.IsAlive || amount <= 0 || IsDead)
+                return true;
+
+            try
+            {
+                if (attacker is Player player)
+                {
+                    player.TakeDamage(this, damageType, amount, BodyPart.Chest);
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat(
+                        $"The Bind Stone's wards turn your attack back upon you for {(uint)Math.Round(amount):N0} points of damage!",
+                        ChatMessageType.Combat));
+                }
+                else
+                    attacker.TakeDamage(this, damageType, amount);
+
+                attacker.EnqueueBroadcast(new GameMessageScript(attacker.Guid, PlayScript.EnchantUpBlue));
+            }
+            catch (Exception ex)
+            {
+                log.Error($"[AllegianceHometown] Exception reflecting attack from {attacker.Name} ({attacker.Guid}) on town {TownId} bindstone proxy. Ex: {ex}");
+            }
+
+            return true;
+        }
+
+        // -----------------------------------------------------------------------
         // Death — trigger attacker victory instead of normal creature death
         // -----------------------------------------------------------------------
 
@@ -46,6 +89,7 @@ namespace ACE.Server.WorldObjects
         }
 
         private bool _dieEntered = false;
+        private bool _resolved   = false;
 
         protected override void Die(DamageHistoryInfo lastDamager, DamageHistoryInfo topDamager)
         {
@@ -54,22 +98,69 @@ namespace ACE.Server.WorldObjects
 
             UpdateVital(Health, 0);
 
-            // No corpse, no loot — just despawn after death animation
-            CurrentMotionState = new Motion(MotionStance.NonCombat, MotionCommand.Ready);
-            PhysicsObj?.StopCompletely(true);
+            var deathAnimLength = 0.0;
 
-            var motionDeath = new Motion(MotionStance.NonCombat, MotionCommand.Dead);
-            var deathAnimLength = ExecuteMotion(motionDeath);
+            // Never let a presentation failure abort the sequence — reaching the resolve below is
+            // what ends Phase 2, and once _dieEntered is set nothing else will call Die() again.
+            try
+            {
+                // No corpse, no loot — just despawn after death animation
+                CurrentMotionState = new Motion(MotionStance.NonCombat, MotionCommand.Ready);
+                PhysicsObj?.StopCompletely(true);
+
+                var motionDeath = new Motion(MotionStance.NonCombat, MotionCommand.Dead);
+                deathAnimLength = ExecuteMotion(motionDeath);
+            }
+            catch (Exception ex)
+            {
+                log.Error($"[AllegianceHometown] Exception in death animation for town {TownId} bindstone proxy. Ex: {ex}");
+            }
 
             var chain = new ACE.Server.Entity.Actions.ActionChain();
             chain.AddDelaySeconds(Math.Max(deathAnimLength, 0.5));
-            chain.AddAction(this, () =>
+            chain.AddAction(this, () => ResolvePhase2(attackerVictory: true));
+            chain.EnqueueChain();
+        }
+
+        /// <summary>
+        /// Despawns the proxy without resolving Phase 2 for either side. Used by the admin reset,
+        /// which clears the conflict itself — latching the guards here keeps a queued death chain
+        /// or heartbeat from resolving a conflict that no longer exists.
+        /// </summary>
+        public void AdminDespawn()
+        {
+            _resolved   = true;
+            _dieEntered = true;
+            Destroy();
+        }
+
+        /// <summary>
+        /// Ends Phase 2 and removes the proxy. The despawn runs in a finally so that a throw in the
+        /// outcome handler can never strand the proxy and the real bindstone in the world together
+        /// with the conflict stuck open.
+        /// </summary>
+        private void ResolvePhase2(bool attackerVictory)
+        {
+            if (_resolved) return;
+            _resolved = true;
+
+            try
             {
-                AllegianceHometownManager.HandleAttackerVictory(TownId);
+                if (attackerVictory)
+                    AllegianceHometownManager.HandleAttackerVictory(TownId);
+                else
+                    AllegianceHometownManager.HandleDefenderVictory(TownId);
+            }
+            catch (Exception ex)
+            {
+                log.Error($"[AllegianceHometown] Exception resolving Phase 2 for town {TownId} (attackerVictory={attackerVictory}); forcing the conflict closed. Ex: {ex}");
+                AllegianceHometownManager.ForceEndConflict(TownId);
+            }
+            finally
+            {
                 AllegianceHometownManager.UnregisterPhase2Proxy(TownId);
                 Destroy();
-            });
-            chain.EnqueueChain();
+            }
         }
 
         // -----------------------------------------------------------------------
@@ -119,45 +210,90 @@ namespace ACE.Server.WorldObjects
 
         public override void Heartbeat(double currentUnixTime)
         {
-            if (IsAlive)
+            // Must run whether or not the proxy is alive: a proxy sitting at 0 HP with an
+            // unfinished death sequence is precisely the case that needs rescuing, and it is
+            // the only thing left that can end Phase 2.
+            try
             {
-                var entry = AllegianceHometownRegistry.GetByLandblock(CurrentLandblock?.Id.Landblock ?? 0);
-                if (entry != null)
-                {
-                    var town = AllegianceHometownManager.GetTown(entry.TownId);
-                    if (town?.ConflictPhase == 2 && town.Phase2StartTime.HasValue)
-                    {
-                        var elapsed       = DateTime.UtcNow - town.Phase2StartTime.Value;
-                        var phase2Duration = TimeSpan.FromMinutes(30);
-
-                        if (elapsed >= phase2Duration)
-                        {
-                            AllegianceHometownManager.HandleDefenderVictory(entry.TownId);
-                            AllegianceHometownManager.UnregisterPhase2Proxy(entry.TownId);
-                            Destroy();
-                            return;
-                        }
-
-                        var now = DateTime.UtcNow;
-                        if ((now - _lastPhase2Broadcast).TotalSeconds >= 60)
-                        {
-                            _lastPhase2Broadcast = now;
-                            var remaining = phase2Duration - elapsed;
-                            var hpPct     = Health.MaxValue > 0
-                                ? (float)Health.Current / Health.MaxValue * 100f
-                                : 0f;
-                            var timeStr = AllegianceHometownManager.FormatTimeSpan(remaining);
-                            PlayerManager.BroadcastToAll(
-                                new GameMessageSystemChat(
-                                    $"[{entry.TownName}] The Bind Stone is under attack by {town.ConflictAttackerName}! " +
-                                    $"Time remaining: {timeStr} — Bind Stone HP: {hpPct:0.0}%",
-                                    ChatMessageType.WorldBroadcast));
-                        }
-                    }
-                }
+                CheckPhase2();
+            }
+            catch (Exception ex)
+            {
+                log.Error($"[AllegianceHometown] Exception in Phase 2 heartbeat for town {TownId} bindstone proxy. Ex: {ex}");
             }
 
             base.Heartbeat(currentUnixTime);
+        }
+
+        /// <summary>How long a proxy may sit at 0 HP before we assume its death sequence died with it.</summary>
+        private static readonly TimeSpan DeathWatchdog = TimeSpan.FromSeconds(30);
+
+        private DateTime? _deadSince;
+
+        private void CheckPhase2()
+        {
+            if (_resolved) return;
+
+            var now = DateTime.UtcNow;
+
+            // Watchdog: HP is gone but the death sequence never finished the handoff. Resolve it
+            // here rather than leave the town locked with both stones spawned.
+            if (!IsAlive)
+            {
+                if (_deadSince == null)
+                {
+                    _deadSince = now;
+                    return;
+                }
+
+                if (now - _deadSince.Value >= DeathWatchdog)
+                {
+                    log.Error($"[AllegianceHometown] Town {TownId} bindstone proxy has been at 0 HP for " +
+                              $"{(now - _deadSince.Value).TotalSeconds:0}s without completing its death sequence " +
+                              $"(dieEntered={_dieEntered}); forcing attacker victory.");
+                    ResolvePhase2(attackerVictory: true);
+                }
+                return;
+            }
+
+            _deadSince = null;
+
+            // Read the Phase 2 state atomically — conflicts resolve on other landblock threads.
+            if (!AllegianceHometownManager.TryGetPhase2Status(TownId, out var phase2Start, out var attackerName, out var townName))
+            {
+                // The conflict ended somewhere else and left us behind — despawn rather than linger
+                // as an unkillable stone nobody can resolve.
+                log.Warn($"[AllegianceHometown] Town {TownId} bindstone proxy is orphaned (town is no longer in Phase 2); despawning.");
+                _resolved = true;
+                AllegianceHometownManager.UnregisterPhase2Proxy(TownId);
+                AllegianceHometownManager.UncloakPhase2Bindstone(TownId);
+                Destroy();
+                return;
+            }
+
+            var elapsed        = now - phase2Start;
+            var phase2Duration = AllegianceHometownManager.Phase2Duration;
+
+            if (elapsed >= phase2Duration)
+            {
+                ResolvePhase2(attackerVictory: false);
+                return;
+            }
+
+            if ((now - _lastPhase2Broadcast).TotalSeconds >= 60)
+            {
+                _lastPhase2Broadcast = now;
+                var remaining = phase2Duration - elapsed;
+                var hpPct     = Health.MaxValue > 0
+                    ? (float)Health.Current / Health.MaxValue * 100f
+                    : 0f;
+                var timeStr = AllegianceHometownManager.FormatTimeSpan(remaining);
+                PlayerManager.BroadcastToAll(
+                    new GameMessageSystemChat(
+                        $"[{townName}] The Bind Stone is under attack by {attackerName}! " +
+                        $"Time remaining: {timeStr} — Bind Stone HP: {hpPct:0.0}%",
+                        ChatMessageType.WorldBroadcast));
+            }
         }
     }
 }

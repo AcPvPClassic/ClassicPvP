@@ -35,6 +35,10 @@ A town that has just been captured is now protected from re-attack for **8 hours
 
 Added a `@globalchatgag` / `@globalchatungag` admin command that silences a character in the global chat channels (General/Trade/LFG/Society/Olthoi/Roleplay) only — local say, emotes, and tells still work. The gag persists across logout.
 
+### 🐛 Hometown Control — Bind Stone Destruction Fix
+
+Fixed a bug where a town's bind stone could fail to be destroyed, leaving a hometown control event stuck and the town unable to be attacked. Bind stones now reliably resolve when destroyed.
+
 ---
 
 ## 🩹 v1.11 — July 12, 2026

@@ -218,13 +218,6 @@ namespace ACE.Server.Entity
             if (playerAttacker != null && playerAttacker.IsTinker && playerDefender == null)
                 return 0.0f;
 
-            // Bindstone proxy (Phase 2) — only PK players may deal damage; pets and NPKs deal zero
-            if (defender.WeenieClassId == ACE.Database.CustomWeenieId.BindstoneCreatureProxy)
-            {
-                if (playerAttacker == null || !playerAttacker.IsPK)
-                    return 0.0f;
-            }
-
             //Arenas - If this is an arena landblock
             //don't allow any dmg except while the event is in a started status (Status == 4)
             //Tugak War allows no weapon damage at all - players fight only with the Health Bolt line of spells
@@ -1056,8 +1049,14 @@ namespace ACE.Server.Entity
             // chosen by weapon skill (Bow/Crossbow/Thrown = missile; everything else = melee).
             // Applied last so it is uniform across all damage types and cannot be stripped by
             // Vulnerability the way armor can.
-            if (defender.WeenieClassId == ACE.Database.CustomWeenieId.BindstoneCreatureProxy)
+            if (defender is BindstoneCreatureProxy bindstoneProxy)
             {
+                // Only PK players may harm the stone; everyone else takes their own hit back.
+                // Checked here rather than up front so the reflected amount is a real damage
+                // number, and before the mods below so the attacker eats the undiminished hit.
+                if (bindstoneProxy.TryReflectNonPkAttack(attacker, DamageType, Damage))
+                    return 0.0f;
+
                 var isMissile = Weapon != null &&
                     (Weapon.WeaponSkill == Skill.Bow || Weapon.WeaponSkill == Skill.Crossbow || Weapon.WeaponSkill == Skill.ThrownWeapon);
                 var dmgModProp = isMissile ? "ah_bindstone_missile_dmg_mod" : "ah_bindstone_melee_dmg_mod";

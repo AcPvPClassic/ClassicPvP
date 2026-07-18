@@ -910,8 +910,17 @@ namespace ACE.Server.WorldObjects
 
             // Bindstone proxy (Phase 2): war-magic damage falls off with distance too, so mages
             // must hold the stone at close range rather than snipe it (mirrors the weapon path).
-            if (target.WeenieClassId == ACE.Database.CustomWeenieId.BindstoneCreatureProxy && sourcePlayer != null)
-                finalDamage *= ACE.Server.Managers.AllegianceHometownManager.GetDistanceMultiplier((float)target.Location.DistanceTo(sourcePlayer.Location));
+            if (target is BindstoneCreatureProxy bindstoneProxy)
+            {
+                // Only PK players may harm the stone; everyone else takes their own spell back.
+                // This path applies damage without going through TakeDamage, so the gate has to
+                // live here as well as in DamageEvent.
+                if (bindstoneProxy.TryReflectNonPkAttack(source, Spell.DamageType, finalDamage))
+                    return null;
+
+                if (sourcePlayer != null)
+                    finalDamage *= ACE.Server.Managers.AllegianceHometownManager.GetDistanceMultiplier((float)target.Location.DistanceTo(sourcePlayer.Location));
+            }
 
             return finalDamage;
             }
