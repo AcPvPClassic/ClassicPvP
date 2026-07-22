@@ -813,8 +813,8 @@ Killing the same player more than **3 times within a 1-hour window** suppresses 
 | Writ of Pursuit | 200 | Inscribe with `PlayerName:Amount` and turn in to flag a player as a High Priority Target. |
 | Workmanship Morph Gem | 500 | Randomizes the Workmanship of a loot item (1–10). |
 | Arcane Lore Morph Gem | 350 | 75% chance to reduce Arcane Lore requirement by 5–25; 15% chance of no effect; 10% chance to increase it by 5–15. |
-| Missile Defense Requirement Morph Gem | 400 | Removes the Missile Defense activation requirement from an item. |
-| Melee Defense Requirement Morph Gem | 400 | Removes the Melee Defense activation requirement from an item. |
+| Missile Defense Requirement Morph Gem | 400 | Removes an item's Missile Defense requirement — both the activation requirement and any Missile Defense wield requirement. |
+| Melee Defense Requirement Morph Gem | 400 | Removes an item's Melee Defense requirement — both the activation requirement and any Melee Defense wield requirement. |
 | Player Wield Requirement Morph Gem | 500 | Removes the wield restriction binding an item to a specific player. |
 | Slayer Morph Gem | 100 | Randomizes the creature-slayer type on a loot-gen weapon or caster that already has a slayer, or on loot-gen armor with a Creature Slayer Rating. |
 | Creature Resistance Morph Gem | 100 | Randomizes the creature-resistance type on loot-gen armor/jewelry that has a Creature Resist Rating. |

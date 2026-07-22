@@ -9,6 +9,10 @@
 
 ## 🩹 v1.13 (in development)
 
+### 💎 Defense Requirement Morph Gems Now Also Strip Wield Requirements
+
+The **Missile Defense Requirement Morph Gem** and **Melee Defense Requirement Morph Gem** previously only removed a defense skill's **activation** requirement (the skill you needed to *use* the item's magic). They now also remove a matching **wield** requirement — the defense-skill threshold you needed just to equip the item. Other wield requirements (level, attributes, a different skill) are left alone. An item that had *only* the wield requirement is now a valid target for the gem, whereas before it would have been rejected.
+
 ### 🛡️ Shields Now Protect You Out of Combat
 
 Your equipped shield now adds its armor level to your defense **even in peace mode** — you no longer have to be in combat stance for the shield to count. As always, it only blocks attacks coming from your **front** (a 180° frontal arc), and it now does so against **both players and monsters**. No shield skill is required — just wield a shield.
