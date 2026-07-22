@@ -23,6 +23,16 @@ Your equipped shield now adds its armor level to your defense **even in peace mo
 
 The one exception is the **1v1 arena**, where shields still only work while you're in combat stance.
 
+### 🔓 Free a Stuck Character Yourself — `/ForceLogoffStuckCharacter`
+
+If one of your characters gets **stuck in the world** and won't log out, you no longer have to wait for an admin. Log onto **another character on the same account** and run:
+
+`/ForceLogoffStuckCharacter <stuck character name>`
+
+The server will force the stuck character out of the world. For safety it only works on a character **on your own account** (you can't target yourself or anyone else's character).
+
+**Important:** the first run asks the character to log off gracefully and gives it about a minute to do so. If it's still stuck, **run the command a second time** — the second run forcibly removes it. This two-step behavior is intentional: the first attempt tries for a clean save before the second one forces the issue.
+
 ---
 
 ## 🩹 v1.12 — July 17, 2026

@@ -73,6 +73,19 @@ The intent is simple: no multi-boxing, no alt-army farming, no market manipulati
 
 ---
 
+## 🔓 Freeing a Stuck Character
+
+Occasionally a character can get **stuck in the world** — it stays "in game" and won't log out (for example, if something went wrong during a death or a teleport). When that happens you don't need to wait for an admin: log onto **another character on the same account** and run
+
+`/ForceLogoffStuckCharacter <stuck character name>`
+
+The server forces the stuck character out of the world so you can log back in on it normally.
+
+- It only works on a character on **your own account** — you can't target yourself, and you can't force off another player's character.
+- **Run it twice if needed.** The first run asks the character to log off cleanly and gives it about a minute. If it's still stuck, run the command again — the second run forcibly removes it. This is intentional: the first attempt tries for a clean save before the second one forces the issue.
+
+---
+
 ## 🏠 Housing
 
 ClassicPvP relaxes the retail purchase requirements so housing is broadly accessible:

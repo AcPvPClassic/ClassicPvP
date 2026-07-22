@@ -2411,6 +2411,53 @@ namespace ACE.Server.Command.Handlers
             }
         }
 
+        [CommandHandler("ForceLogoffStuckCharacter", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, "Force log off of a character that's stuck in game.  Is only allowed when initiated from a character that is on the same account as the target character.", "<stuck character name>")]
+        public static void HandleForceLogoffStuckCharacter(Session session, params string[] parameters)
+        {
+            if (!CheckPlayerCommandRateLimit(session))
+                return;
+
+            var playerName = "";
+            if (parameters.Length > 0)
+                playerName = string.Join(" ", parameters);
+
+            if (string.IsNullOrEmpty(playerName))
+            {
+                CommandHandlerHelper.WriteOutputInfo(session, $"Invalid parameters, please provide a player name for the character that needs to be logged off.");
+                return;
+            }
+
+            var plr = PlayerManager.FindByName(playerName);
+            if (plr == null)
+            {
+                CommandHandlerHelper.WriteOutputInfo(session, $"Unable to force log off for {playerName}: Player not found.");
+                return;
+            }
+
+            var target = PlayerManager.GetOnlinePlayer(plr.Guid);
+            if (target == null)
+            {
+                CommandHandlerHelper.WriteOutputInfo(session, $"Unable to force log off for {plr.Name}: Player is not online.");
+                return;
+            }
+
+            // Verify the target is not the current player
+            if (session.Player.Guid == target.Guid)
+            {
+                CommandHandlerHelper.WriteOutputInfo(session, $"Unable to force log off for {plr.Name}: You cannot target yourself, please try with a different character on the same account.");
+                return;
+            }
+
+            // Verify the target is on the same account as the current player
+            if (session.AccountId != target.Account.AccountId)
+            {
+                CommandHandlerHelper.WriteOutputInfo(session, $"Unable to force log off for {plr.Name}: Target must be within the same account as the player who issues the logoff command. Please reach out for admin support.");
+                return;
+            }
+
+            DeveloperCommands.HandleForceLogoff(session, parameters);
+        }
+
         #region Arena
 
         [CommandHandler("arena", AccessLevel.Player, CommandHandlerFlag.None, 1,
