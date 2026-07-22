@@ -146,6 +146,12 @@ namespace ACE.Server.WorldObjects
         private double _lastSpeedAvg3sScoreTime;
         private double _lastSpeedAvg15sScoreTime;
 
+        /// <summary>Unix timestamp of the last average-speed violation (either window).  The heartbeat
+        /// score decay is suppressed for a short grace period after this so a sustained quickness hack —
+        /// which fires only once per window — climbs monotonically instead of having its gains cancelled
+        /// by decay between fires.  A one-off false positive still decays once the grace period lapses.</summary>
+        private double _lastAvgViolationTime;
+
         /// <summary>Consecutive violated evaluations of each average-speed window.  A clean
         /// evaluation resets the streak.  Sustained small overages (e.g. a +20% quickness hack)
         /// gain a +3-per-streak score floor so they escalate to a kick over a few minutes

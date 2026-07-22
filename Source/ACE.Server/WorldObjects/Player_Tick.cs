@@ -249,6 +249,7 @@ namespace ACE.Server.WorldObjects
                     MovementSuspicionScore = 0.0f;
                     _suspicionScoreAtLastHeartbeat = 0.0f;
                     _cleanHeartbeatStreak = 0;
+                    _lastAvgViolationTime = 0.0;
                     RubberBandRecoveryUntil = 0.0;
                     MovementWindowBuffer.Clear();
                     ReversalEventTimes.Clear();
@@ -273,7 +274,16 @@ namespace ACE.Server.WorldObjects
                 // "No violation this interval" is detected by comparing the live score against the
                 // snapshot from the previous heartbeat: a genuine cheater keeps the score rising and
                 // never benefits, while a one-off false positive clears within a heartbeat or two.
-                if (MovementSuspicionScore > 0.0f)
+                // Average-speed violations fire only once per window (3 s / 15 s), far less often than
+                // the 5 s heartbeat, so plain decay between fires cancels a moderate quickness hack's
+                // gains and lets it run for minutes.  Suppress decay for a grace period after any
+                // average-speed violation: a SUSTAINED cheat (fires every window) never gets a clean
+                // grace gap and climbs monotonically, while a one-off false positive resumes decaying
+                // once the grace lapses.
+                bool _avgViolationActive = _lastAvgViolationTime > 0.0
+                    && currentUnixTime - _lastAvgViolationTime < 20.0;
+
+                if (MovementSuspicionScore > 0.0f && !_avgViolationActive)
                 {
                     if (MovementSuspicionScore <= _suspicionScoreAtLastHeartbeat)
                     {
@@ -1131,7 +1141,7 @@ namespace ACE.Server.WorldObjects
                             // once and decays.
 
                             // Local function: evaluate one window and return true if a kick was triggered.
-                            bool EvalSpeedWindow(double windowSecs, float ceilingMultiplier, float strafeSegMult, float scoreMultiplier, float scoreCap, string violationType, ref double lastScoreTime, ref int violationStreak)
+                            bool EvalSpeedWindow(double windowSecs, float ceilingMultiplier, float strafeSegMult, float scoreMultiplier, float scoreCap, int sustainedKickWindows, string violationType, ref double lastScoreTime, ref int violationStreak)
                             {
                                 // A single burst keeps the trailing average elevated for seconds, and
                                 // this runs on every movement packet — without a cooldown one breach
@@ -1186,17 +1196,21 @@ namespace ACE.Server.WorldObjects
 
                                 lastScoreTime = currentTime;
                                 violationStreak++;
+                                // Suppress the general heartbeat score decay while average-speed
+                                // violations are actively firing (see Heartbeat): a sustained cheat fires
+                                // only once per window, and without this the decay between fires cancels
+                                // the gains, letting a moderate quickness hack run for minutes.
+                                _lastAvgViolationTime = currentTime;
 
                                 // For logging, express both sides as average speeds over the span.
                                 var avgSpeed = (float)(totalDist / span);
                                 var avgWindowMaxSpeed = (float)(allowedDist / span);
 
-                                // Proportional gain for large overages; the streak floor (+3 per
-                                // consecutive violated window, capped at the score cap) ensures a
-                                // small-but-SUSTAINED overage escalates to a kick over a few minutes
-                                // instead of being permanently cancelled by heartbeat score decay.
+                                // Proportional gain for large overages; the streak floor (per consecutive
+                                // violated window, capped at the score cap) ensures a small-but-SUSTAINED
+                                // overage escalates instead of being cancelled by heartbeat score decay.
                                 var overage = (totalDist / allowedDist) - 1.0f;
-                                var suspicionGain = Math.Min(Math.Max(overage * scoreMultiplier, violationStreak * 3.0f), scoreCap);
+                                var suspicionGain = Math.Min(Math.Max(overage * scoreMultiplier, violationStreak * 5.0f), scoreCap);
                                 MovementSuspicionScore += suspicionGain;
 
                                 log.Warn($"{Name} - AVG SPEED VIOLATION ({windowSecs:0}s window) - AvgSpeed: {avgSpeed:0.00}/{avgWindowMaxSpeed:0.00} SuspicionScore: {MovementSuspicionScore:0.0}");
@@ -1212,6 +1226,26 @@ namespace ACE.Server.WorldObjects
                                 System.Threading.Tasks.Task.Run(() =>
                                     DatabaseManager.Log.LogMovementViolation(
                                         Guid.Full, Name, _account, _vtype, _avg, _max, _score, _loc));
+
+                                // Decisive sustained-overage kick: several consecutive violated windows is
+                                // cheating the fuzzy score can't be talked out of by decay.  N × 15 s of
+                                // average speed over the ceiling is not achievable legitimately — glitch-
+                                // runners top out at 1.248× and can't hold even that continuously, so they
+                                // never trip the ceiling in the first place.  Blatant overages (≥ 50% over
+                                // the ceiling, i.e. a ~2× hack) kick one window sooner.  sustainedKickWindows
+                                // is int.MaxValue for the 3 s window (burst headroom — only the 15 s window
+                                // carries this decisive kick).
+                                if (sustainedKickWindows < int.MaxValue)
+                                {
+                                    var _kickWindows = overage >= 0.5f ? Math.Max(2, sustainedKickWindows - 1) : sustainedKickWindows;
+                                    if (violationStreak >= _kickWindows)
+                                    {
+                                        log.Warn($"{Name} - SUSTAINED AVG SPEED KICK ({windowSecs:0}s window, streak {violationStreak} >= {_kickWindows}, avg {avgSpeed:0.00}/{avgWindowMaxSpeed:0.00}) - KICKING");
+                                        Session.Terminate(SessionTerminationReason.MovementEnforcementFailure,
+                                            new GameMessageBootAccount(" because there is a divergence between your server and client locations"));
+                                        return true;
+                                    }
+                                }
 
                                 // Kick when suspicion score reaches 50 (sustained cheating pattern).
                                 if (MovementSuspicionScore >= 50.0f)
@@ -1242,17 +1276,22 @@ namespace ACE.Server.WorldObjects
                             const float StrafeRunMultiplier = 1.248f; // engine's own strafe-run speed multiplier
                             var _ceiling3s  = (float)PropertyManager.GetDouble("movement_avg_ceiling_3s").Item;
                             var _ceiling15s = (float)PropertyManager.GetDouble("movement_avg_ceiling_15s").Item;
-                            // 3 s window keeps burst headroom: strafe segments stack the strafe
-                            // multiplier on the ceiling (covers downhill / jump / lag-catch-up bursts),
-                            // as before.  Bursts wash out over 15 s, so this stays lenient.
-                            var _strafe3s   = StrafeRunMultiplier * _ceiling3s;
+                            // 3 s window keeps burst headroom: strafe segments get their own (looser)
+                            // ceiling to cover downhill / jump / lag-catch-up bursts.  Tunable via
+                            // movement_avg_strafe_ceiling_3s (default 1.45) — tighter than the old derived
+                            // 1.248 × ceiling (1.62) so moderate cheats trip the fast window too.
+                            var _strafe3s   = (float)PropertyManager.GetDouble("movement_avg_strafe_ceiling_3s").Item;
                             // 15 s window is the sustained-hack detector: strafe segments are capped FLAT
                             // at movement_avg_strafe_ceiling_15s (legit strafe-run 1.248x + a small
                             // margin) rather than 1.248 x ceiling, so faking the sidestep flag no longer
                             // buys a large sustained overage.
                             var _strafe15s  = (float)PropertyManager.GetDouble("movement_avg_strafe_ceiling_15s").Item;
-                            if (EvalSpeedWindow(3.0, _ceiling3s, _strafe3s, 25.0f, 10.0f, "speed_avg_3s", ref _lastSpeedAvg3sScoreTime, ref _speedAvg3sViolationStreak)) return false;
-                            if (EvalSpeedWindow(15.0, _ceiling15s, _strafe15s, 40.0f, 15.0f, "speed_avg_15s", ref _lastSpeedAvg15sScoreTime, ref _speedAvg15sViolationStreak)) return false;
+                            // Consecutive 15 s windows over the ceiling before a decisive kick (see the
+                            // sustained-overage kick in EvalSpeedWindow).  The 3 s window passes MaxValue
+                            // so only the high-confidence 15 s window carries the direct kick.
+                            var _kickWindows = (int)PropertyManager.GetLong("movement_avg_sustained_kick_windows").Item;
+                            if (EvalSpeedWindow(3.0, _ceiling3s, _strafe3s, 25.0f, 10.0f, int.MaxValue, "speed_avg_3s", ref _lastSpeedAvg3sScoreTime, ref _speedAvg3sViolationStreak)) return false;
+                            if (EvalSpeedWindow(15.0, _ceiling15s, _strafe15s, 40.0f, 15.0f, _kickWindows, "speed_avg_15s", ref _lastSpeedAvg15sScoreTime, ref _speedAvg15sViolationStreak)) return false;
                         }
 
                         // --- Script detection: inter-packet timing regularity ---
