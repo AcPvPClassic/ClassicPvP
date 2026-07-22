@@ -4538,9 +4538,23 @@ namespace ACE.Server.Physics
                     bool _blockedByDynamicObjects = fullTransition != null
                         && fullTransition.CollisionInfo.CollideObject != null
                         && fullTransition.CollisionInfo.CollideObject.Count > 0;
-                    LastTransitionHitGeometry = fullTransition != null && !valid
-                        && dist > 0.5f
-                        && !_blockedByDynamicObjects;
+                    // Flag ONLY genuine wall-clips, never terrain.  A wall stops the sweep with a
+                    // near-horizontal contact normal (Z ~ 0); a walkable slope/step stops it with a
+                    // floor-like normal (Z >= TerrainGraceFloorNormalZ).  Requiring wall-like contact
+                    // makes this check safe to run with enforce_player_movement OFF (forcePos=true, no
+                    // physics rubber-band pre-filtering terrain disagreements), where it is the sole
+                    // wall-clip defense — hills and steps no longer false-fire.  No normal evidence at
+                    // all is ambiguous and is NOT flagged, to keep false positives at zero.
+                    bool _wallLikeContact = false;
+                    if (fullTransition != null && !valid && dist > 0.5f && !_blockedByDynamicObjects)
+                    {
+                        var _ci = fullTransition.CollisionInfo;
+                        if (_ci.CollisionNormalValid && _ci.CollisionNormal != System.Numerics.Vector3.Zero)
+                            _wallLikeContact = _ci.CollisionNormal.Z < TerrainGraceFloorNormalZ;
+                        else if (_ci.ContactPlaneValid)
+                            _wallLikeContact = _ci.ContactPlane.Normal.Z < TerrainGraceFloorNormalZ;
+                    }
+                    LastTransitionHitGeometry = _wallLikeContact;
 
                     // Anti-cheat (Options K & N): scan the collision list for specific object types.
                     // Also classifies the blockers for the dynamic-collision grace below:
