@@ -1091,18 +1091,14 @@ namespace ACE.Server.WorldObjects
                             MovementWindowBuffer[MovementWindowBuffer.Count - 1].Pos.Distance2D(newPosition) > 100.0f)
                             MovementWindowBuffer.Clear();
 
-                        // The EFFECTIVE run rate is sampled per-entry: server-side GetRunRate(), times
-                        // the engine's own 1.248x strafe-run multiplier when a sidestep command is
-                        // active.  The average-speed windows integrate these samples into a
-                        // time-weighted allowance, so a legitimate glitch-runner (strafe+forward at
-                        // 1.248x) gets strafe-rate allowance only for the segments they actually
-                        // strafed, while a quickness-cheating forward runner is measured against
-                        // plain forward speed.  Rates are server-authoritative; the client can at
-                        // most fake the sidestep flag, which caps its benefit at what legitimate
-                        // strafe-running already achieves.
+                        // Record the server-authoritative RAW run rate plus whether a sidestep command
+                        // was active.  The average-speed windows apply the strafe allowance per segment
+                        // (see EvalSpeedWindow): the 15 s window caps a strafe segment FLAT rather than
+                        // stacking the 1.248x strafe multiplier on top of the ceiling, so a client that
+                        // fakes the sidestep flag to run forward fast can't buy 1.248 x ceiling of
+                        // sustained speed.  Rates are server-side and can't be spoofed.
                         var _bufSideStep = PhysicsObj.get_minterp()?.RawState.SideStepCommand != (uint)MotionCommand.Invalid;
-                        var _bufEffRate = GetRunRate() * (_bufSideStep ? 1.248f : 1.0f);
-                        MovementWindowBuffer.Add((currentTime, new ACE.Entity.Position(newPosition), _bufEffRate));
+                        MovementWindowBuffer.Add((currentTime, new ACE.Entity.Position(newPosition), GetRunRate(), _bufSideStep));
                         // Prune entries older than the longest window (15 s).
                         while (MovementWindowBuffer.Count > 0 && currentTime - MovementWindowBuffer[0].Timestamp > 15.0)
                             MovementWindowBuffer.RemoveAt(0);
@@ -1135,7 +1131,7 @@ namespace ACE.Server.WorldObjects
                             // once and decays.
 
                             // Local function: evaluate one window and return true if a kick was triggered.
-                            bool EvalSpeedWindow(double windowSecs, float ceilingMultiplier, float scoreMultiplier, float scoreCap, string violationType, ref double lastScoreTime, ref int violationStreak)
+                            bool EvalSpeedWindow(double windowSecs, float ceilingMultiplier, float strafeSegMult, float scoreMultiplier, float scoreCap, string violationType, ref double lastScoreTime, ref int violationStreak)
                             {
                                 // A single burst keeps the trailing average elevated for seconds, and
                                 // this runs on every movement packet — without a cooldown one breach
@@ -1171,10 +1167,17 @@ namespace ACE.Server.WorldObjects
                                 {
                                     totalDist += MovementWindowBuffer[i].Pos.Distance2D(MovementWindowBuffer[i + 1].Pos);
                                     var segTime = (float)(MovementWindowBuffer[i + 1].Timestamp - MovementWindowBuffer[i].Timestamp);
-                                    totalAllowed += 4.0f * MovementWindowBuffer[i].RunRate * Math.Min(segTime, 1.5f);
+                                    // Per-segment allowance multiplier: forward segments get the window
+                                    // ceiling; strafe segments (sidestep flag set) get strafeSegMult
+                                    // INSTEAD of stacking the strafe multiplier on top of the ceiling.
+                                    // This closes the quickness-hack leak where faking the sidestep flag
+                                    // yielded 1.248 x ceiling (1.435x sustained on the 15 s window).
+                                    var segMult = MovementWindowBuffer[i].SideStep ? strafeSegMult : ceilingMultiplier;
+                                    totalAllowed += 4.0f * MovementWindowBuffer[i].RawRunRate * Math.Min(segTime, 1.5f) * segMult;
                                 }
 
-                                var allowedDist = totalAllowed * ceilingMultiplier;
+                                // Ceiling is already folded into each segment's allowance above.
+                                var allowedDist = totalAllowed;
                                 if (allowedDist <= 0f || totalDist <= allowedDist)
                                 {
                                     violationStreak = 0; // clean evaluation — sustained pattern broken
@@ -1236,10 +1239,20 @@ namespace ACE.Server.WorldObjects
                             // hack kicks in under a minute; a sustained +20% quickness hack alerts on
                             // every 15 s window and the streak escalator kicks it within a few
                             // minutes.  An isolated burst scores once and decays.
+                            const float StrafeRunMultiplier = 1.248f; // engine's own strafe-run speed multiplier
                             var _ceiling3s  = (float)PropertyManager.GetDouble("movement_avg_ceiling_3s").Item;
                             var _ceiling15s = (float)PropertyManager.GetDouble("movement_avg_ceiling_15s").Item;
-                            if (EvalSpeedWindow(3.0, _ceiling3s, 25.0f, 10.0f, "speed_avg_3s", ref _lastSpeedAvg3sScoreTime, ref _speedAvg3sViolationStreak)) return false;
-                            if (EvalSpeedWindow(15.0, _ceiling15s, 40.0f, 15.0f, "speed_avg_15s", ref _lastSpeedAvg15sScoreTime, ref _speedAvg15sViolationStreak)) return false;
+                            // 3 s window keeps burst headroom: strafe segments stack the strafe
+                            // multiplier on the ceiling (covers downhill / jump / lag-catch-up bursts),
+                            // as before.  Bursts wash out over 15 s, so this stays lenient.
+                            var _strafe3s   = StrafeRunMultiplier * _ceiling3s;
+                            // 15 s window is the sustained-hack detector: strafe segments are capped FLAT
+                            // at movement_avg_strafe_ceiling_15s (legit strafe-run 1.248x + a small
+                            // margin) rather than 1.248 x ceiling, so faking the sidestep flag no longer
+                            // buys a large sustained overage.
+                            var _strafe15s  = (float)PropertyManager.GetDouble("movement_avg_strafe_ceiling_15s").Item;
+                            if (EvalSpeedWindow(3.0, _ceiling3s, _strafe3s, 25.0f, 10.0f, "speed_avg_3s", ref _lastSpeedAvg3sScoreTime, ref _speedAvg3sViolationStreak)) return false;
+                            if (EvalSpeedWindow(15.0, _ceiling15s, _strafe15s, 40.0f, 15.0f, "speed_avg_15s", ref _lastSpeedAvg15sScoreTime, ref _speedAvg15sViolationStreak)) return false;
                         }
 
                         // --- Script detection: inter-packet timing regularity ---

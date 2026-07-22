@@ -131,13 +131,13 @@ namespace ACE.Server.WorldObjects
         /// Ring buffer of recently validated positions used by the sliding-window average speed checks.
         /// Entries older than 15 seconds are pruned on each position update.
         /// Only contains positions that passed the per-packet speed check.
-        /// RunRate is the server-computed GetRunRate() at the time of the sample: the window ceiling is
-        /// derived from the MAX rate across the window, so a rate drop mid-window (run/road buff expiry,
-        /// stamina exhaustion) doesn't turn already-validated fast movement into a false violation.
-        /// Cleared on Teleport() so a portal/recall hop is never counted as travelled distance.
+        /// RawRunRate is the server-computed GetRunRate() at the time of the sample (WITHOUT the strafe
+        /// multiplier folded in); SideStep records whether a sidestep command was active.  The window
+        /// applies the strafe allowance per segment, so faking the sidestep flag can't buy ceiling-
+        /// stacked sustained speed.  Cleared on Teleport() so a portal/recall hop is never counted.
         /// </summary>
-        public System.Collections.Generic.List<(double Timestamp, ACE.Entity.Position Pos, float RunRate)> MovementWindowBuffer
-            = new System.Collections.Generic.List<(double, ACE.Entity.Position, float)>();
+        public System.Collections.Generic.List<(double Timestamp, ACE.Entity.Position Pos, float RawRunRate, bool SideStep)> MovementWindowBuffer
+            = new System.Collections.Generic.List<(double, ACE.Entity.Position, float, bool)>();
 
         /// <summary>Unix timestamps of the last time each average-speed window added to the suspicion
         /// score. A window's trailing average stays elevated for seconds after a single burst, and the
