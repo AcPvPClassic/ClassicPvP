@@ -9,6 +9,10 @@
 
 ## 🩹 v1.13 (in development)
 
+### 🎯 Bounties — Turn the Tables on Your Hunter
+
+If a bounty hunter comes for you and **you kill them instead**, their contract now **fails** and drops onto their corpse. Loot it and turn it in to the Bounty Collector to claim **100 PK Trophies** — a reward for surviving the hunt. Only you, the target named on the contract, can cash it in; to anyone else it's a worthless scrap. The hunter, meanwhile, loses the contract entirely.
+
 ### 💎 Defense Requirement Morph Gems Now Also Strip Wield Requirements
 
 The **Missile Defense Requirement Morph Gem** and **Melee Defense Requirement Morph Gem** previously only removed a defense skill's **activation** requirement (the skill you needed to *use* the item's magic). They now also remove a matching **wield** requirement — the defense-skill threshold you needed just to equip the item. Other wield requirements (level, attributes, a different skill) are left alone. An item that had *only* the wield requirement is now a valid target for the gem, whereas before it would have been rejected.

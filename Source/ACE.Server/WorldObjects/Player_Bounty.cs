@@ -169,6 +169,32 @@ namespace ACE.Server.WorldObjects
 
                 var targetGuid = (uint)contract.BountyTargetGuid.Value;
 
+                if (contract.IsFailedState)
+                {
+                    // A failed contract is looted from a slain hunter's corpse. Only the target
+                    // named on it (the prey who survived and killed the hunter) can cash it in.
+                    if (Guid.Full != targetGuid)
+                    {
+                        SendNpcResponse(npc, "This is a failed bounty contract. Only the target named on it — the hunter's intended prey — can turn it in for a reward.");
+                        return NpcTransactionResult.Return;
+                    }
+
+                    var failedReward = BountyContract.BountyFailedRewardAmount;
+                    if (failedReward > 0)
+                    {
+                        var bountyCurrencyWeenie = BountyContract.BountyCurrencyWeenie;
+                        SendNpcResponse(npc,
+                            $"You survived {contract.BountyOwnerName}'s hunt and turned in their failed contract; you have been rewarded {bountyCurrencyWeenie.BuildAmountString(failedReward)}.",
+                            () => GiveFromEmote(npc, BountyContract.BountyCurrencyWcid, amount: failedReward));
+                    }
+                    else
+                    {
+                        SendNpcResponse(npc, $"You survived {contract.BountyOwnerName}'s hunt. Their failed contract has been filed.");
+                    }
+
+                    return NpcTransactionResult.Consume;
+                }
+
                 if (contract.IsBountyExpired)
                 {
                     var bountyCurrencyWeenie      = BountyContract.BountyCurrencyWeenie;
@@ -624,6 +650,48 @@ namespace ACE.Server.WorldObjects
             contract.BountyKillStreakCount = killStreak;
 
             TryAddCompletedBountyContract(contract);
+        }
+
+        /// <summary>
+        /// Called during death-item calculation. If this dying player is a hunter holding an
+        /// active bounty contract on the very player who killed them, the contract fails:
+        /// it is marked Failed, pulled from inventory onto the corpse (added to
+        /// <paramref name="dropItems"/>), and removed from this hunter's active collection.
+        /// The target who survived the hunt can then loot the failed contract from the corpse
+        /// and turn it in to the Bounty Collector for a reward.
+        /// </summary>
+        public void TryFailBountyContractToCorpse(Corpse corpse, List<WorldObject> dropItems)
+        {
+            try
+            {
+                if (!BountyContract.IsBountySystemEnabled || corpse == null || dropItems == null)
+                    return;
+
+                // Only fail a contract when the killer is a player and is this hunter's target.
+                var killerGuid = corpse.KillerId;
+                if (!IsPKDeath(killerGuid))
+                    return;
+
+                if (!TryGetActiveBountyContract(killerGuid.Value, out var contract))
+                    return;
+
+                contract.SetState(BountyContract.BountyContractState.Failed, this);
+
+                // Move the failed contract from inventory onto the corpse for the target to loot.
+                if (TryRemoveFromInventoryWithNetworking(contract.Guid, out _, RemoveFromInventoryAction.ToCorpseOnDeath))
+                {
+                    dropItems.Add(contract);
+                    TryRemoveBountyContract(killerGuid.Value);
+                }
+                else
+                {
+                    log.Warn($"TryFailBountyContractToCorpse: couldn't remove failed contract 0x{contract.Guid.Full:X8} from {Name}'s inventory");
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error in TryFailBountyContractToCorpse for {Name} ({Guid.Full}): {ex}");
+            }
         }
 
         /// <summary>

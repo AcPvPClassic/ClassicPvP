@@ -789,6 +789,7 @@ namespace ACE.Server.Managers
                 ("bounty_currency_wcid",                  new Property<long>(1000002,    "WCID of the currency used to purchase bounty contracts (from the NPC). Also refunded when a contract expires because the target is unavailable.")),
                 ("bounty_currency_return_amount",         new Property<long>(25,         "Amount of bounty currency returned when a contract expires.")),
                 ("bounty_completion_reward_amount",       new Property<long>(100,        "Amount of bounty currency awarded when a contract is successfully completed (refunds the purchase token cost).")),
+                ("bounty_failed_reward_amount",           new Property<long>(100,        "Amount of bounty currency awarded to a bounty target who kills their hunter and turns in the failed contract looted from the hunter's corpse.")),
                 ("bounty_wop_currency_wcid",              new Property<long>(0,          "WCID of the currency used for Writs of Pursuit rewards.")),
                 ("bounty_wop_minimum_amount",            new Property<long>(200,        "Minimum reward amount that must be inscribed on a Writ of Pursuit for it to be accepted.")),
                 ("bounty_location_currency_wcid",         new Property<long>(0,          "WCID of the currency consumed to use the location finder on a bounty contract.")),

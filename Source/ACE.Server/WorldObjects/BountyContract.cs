@@ -27,6 +27,7 @@ namespace ACE.Server.WorldObjects
         public static uint BountyCurrencyWcid         => (uint)PropertyManager.GetLong("bounty_currency_wcid").Item;
         public static uint BountyCurrencyReturnAmount => (uint)PropertyManager.GetLong("bounty_currency_return_amount").Item;
         public static int BountyCompletionRewardAmount => (int)PropertyManager.GetLong("bounty_completion_reward_amount").Item;
+        public static int BountyFailedRewardAmount => (int)PropertyManager.GetLong("bounty_failed_reward_amount").Item;
         public static Weenie BountyCurrencyWeenie     => DatabaseManager.World.GetOrThrowCachedWeenie(BountyCurrencyWcid);
 
         public static uint BountyWopCurrencyWcid       => (uint)PropertyManager.GetLong("bounty_wop_currency_wcid").Item;
@@ -41,6 +42,7 @@ namespace ACE.Server.WorldObjects
         public bool IsCompletedState => ContractState == BountyContractState.Completed;
         public bool IsExpiredState   => ContractState == BountyContractState.Expired;
         public bool IsPendingState   => ContractState == BountyContractState.Pending;
+        public bool IsFailedState    => ContractState == BountyContractState.Failed;
 
         public bool IsInvalidContract => IsDestroyed || IsPendingState || !BountyTargetGuid.HasValue;
 
@@ -49,7 +51,8 @@ namespace ACE.Server.WorldObjects
             Pending   = 0,
             Active    = 1,
             Completed = 2,
-            Expired   = 3
+            Expired   = 3,
+            Failed    = 4
         }
 
         public BountyContractState ContractState
@@ -63,8 +66,8 @@ namespace ACE.Server.WorldObjects
             if (ContractState == newState)
                 return;
 
-            // Cannot exit expired state
-            if (IsExpiredState)
+            // Cannot exit terminal states
+            if (IsExpiredState || IsFailedState)
                 return;
 
             if (!IsValidTransition(ContractState, newState))
@@ -91,6 +94,11 @@ namespace ACE.Server.WorldObjects
                     SetUiEffect(ACE.Entity.Enum.UiEffects.Undef, owner,
                         message: $"Your contract for {BountyTargetName} has expired.");
                     break;
+
+                case BountyContractState.Failed:
+                    SetUiEffect(ACE.Entity.Enum.UiEffects.Nether, owner,
+                        message: $"You were slain by {BountyTargetName}; your contract has failed and dropped on your corpse.");
+                    break;
             }
         }
 
@@ -101,6 +109,7 @@ namespace ACE.Server.WorldObjects
                 (BountyContractState.Pending,   BountyContractState.Active)    => true,
                 (BountyContractState.Active,    BountyContractState.Completed) => true,
                 (BountyContractState.Active,    BountyContractState.Expired)   => true,
+                (BountyContractState.Active,    BountyContractState.Failed)    => true,
                 (BountyContractState.Completed, BountyContractState.Expired)   => true,
                 _ => false
             };
@@ -159,6 +168,10 @@ namespace ACE.Server.WorldObjects
         {
             get
             {
+                // A failed contract is terminal loot for the target; it never "expires"
+                if (IsFailedState)
+                    return false;
+
                 if (!IsBountyExpirationsEnabled || !BountyCreationTimestamp.HasValue)
                     return false;
 
@@ -176,6 +189,12 @@ namespace ACE.Server.WorldObjects
             {
                 if (!BountyTargetGuid.HasValue)
                     return;
+
+                if (IsFailedState)
+                {
+                    SetUiEffect(ACE.Entity.Enum.UiEffects.Nether, owner, message);
+                    return;
+                }
 
                 if (IsBountyExpired)
                 {
@@ -271,6 +290,12 @@ namespace ACE.Server.WorldObjects
                 if (IsCompletedState)
                 {
                     player.SendBountyMessage("This bounty contract has been completed, please turn it in to the Bounty Collector to receive rewards!");
+                    return;
+                }
+
+                if (IsFailedState)
+                {
+                    player.SendBountyMessage("This is a failed bounty contract looted from a hunter you slew. Turn it in to the Bounty Collector to claim your reward!");
                     return;
                 }
 
@@ -400,6 +425,14 @@ namespace ACE.Server.WorldObjects
                 var targetName = target.Name;
                 var bountyLocationCurrencyWeenie = BountyLocationCurrencyWeenie;
                 var longDesc = "";
+
+                if (IsFailedState)
+                {
+                    var failedRewardStr = BountyCurrencyWeenie.BuildAmountString(BountyFailedRewardAmount);
+                    longDesc += $"This is a failed bounty contract. {BountyOwnerName} was hunting you and you slew them, then looted this from their corpse.\n\n";
+                    longDesc += $"Turn it in to the Bounty Collector to claim {failedRewardStr}. Only you, the target named on this contract, can claim it.\n";
+                    return longDesc;
+                }
 
                 if (target.IsHighPriorityTarget())
                 {

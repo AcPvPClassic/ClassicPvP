@@ -27,6 +27,11 @@ namespace ACE.Server.Entity.Bounties
                     continue;
                 }
 
+                // A failed contract is loot the owner took from a slain hunter's corpse — it is
+                // not one of their own active hunts, so leave it in inventory and don't track it.
+                if (contract.IsFailedState)
+                    continue;
+
                 var targetGuid = (uint)contract.BountyTargetGuid.Value;
 
                 // prevent duplicates

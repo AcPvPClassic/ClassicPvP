@@ -1362,6 +1362,10 @@ namespace ACE.Server.WorldObjects
                 }
             }
 
+            // If this hunter was slain by their own bounty target, fail the contract and drop
+            // it on the corpse so the target can loot it and turn it in for a reward.
+            TryFailBountyContractToCorpse(corpse, dropItems);
+
             // add items to corpse
             foreach (var dropItem in dropItems)
             {
