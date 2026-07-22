@@ -243,7 +243,10 @@ namespace ACE.Server.Entity
                     #region MorphGemRemoveMissileDReq
                     case MorphGemRemoveMissileDReq:
 
-                        if (target.ItemSkillLimit != Skill.MissileDefense || target.ItemSkillLevelLimit == null)
+                        var hasMissileActivationReq = target.ItemSkillLimit == Skill.MissileDefense && target.ItemSkillLevelLimit != null;
+                        var removedMissileWieldReq = RemoveWieldRequirementForSkill(target, Skill.MissileDefense);
+
+                        if (!hasMissileActivationReq && !removedMissileWieldReq)
                         {
                             playerMsg = $"Your {target.NameWithMaterial} does not currently have a Missile Defense requirement to remove.";
                             player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
@@ -251,10 +254,13 @@ namespace ACE.Server.Entity
                             return;
                         }
 
-                        target.ItemSkillLimit = null;
-                        target.ItemSkillLevelLimit = null;
+                        if (hasMissileActivationReq)
+                        {
+                            target.ItemSkillLimit = null;
+                            target.ItemSkillLevelLimit = null;
+                        }
 
-                        playerMsg = $"You apply the Morph Gem skillfully and have removed the Missile Defense activation requirement of your item.";
+                        playerMsg = $"You apply the Morph Gem skillfully and have removed the Missile Defense requirement of your item.";
                         AddMorphGemLog(target, MorphGemRemoveMissileDReq);
 
                         player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
@@ -265,7 +271,10 @@ namespace ACE.Server.Entity
                     #region MorphGemRemoveMeleeDReq
                     case MorphGemRemoveMeleeDReq:
 
-                        if (target.ItemSkillLimit != Skill.MeleeDefense || target.ItemSkillLevelLimit == null)
+                        var hasMeleeActivationReq = target.ItemSkillLimit == Skill.MeleeDefense && target.ItemSkillLevelLimit != null;
+                        var removedMeleeWieldReq = RemoveWieldRequirementForSkill(target, Skill.MeleeDefense);
+
+                        if (!hasMeleeActivationReq && !removedMeleeWieldReq)
                         {
                             playerMsg = $"Your {target.NameWithMaterial} does not currently have a Melee Defense requirement to remove.";
                             player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
@@ -273,10 +282,13 @@ namespace ACE.Server.Entity
                             return;
                         }
 
-                        target.ItemSkillLimit = null;
-                        target.ItemSkillLevelLimit = null;
+                        if (hasMeleeActivationReq)
+                        {
+                            target.ItemSkillLimit = null;
+                            target.ItemSkillLevelLimit = null;
+                        }
 
-                        playerMsg = $"You apply the Morph Gem skillfully and have removed the Melee Defense activation requirement of your item.";
+                        playerMsg = $"You apply the Morph Gem skillfully and have removed the Melee Defense requirement of your item.";
                         AddMorphGemLog(target, MorphGemRemoveMeleeDReq);
 
                         player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
@@ -1409,6 +1421,58 @@ namespace ACE.Server.Entity
                 foreach (var progressionSpellId in progression)
                     target.Biota.TryRemoveKnownSpell((int)progressionSpellId, target.BiotaDatabaseLock);
             }
+        }
+
+        /// <summary>
+        /// Removes any skill-based wield requirement (Skill / RawSkill / Training) on the target
+        /// that references the given skill, across all four wield requirement slots.
+        /// Returns true if at least one matching requirement was cleared.
+        /// </summary>
+        private static bool RemoveWieldRequirementForSkill(WorldObject target, Skill skill)
+        {
+            var removedAny = false;
+
+            void ClearSlot(WieldRequirement req, int? skillType, Action clear)
+            {
+                if (skillType != (int)skill)
+                    return;
+
+                if (req != WieldRequirement.Skill && req != WieldRequirement.RawSkill && req != WieldRequirement.Training)
+                    return;
+
+                clear();
+                removedAny = true;
+            }
+
+            ClearSlot(target.WieldRequirements, target.WieldSkillType, () =>
+            {
+                target.WieldRequirements = WieldRequirement.Invalid;
+                target.WieldSkillType = null;
+                target.WieldDifficulty = null;
+            });
+
+            ClearSlot(target.WieldRequirements2, target.WieldSkillType2, () =>
+            {
+                target.WieldRequirements2 = WieldRequirement.Invalid;
+                target.WieldSkillType2 = null;
+                target.WieldDifficulty2 = null;
+            });
+
+            ClearSlot(target.WieldRequirements3, target.WieldSkillType3, () =>
+            {
+                target.WieldRequirements3 = WieldRequirement.Invalid;
+                target.WieldSkillType3 = null;
+                target.WieldDifficulty3 = null;
+            });
+
+            ClearSlot(target.WieldRequirements4, target.WieldSkillType4, () =>
+            {
+                target.WieldRequirements4 = WieldRequirement.Invalid;
+                target.WieldSkillType4 = null;
+                target.WieldDifficulty4 = null;
+            });
+
+            return removedAny;
         }
 
         #region Morph Gem Log
