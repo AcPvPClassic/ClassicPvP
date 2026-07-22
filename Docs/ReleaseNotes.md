@@ -7,7 +7,11 @@
 
 ---
 
-## 🩹 v1.13 (in development)
+## 🩹 v1.14 (in development)
+
+---
+
+## 🩹 v1.13 — July 17, 2026
 
 ### 🎯 Bounties — Turn the Tables on Your Hunter
 
