@@ -517,7 +517,7 @@ namespace ACE.Database
                         foreach (var s in all)
                             s.CompositeScore = ArenaRanking.ComputeCompositeScore(s);
 
-                        return all.OrderByDescending(x => x.CompositeScore).Take(10).ToList();
+                        return all.OrderByDescending(x => x.Elo).Take(10).ToList();
                     }
                     else
                     {
