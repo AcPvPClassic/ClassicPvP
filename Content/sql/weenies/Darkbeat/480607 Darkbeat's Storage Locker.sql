@@ -62,7 +62,11 @@ VALUES (480607,   1, 0x02000F7A) /* Setup */
    eligible on the 2 remaining rolls — see the Sturdy Iron Key group note.
 
    Main group (0.0000 – 0.5000, 50% of total probability space):
-     Salvage bags     0.0000 – 0.0550   (0.5% each × 11 = 5.5%)
+     Salvage bags     0.0000 – 0.0550   (0.55% each × 10 = 5.5%)
+                                         (Bloodstone Salvage removed; its
+                                          share redistributed across the
+                                          remaining 10 salvage bags so the
+                                          family still totals 5.5%)
      Foolproof gems   0.0550 – 0.0900   (0.25% each × 14 = 3.5%)
      A Box            0.0900 – 0.1100   (2%)
      Trade Note ×25   0.1100 – 0.1700   (6%)
@@ -93,17 +97,16 @@ VALUES (480607,   1, 0x02000F7A) /* Setup */
 
 INSERT INTO `weenie_properties_generator` (`object_Id`, `probability`, `weenie_Class_Id`, `delay`, `init_Create`, `max_Create`, `when_Create`, `where_Create`, `stack_Size`, `palette_Id`, `shade`, `obj_Cell_Id`, `origin_X`, `origin_Y`, `origin_Z`, `angles_W`, `angles_X`, `angles_Y`, `angles_Z`)
 VALUES (480607,    -1, 10000, 1, 1,   1, 2, 72,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Always: Tier 6 loot profile */
-     , (480607, 0.0050, 510034, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Sunstone Salvage WS10 - Armor Rend */
-     , (480607, 0.0100, 510033, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Red Garnet Salvage WS10 - Fire Rend */
-     , (480607, 0.0150, 510026, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Black Garnet Salvage WS10 - Pierce Rend/Imbue */
-     , (480607, 0.0200, 510031, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Imperial Topaz Salvage WS10 - Slash Rend/Imbue */
-     , (480607, 0.0250, 510032, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Jet Salvage WS10 - Lightning Rend/Imbue */
-     , (480607, 0.0300, 510025, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Aquamarine Salvage WS10 - Cold Rend/Imbue */
-     , (480607, 0.0350, 510035, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* White Sapphire Salvage WS10 - Bludgeon Rend */
-     , (480607, 0.0400, 510029, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Emerald Salvage WS10 - Acid Rend/Imbue */
-     , (480607, 0.0450, 510030, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Fire Opal Salvage WS10 - Crippling Blow */
-     , (480607, 0.0500, 510027, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Black Opal Salvage WS10 - Critical Strike */
-     , (480607, 0.0550, 510028, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Bloodstone Salvage WS10 - Minor Endurance Imbue */
+     , (480607, 0.0055, 510034, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Sunstone Salvage WS10 - Armor Rend */
+     , (480607, 0.0110, 510033, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Red Garnet Salvage WS10 - Fire Rend */
+     , (480607, 0.0165, 510026, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Black Garnet Salvage WS10 - Pierce Rend/Imbue */
+     , (480607, 0.0220, 510031, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Imperial Topaz Salvage WS10 - Slash Rend/Imbue */
+     , (480607, 0.0275, 510032, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Jet Salvage WS10 - Lightning Rend/Imbue */
+     , (480607, 0.0330, 510025, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Aquamarine Salvage WS10 - Cold Rend/Imbue */
+     , (480607, 0.0385, 510035, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* White Sapphire Salvage WS10 - Bludgeon Rend */
+     , (480607, 0.0440, 510029, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Emerald Salvage WS10 - Acid Rend/Imbue */
+     , (480607, 0.0495, 510030, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Fire Opal Salvage WS10 - Crippling Blow */
+     , (480607, 0.0550, 510027, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Black Opal Salvage WS10 - Critical Strike */
      , (480607, 0.0575, 36619, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Aquamarine Foolproof */
      , (480607, 0.0600, 36620, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Black Garnet Foolproof */
      , (480607, 0.0625, 36622, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Emerald Foolproof */
