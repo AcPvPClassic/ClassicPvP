@@ -28,5 +28,49 @@ namespace ACE.Server.Entity.Bounties
         public uint TotalDailyHighPriorityBountiesCompleted        { get; set; } = 0;
         public uint TotalDailyDamageDealt                          { get; set; } = 0;
         public List<DateTime> BountyCompletionTimestamps           { get; set; } = new List<DateTime>();
+
+        public double GetLastCompletedTimestamp(uint targetGuid)
+        {
+            return BountyTargets.TryGetValue(targetGuid, out var target) && target != null
+                ? target.LastCompletedTimestamp
+                : -1;
+        }
+
+        public BountyTargetInfo GetOrCreateTarget(uint targetGuid)
+        {
+            if (!BountyTargets.TryGetValue(targetGuid, out var target) || target == null)
+            {
+                target = new BountyTargetInfo { TargetGuid = targetGuid };
+                BountyTargets[targetGuid] = target;
+            }
+
+            return target;
+        }
+
+        public void PruneEmptyTargets()
+        {
+            var emptyTargetGuids = new List<uint>();
+
+            foreach (var entry in BountyTargets)
+            {
+                if (IsEmpty(entry.Value))
+                    emptyTargetGuids.Add(entry.Key);
+            }
+
+            foreach (var targetGuid in emptyTargetGuids)
+                BountyTargets.Remove(targetGuid);
+        }
+
+        private static bool IsEmpty(BountyTargetInfo target)
+        {
+            return target == null ||
+                   target.TotalCompletions == 0 &&
+                   target.TotalExpirations == 0 &&
+                   target.TotalHighPriorityCompletions == 0 &&
+                   target.TotalDamageReceived == 0 &&
+                   target.TotalKillStreakCompletions == 0 &&
+                   target.HighestKillStreakBroken == 0 &&
+                   target.LastCompletedTimestamp == -1;
+        }
     }
 }

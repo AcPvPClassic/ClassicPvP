@@ -41,7 +41,9 @@ namespace ACE.Server.WorldObjects
         {
             try
             {
-                var serialized = JsonConvert.SerializeObject(_bountyInformation ?? BountyInformation);
+                var info = _bountyInformation ?? BountyInformation;
+                info.PruneEmptyTargets();
+                var serialized = JsonConvert.SerializeObject(info);
                 SetProperty(ACE.Entity.Enum.Properties.PropertyString.BountyInformationsSerialized, serialized);
             }
             catch (Exception ex)
@@ -52,8 +54,7 @@ namespace ACE.Server.WorldObjects
 
         private double GetBountyCooldown(uint targetGuid)
         {
-            var target = GetBountyTargetInfo(targetGuid);
-            return target.LastCompletedTimestamp;
+            return BountyInformation.GetLastCompletedTimestamp(targetGuid);
         }
 
         private int GetBountiesCompletedInLastMinutes(int minutes)
@@ -65,7 +66,7 @@ namespace ACE.Server.WorldObjects
         private void SaveBountyExpiration(uint targetGuid)
         {
             var info = BountyInformation;
-            var target = GetBountyTargetInfo(targetGuid);
+            var target = info.GetOrCreateTarget(targetGuid);
             target.TotalExpirations++;
             info.TotalBountyExpirationsCount++;
             SaveBountyInformation();
@@ -93,7 +94,7 @@ namespace ACE.Server.WorldObjects
         {
             var targetGuid = bountyTarget.Guid.Full;
             var info       = BountyInformation;
-            var targetInfo = GetBountyTargetInfo(targetGuid);
+            var targetInfo = info.GetOrCreateTarget(targetGuid);
 
             info.TotalBountiesCompleted++;
             SeasonManager.RecordBountyCompleted(Guid.Full, Name);
@@ -152,16 +153,6 @@ namespace ACE.Server.WorldObjects
                 CountLast60Min         = GetBountiesCompletedInLastMinutes(60),
                 CountLast90Min         = GetBountiesCompletedInLastMinutes(90)
             };
-        }
-
-        private BountyTargetInfo GetBountyTargetInfo(uint targetGuid)
-        {
-            if (!BountyInformation.BountyTargets.TryGetValue(targetGuid, out var info))
-            {
-                info = new BountyTargetInfo { TargetGuid = targetGuid };
-                BountyInformation.BountyTargets[targetGuid] = info;
-            }
-            return info;
         }
 
         private void ResetDailyBountyQuestsIfNeeded()
