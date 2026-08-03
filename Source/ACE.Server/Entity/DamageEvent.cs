@@ -214,8 +214,8 @@ namespace ACE.Server.Entity
             if (defender.Invincible || defender.IsDead || defender.IsOnNoDamageLandblock)
                 return 0.0f;
 
-            // Tinker-flagged characters cannot damage monsters (non-player targets)
-            if (playerAttacker != null && playerAttacker.IsTinker && playerDefender == null)
+            // Tinker-flagged characters cannot damage
+            if (playerAttacker != null && playerAttacker.IsTinker)
                 return 0.0f;
 
             //Arenas - If this is an arena landblock
