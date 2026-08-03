@@ -360,8 +360,9 @@ namespace ACE.Server.WorldObjects
                 if (!VerifyRecallAllegianceHometown())
                     return;
 
-                // Pick a random owned hometown; fall back to legacy Sanctuary if none owned
-                var monarchId = Allegiance?.MonarchId ?? Guid.Full;
+                // Pick a random owned hometown; fall back to legacy Sanctuary if none owned.
+                // Resolve the ownership key the same way it is stored (verified monarch, else own guid).
+                var monarchId = ACE.Server.Managers.AllegianceManager.GetVerifiedMonarchId(this) ?? Guid.Full;
                 var ownedIds  = ACE.Server.Managers.AllegianceHometownManager.GetOwnedTownIds(monarchId);
                 if (ownedIds.Count > 0)
                 {
