@@ -735,10 +735,7 @@ namespace ACE.Server.WorldObjects
             blockChance += shieldBlockMod;
 
             if (isPvP)
-            {
-                blockChance *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_shield_block_chance", "pvp_dmg_mod_high_shield_block_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
                 blockChance = Math.Max(blockChance, 0.2f);
-            }
 
             return (float)blockChance;
         }
@@ -1054,9 +1051,6 @@ namespace ACE.Server.WorldObjects
 
             effectiveLevel *= ignoreShieldMod;
             effectiveLevel *= shieldArmorLevelMod;
-
-            if (isPvP)
-                effectiveLevel *= (float)PropertyManager.GetInterpolatedDouble(attacker.Level ?? 1, "pvp_dmg_mod_low_shield_level", "pvp_dmg_mod_high_shield_level", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
 
             // SL is multiplied by existing AL
             var shieldMod = SkillFormula.CalcArmorMod(effectiveLevel);

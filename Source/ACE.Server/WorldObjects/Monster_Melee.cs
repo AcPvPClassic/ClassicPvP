@@ -509,9 +509,6 @@ namespace ACE.Server.WorldObjects
             if (effectiveAL > 0)
                 effectiveAL *= armorRendingMod;
 
-            if (isPvP)
-                effectiveAL *= (float)PropertyManager.GetInterpolatedDouble(Level ?? 1, "pvp_dmg_mod_low_armor_level", "pvp_dmg_mod_high_armor_level", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-
             var armorMod = SkillFormula.CalcArmorMod(effectiveAL);
 
             //Console.WriteLine("Total AL: " + effectiveAL);

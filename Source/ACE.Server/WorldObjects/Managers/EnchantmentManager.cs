@@ -1559,17 +1559,7 @@ namespace ACE.Server.WorldObjects.Managers
             //Console.WriteLine("DRR: " + Creature.NegativeModToRating(damageResistRatingMod));
             //Console.WriteLine("NRR: " + Creature.NegativeModToRating(netherResistRatingMod));
 
-            var pvpMod = 1.0f;
-            if (isPvP)
-            {
-                pvpMod = (float)PropertyManager.GetInterpolatedDouble(sourcePlayer.Level ?? 1, "pvp_dmg_mod_low", "pvp_dmg_mod_high", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                if (damageType == DamageType.Nether)
-                    pvpMod *= (float)PropertyManager.GetInterpolatedDouble(sourcePlayer.Level ?? 1, "pvp_dmg_mod_low_void_dot", "pvp_dmg_mod_high_void_dot", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                else
-                    pvpMod *= (float)PropertyManager.GetInterpolatedDouble(sourcePlayer.Level ?? 1, "pvp_dmg_mod_low_dot", "pvp_dmg_mod_high_dot", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-            }
-
-            tickAmount *= resistanceMod * damageResistRatingMod * dotResistRatingMod * pvpMod;
+            tickAmount *= resistanceMod * damageResistRatingMod * dotResistRatingMod;
 
             enchantment.CachedModifiedStatModValue = tickAmount;
         }
@@ -1666,22 +1656,12 @@ namespace ACE.Server.WorldObjects.Managers
                     //Console.WriteLine("DRR: " + Creature.NegativeModToRating(damageResistRatingMod));
                     //Console.WriteLine("NRR: " + Creature.NegativeModToRating(netherResistRatingMod));
 
-                    var pvpMod = 1.0f;
-                    if (isPvP)
-                    {
-                        pvpMod = (float)PropertyManager.GetInterpolatedDouble(sourcePlayer.Level ?? 1, "pvp_dmg_mod_low", "pvp_dmg_mod_high", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        if (damageType == DamageType.Nether)
-                            pvpMod *= (float)PropertyManager.GetInterpolatedDouble(sourcePlayer.Level ?? 1, "pvp_dmg_mod_low_void_dot", "pvp_dmg_mod_high_void_dot", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        else
-                            pvpMod *= (float)PropertyManager.GetInterpolatedDouble(sourcePlayer.Level ?? 1, "pvp_dmg_mod_low_dot", "pvp_dmg_mod_high_dot", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                    }
-
-                    // flat pvp void dot multiplier (stacks with level-interp mod above)
+                    // flat pvp void dot multiplier
                     var pvpFlatDotMod = 1.0f;
                     if (isPvP && damageType == DamageType.Nether)
                         pvpFlatDotMod = (float)PropertyManager.GetDouble("pvp_dmg_mod_void_dot").Item;
 
-                    tickAmount *= resistanceMod * damageResistRatingMod * dotResistRatingMod * pvpMod * pvpFlatDotMod;
+                    tickAmount *= resistanceMod * damageResistRatingMod * dotResistRatingMod * pvpFlatDotMod;
 
                     // additional modifier for hybrid void characters in pvp (attacker has trained/specialized melee or war magic skills)
                     if (isPvP && damageType == DamageType.Nether)

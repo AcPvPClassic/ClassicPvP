@@ -334,49 +334,6 @@ namespace ACE.Server.WorldObjects
         {
             var critRate = (float)(weapon?.CriticalFrequency ?? defaultPhysicalCritFrequency);
 
-            if (isPvP && critRate > defaultPhysicalCritFrequency)
-            {
-                // Biting Strike
-                critRate *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_crit_chance", "pvp_dmg_mod_high_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                switch (skill.Skill)
-                {
-                    case Skill.LightWeapons:
-                    case Skill.Axe:
-                        critRate *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_axe_crit_chance", "pvp_dmg_mod_high_axe_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.HeavyWeapons:
-                    case Skill.Sword:
-                        critRate *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_sword_crit_chance", "pvp_dmg_mod_high_sword_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Mace:
-                        critRate *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_mace_crit_chance", "pvp_dmg_mod_high_mace_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Spear:
-                        critRate *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_spear_crit_chance", "pvp_dmg_mod_high_spear_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Staff:
-                        critRate *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_staff_crit_chance", "pvp_dmg_mod_high_staff_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.UnarmedCombat:
-                        critRate *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_unarmed_crit_chance", "pvp_dmg_mod_high_unarmed_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.FinesseWeapons:
-                    case Skill.Dagger:
-                        critRate *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_dagger_crit_chance", "pvp_dmg_mod_high_dagger_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.MissileWeapons:
-                    case Skill.Bow:
-                        critRate *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_bow_crit_chance", "pvp_dmg_mod_high_bow_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Crossbow:
-                        critRate *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_crossbow_crit_chance", "pvp_dmg_mod_high_crossbow_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.ThrownWeapon:
-                        critRate *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_thrown_crit_chance", "pvp_dmg_mod_high_thrown_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                }
-            }
-
             if (weapon != null && weapon.HasImbuedEffect(ImbuedEffectType.CriticalStrike))
             {
                 var criticalStrikeBonus = GetCriticalStrikeMod(wielder, skill, isPvP);
@@ -423,24 +380,6 @@ namespace ACE.Server.WorldObjects
 
             var critRate = (float)(weapon.GetProperty(PropertyFloat.CriticalFrequency) ?? defaultMagicCritFrequency);
 
-            if (isPvP && critRate > defaultMagicCritFrequency)
-            {
-                // Biting Strike
-                critRate *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_crit_chance", "", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                switch (skill.Skill)
-                {
-                    case Skill.WarMagic:
-                        critRate *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_war_crit_chance", "", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.LifeMagic:
-                        critRate *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_life_crit_chance", "", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.VoidMagic:
-                        critRate *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_void_crit_chance", "", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                }
-            }
-
             if (weapon.HasImbuedEffect(ImbuedEffectType.CriticalStrike))
             {
                 var criticalStrikeBonus = GetCriticalStrikeMod(wielder, skill, isPvP);
@@ -470,58 +409,6 @@ namespace ACE.Server.WorldObjects
         public static float GetWeaponCritDamageMod(WorldObject weapon, Creature wielder, CreatureSkill skill, Creature target, bool isPvP)
         {
             var critDamageMod = (float)(weapon?.CriticalMultiplier ?? defaultCritDamageMultiplier);
-
-            if (isPvP && critDamageMod > defaultCritDamageMultiplier)
-            {
-                // Crushing Blow
-                critDamageMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_crit_dmg", "pvp_dmg_mod_high_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                switch (skill.Skill)
-                {
-                    case Skill.LightWeapons:
-                    case Skill.Axe:
-                        critDamageMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_axe_crit_dmg", "pvp_dmg_mod_high_axe_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.HeavyWeapons:
-                    case Skill.Sword:
-                        critDamageMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_sword_crit_dmg", "pvp_dmg_mod_high_sword_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Mace:
-                        critDamageMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_mace_crit_dmg", "pvp_dmg_mod_high_mace_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Spear:
-                        critDamageMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_spear_crit_dmg", "pvp_dmg_mod_high_spear_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Staff:
-                        critDamageMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_staff_crit_dmg", "pvp_dmg_mod_high_staff_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.UnarmedCombat:
-                        critDamageMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_unarmed_crit_dmg", "pvp_dmg_mod_high_unarmed_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.FinesseWeapons:
-                    case Skill.Dagger:
-                        critDamageMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_dagger_crit_dmg", "pvp_dmg_mod_high_dagger_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.MissileWeapons:
-                    case Skill.Bow:
-                        critDamageMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_bow_crit_dmg", "pvp_dmg_mod_high_bow_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Crossbow:
-                        critDamageMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_crossbow_crit_dmg", "pvp_dmg_mod_high_crossbow_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.ThrownWeapon:
-                        critDamageMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_thrown_crit_dmg", "pvp_dmg_mod_high_thrown_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.WarMagic:
-                        critDamageMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_war_crit_dmg", "pvp_dmg_mod_high_war_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.LifeMagic:
-                        critDamageMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_life_crit_dmg", "pvp_dmg_mod_high_life_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.VoidMagic:
-                        critDamageMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_void_crit_dmg", "pvp_dmg_mod_high_void_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                }
-            }
 
             if (weapon != null && weapon.HasImbuedEffect(ImbuedEffectType.CripplingBlow))
             {
@@ -920,56 +807,6 @@ namespace ACE.Server.WorldObjects
 
             }
 
-            if (isPvP)
-            {
-                criticalStrikeMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_crit_chance", "pvp_dmg_mod_high_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                switch (skill.Skill)
-                {
-                    case Skill.LightWeapons:
-                    case Skill.Axe:
-                        criticalStrikeMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_axe_crit_chance", "pvp_dmg_mod_high_axe_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.HeavyWeapons:
-                    case Skill.Sword:
-                        criticalStrikeMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_sword_crit_chance", "pvp_dmg_mod_high_sword_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Mace:
-                        criticalStrikeMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_mace_crit_chance", "pvp_dmg_mod_high_mace_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Spear:
-                        criticalStrikeMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_spear_crit_chance", "pvp_dmg_mod_high_spear_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Staff:
-                        criticalStrikeMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_staff_crit_chance", "pvp_dmg_mod_high_staff_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.UnarmedCombat:
-                        criticalStrikeMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_unarmed_crit_chance", "pvp_dmg_mod_high_unarmed_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.FinesseWeapons:
-                    case Skill.Dagger:
-                        criticalStrikeMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_dagger_crit_chance", "pvp_dmg_mod_high_dagger_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.MissileWeapons:
-                    case Skill.Bow:
-                        criticalStrikeMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_bow_crit_chance", "pvp_dmg_mod_high_bow_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Crossbow:
-                        criticalStrikeMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_crossbow_crit_chance", "pvp_dmg_mod_high_crossbow_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.ThrownWeapon:
-                        criticalStrikeMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_thrown_crit_chance", "pvp_dmg_mod_high_thrown_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.WarMagic:
-                        criticalStrikeMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_war_crit_chance", "pvp_dmg_mod_high_war_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.LifeMagic:
-                        criticalStrikeMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_life_crit_chance", "pvp_dmg_mod_high_life_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.VoidMagic:
-                        criticalStrikeMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_void_crit_chance", "pvp_dmg_mod_high_void_crit_chance", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                }
-            }
             return criticalStrikeMod;
         }
 
@@ -1019,57 +856,6 @@ namespace ACE.Server.WorldObjects
                 cripplingBlowMod = Math.Clamp(baseMod, 1.0f, MaxCripplingBlowMod);
 
                 //Console.WriteLine($"CripplingBlowMod: {cripplingBlowMod}");
-            }
-
-            if (isPvP)
-            {
-                cripplingBlowMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_crit_dmg", "pvp_dmg_mod_high_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                switch (skill.Skill)
-                {
-                    case Skill.LightWeapons:
-                    case Skill.Axe:
-                        cripplingBlowMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_axe_crit_dmg", "pvp_dmg_mod_high_axe_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.HeavyWeapons:
-                    case Skill.Sword:
-                        cripplingBlowMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_sword_crit_dmg", "pvp_dmg_mod_high_sword_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Mace:
-                        cripplingBlowMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_mace_crit_dmg", "pvp_dmg_mod_high_mace_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Spear:
-                        cripplingBlowMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_spear_crit_dmg", "pvp_dmg_mod_high_spear_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Staff:
-                        cripplingBlowMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_staff_crit_dmg", "pvp_dmg_mod_high_staff_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.UnarmedCombat:
-                        cripplingBlowMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_unarmed_crit_dmg", "pvp_dmg_mod_high_unarmed_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.FinesseWeapons:
-                    case Skill.Dagger:
-                        cripplingBlowMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_dagger_crit_dmg", "pvp_dmg_mod_high_dagger_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.MissileWeapons:
-                    case Skill.Bow:
-                        cripplingBlowMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_bow_crit_dmg", "pvp_dmg_mod_high_bow_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Crossbow:
-                        cripplingBlowMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_crossbow_crit_dmg", "pvp_dmg_mod_high_crossbow_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.ThrownWeapon:
-                        cripplingBlowMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_thrown_crit_dmg", "pvp_dmg_mod_high_thrown_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.WarMagic:
-                        cripplingBlowMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_war_crit_dmg", "pvp_dmg_mod_high_war_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.LifeMagic:
-                        cripplingBlowMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_life_crit_dmg", "pvp_dmg_mod_high_life_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.VoidMagic:
-                        cripplingBlowMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_void_crit_dmg", "pvp_dmg_mod_high_void_crit_dmg", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                }
             }
 
             return cripplingBlowMod;
@@ -1145,51 +931,6 @@ namespace ACE.Server.WorldObjects
                 }
             }
 
-            if (isPvP && armorRendingMod < 1.0f)
-            {
-                var pvpMod = 1.0f - armorRendingMod;
-                pvpMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_armor_ignore", "pvp_dmg_mod_high_armor_ignore", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                switch (skill.Skill)
-                {
-                    case Skill.LightWeapons:
-                    case Skill.Axe:
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_axe_armor_ignore", "pvp_dmg_mod_high_axe_armor_ignore", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.HeavyWeapons:
-                    case Skill.Sword:
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_sword_armor_ignore", "pvp_dmg_mod_high_sword_armor_ignore", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Mace:
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_mace_armor_ignore", "pvp_dmg_mod_high_mace_armor_ignore", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Spear:
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_spear_armor_ignore", "pvp_dmg_mod_high_spear_armor_ignore", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Staff:
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_staff_armor_ignore", "pvp_dmg_mod_high_staff_armor_ignore", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.UnarmedCombat:
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_unarmed_armor_ignore", "pvp_dmg_mod_high_unarmed_armor_ignore", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.FinesseWeapons:
-                    case Skill.Dagger:
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_dagger_armor_ignore", "pvp_dmg_mod_high_dagger_armor_ignore", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.MissileWeapons:
-                    case Skill.Bow:
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_bow_armor_ignore", "pvp_dmg_mod_high_bow_armor_ignore", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Crossbow:
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_crossbow_armor_ignore", "pvp_dmg_mod_high_crossbow_armor_ignore", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.ThrownWeapon:
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_thrown_armor_ignore", "pvp_dmg_mod_high_thrown_armor_ignore", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                }
-
-                armorRendingMod = Math.Max(1.0f - pvpMod, 0.0f);
-            }
-
             //Console.WriteLine($"ArmorRendingMod: {armorRendingMod}");
 
             return armorRendingMod;
@@ -1230,51 +971,6 @@ namespace ACE.Server.WorldObjects
                 armorCleavingMod = 1.0f - (0.1f + maxSpellLevel * 0.05f);
             }
 
-            if (isPvP && armorCleavingMod < 1.0f)
-            {
-                var pvpMod = 1.0f - armorCleavingMod;
-                pvpMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_armor_ignore", "pvp_dmg_mod_high_armor_ignore", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                switch (skill.Skill)
-                {
-                    case Skill.LightWeapons:
-                    case Skill.Axe:
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_axe_armor_ignore", "pvp_dmg_mod_high_axe_armor_ignore", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.HeavyWeapons:
-                    case Skill.Sword:
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_sword_armor_ignore", "pvp_dmg_mod_high_sword_armor_ignore", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Mace:
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_mace_armor_ignore", "pvp_dmg_mod_high_mace_armor_ignore", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Spear:
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_spear_armor_ignore", "pvp_dmg_mod_high_spear_armor_ignore", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Staff:
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_staff_armor_ignore", "pvp_dmg_mod_high_staff_armor_ignore", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.UnarmedCombat:
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_unarmed_armor_ignore", "pvp_dmg_mod_high_unarmed_armor_ignore", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.FinesseWeapons:
-                    case Skill.Dagger:
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_dagger_armor_ignore", "pvp_dmg_mod_high_dagger_armor_ignore", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.MissileWeapons:
-                    case Skill.Bow:
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_bow_armor_ignore", "pvp_dmg_mod_high_bow_armor_ignore", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.Crossbow:
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_crossbow_armor_ignore", "pvp_dmg_mod_high_crossbow_armor_ignore", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                    case Skill.ThrownWeapon:
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_thrown_armor_ignore", "pvp_dmg_mod_high_thrown_armor_ignore", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                        break;
-                }
-
-                armorCleavingMod = Math.Max(1.0f - pvpMod, 0.0f);
-            }
-
             return armorCleavingMod;
         }
 
@@ -1292,14 +988,6 @@ namespace ACE.Server.WorldObjects
                 weaponMod = 0.5f;
             else
                 weaponMod = weapon?.IgnoreShield ?? 0.0f;
-
-            if (isPvP)
-            {
-                if (weapon != null && weapon.IsTwoHanded)
-                    weaponMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_2h_shieldcleave", "pvp_dmg_mod_high_2h_shieldcleave", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                else
-                    weaponMod *= (float)PropertyManager.GetInterpolatedDouble(wielder.Level ?? 1, "pvp_dmg_mod_low_shieldcleave", "pvp_dmg_mod_high_2h_shieldcleave", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-            }
 
             return Math.Clamp(1.0f - (float)Math.Max(creatureMod, weaponMod), 0.0f, 1.0f);
         }

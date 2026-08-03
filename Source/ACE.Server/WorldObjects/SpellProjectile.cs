@@ -804,29 +804,7 @@ namespace ACE.Server.WorldObjects
             //Apply pvp dmg mods for war and void (not including DOTs which are in EnchantmentManager.ApplyDamageTick)
             if (isPvP)
             {
-                float pvpMod = (float)PropertyManager.GetInterpolatedDouble(Level ?? 1, "pvp_dmg_mod_low", "pvp_dmg_mod_high", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-
-                if (Spell.School == MagicSchool.WarMagic)
-                {
-                    if (FromProc)
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(Level ?? 1, "pvp_dmg_mod_low_unarmed_war", "pvp_dmg_mod_high_unarmed_war", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                    else if (SpellType == ProjectileSpellType.Streak)
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(Level ?? 1, "pvp_dmg_mod_low_war_streak", "pvp_dmg_mod_high_war_streak", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                    else
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(Level ?? 1, "pvp_dmg_mod_low_war", "pvp_dmg_mod_high_war", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-
-                }
-                else if (Spell.DamageType == DamageType.Nether)
-                {
-                    if (SpellType == ProjectileSpellType.Streak)
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(Level ?? 1, "pvp_dmg_mod_low_void_streak", "pvp_dmg_mod_high_void_streak", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                    else
-                        pvpMod *= (float)PropertyManager.GetInterpolatedDouble(Level ?? 1, "pvp_dmg_mod_low_void", "pvp_dmg_mod_high_void", "pvp_dmg_mod_low_level", "pvp_dmg_mod_high_level");
-                }
-
-                finalDamage = finalDamage * pvpMod;
-
-                // flat PvP war/void mods (Doctide-style, stacks with level-interp pvpMod above)
+                // flat PvP war/void mods (Doctide-style)
                 if (sourcePlayer != null && targetPlayer != null)
                 {
                     float dmgMod = 1.0f;

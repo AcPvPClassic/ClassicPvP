@@ -18,12 +18,11 @@
   //
   // VALID PROPERTY KEYS
   //   Any key registered in DefaultPropertyManager as a double property beginning
-  //   with "pvp_dmg_mod_" is valid. Examples:
-  //     pvp_dmg_mod_low_war, pvp_dmg_mod_high_war
-  //     pvp_dmg_mod_low_sword, pvp_dmg_mod_high_sword
-  //     pvp_dmg_mod_low_crit_dmg, pvp_dmg_mod_high_crit_dmg
-  //     pvp_dmg_mod_low_level, pvp_dmg_mod_high_level  (the reference levels for interpolation)
-  //     pvp_dmg_mod_war, pvp_dmg_mod_void              (the flat Doctide-style modifiers)
+  //   with "pvp_dmg_mod_" is valid. These are the flat per-skill/effect modifiers.
+  //   Examples:
+  //     pvp_dmg_mod_war, pvp_dmg_mod_void             (magic school scalars)
+  //     pvp_dmg_mod_sword, pvp_dmg_mod_fw             (per-weapon-skill scalars)
+  //     pvp_dmg_mod_ar, pvp_dmg_mod_cb                (imbued-effect scalars)
   //   See PropertyManager.cs DefaultDoubleProperties for the full list.
   //
   // EXAMPLE (uncomment and edit to activate):
@@ -33,18 +32,15 @@
   //       "levelThreshold": 20,
   //       "description": "Early game — gentle war magic reduction",
   //       "properties": {
-  //         "pvp_dmg_mod_low_war": 0.85,
-  //         "pvp_dmg_mod_high_war": 0.80
+  //         "pvp_dmg_mod_war": 0.85
   //       }
   //     },
   //     {
   //       "levelThreshold": 50,
-  //       "description": "Mid game — tighten war and crit damage",
+  //       "description": "Mid game — tighten war and void damage",
   //       "properties": {
-  //         "pvp_dmg_mod_low_war": 0.75,
-  //         "pvp_dmg_mod_high_war": 0.70,
-  //         "pvp_dmg_mod_low_war_crit_dmg": 0.90,
-  //         "pvp_dmg_mod_high_war_crit_dmg": 0.85
+  //         "pvp_dmg_mod_war": 0.75,
+  //         "pvp_dmg_mod_void": 0.80
   //       }
   //     }
   //   ]
