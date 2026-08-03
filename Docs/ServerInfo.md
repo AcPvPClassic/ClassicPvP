@@ -797,9 +797,29 @@ Killing someone at or above your level applies no penalty. Killing someone 5 lev
 | Hot Dungeon kill | × dungeon XP multiplier (1.5× – 4×, varies per dungeon) |
 | +5% per hometown your allegiance owns | Passive, stacks, no cap — applies to **all** XP, not just PK kills (see [Hometown Ownership XP Bonus](#-hometown-ownership-xp-bonus)) |
 | Active hometown conflict on the kill landblock (either phase) | × 2 |
+| Allegiance-size penalty (see below) | × 1.00 – 0.10 based on your allegiance's online headcount |
 
 **Diminishing returns:**
 Killing the same player more than **3 times within a 1-hour window** suppresses all rewards from that target for **3 hours**. No XP, no quest credit, no season credit. You'll receive a message when a kill is suppressed.
+
+### Allegiance-Size PK XP Penalty
+
+To keep PvP rewarding for small, tight-knit allegiances and to discourage stacking one giant "zerg" allegiance, **all PK XP is scaled down by how many of your allegiance's members are currently online** at the moment you earn it. The more allies you have logged in, the smaller each PK reward.
+
+| Allegiance members online | PK XP earned |
+|---|---|
+| 5 or fewer | 100% |
+| 6 | 95% |
+| 7 | 90% |
+| 8 | 80% |
+| 9 | 70% |
+| 10 | 50% |
+| 11 | 30% |
+| 12 or more | 10% |
+
+**This applies to every source of PK XP** — open-world kills, arena rewards, PK quests, PK gems, and hometown-capture rewards. Solo players and small allegiances are unaffected. The **Ancient Bottle** experience drain on a kill is the one exception: it is a transfer of experience the victim already earned, so it is not reduced by this penalty.
+
+The count includes you, and it is your own allegiance's online headcount that matters — not the victim's or anyone else's.
 
 ---
 

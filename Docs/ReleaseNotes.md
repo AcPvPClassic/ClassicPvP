@@ -9,6 +9,23 @@
 
 ## 🩹 v1.14 (in development)
 
+### ⚔️ PK XP Now Scales Down With Your Allegiance's Online Size
+
+To keep PvP rewarding for small, tight-knit allegiances — and to discourage everyone piling into one giant "zerg" allegiance — **all PK XP is now reduced based on how many of your allegiance's members are online** when you earn it. The more allies you have logged in, the smaller each PK reward.
+
+| Allegiance members online | PK XP earned |
+|---|---|
+| 5 or fewer | 100% |
+| 6 | 95% |
+| 7 | 90% |
+| 8 | 80% |
+| 9 | 70% |
+| 10 | 50% |
+| 11 | 30% |
+| 12 or more | 10% |
+
+This applies to **every source of PK XP** — open-world kills, arena rewards, PK quests, PK gems, and hometown captures. Solo players and small allegiances feel nothing; large ones take a steep cut. The one exception is the **Ancient Bottle** experience drain on a kill, which is a transfer of experience the victim already earned and is left untouched.
+
 ### 🏰 Hometown XP Bonus — Fixed and Expanded to All XP
 
 The **+5% XP per hometown your allegiance owns** bonus was not being applied correctly — many owners (including solo allegiance leaders) got no bonus at all because the game looked up town ownership using the wrong allegiance key. This is now fixed: ownership is resolved the same way everywhere, so the bonus reliably applies to every owner.

@@ -360,7 +360,7 @@ namespace ACE.Server.WorldObjects
         /// <param name="amount">The amount of XP to grant to the player</param>
         /// <param name="xpType">The source of the XP being granted</param>
         /// <param name="shareable">If TRUE, this XP can be shared with fellowship members</param>
-        public void GrantXP(long amount, XpType xpType, ShareType shareType = ShareType.All, string xpMessage = "", long extraNotSharedAmount = 0, string sourceString = "")
+        public void GrantXP(long amount, XpType xpType, ShareType shareType = ShareType.All, string xpMessage = "", long extraNotSharedAmount = 0, string sourceString = "", bool applyPkSizeNerf = true)
         {
             if (GameplayMode == GameplayModes.Limbo)
             {
@@ -388,6 +388,23 @@ namespace ACE.Server.WorldObjects
                 // with ShareType.Fellowship removed
                 Fellowship.SplitXp((ulong)amount, xpType, shareType, this, xpMessage, extraNotSharedAmount);
                 return;
+            }
+
+            // Zerg penalty: all PK/PvP XP is nerfed by the earner's allegiance online headcount, to
+            // incentivize smaller allegiances. This is the single chokepoint for every PvP XP source
+            // (player kills, PK quests, gems, arena rewards, hometown captures). The Ancient Bottle
+            // drain opts out via applyPkSizeNerf:false since it is a transfer of already-earned XP.
+            // Applied past the fellowship split so a shared reward is nerfed once per crediting member
+            // (by that member's own allegiance), never doubly.
+            if (applyPkSizeNerf && xpType == XpType.PvP)
+            {
+                var onlineAllegianceCount = Allegiance?.OnlinePlayers.Count ?? 1;
+                var allegianceSizeModifier = GetPkAllegianceSizeXpModifier(onlineAllegianceCount);
+                if (allegianceSizeModifier < 1.0)
+                {
+                    amount = (long)Math.Round(amount * allegianceSizeModifier);
+                    extraNotSharedAmount = (long)Math.Round(extraNotSharedAmount * allegianceSizeModifier);
+                }
             }
 
             // Make sure UpdateXpAndLevel is done on this players thread
@@ -418,6 +435,23 @@ namespace ACE.Server.WorldObjects
             if (xpType == XpType.Kill || xpType == XpType.Quest)
                 GrantItemXP(amount);
         }
+
+        /// <summary>
+        /// PK XP "zerg penalty": returns the multiplier applied to PvP/PK XP based on the
+        /// earner's allegiance online headcount. Larger online allegiances earn less, to
+        /// incentivize smaller allegiances. Solo/no-allegiance earners (count 1) get 100%.
+        /// </summary>
+        private static double GetPkAllegianceSizeXpModifier(int onlineCount) => onlineCount switch
+        {
+            <= 5 => 1.00,
+            6    => 0.95,
+            7    => 0.90,
+            8    => 0.80,
+            9    => 0.70,
+            10   => 0.50,
+            11   => 0.30,
+            _    => 0.10, // 12+
+        };
 
         /// <summary>
         /// Adds XP to a player's total XP, handles triggers (vitae, level up)

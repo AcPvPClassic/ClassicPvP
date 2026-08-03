@@ -242,7 +242,9 @@ namespace ACE.Server.WorldObjects
                         Session.Network.EnqueueSend(new GameMessageSystemChat(
                             $"Your Ancient Bottle lost {totalDrained:N0} experience upon death.",
                             ChatMessageType.Broadcast));
-                        pkPlayer.GrantXP(totalDrained, XpType.PvP, ShareType.None, $"from {Name}'s Ancient Bottle");
+                        // Ancient Bottle drain is a transfer of already-earned XP, not a kill reward,
+                        // so it opts out of the allegiance-size zerg penalty applied in GrantXP.
+                        pkPlayer.GrantXP(totalDrained, XpType.PvP, ShareType.None, $"from {Name}'s Ancient Bottle", applyPkSizeNerf: false);
                     }
                 }
 
@@ -284,6 +286,9 @@ namespace ACE.Server.WorldObjects
                         if (ahKillEntry != null && ACE.Server.Managers.AllegianceHometownManager.IsInConflict(ahKillEntry.TownId))
                             pvpXp = (long)Math.Round(pvpXp * 2.0);
 
+                        // NOTE: the allegiance-size "zerg penalty" is applied centrally in
+                        // Player.GrantXP for all XpType.PvP grants (see GetPkAllegianceSizeXpModifier),
+                        // so it is intentionally NOT applied here.
                         if (pvpXp > 0)
                             pkPlayer.GrantXP(pvpXp, XpType.PvP, ShareType.None, $"for defeating {Name}");
                     }
