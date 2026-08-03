@@ -739,7 +739,8 @@ namespace ACE.Server.Entity
                         if (target as MeleeWeapon == null &&
                             !target.IsCaster &&
                             !target.IsBow &&
-                            !target.IsThrownWeapon)
+                            !target.IsThrownWeapon &&
+                            !target.IsAtlatl)
                         {
                             playerMsg = "This gem can only be used on weapons or magic casters";
                             player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
