@@ -13,6 +13,8 @@
 
 Players were abusing the house guest and storage permission controls to **flood a rival's chat** — rapidly adding and removing someone from their storage/guest list fires a "*so-and-so has granted/revoked your access*" message at the target each time. A short rate limit now applies to housing and related permission commands: you can only issue one every few seconds, so the notifications can no longer be spammed. This covers all the housing permission actions (guests, storage, allegiance access, open/closed status, hooks) as well as friends lists, corpse-looting permissions, allegiance officer/ban lists, and squelch changes.
 
+On top of that, **squelching a player now also blocks their housing guest/storage notifications** — the "added/removed you from the guest list" and "granted/revoked your storage access" messages. So if someone slips past the rate limit, just squelch them and you won't see the messages at all.
+
 ### ⚔️ PK XP Now Scales Down With Your Allegiance's Online Size
 
 To keep PvP rewarding for small, tight-knit allegiances — and to discourage everyone piling into one giant "zerg" allegiance — **all PK XP is now reduced based on how many of your allegiance's members are online** when you earn it. The more allies you have logged in, the smaller each PK reward.
@@ -28,7 +30,7 @@ To keep PvP rewarding for small, tight-knit allegiances — and to discourage ev
 | 11 | 30% |
 | 12 or more | 10% |
 
-This applies to **every source of PK XP** — open-world kills, arena rewards, PK quests, and hometown captures. Solo players and small allegiances feel nothing; large ones take a steep cut. The **Ancient Bottle** is left untouched: neither draining a victim's bottle on a kill nor drinking your own stored bottle XP is reduced by this penalty, since that experience was already earned.
+This applies to **every source of PK XP** — open-world kills, arena rewards, PK quests, hometown captures, and the XP you drain from a victim's **Ancient Bottle** when you kill them (that drain is a kill reward, so it's cut like everything else). Solo players and small allegiances feel nothing; large ones take a steep cut. The only exemption is **drinking your own Ancient Bottle** to release stored XP — that experience was already earned, so it's never reduced.
 
 ### 🏰 Hometown XP Bonus — Fixed and Expanded to All XP
 

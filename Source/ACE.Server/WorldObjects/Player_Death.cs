@@ -242,9 +242,10 @@ namespace ACE.Server.WorldObjects
                         Session.Network.EnqueueSend(new GameMessageSystemChat(
                             $"Your Ancient Bottle lost {totalDrained:N0} experience upon death.",
                             ChatMessageType.Broadcast));
-                        // Ancient Bottle drain is a transfer of already-earned XP, not a kill reward,
-                        // so it opts out of the allegiance-size zerg penalty applied in GrantXP.
-                        pkPlayer.GrantXP(totalDrained, XpType.PvP, ShareType.None, $"from {Name}'s Ancient Bottle", applyPkSizeNerf: false);
+                        // The Ancient Bottle drain is a PK kill reward (XP taken from the victim's bottle
+                        // and given to the killer), so it IS subject to the killer's allegiance-size zerg
+                        // penalty applied in GrantXP. (Drinking your own bottle is exempt — see UseXpBottle.)
+                        pkPlayer.GrantXP(totalDrained, XpType.PvP, ShareType.None, $"from {Name}'s Ancient Bottle");
                     }
                 }
 

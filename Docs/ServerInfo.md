@@ -817,7 +817,7 @@ To keep PvP rewarding for small, tight-knit allegiances and to discourage stacki
 | 11 | 30% |
 | 12 or more | 10% |
 
-**This applies to every source of PK XP** — open-world kills, arena rewards, PK quests, and hometown-capture rewards. Solo players and small allegiances are unaffected. The **Ancient Bottle** is exempt in both directions: draining a victim's bottle on a kill and drinking your own stored bottle XP are both left at full value, since that experience was already earned.
+**This applies to every source of PK XP** — open-world kills, arena rewards, PK quests, hometown-capture rewards, and the XP you drain from a victim's **Ancient Bottle** on a kill (that drain is a kill reward, so it is reduced like any other PK XP). Solo players and small allegiances are unaffected. The one exemption is **drinking your own Ancient Bottle** to release stored XP — that experience was already earned, so it is never reduced by this penalty.
 
 The count includes you, and it is your own allegiance's online headcount that matters — not the victim's or anyone else's.
 
