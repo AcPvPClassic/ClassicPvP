@@ -14,6 +14,11 @@ namespace ACE.Server.Network.GameAction.Actions
         {
             //Console.WriteLine("Received 0x249 - House - ChangeStoragePermissions");
 
+            if (!Command.Handlers.PlayerCommands.CheckPlayerCommandRateLimit(session))
+            {
+                return;
+            }
+
             var guestName = message.Payload.ReadString16L();
             var hasPermission = Convert.ToBoolean(message.Payload.ReadUInt32());
 

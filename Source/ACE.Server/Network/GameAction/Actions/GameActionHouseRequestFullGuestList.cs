@@ -12,6 +12,11 @@ namespace ACE.Server.Network.GameAction.Actions
         {
             //Console.WriteLine("Received 0x24D - House - RequestFullGuestList");
 
+            if (!Command.Handlers.PlayerCommands.CheckPlayerCommandRateLimit(session))
+            {
+                return;
+            }
+
             session.Player.HandleActionGuestList();
         }
     }

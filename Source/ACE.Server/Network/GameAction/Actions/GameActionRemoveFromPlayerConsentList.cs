@@ -8,6 +8,12 @@ namespace ACE.Server.Network.GameAction.Actions
         public static void Handle(ClientMessage message, Session session)
         {
             // the granter we are removing from consent list
+
+            if (!Command.Handlers.PlayerCommands.CheckPlayerCommandRateLimit(session))
+            {
+                return;
+            }
+
             var playerName = message.Payload.ReadString16L();
 
             session.Player.HandleActionRemoveFromPlayerConsentList(playerName);

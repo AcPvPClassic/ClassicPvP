@@ -12,6 +12,11 @@ namespace ACE.Server.Network.GameAction.Actions
         {
             //Console.WriteLine("Received 0x245 - HouseAddPermanentGuest");
 
+            if (!Command.Handlers.PlayerCommands.CheckPlayerCommandRateLimit(session))
+            {
+                return;
+            }
+
             var guestName = message.Payload.ReadString16L();
 
             session.Player.HandleActionAddGuest(guestName);

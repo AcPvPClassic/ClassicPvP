@@ -9,6 +9,10 @@
 
 ## 🩹 v1.14 (in development)
 
+### 🚫 No More Housing-Permission Chat Spam
+
+Players were abusing the house guest and storage permission controls to **flood a rival's chat** — rapidly adding and removing someone from their storage/guest list fires a "*so-and-so has granted/revoked your access*" message at the target each time. A short rate limit now applies to housing and related permission commands: you can only issue one every few seconds, so the notifications can no longer be spammed. This covers all the housing permission actions (guests, storage, allegiance access, open/closed status, hooks) as well as friends lists, corpse-looting permissions, allegiance officer/ban lists, and squelch changes.
+
 ### ⚔️ PK XP Now Scales Down With Your Allegiance's Online Size
 
 To keep PvP rewarding for small, tight-knit allegiances — and to discourage everyone piling into one giant "zerg" allegiance — **all PK XP is now reduced based on how many of your allegiance's members are online** when you earn it. The more allies you have logged in, the smaller each PK reward.

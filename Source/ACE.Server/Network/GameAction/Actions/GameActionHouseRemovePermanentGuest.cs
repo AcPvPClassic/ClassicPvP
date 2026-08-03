@@ -14,6 +14,11 @@ namespace ACE.Server.Network.GameAction.Actions
         {
             //Console.WriteLine("Received 0x246 - HouseRemovePermanentGuest");
 
+            if (!Command.Handlers.PlayerCommands.CheckPlayerCommandRateLimit(session))
+            {
+                return;
+            }
+
             var guestName = message.Payload.ReadString16L();
 
             session.Player.HandleActionRemoveGuest(guestName);

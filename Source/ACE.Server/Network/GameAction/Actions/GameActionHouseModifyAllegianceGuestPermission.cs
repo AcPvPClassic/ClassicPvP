@@ -12,6 +12,11 @@ namespace ACE.Server.Network.GameAction.Actions
         {
             //Console.WriteLine("Received 0x267 - House - ModifyAllegianceGuestPermission");
 
+            if (!Command.Handlers.PlayerCommands.CheckPlayerCommandRateLimit(session))
+            {
+                return;
+            }
+
             // whether we are adding or removing permissions
             var add = Convert.ToBoolean(message.Payload.ReadUInt32());
 

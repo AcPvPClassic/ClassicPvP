@@ -8,6 +8,12 @@ namespace ACE.Server.Network.GameAction.Actions
         public static void Handle(ClientMessage message, Session session)
         {
             // player to revoke corpse looting permissions from
+
+            if (!Command.Handlers.PlayerCommands.CheckPlayerCommandRateLimit(session))
+            {
+                return;
+            }
+
             var playerName = message.Payload.ReadString16L();
 
             session.Player.HandleActionRemovePlayerPermission(playerName);

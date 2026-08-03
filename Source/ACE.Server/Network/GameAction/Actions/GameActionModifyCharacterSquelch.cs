@@ -9,6 +9,11 @@ namespace ACE.Server.Network.GameAction.Actions
         [GameAction(GameActionType.ModifyCharacterSquelch)]
         public static void Handle(ClientMessage message, Session session)
         {
+            if (!Command.Handlers.PlayerCommands.CheckPlayerCommandRateLimit(session))
+            {
+                return;
+            }
+
             var squelch = Convert.ToBoolean(message.Payload.ReadUInt32());
             var playerGuid = message.Payload.ReadUInt32();
             var playerName = message.Payload.ReadString16L();

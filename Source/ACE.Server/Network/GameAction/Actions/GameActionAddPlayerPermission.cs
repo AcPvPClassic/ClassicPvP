@@ -8,6 +8,12 @@ namespace ACE.Server.Network.GameAction.Actions
         public static void Handle(ClientMessage message, Session session)
         {
             // player to grant corpse looting permissions to
+
+            if (!Command.Handlers.PlayerCommands.CheckPlayerCommandRateLimit(session))
+            {
+                return;
+            }
+
             var playerName = message.Payload.ReadString16L();
 
             session.Player.HandleActionAddPlayerPermission(playerName);

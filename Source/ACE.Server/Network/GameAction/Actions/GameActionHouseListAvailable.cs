@@ -14,6 +14,11 @@ namespace ACE.Server.Network.GameAction.Actions
         {
             //Console.WriteLine("Received 0x270 - ListAvailableHouses");
 
+            if (!Command.Handlers.PlayerCommands.CheckPlayerCommandRateLimit(session))
+            {
+                return;
+            }
+
             // type of house being listed
             var houseType = (HouseType)message.Payload.ReadUInt32();
 

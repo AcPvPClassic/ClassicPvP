@@ -12,6 +12,11 @@ namespace ACE.Server.Network.GameAction.Actions
         {
             //Console.WriteLine("Received 0x21E - GameActionHouseQuery");
 
+            if (!Command.Handlers.PlayerCommands.CheckPlayerCommandRateLimit(session))
+            {
+                return;
+            }
+
             session.Player.HandleActionQueryHouse();
         }
     }

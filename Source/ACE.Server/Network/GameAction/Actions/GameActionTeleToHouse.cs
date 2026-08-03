@@ -12,6 +12,11 @@ namespace ACE.Server.Network.GameAction.Actions
         {
             //Console.WriteLine("Received 0x262 - TeleToHouse");
 
+            if (!Command.Handlers.PlayerCommands.CheckPlayerCommandRateLimit(session, 1))
+            {
+                return;
+            }
+
             session.Player.HandleActionTeleToHouse();
         }
     }

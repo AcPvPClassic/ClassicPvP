@@ -6,6 +6,11 @@ namespace ACE.Server.Network.GameAction.Actions
         [GameAction(GameActionType.RemoveAllFriends)]
         public static void Handle(ClientMessage message, Session session)
         {
+            if (!Command.Handlers.PlayerCommands.CheckPlayerCommandRateLimit(session))
+            {
+                return;
+            }
+
             session.Player.HandleActionRemoveAllFriends();
         }
     }
