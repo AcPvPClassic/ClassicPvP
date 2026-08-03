@@ -270,14 +270,13 @@ namespace ACE.Server.WorldObjects
                         if (HotDungeonManager.IsHotDungeon(Location.LandblockId.Landblock, out var pkHotDungeon))
                             pvpXp = (long)Math.Round(pvpXp * pkHotDungeon.XpMultiplier);
 
-                        // Passive +5% PK XP per hometown owned by killer's allegiance (no cap)
-                        var killerMonarchId = pkPlayer.Allegiance?.MonarchId;
-                        if (killerMonarchId.HasValue)
-                        {
-                            var townCount = ACE.Server.Managers.AllegianceHometownManager.GetOwnedTownCount(killerMonarchId.Value);
-                            if (townCount > 0)
-                                pvpXp = (long)Math.Round(pvpXp * (1.0 + townCount * 0.05));
-                        }
+                        // Passive +5% PK XP per hometown owned by killer's allegiance (no cap).
+                        // Resolve the ownership key the same way it is stored (verified monarch, else own guid)
+                        // so solo PKs and monarchs whose Allegiance object isn't loaded still get credit.
+                        var killerMonarchId = ACE.Server.Managers.AllegianceManager.GetVerifiedMonarchId(pkPlayer) ?? pkPlayer.Guid.Full;
+                        var townCount = ACE.Server.Managers.AllegianceHometownManager.GetOwnedTownCount(killerMonarchId);
+                        if (townCount > 0)
+                            pvpXp = (long)Math.Round(pvpXp * (1.0 + townCount * 0.05));
 
                         // 2× PK XP bonus for kills during an active hometown conflict (either phase)
                         var killLandblock = Location?.LandblockId.Landblock ?? 0;
@@ -307,7 +306,7 @@ namespace ACE.Server.WorldObjects
                         var phase2Proxy = ACE.Server.Managers.AllegianceHometownManager.GetPhase2Proxy(ahEntry.TownId);
                         if (phase2Proxy != null)
                         {
-                            var killerMonarchId = pkPlayer.Allegiance?.MonarchId;
+                            var killerMonarchId = ACE.Server.Managers.AllegianceManager.GetVerifiedMonarchId(pkPlayer) ?? pkPlayer.Guid.Full;
                             if (killerMonarchId == ahTown.ConflictAttackerMonarchId)
                             {
                                 // Killer is an attacker (a defender died). You cannot progress an

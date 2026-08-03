@@ -201,6 +201,12 @@ The maximum rate (3×) is configurable by admins and may change between seasons.
 
 **Custom PvP rewards are exempt from this rate.** Arena match XP, PK quest XP, hometown capture XP, and open-world PK kill XP are granted as fixed percentages of your level, so they are *not* multiplied by the rolling XP rate. They neither shrink in the low-rate opening days nor balloon when the rate climbs above 1× late in the season — a given PvP reward is worth the same fraction of a level all season long.
 
+### 🏰 Hometown Ownership XP Bonus
+
+For **every hometown your allegiance owns**, all experience you earn is boosted by **+5%**. The bonus **stacks with no cap** — an allegiance holding four towns earns +20% XP, and so on.
+
+This applies to **all XP sources**: monster kills, quest turn-ins, exploration, and open-world PK kills. The bonus is shared by the entire allegiance — every member benefits from the allegiance's combined holdings, regardless of who captured each town. Own more towns, level faster.
+
 ---
 
 ## ⏱️ XP Cap Categories
@@ -789,7 +795,7 @@ Killing someone at or above your level applies no penalty. Killing someone 5 lev
 | Condition | Effect |
 |---|---|
 | Hot Dungeon kill | × dungeon XP multiplier (1.5× – 4×, varies per dungeon) |
-| +5% per hometown your allegiance owns | Passive, stacks, no cap |
+| +5% per hometown your allegiance owns | Passive, stacks, no cap — applies to **all** XP, not just PK kills (see [Hometown Ownership XP Bonus](#-hometown-ownership-xp-bonus)) |
 | Active hometown conflict on the kill landblock (either phase) | × 2 |
 
 **Diminishing returns:**

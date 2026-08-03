@@ -9,6 +9,12 @@
 
 ## 🩹 v1.14 (in development)
 
+### 🏰 Hometown XP Bonus — Fixed and Expanded to All XP
+
+The **+5% XP per hometown your allegiance owns** bonus was not being applied correctly — many owners (including solo allegiance leaders) got no bonus at all because the game looked up town ownership using the wrong allegiance key. This is now fixed: ownership is resolved the same way everywhere, so the bonus reliably applies to every owner.
+
+The bonus also now applies to **all experience you earn** — monster kills and quest turn-ins included — not just open-world PK kills. Each hometown your allegiance owns adds **+5%** (stacking, no cap) to the XP from every source.
+
 ---
 
 ## 🩹 v1.13 — July 17, 2026

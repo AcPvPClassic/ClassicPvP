@@ -249,7 +249,19 @@ namespace ACE.Server.WorldObjects
             // should this be passed upstream to fellowship / allegiance?
             var enchantment = GetXPAndLuminanceModifier(xpType);
 
-            var m_amount = (long)Math.Round(amount * enchantment * modifier);
+            // Passive +5% XP per hometown owned by the player's allegiance (all earned PvE XP: kills, quests,
+            // exploration, etc.). PvP kill rewards apply this same bonus separately on their fixed-reward path
+            // in Player_Death, so PvP is excluded here to avoid double-counting.
+            var hometownMultiplier = 1.0;
+            if (xpType != XpType.PvP)
+            {
+                var hometownMonarchId = AllegianceManager.GetVerifiedMonarchId(this) ?? Guid.Full;
+                var hometownCount = AllegianceHometownManager.GetOwnedTownCount(hometownMonarchId);
+                if (hometownCount > 0)
+                    hometownMultiplier = 1.0 + hometownCount * 0.05;
+            }
+
+            var m_amount = (long)Math.Round(amount * enchantment * modifier * hometownMultiplier);
 
             var m_amount_before_extra = m_amount;
 
