@@ -1072,7 +1072,7 @@ namespace ACE.Server.WorldObjects
             if (isOnline)
             {
                 var onlineGuest = PlayerManager.GetOnlinePlayer(guest.Guid);
-                onlineGuest.Session.Network.EnqueueSend(new GameMessageSystemChat($"{Name} has added you to their house guest list.", ChatMessageType.Broadcast));
+                onlineGuest.SendChatMessage(this, $"{Name} has added you to their house guest list.", ChatMessageType.Tell);
             }
         }
 
@@ -1115,7 +1115,7 @@ namespace ACE.Server.WorldObjects
             if (isOnline)
             {
                 var onlineGuest = PlayerManager.GetOnlinePlayer(guest.Guid);
-                onlineGuest.Session.Network.EnqueueSend(new GameMessageSystemChat($"{Name} has removed you from their house guest list.", ChatMessageType.Broadcast));
+                onlineGuest.SendChatMessage(this, $"{Name} has removed you from their house guest list.", ChatMessageType.Tell);
 
                 // if guest access is removed while player is in house,
                 // they will be stuck in restriction space
@@ -1283,7 +1283,7 @@ namespace ACE.Server.WorldObjects
                 if (isOnline)
                 {
                     var onlineGuest = PlayerManager.GetOnlinePlayer(storage.Guid);
-                    onlineGuest.Session.Network.EnqueueSend(new GameMessageSystemChat($"{Name} has granted you access to their house {andStr}storage.", ChatMessageType.Broadcast));
+                    onlineGuest.SendChatMessage(this, $"{Name} has granted you access to their house {andStr}storage.", ChatMessageType.Tell);
                 }
             }
             else
@@ -1303,7 +1303,7 @@ namespace ACE.Server.WorldObjects
                 if (isOnline)
                 {
                     var onlineGuest = PlayerManager.GetOnlinePlayer(storage.Guid);
-                    onlineGuest.Session.Network.EnqueueSend(new GameMessageSystemChat($"{Name} has revoked access to their house storage.", ChatMessageType.Broadcast));
+                    onlineGuest.SendChatMessage(this, $"{Name} has revoked access to their house storage.", ChatMessageType.Tell);
 
                     // if they are in house, and have storage opened?
                 }
