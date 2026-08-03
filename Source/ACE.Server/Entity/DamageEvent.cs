@@ -822,7 +822,7 @@ namespace ACE.Server.Entity
                         // ── Weeping (Human Slayer quest weapon) mods ──────────────────────────
                         // Applied on top of the base/imbued mods above; orthogonal to AR/CB/CS/hollow/phantom
                         // (a weeping weapon can also carry any of those). Handles EoR + Infiltration skills.
-                        if (Weapon.IsWeepingWeapon)
+                        else if (Weapon.IsWeepingWeapon)
                         {
                             switch (Weapon.WeaponSkill)
                             {
@@ -882,41 +882,44 @@ namespace ACE.Server.Entity
             if (ShieldMod != 1.0f && Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.CustomDM)
                 DamageBlocked = damageBeforeShieldMod - Damage;
 
-            var ablativeArmor = defender.EnchantmentManager.GetAblativeArmor();
-            if (ablativeArmor != null)
+            if (Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.CustomDM)
             {
-                if (ablativeArmor.StatModKey > 0)
+                var ablativeArmor = defender.EnchantmentManager.GetAblativeArmor();
+                if (ablativeArmor != null)
                 {
-                    float reducedAmount;
-                    ablativeArmor.StatModKey--;
-                    if (ablativeArmor.StatModValue >= Damage)
+                    if (ablativeArmor.StatModKey > 0)
                     {
-                        reducedAmount = Damage;
-                        ablativeArmor.StatModValue -= Damage;
-                    }
-                    else
-                    {
-                        reducedAmount = ablativeArmor.StatModValue;
-                        ablativeArmor.StatModValue = 0;
-                    }
-
-                    if (reducedAmount > 0)
-                    {
-                        Damage -= reducedAmount;
-                        if (playerDefender != null)
+                        float reducedAmount;
+                        ablativeArmor.StatModKey--;
+                        if (ablativeArmor.StatModValue >= Damage)
                         {
-                            var spell = new Spell(ablativeArmor.SpellId);
-                            playerDefender.SendMessage($"{spell.Name} has absorbed {reducedAmount:N0} points of {DamageType.GetName()} damage!", ChatMessageType.Magic);
+                            reducedAmount = Damage;
+                            ablativeArmor.StatModValue -= Damage;
+                        }
+                        else
+                        {
+                            reducedAmount = ablativeArmor.StatModValue;
+                            ablativeArmor.StatModValue = 0;
                         }
 
-                        var hitSound = new GameMessageSound(defender.Guid, Sound.HitPlate1, 1.0f);
-                        var spark = new GameMessageScript(defender.Guid, (PlayScript)Enum.Parse(typeof(PlayScript), "Spark" + attacker.GetSplatterHeight() + attacker.GetSplatterDir(defender)));
-                        defender.EnqueueBroadcast(hitSound, spark);
-                    }
-                }
+                        if (reducedAmount > 0)
+                        {
+                            Damage -= reducedAmount;
+                            if (playerDefender != null)
+                            {
+                                var spell = new Spell(ablativeArmor.SpellId);
+                                playerDefender.SendMessage($"{spell.Name} has absorbed {reducedAmount:N0} points of {DamageType.GetName()} damage!", ChatMessageType.Magic);
+                            }
 
-                if (ablativeArmor.StatModKey == 0 || ablativeArmor.StatModValue < 1)
-                    defender.EnchantmentManager.Remove(ablativeArmor);
+                            var hitSound = new GameMessageSound(defender.Guid, Sound.HitPlate1, 1.0f);
+                            var spark = new GameMessageScript(defender.Guid, (PlayScript)Enum.Parse(typeof(PlayScript), "Spark" + attacker.GetSplatterHeight() + attacker.GetSplatterDir(defender)));
+                            defender.EnqueueBroadcast(hitSound, spark);
+                        }
+                    }
+
+                    if (ablativeArmor.StatModKey == 0 || ablativeArmor.StatModValue < 1)
+                        defender.EnchantmentManager.Remove(ablativeArmor);
+                }
             }
 
             //Arenas - If this is an arena landblock, track total dmg dealt and received
