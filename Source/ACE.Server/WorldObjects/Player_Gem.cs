@@ -62,8 +62,10 @@ namespace ACE.Server.WorldObjects
             var headroom = Math.Min(pvpRemaining, xpRemainingGlobal);
             var xpToGrant = Math.Min(bottleXp, headroom);
 
-            // GrantXP with exactly the computed headroom — no overflow possible (pre-capped)
-            GrantXP(xpToGrant, XpType.PvP, ShareType.None);
+            // GrantXP with exactly the computed headroom — no overflow possible (pre-capped).
+            // Releasing stored XP is not a kill reward, so it opts out of the allegiance-size
+            // zerg penalty applied in GrantXP (same rationale as the Ancient Bottle drain on death).
+            GrantXP(xpToGrant, XpType.PvP, ShareType.None, applyPkSizeNerf: false);
 
             var leftInBottle = bottleXp - xpToGrant;
             if (leftInBottle <= 0)

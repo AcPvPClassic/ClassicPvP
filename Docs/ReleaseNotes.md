@@ -28,7 +28,7 @@ To keep PvP rewarding for small, tight-knit allegiances — and to discourage ev
 | 11 | 30% |
 | 12 or more | 10% |
 
-This applies to **every source of PK XP** — open-world kills, arena rewards, PK quests, PK gems, and hometown captures. Solo players and small allegiances feel nothing; large ones take a steep cut. The one exception is the **Ancient Bottle** experience drain on a kill, which is a transfer of experience the victim already earned and is left untouched.
+This applies to **every source of PK XP** — open-world kills, arena rewards, PK quests, and hometown captures. Solo players and small allegiances feel nothing; large ones take a steep cut. The **Ancient Bottle** is left untouched: neither draining a victim's bottle on a kill nor drinking your own stored bottle XP is reduced by this penalty, since that experience was already earned.
 
 ### 🏰 Hometown XP Bonus — Fixed and Expanded to All XP
 
