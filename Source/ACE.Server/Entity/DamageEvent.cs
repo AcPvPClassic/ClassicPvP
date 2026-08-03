@@ -819,6 +819,37 @@ namespace ACE.Server.Entity
                             }
                         }
 
+                        // ── Weeping (Human Slayer quest weapon) mods ──────────────────────────
+                        // Applied on top of the base/imbued mods above; orthogonal to AR/CB/CS/hollow/phantom
+                        // (a weeping weapon can also carry any of those). Handles EoR + Infiltration skills.
+                        if (Weapon.IsWeepingWeapon)
+                        {
+                            switch (Weapon.WeaponSkill)
+                            {
+                                // EoR consolidated skills
+                                case Skill.FinesseWeapons:   config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_fw_weeping").Item;    break;
+                                case Skill.LightWeapons:     config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_lw_weeping").Item;    break;
+                                case Skill.HeavyWeapons:     config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_hw_weeping").Item;    break;
+                                case Skill.TwoHandedCombat:  config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_2h_weeping").Item;    break;
+                                case Skill.MissileWeapons:
+                                    if (Weapon.DefaultCombatStyle == CombatStyle.Bow) config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_bow_weeping").Item;
+                                    else if (Weapon.DefaultCombatStyle == CombatStyle.Crossbow) config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_xbow_weeping").Item;
+                                    else if (Weapon.IsThrownWeapon || Weapon.IsAtlatl) config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_tw_weeping").Item;
+                                    break;
+                                // Infiltration individual weapon skills
+                                case Skill.Sword:         config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_sword_weeping").Item;    break;
+                                case Skill.Mace:          config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_mace_weeping").Item;     break;
+                                case Skill.Axe:           config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_axe_weeping").Item;      break;
+                                case Skill.Spear:         config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_spear_weeping").Item;    break;
+                                case Skill.Staff:         config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_staff_weeping").Item;    break;
+                                case Skill.Dagger:        config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_dagger_weeping").Item;   break;
+                                case Skill.UnarmedCombat: config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_unarmed_weeping").Item;  break;
+                                case Skill.Bow:           config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_bow_weeping").Item;      break;
+                                case Skill.Crossbow:      config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_xbow_weeping").Item;     break;
+                                case Skill.ThrownWeapon:  config_mod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_tw_weeping").Item;      break;
+                            }
+                        }
+
                         // apply arena 1v1 global damage modifier; block damage from observers
                         if (playerDefender != null && ArenaLocation.IsArenaLandblock(playerDefender.Location.Landblock))
                         {

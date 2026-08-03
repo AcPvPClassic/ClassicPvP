@@ -486,6 +486,15 @@ namespace ACE.Server.WorldObjects
         }
 
         /// <summary>
+        /// A "Weeping" weapon is a quest weapon carrying the Human Slayer property.
+        /// In ClassicPvP (Infiltration) Human is the only slayer type that cannot be produced
+        /// by loot generation (CustomDM-only) or any random-slayer source (Morph Gem / Tinkering
+        /// Lotto roll from SupportedGearCreatureTypes, which excludes Human), so a Human slayer
+        /// weapon is always a weeping quest weapon.
+        /// </summary>
+        public bool IsWeepingWeapon => SlayerCreatureType == ACE.Entity.Enum.CreatureType.Human;
+
+        /// <summary>
         /// Returns the slayer damage multiplier for the attack weapon
         /// against a particular creature type
         /// </summary>

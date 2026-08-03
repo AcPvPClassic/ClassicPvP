@@ -828,6 +828,10 @@ namespace ACE.Server.WorldObjects
                                 dmgMod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_war_cs_crit").Item;
                         }
 
+                        // Weeping (Human Slayer) caster
+                        if (weapon != null && weapon.IsWeepingWeapon)
+                            dmgMod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_war_weeping").Item;
+
                         finalDamage = finalDamage * dmgMod;
                     }
                     else if (Spell.DamageType == DamageType.Nether)
@@ -843,6 +847,10 @@ namespace ACE.Server.WorldObjects
                             if (weapon != null && weapon.HasImbuedEffect(ImbuedEffectType.CripplingBlow))
                                 dmgMod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_void_cb_crit").Item;
                         }
+
+                        // Weeping (Human Slayer) caster
+                        if (weapon != null && weapon.IsWeepingWeapon)
+                            dmgMod *= (float)PropertyManager.GetDouble("pvp_dmg_mod_void_weeping").Item;
 
                         finalDamage = finalDamage * dmgMod;
                     }

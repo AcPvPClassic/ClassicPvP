@@ -1032,6 +1032,26 @@ namespace ACE.Server.Managers
                 ("pvp_dmg_mod_unarmed_hollow", new Property<double>(1.0, "Scales the amount of damage for Unarmed Hollow")),
                 ("pvp_dmg_mod_unarmed_phantom", new Property<double>(1.0, "Scales the amount of damage for Unarmed Phantom")),
 
+                // Weeping (Human Slayer quest weapons) — per weapon type; applied on top of the
+                // per-skill/effect mods above whenever the attacker's weapon has Human Slayer.
+                // War/Void cover weeping casters; the rest cover melee & missile weeping weapons.
+                ("pvp_dmg_mod_war_weeping", new Property<double>(1.0, "Scales war magic damage from Weeping (Human Slayer) casters in PvP")),
+                ("pvp_dmg_mod_void_weeping", new Property<double>(1.0, "Scales void magic damage from Weeping (Human Slayer) casters in PvP")),
+                ("pvp_dmg_mod_fw_weeping", new Property<double>(1.0, "Scales the amount of damage for Weeping (Human Slayer) FW in PvP")),
+                ("pvp_dmg_mod_lw_weeping", new Property<double>(1.0, "Scales the amount of damage for Weeping (Human Slayer) LW in PvP")),
+                ("pvp_dmg_mod_hw_weeping", new Property<double>(1.0, "Scales the amount of damage for Weeping (Human Slayer) HW in PvP")),
+                ("pvp_dmg_mod_2h_weeping", new Property<double>(1.0, "Scales the amount of damage for Weeping (Human Slayer) 2H in PvP")),
+                ("pvp_dmg_mod_bow_weeping", new Property<double>(1.0, "Scales the amount of damage for Weeping (Human Slayer) Bow in PvP")),
+                ("pvp_dmg_mod_xbow_weeping", new Property<double>(1.0, "Scales the amount of damage for Weeping (Human Slayer) Xbow in PvP")),
+                ("pvp_dmg_mod_tw_weeping", new Property<double>(1.0, "Scales the amount of damage for Weeping (Human Slayer) TW in PvP")),
+                ("pvp_dmg_mod_sword_weeping", new Property<double>(1.0, "Scales the amount of damage for Weeping (Human Slayer) Sword in PvP")),
+                ("pvp_dmg_mod_mace_weeping", new Property<double>(1.0, "Scales the amount of damage for Weeping (Human Slayer) Mace in PvP")),
+                ("pvp_dmg_mod_axe_weeping", new Property<double>(1.0, "Scales the amount of damage for Weeping (Human Slayer) Axe in PvP")),
+                ("pvp_dmg_mod_spear_weeping", new Property<double>(1.0, "Scales the amount of damage for Weeping (Human Slayer) Spear in PvP")),
+                ("pvp_dmg_mod_staff_weeping", new Property<double>(1.0, "Scales the amount of damage for Weeping (Human Slayer) Staff in PvP")),
+                ("pvp_dmg_mod_dagger_weeping", new Property<double>(1.0, "Scales the amount of damage for Weeping (Human Slayer) Dagger in PvP")),
+                ("pvp_dmg_mod_unarmed_weeping", new Property<double>(1.0, "Scales the amount of damage for Weeping (Human Slayer) Unarmed in PvP")),
+
                 // Misc PvP modifiers
                 ("pvp_cs_critrate_mod", new Property<double>(1.0, "Scales the crit rate for Critical Strike in PvP")),
                 ("pvp_void_hybrid_mod", new Property<double>(1.0, "Scales the amount of void DOT damage when the attacker is a hybrid void (has trained/specialized melee or war magic skills)")),
