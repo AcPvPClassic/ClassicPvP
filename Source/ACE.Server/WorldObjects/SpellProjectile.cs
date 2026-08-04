@@ -46,6 +46,47 @@ namespace ACE.Server.WorldObjects
         public int DebugVelocity;
 
         /// <summary>
+        /// Level 7 Bolt and Arc war spells that deal exactly 60% of the target's max health,
+        /// gated by <see cref="RestrictLevel7BoltArcDamageToArena"/>. See CalculateDamage().
+        /// </summary>
+        private static readonly HashSet<uint> Level7BoltArcSpellIds = new HashSet<uint>()
+        {
+            2122, // AcidStream7
+            2128, // FlameBolt7
+            2132, // ForceBolt7
+            2136, // FrostBolt7
+            2140, // LightningBolt7
+            2144, // ShockWave7
+            2146, // WhirlingBlade7
+
+            2717, // AcidArc7
+            2724, // ForceArc7
+            2731, // FrostArc7
+            2738, // LightningArc7
+            2745, // FlameArc7
+            2752, // ShockArc7
+            2759, // BladeArc7
+        };
+
+        /// <summary>
+        /// When true (default), the level 7 Bolt/Arc 60%-max-health damage override only
+        /// applies during active arena events. When false, it applies everywhere.
+        /// </summary>
+        private const bool RestrictLevel7BoltArcDamageToArena = true;
+
+        /// <summary>
+        /// Percentage of the target's max health dealt by the level 7 Bolt/Arc override
+        /// when the target has a wand/caster equipped.
+        /// </summary>
+        private const float Level7BoltArcDamagePercentWithWand = 0.6f;
+
+        /// <summary>
+        /// Percentage of the target's max health dealt by the level 7 Bolt/Arc override
+        /// when the target does not have a wand/caster equipped.
+        /// </summary>
+        private const float Level7BoltArcDamagePercentWithoutWand = 0.49f;
+
+        /// <summary>
         /// A new biota be created taking all of its values from weenie.
         /// </summary>
         public SpellProjectile(Weenie weenie, ObjectGuid guid) : base(weenie, guid)
@@ -892,6 +933,23 @@ namespace ACE.Server.WorldObjects
             if (target.DebugDamage.HasFlag(Creature.DebugDamageType.Defender))
             {
                 ShowInfo(target, Spell, attackSkill, criticalChance, criticalHit, critDefended, overpower, weaponCritDamageMod, skillBonus, baseDamage, critDamageBonus, elementalDamageMod, slayerMod, weaponResistanceMod, resistanceMod, absorbMod, LifeProjectileDamage, lifeMagicDamage, finalDamage);
+            }
+
+            // Level 7 Bolt/Arc war spells always deal exactly 60% of the target's max health
+            // (49% if the target isn't wielding a wand), overriding all of the above damage
+            // math (resistances, crits, blocks, etc.).
+            if (Level7BoltArcSpellIds.Contains(Spell.Id))
+            {
+                var inActiveArenaEvent = targetPlayer != null && ArenaLocation.IsArenaLandblock(targetPlayer.Location.Landblock);
+
+                if (!RestrictLevel7BoltArcDamageToArena || inActiveArenaEvent)
+                {
+                    var damagePercent = target.GetEquippedWand() != null
+                        ? Level7BoltArcDamagePercentWithWand
+                        : Level7BoltArcDamagePercentWithoutWand;
+
+                    finalDamage = target.Health.MaxValue * damagePercent;
+                }
             }
 
             // Bindstone proxy (Phase 2): war-magic damage falls off with distance too, so mages
