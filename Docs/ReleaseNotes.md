@@ -9,6 +9,14 @@
 
 ## 🩹 v1.14 (in development)
 
+### 🗡️ Creature Slayer No Longer Rolls Moar or Remoran
+
+**Moar** and **Remoran** have been removed from the pool of creature types a **Creature Slayer** weapon can be attuned to. Existing weapons already bearing those slayers are unaffected; they just can no longer be rolled going forward.
+
+### 🪃 Slayer Morph Gems Now Work on Atlatls
+
+The **slayer morph gem** previously refused atlatls, accepting only melee weapons, casters, bows, and thrown weapons. Atlatls are now valid targets, so throwers can attune a slayer to their weapon like everyone else.
+
 ### 🚫 No More Housing-Permission Chat Spam
 
 Players were abusing the house guest and storage permission controls to **flood a rival's chat** — rapidly adding and removing someone from their storage/guest list fires a "*so-and-so has granted/revoked your access*" message at the target each time. A short rate limit now applies to housing and related permission commands: you can only issue one every few seconds, so the notifications can no longer be spammed. This covers all the housing permission actions (guests, storage, allegiance access, open/closed status, hooks) as well as friends lists, corpse-looting permissions, allegiance officer/ban lists, and squelch changes.
