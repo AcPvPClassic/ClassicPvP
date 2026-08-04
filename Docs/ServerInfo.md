@@ -239,7 +239,7 @@ Not at midnight. Not on a daily timer. They reset **when the rolling cap itself 
 XP passed up to you through your allegiance chain counts against your **Monster bucket**, the same pool as creature kills. If you're both actively grinding and receiving heavy passup from your vassals, those two sources compete for the same budget.
 
 **PvP Overflow — Ancient Bottles**
-PvP is the one category with a safety valve. If your PvP bucket is full — or you're at the global cap — any PvP XP you would have earned doesn't vanish. Instead, it is absorbed by **Ancient Bottles** in your inventory (if you have any). You can then use an Ancient Bottle later when your PvP budget has room, releasing its stored XP at that point. The bottle holds up to 100 million XP and tells you how full it is as it absorbs overflow.
+PvP is the one category with a safety valve. If your PvP bucket is full — or you're at the global cap — some of the PvP XP you would have earned doesn't vanish entirely. Instead, **25% of it** is absorbed by **Ancient Bottles** in your inventory (if you have any); the other 75% is lost to the cap. You can then use an Ancient Bottle later when your PvP budget has room, releasing its stored XP at that point — the bottle always releases 100% of what it holds. The bottle holds up to 100 million XP and tells you how full it is as it absorbs overflow.
 
 ### Checking Your Status
 
@@ -834,7 +834,7 @@ The count includes you, and it is your own allegiance's online headcount that ma
 | Imbue Altering Morph Gem | 20 | Randomizes a weapon's imbue between Crippling Blow, Armor Rending, and Critical Strike. |
 | Empyrean Tuning Fork | 25 | Randomizes the legendary cantrips on armor, jewelry, or shields that already have legendaries. One use per item. |
 | Slayer Upgrade Gem | 25 | Upgrades an existing slayer damage bonus to 1.8 on weapons that rolled a slayer via the tinkering lottery. |
-| Ancient Bottle | 50 | Absorbs PvP XP overflow up to 100M. Bonded & Attuned. |
+| Ancient Bottle | 50 | Absorbs 25% of PvP XP overflow up to 100M. Bonded & Attuned. |
 | Ancient Empyrean Tool | 75 | Guarantees the next tinker will not fail. |
 | Empyrean Jeweler's Sawblade | 50 | Randomizes the slot of a ring, bracelet, or necklace between finger, wrist, and neck. |
 | Oil of Creature Slaying | 75 | Adds a random slayer (1.8 damage bonus) to a weapon or magic caster that does not already have one. |

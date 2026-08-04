@@ -15,6 +15,12 @@ Players were abusing the house guest and storage permission controls to **flood 
 
 On top of that, **squelching a player now also blocks their housing guest/storage notifications** — the "added/removed you from the guest list" and "granted/revoked your storage access" messages. So if someone slips past the rate limit, just squelch them and you won't see the messages at all.
 
+### 🍾 Ancient Bottles Now Capture Only 25% of Post-Cap PK XP
+
+The **Ancient Bottle** used to be a near-perfect safety valve: every point of PvP XP you earned past your daily PvP or global cap was stashed in the bottle, so you eventually recovered **100%** of it. That made hitting the cap almost meaningless for PvPers. Now, when PvP XP overflows the cap, **only 25% of it is captured** into your Ancient Bottles — the other 75% is lost to the cap, just like every other XP category.
+
+Drinking a bottle is unchanged: it still releases **100%** of whatever it holds, up to your available cap headroom. This only reduces how much goes *in*. XP already sitting in your bottles is unaffected.
+
 ### ⚔️ PK XP Now Scales Down With Your Allegiance's Online Size
 
 To keep PvP rewarding for small, tight-knit allegiances — and to discourage everyone piling into one giant "zerg" allegiance — **all PK XP is now reduced based on how many of your allegiance's members are online** when you earn it. The more allies you have logged in, the smaller each PK reward.

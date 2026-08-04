@@ -1063,6 +1063,7 @@ namespace ACE.Server.Managers
                 ("daily_quest_xp_category_ratio",   new Property<double>(0.60, "Rolling cap: maximum fraction of a player's remaining cap XP that the Quest category (quests, emotes, exploration) can absorb in one cap period.")),
                 ("daily_monster_xp_category_ratio",  new Property<double>(0.60, "Rolling cap: maximum fraction of a player's remaining cap XP that the Monster category (kills, fellowship, allegiance, proficiency) can absorb in one cap period.")),
                 ("daily_pvp_xp_category_ratio",      new Property<double>(1.00, "Rolling cap: maximum fraction of a player's remaining cap XP that the PvP category (player kills, arenas, PvP custom content) can absorb in one cap period.")),
+                ("ancient_bottle_fill_ratio",        new Property<double>(0.25, "Fraction of overflow PvP XP (beyond the daily PvP or global cap) that is stored into Ancient Bottles. The remainder is lost to the cap. e.g. 0.25 means only 25% of post-cap PK XP is captured.")),
 
                 // PK kill XP rewards
                 ("pk_xp_level_diff_decay",           new Property<double>(0.85, "Exponential decay factor applied per level the victim is below the killer when awarding PvP XP on a PK kill. e.g. 0.85 means each level gap multiplies the reward by 0.85.")),

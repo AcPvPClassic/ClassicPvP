@@ -88,10 +88,17 @@ namespace ACE.Server.WorldObjects
 
         /// <summary>
         /// Fills Ancient Bottles in the player's inventory with PvP XP that overflowed
-        /// past the daily PvP cap or global XP cap.  Excess beyond all bottle capacity is discarded.
+        /// past the daily PvP cap or global XP cap.  Only a configurable fraction
+        /// (ancient_bottle_fill_ratio) of the overflow is captured; the remainder is
+        /// lost to the cap.  Excess beyond all bottle capacity is discarded.
         /// </summary>
         private void FillXpBottlesFromOverflow(long overflow)
         {
+            if (overflow <= 0) return;
+
+            // Only capture a fraction of post-cap PK XP; the rest is lost to the cap.
+            var fillRatio = PropertyManager.GetDouble("ancient_bottle_fill_ratio").Item;
+            overflow = (long)(overflow * fillRatio);
             if (overflow <= 0) return;
 
             var bottles = GetInventoryItemsOfWCID(CustomWeenieId.XpBottle);
