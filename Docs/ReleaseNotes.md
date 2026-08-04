@@ -7,7 +7,11 @@
 
 ---
 
-## 🩹 v1.14 (in development)
+## 🩹 v1.15 (in development)
+
+---
+
+## 🩹 v1.14 — August 3, 2026
 
 ### 🗡️ Creature Slayer No Longer Rolls Moar or Remoran
 
