@@ -89,7 +89,7 @@ namespace ACE.Server.WorldObjects
             else
             {
                 player.Session.Network.EnqueueSend(new GameMessageSystemChat(
-                    $"{entry.TownName} is owned by {town.OwnerAllegianceName}. Gather 2 allies within 5m of the bind stone with no enemies on the landblock to start an assault.",
+                    $"{entry.TownName} is owned by {town.OwnerAllegianceName}. Gather 2+ fellowship allies within 5m of the bind stone (all in the same fellowship, no enemies on the landblock) to start an assault. Your fellowship's size becomes the zerg limit for the fight.",
                     ChatMessageType.Magic));
             }
         }

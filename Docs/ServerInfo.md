@@ -719,9 +719,15 @@ To take a town owned by a rival allegiance, use the Bind Stone to begin the assa
 
 **Phase 1 — Perimeter Control (up to 60 minutes)**
 - Phase 1 begins **automatically** when at least **2 members** of a single attacking allegiance are within **5 meters** of the Bind Stone and no other enemy allegiances are within **50 meters** — no player action required
+- Those attackers must all belong to the **same fellowship** — an allegiance that isn't grouped into one fellowship at the Bind Stone cannot start an assault
 - If an enemy PK enters within 50 meters, a warning is broadcast. If they remain for **30 continuous seconds**, Phase 1 progress resets. Leaving the area before 30 seconds have passed cancels the threat with no penalty.
 - Hold the zone for **4 uninterrupted minutes** to trigger Phase 2
 - Failing to reach Phase 2 within 60 minutes announces a global failure and applies a **3-hour cooldown** on that town for your allegiance
+
+**Zerg Limit**
+- The size of the attacking fellowship (its full roster, online or not) is locked in as the **zerg limit** for the entire conflict, and is included in the global "assault has begun" announcement
+- The limit caps **every** allegiance — attackers, defenders, and any uninvolved allegiance — to that many players at once on the town's landblock or an adjacent one, for as long as the conflict is active (Phase 1 and Phase 2)
+- If an allegiance exceeds the limit, its **most recently arrived** member(s) are immediately teleported to their lifestone until the group is back at the cap
 
 **Phase 2 — Destroy the Bind Stone (30 minutes)**
 - The Bind Stone becomes attackable — chip down its HP with melee, missile, or war magic

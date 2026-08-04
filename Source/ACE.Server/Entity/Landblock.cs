@@ -359,6 +359,13 @@ namespace ACE.Server.Entity
             if (town.ConflictPhase == 0 && town.OwnerMonarchId.HasValue)
                 TryAutoStartPhase1(registry, town);
 
+            if (town.ConflictPhase == 0) return;
+
+            // Zerg limit applies for the whole conflict (Phase 1 and Phase 2), to every allegiance
+            // present in the zone — not just the attacker/defender pair.
+            var zonePlayers = GetPlayersOnLandblockAndAdjacent().Where(p => p.IsPK).ToList();
+            Managers.AllegianceHometownManager.EnforceZergLimit(registry.TownId, zonePlayers);
+
             if (town.ConflictPhase != 1) return;
 
             var attackerMonarchId = town.ConflictAttackerMonarchId!.Value;
@@ -489,21 +496,27 @@ namespace ACE.Server.Entity
         /// </summary>
         private IEnumerable<Player> GetPlayersNearBindstone(ACE.Entity.Position pos, float maxDistance)
         {
-            foreach (var player in GetPlayers())
+            foreach (var player in GetPlayersOnLandblockAndAdjacent())
             {
                 if (player.Location.DistanceTo(pos) <= maxDistance)
                     yield return player;
             }
+        }
+
+        /// <summary>
+        /// Returns all players on this landblock and its adjacent landblocks.
+        /// </summary>
+        private IEnumerable<Player> GetPlayersOnLandblockAndAdjacent()
+        {
+            foreach (var player in GetPlayers())
+                yield return player;
 
             foreach (var adjId in Managers.LandblockManager.GetAdjacentIDs(this))
             {
                 var adjLb = Managers.LandblockManager.GetLandblock(adjId, false);
                 if (adjLb == null) continue;
                 foreach (var player in adjLb.GetPlayers())
-                {
-                    if (player.Location.DistanceTo(pos) <= maxDistance)
-                        yield return player;
-                }
+                    yield return player;
             }
         }
 
@@ -514,11 +527,11 @@ namespace ACE.Server.Entity
             var bindstonePos   = registry.BindstonePosition;
             var ownerMonarchId = town.OwnerMonarchId!.Value;
 
-            // Pass 1: count non-owner PKs near the bindstone per allegiance,
+            // Pass 1: collect non-owner PKs near the bindstone per allegiance,
             //         and track all non-owner allegiances present anywhere on the landblock.
-            var nearCount          = new Dictionary<uint, int>();    // monarchId → players within 5m
-            var allegianceIdentity = new Dictionary<uint, string>(); // monarchId → allegiance identity
-            var allMonarchIds      = new System.Collections.Generic.HashSet<uint>(); // all non-owner allegiances on lb
+            var nearPlayersByMonarch = new Dictionary<uint, List<Player>>(); // monarchId → players within 5m
+            var allegianceIdentity   = new Dictionary<uint, string>();       // monarchId → allegiance identity
+            var allMonarchIds        = new System.Collections.Generic.HashSet<uint>(); // all non-owner allegiances on lb
 
             foreach (var player in GetPlayersNearBindstone(bindstonePos, 50f))
             {
@@ -537,8 +550,9 @@ namespace ACE.Server.Entity
 
                 if (player.Location.DistanceTo(bindstonePos) <= 5f)
                 {
-                    nearCount.TryGetValue(monarchId, out var c);
-                    nearCount[monarchId] = c + 1;
+                    if (!nearPlayersByMonarch.TryGetValue(monarchId, out var list))
+                        nearPlayersByMonarch[monarchId] = list = new List<Player>();
+                    list.Add(player);
                 }
             }
 
@@ -548,12 +562,19 @@ namespace ACE.Server.Entity
             var attackerMonarchId = allMonarchIds.First();
 
             // Must have 2+ members within 5m of the bindstone
-            nearCount.TryGetValue(attackerMonarchId, out var nearPlayers);
-            if (nearPlayers < 2) return;
+            nearPlayersByMonarch.TryGetValue(attackerMonarchId, out var nearPlayers);
+            if (nearPlayers == null || nearPlayers.Count < 2) return;
+
+            // The attackers must be grouped into a single fellowship to begin an assault — that
+            // fellowship's roster size becomes the zerg limit for the whole conflict.
+            var fellowship = nearPlayers[0].Fellowship;
+            if (fellowship == null || nearPlayers.Any(p => p.Fellowship != fellowship)) return;
+
+            var zergLimit = fellowship.FellowshipMembers.Count;
 
             var attackerAllegiance = allegianceIdentity[attackerMonarchId];
 
-            if (Managers.AllegianceHometownManager.TryStartPhase1(registry.TownId, attackerMonarchId, attackerAllegiance, out _))
+            if (Managers.AllegianceHometownManager.TryStartPhase1(registry.TownId, attackerMonarchId, attackerAllegiance, zergLimit, out _))
             {
                 var holdMinutes = Managers.AllegianceHometownManager.Phase1DurationSeconds / 60.0;
                 EnqueueBroadcast(null, false, null, null,

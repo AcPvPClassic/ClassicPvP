@@ -57,6 +57,17 @@ namespace ACE.Server.Managers
         // per-town: monarch_id → cooldown expiry after a successful capture (8h default)
         private static readonly Dictionary<byte, DateTime> _captureProtection = new();
 
+        // per-town: max players per allegiance allowed in the conflict zone (landblock + adjacents),
+        // snapshotted from the attacking fellowship's size when Phase 1 starts. Cleared when the
+        // conflict ends.
+        private static readonly Dictionary<byte, int> _zergLimitByTown = new();
+
+        // per-town: player_guid → first time seen in the conflict zone during the active conflict.
+        // Drives "newest player" eviction when an allegiance exceeds the zerg limit. Cleared when the
+        // conflict ends; a player who fully leaves the zone is forgotten, so a later re-entry counts
+        // as new again.
+        private static readonly Dictionary<byte, Dictionary<uint, DateTime>> _zoneEntryByTown = new();
+
         // latest event per town (for audit log cache)
         private static readonly Dictionary<byte, AllegianceHometownEvent> _latestEventByTown = new();
 
@@ -344,9 +355,11 @@ namespace ACE.Server.Managers
         /// <summary>
         /// Attempts to start Phase 1 for the given attacker allegiance on the given town.
         /// Returns false (with reason message) if blocked by cooldowns, protection, or conflict limits.
+        /// <paramref name="zergLimit"/> is the max players per allegiance allowed in the conflict zone
+        /// for the duration of the conflict (both phases), enforced by <see cref="EnforceZergLimit"/>.
         /// </summary>
         public static bool TryStartPhase1(byte townId, uint attackerMonarchId, string attackerName,
-            out string failReason)
+            int zergLimit, out string failReason)
         {
             failReason = null;
 
@@ -416,6 +429,9 @@ namespace ACE.Server.Managers
                 town.Phase2StartTime           = null;
 
                 GetOrCreateSet(_activeConflictsByMonarch, attackerMonarchId).Add(townId);
+
+                _zergLimitByTown[townId] = zergLimit;
+                _zoneEntryByTown[townId] = new Dictionary<uint, DateTime>();
             }
 
             SaveTownDb(town);
@@ -434,6 +450,7 @@ namespace ACE.Server.Managers
             var announcement = defenderMonarchId.HasValue
                 ? $"{attackerName} is attempting to wrest control of {townName} from {defenderName}! Phase 1 has begun."
                 : $"{attackerName} is assaulting {townName} (unclaimed)! Phase 1 has begun.";
+            announcement += $" Zerg limit: {zergLimit} player(s) per allegiance in the conflict zone.";
             GlobalBroadcast(announcement);
 
             return true;
@@ -483,6 +500,76 @@ namespace ACE.Server.Managers
             }
 
             return Phase1TickResult.Progressing;
+        }
+
+        // -----------------------------------------------------------------------
+        // Zerg limit enforcement
+        // -----------------------------------------------------------------------
+
+        /// <summary>
+        /// Called every 5 seconds (alongside the Phase 1/2 tick) with every player currently in the
+        /// town's conflict zone (its landblock and adjacents). Any allegiance present in
+        /// <paramref name="playersInZone"/> beyond the town's zerg limit has its most-recently-arrived
+        /// member(s) sent home to their lifestone, down to the limit. No-op if the town has no active
+        /// conflict (and therefore no zerg limit).
+        /// </summary>
+        public static void EnforceZergLimit(byte townId, ICollection<Player> playersInZone)
+        {
+            int zergLimit;
+            Dictionary<uint, DateTime> zoneEntry;
+
+            lock (_lock)
+            {
+                if (!_zergLimitByTown.TryGetValue(townId, out zergLimit))
+                    return;
+
+                if (!_zoneEntryByTown.TryGetValue(townId, out zoneEntry))
+                {
+                    zoneEntry = new Dictionary<uint, DateTime>();
+                    _zoneEntryByTown[townId] = zoneEntry;
+                }
+
+                var now = DateTime.UtcNow;
+                var present = new HashSet<uint>();
+                foreach (var player in playersInZone)
+                {
+                    present.Add(player.Guid.Full);
+                    if (!zoneEntry.ContainsKey(player.Guid.Full))
+                        zoneEntry[player.Guid.Full] = now;
+                }
+
+                // Forget anyone no longer in the zone, so a later re-entry counts as new again.
+                foreach (var guid in zoneEntry.Keys.Where(g => !present.Contains(g)).ToList())
+                    zoneEntry.Remove(guid);
+            }
+
+            var toEvict = playersInZone
+                .GroupBy(p => AllegianceManager.GetVerifiedMonarchId(p) ?? p.Guid.Full)
+                .Where(g => g.Count() > zergLimit)
+                .SelectMany(g => g
+                    .OrderByDescending(p => zoneEntry.TryGetValue(p.Guid.Full, out var t) ? t : DateTime.MaxValue)
+                    .Take(g.Count() - zergLimit));
+
+            foreach (var player in toEvict)
+                EvictForZergLimit(townId, zergLimit, player);
+        }
+
+        private static void EvictForZergLimit(byte townId, int zergLimit, Player player)
+        {
+            lock (_lock)
+            {
+                if (_zoneEntryByTown.TryGetValue(townId, out var zoneEntry))
+                    zoneEntry.Remove(player.Guid.Full);
+            }
+
+            if (player.Sanctuary == null)
+                return;
+
+            player.Session.Network.EnqueueSend(new GameMessageSystemChat(
+                $"This town fight is capped at {zergLimit} player(s) per allegiance, and you were the most recent arrival over the limit. You have been sent to your lifestone.",
+                ChatMessageType.Magic));
+
+            WorldManager.ThreadSafeTeleport(player, player.Sanctuary);
         }
 
         private static void HandlePhase1Timeout(byte townId)
@@ -1054,6 +1141,9 @@ namespace ACE.Server.Managers
             town.ConflictAttackerName      = null;
             town.ConflictStartTime         = null;
             town.Phase2StartTime           = null;
+
+            _zergLimitByTown.Remove(town.TownId);
+            _zoneEntryByTown.Remove(town.TownId);
         }
 
         private static void CloseLatestEvent(byte townId, byte outcome)
