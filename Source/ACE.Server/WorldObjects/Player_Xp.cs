@@ -443,14 +443,14 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         private static double GetPkAllegianceSizeXpModifier(int onlineCount) => onlineCount switch
         {
-            <= 5 => 1.00,
-            6    => 0.95,
-            7    => 0.90,
-            8    => 0.80,
-            9    => 0.70,
-            10   => 0.50,
-            11   => 0.30,
-            _    => 0.10, // 12+
+            <= 10 => 1.00,
+            11    => 0.95,
+            12    => 0.90,
+            13    => 0.80,
+            14    => 0.70,
+            15   => 0.50,
+            16   => 0.30,
+            _    => 0.10, // 17+
         };
 
         /// <summary>

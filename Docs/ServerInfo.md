@@ -808,14 +808,14 @@ To keep PvP rewarding for small, tight-knit allegiances and to discourage stacki
 
 | Allegiance members online | PK XP earned |
 |---|---|
-| 5 or fewer | 100% |
-| 6 | 95% |
-| 7 | 90% |
-| 8 | 80% |
-| 9 | 70% |
-| 10 | 50% |
-| 11 | 30% |
-| 12 or more | 10% |
+| 10 or fewer | 100% |
+| 11 | 95% |
+| 12 | 90% |
+| 13 | 80% |
+| 14 | 70% |
+| 15 | 50% |
+| 16 | 30% |
+| 17 or more | 10% |
 
 **This applies to every source of PK XP** — open-world kills, arena rewards, PK quests, hometown-capture rewards, and the XP you drain from a victim's **Ancient Bottle** on a kill (that drain is a kill reward, so it is reduced like any other PK XP). Solo players and small allegiances are unaffected. The one exemption is **drinking your own Ancient Bottle** to release stored XP — that experience was already earned, so it is never reduced by this penalty.
 
