@@ -522,7 +522,11 @@ namespace ACE.Server.WorldObjects
 
         private double GetNextRegenerationTime(double generatorInitialDelay)
         {
-            if (RegenerationTimestamp != 0)
+            bool isCustomDM = Common.ConfigManager.Config.Server.WorldRuleset == Common.Ruleset.CustomDM;            
+            if (RegenerationTimestamp != 0 && isCustomDM)
+                return Time.GetUnixTime();
+
+            if (RegenerationTimestamp == 0 && !isCustomDM)
                 return Time.GetUnixTime();
 
             return Time.GetUnixTime() + generatorInitialDelay;
