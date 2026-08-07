@@ -1,0 +1,149 @@
+using System.Collections.Generic;
+
+namespace ACE.Server.Entity
+{
+    /// <summary>
+    /// Defines "zerg control" areas.  A ZergControlArea is a group of one or more landblocks
+    /// that share a single per-allegiance player cap.  Enforcement happens in two places:
+    ///   - On a landblock tick (Landblock.HandleZergControl): every player across all landblocks
+    ///     in the area is bucketed by allegiance, and any allegiance over its cap has its excess
+    ///     players (the most recently teleported ones) booted to their lifestone.
+    ///   - When a player teleports into / logs into one of these landblocks
+    ///     (Player.IsInZergRestrictedEntry / Player.EvaluateZergEntry): the player is blocked if
+    ///     their own allegiance is already at the cap.
+    ///
+    /// NOTE: every landblock listed in a ZergControlArea's AreaLandblockIds must ALSO be added as
+    /// a key in the map (pointing at the same area) so a tick on any of them enforces the whole area.
+    /// </summary>
+    public static class ZergControlLandblocks
+    {
+        private static Dictionary<uint, ZergControlArea> _zergControlLandblocksMap;
+
+        public static Dictionary<uint, ZergControlArea> ZergControlLandblocksMap
+        {
+            get
+            {
+                if (_zergControlLandblocksMap == null)
+                {
+                    _zergControlLandblocksMap = new Dictionary<uint, ZergControlArea>();
+
+                    // ---------------------------------------------------------------------------
+                    // Example ZergControlAreas ported from Doctide (left as reference / disabled).
+                    // Uncomment and adjust to enable zerg control for specific landblocks.
+                    // ---------------------------------------------------------------------------
+
+                    ////Zerg control Town Control landblocks to 9
+                    //var holtTC = new ZergControlArea();
+                    //holtTC.MaxPlayersPerAllegiance = 9;
+                    //holtTC.AreaLandblockIds = new uint[] { 0x4FF1 };
+                    //_zergControlLandblocksMap.Add(0x4FF1, holtTC);
+
+                    //var yaraqTC = new ZergControlArea();
+                    //yaraqTC.MaxPlayersPerAllegiance = 9;
+                    //yaraqTC.AreaLandblockIds = new uint[] { 0x00AB };
+                    //_zergControlLandblocksMap.Add(0x00AB, yaraqTC);
+
+                    //var shoushiTC1 = new ZergControlArea();
+                    //shoushiTC1.MaxPlayersPerAllegiance = 9;
+                    //shoushiTC1.AreaLandblockIds = new uint[] { 0xE9F0, 0xE9F1, 0xE8F1 };
+                    //_zergControlLandblocksMap.Add(0xE9F1, shoushiTC1);
+
+                    //var shoushiTC2 = new ZergControlArea();
+                    //shoushiTC2.MaxPlayersPerAllegiance = 9;
+                    //shoushiTC2.AreaLandblockIds = new uint[] { 0xE9F0, 0xE9F1, 0xE8F1 };
+                    //_zergControlLandblocksMap.Add(0xE9F0, shoushiTC2);
+
+                    //var shoushiTC3 = new ZergControlArea();
+                    //shoushiTC3.MaxPlayersPerAllegiance = 9;
+                    //shoushiTC3.AreaLandblockIds = new uint[] { 0xE9F0, 0xE9F1, 0xE8F1 };
+                    //_zergControlLandblocksMap.Add(0xE8F1, shoushiTC3);
+
+                    ////Zerg Control Custom Island dungeons to 9
+                    //var drudgeDungeon = new ZergControlArea();
+                    //drudgeDungeon.MaxPlayersPerAllegiance = 9;
+                    //drudgeDungeon.AreaLandblockIds = new uint[] { 0x0026 };
+                    //_zergControlLandblocksMap.Add(0x0026, drudgeDungeon);
+
+                    //var dragonCave = new ZergControlArea();
+                    //dragonCave.MaxPlayersPerAllegiance = 9;
+                    //dragonCave.AreaLandblockIds = new uint[] { 0x003F };
+                    //_zergControlLandblocksMap.Add(0x003F, dragonCave);
+
+                    //var ancientTemple = new ZergControlArea();
+                    //ancientTemple.MaxPlayersPerAllegiance = 14;
+                    //ancientTemple.AreaLandblockIds = new uint[] { 0x0174 };
+                    //_zergControlLandblocksMap.Add(0x0174, ancientTemple);
+
+                    //var mites = new ZergControlArea();
+                    //mites.MaxPlayersPerAllegiance = 14;
+                    //mites.AreaLandblockIds = new uint[] { 0x00E1 };
+                    //_zergControlLandblocksMap.Add(0x00E1, mites);
+
+                    //var shreths = new ZergControlArea();
+                    //shreths.MaxPlayersPerAllegiance = 14;
+                    //shreths.AreaLandblockIds = new uint[] { 0x00C8 };
+                    //_zergControlLandblocksMap.Add(0x00C8, shreths);
+
+                    ////Aerbax World Boss
+                    //var aerbax = new ZergControlArea();
+                    //aerbax.MaxPlayersPerAllegiance = 7;
+                    //aerbax.AreaLandblockIds = new uint[] { 0x6543 };
+                    //_zergControlLandblocksMap.Add(0x6543, aerbax);
+
+                    ////Tusker Queen World Boss
+                    //var tq = new ZergControlArea();
+                    //tq.MaxPlayersPerAllegiance = 5;
+                    //tq.AreaLandblockIds = new uint[] { 0x02C8 };
+                    //_zergControlLandblocksMap.Add(0x02C8, tq);
+
+                    ////T9 dungeons
+                    //var citadel = new ZergControlArea();
+                    //citadel.MaxPlayersPerAllegiance = 14;
+                    //citadel.AreaLandblockIds = new uint[] { 0x6147 };
+                    //_zergControlLandblocksMap.Add(0x6147, citadel);
+
+                    //var metos = new ZergControlArea();
+                    //metos.MaxPlayersPerAllegiance = 9;
+                    //metos.AreaLandblockIds = new uint[] { 0x02F5 };
+                    //_zergControlLandblocksMap.Add(0x02F5, metos);
+
+                    //var bsd = new ZergControlArea();
+                    //bsd.MaxPlayersPerAllegiance = 9;
+                    //bsd.AreaLandblockIds = new uint[] { 0x0105 };
+                    //_zergControlLandblocksMap.Add(0x0105, bsd);
+                }
+
+                return _zergControlLandblocksMap;
+            }
+        }
+
+        public static bool IsZergControlLandblock(uint landblockId)
+        {
+            return ZergControlLandblocksMap.ContainsKey(landblockId);
+        }
+
+        public static ZergControlArea GetLandblockZergControlArea(uint landblockId)
+        {
+            if (IsZergControlLandblock(landblockId))
+            {
+                return ZergControlLandblocksMap[landblockId];
+            }
+
+            return null;
+        }
+    }
+
+    public class ZergControlArea
+    {
+        /// <summary>
+        /// All landblocks that make up this area.  Players across every one of these landblocks
+        /// are counted together against MaxPlayersPerAllegiance.
+        /// </summary>
+        public uint[] AreaLandblockIds;
+
+        /// <summary>
+        /// The maximum number of players a single allegiance may have inside this area.
+        /// </summary>
+        public uint MaxPlayersPerAllegiance;
+    }
+}

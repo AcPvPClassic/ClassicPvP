@@ -856,6 +856,26 @@ namespace ACE.Server.WorldObjects
             if (UnderLifestoneProtection)
                 LifestoneProtectionDispel();
 
+            // ZergControl: block teleporting into an area where the player's allegiance is already at capacity.
+            if (IsInZergRestrictedEntry(newPosition, out ZergControlArea zergArea))
+            {
+                try
+                {
+                    var zergResult = EvaluateZergEntry(zergArea, newPosition);
+
+                    if (zergResult.Failure)
+                    {
+                        HandleZergEntryFailure(zergResult, zergArea, newPosition);
+                        WorldManager.ThreadSafeTeleport(this, Sanctuary);
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    log.Error($"Exception checking zerg limit on player teleport. Player: {Name}, Ex: {ex}");
+                }
+            }
+
             HandlePreTeleportVisibility(newPosition);
 
             UpdatePlayerPosition(new Position(newPosition), true);

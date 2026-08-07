@@ -181,6 +181,9 @@ namespace ACE.Server.Entity
 
         private DateTime lastDatabaseSave = DateTime.MinValue;
 
+        // ZergControl enforcement tick (see HandleZergControl) fires every 5 seconds
+        private DateTime lastZergControlTickDateTime = DateTime.MinValue;
+
         // Allegiance Hometown Phase 1 tick fires every 5 seconds on capturable-town landblocks
         private static readonly TimeSpan ahPhase1TickInterval = TimeSpan.FromSeconds(5);
         private DateTime lastAhPhase1Tick = DateTime.MinValue;
@@ -1454,6 +1457,12 @@ namespace ACE.Server.Entity
             }
             ServerPerformanceMonitor.AddToCumulativeEvent(ServerPerformanceMonitor.CumulativeEventHistoryType.Landblock_Tick_WorldObject_Heartbeat, stopwatch.Elapsed.TotalSeconds);
 
+            if (lastZergControlTickDateTime < DateTime.Now.AddSeconds(-5))
+            {
+                HandleZergControl();
+                lastZergControlTickDateTime = DateTime.Now;
+            }
+
             Monitor5m.RegisterEventEnd();
             Monitor1h.RegisterEventEnd();
             monitorsRequireEventStart = true;
@@ -1468,6 +1477,79 @@ namespace ACE.Server.Entity
             {
                 Monitor1h.ClearEventHistory();
                 last1hClear = DateTime.UtcNow;
+            }
+        }
+
+        /// <summary>
+        /// If this landblock belongs to a ZergControlArea, buckets every player across all landblocks
+        /// in the area by allegiance and boots any allegiance's excess players (over the area's
+        /// MaxPlayersPerAllegiance) to their lifestone, kicking the most recently teleported players first.
+        /// </summary>
+        public void HandleZergControl()
+        {
+            try
+            {
+                if (ZergControlLandblocks.IsZergControlLandblock(this.Id.Landblock))
+                {
+                    var area = ZergControlLandblocks.GetLandblockZergControlArea(this.Id.Landblock);
+
+                    Dictionary<uint, List<Player>> clansInZergControlArea = new Dictionary<uint, List<Player>>();
+                    List<Player> playersInZergControlArea = new List<Player>();
+
+                    foreach (var block in area.AreaLandblockIds)
+                    {
+                        var landblock = LandblockManager.GetLandblock(new LandblockId(block << 16), false);
+                        var playersInLandblock = landblock.GetCurrentLandblockPlayers();
+                        foreach (var landblockPlayer in playersInLandblock)
+                        {
+                            var lbPlayerAlleg = AllegianceManager.GetAllegiance(landblockPlayer);
+                            if (lbPlayerAlleg != null && lbPlayerAlleg.MonarchId.HasValue && !playersInZergControlArea.Contains(landblockPlayer))
+                            {
+                                if (clansInZergControlArea.ContainsKey(lbPlayerAlleg.MonarchId.Value))
+                                {
+                                    clansInZergControlArea[lbPlayerAlleg.MonarchId.Value].Add(landblockPlayer);
+                                }
+                                else
+                                {
+                                    var playerList = new List<Player>();
+                                    playerList.Add(landblockPlayer);
+                                    clansInZergControlArea.Add(lbPlayerAlleg.MonarchId.Value, playerList);
+                                }
+
+                                playersInZergControlArea.Add(landblockPlayer);
+                            }
+                        }
+                    }
+
+                    //Boot any excess players from clans with too many players in the area
+                    foreach (var clanPlayers in clansInZergControlArea.Values)
+                    {
+                        if (clanPlayers.Count > area.MaxPlayersPerAllegiance)
+                        {
+                            var overageCount = clanPlayers.Count - (int)area.MaxPlayersPerAllegiance;
+                            var playersToKick = clanPlayers.OrderByDescending(x => x.LastTeleportTime).Take(overageCount);
+
+                            foreach (var playerToKick in playersToKick)
+                            {
+                                try
+                                {
+                                    //Teleport to LS.  ThreadSafeTeleport is used because this player may be
+                                    //ticking on a different thread than the landblock running this check.
+                                    playerToKick.Session.Network.EnqueueSend(new Network.GameMessages.Messages.GameMessageSystemChat("You have exceeded the maximum number of allegiance members allowed inside a zerg restricted area.  You have been returned to your lifestone.", ChatMessageType.Broadcast));
+                                    WorldManager.ThreadSafeTeleport(playerToKick, playerToKick.Sanctuary);
+                                }
+                                catch (Exception ex)
+                                {
+                                    log.Error($"Failed kicking player {playerToKick.Name} to lifestone after allegiance violated zerg control landblock restrictions.  Ex: {ex}");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error in HandleZergControl. Ex: {ex}");
             }
         }
 
