@@ -9,9 +9,11 @@
 
 ## 🩹 v1.15 (in development)
 
-### 🚪 Abandoned Mine Portal — PK Only, No Recall or Summon
+### 🚪 Abandoned Mine — PK Only, No Recall/Summon, Zerg-Controlled
 
 The portal to the Abandoned Mine now requires **Player Killer (PK)** status to use, and can no longer be reached via **recall** or **summoning** — you must walk through it directly.
+
+The Abandoned Mine (Subway) is also now a **zerg-controlled area**, capping each allegiance at **9 players** inside at once.
 
 ### 🔥 Burning Coal Removed
 
