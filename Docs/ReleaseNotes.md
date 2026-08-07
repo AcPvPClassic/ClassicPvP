@@ -13,6 +13,10 @@
 
 The portal to the Abandoned Mine now requires **Player Killer (PK)** status to use, and can no longer be reached via **recall** or **summoning** — you must walk through it directly.
 
+### 🔥 Burning Coal Removed
+
+**Burning Coal** has been removed from the game.
+
 ---
 
 ## 🩹 v1.14 — August 3, 2026
