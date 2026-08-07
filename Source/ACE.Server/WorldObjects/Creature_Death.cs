@@ -40,6 +40,10 @@ namespace ACE.Server.WorldObjects
 
             OnMovementStopped();
 
+            // Random Dungeon Bosses: free the landblock slot, broadcast the slain message and scatter rewards.
+            if (!(this is Player) && DungeonBossManager.IsActiveBoss(this))
+                DungeonBossManager.HandleBossDeath(this, DamageHistory.TopDamager ?? lastDamager);
+
             //QuestManager.OnDeath(lastDamager?.TryGetAttacker());
 
             if (KillQuest != null)

@@ -28,6 +28,15 @@ namespace ACE.Database
 
         public const uint SkillAttrResetGem = 49090101;
 
-
+        // ── Random Dungeon Bosses ─────────────────────────────────────────────
+        // Universal boss roster that can replace a normal monster spawn in an
+        // active Hot Dungeon or the Abandoned Mine (see DungeonBossManager).
+        // Combat stats are scaled to the current level cap at spawn time; the
+        // weenies below are authored at the reference difficulty.
+        public const uint BossGravewalker  = 940001;
+        public const uint BossEmberlord    = 940002;
+        public const uint BossRendmaw      = 940003;
+        public const uint BossAggregate    = 940004;
+        public const uint BossWhisperer    = 940005;
     }
 }

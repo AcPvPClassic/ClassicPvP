@@ -702,6 +702,7 @@ namespace ACE.Server.Managers
                 ("rolling_level_cap_enabled", new Property<bool>(false, "Enables the server-wide rolling level cap. When enabled, players cannot exceed the XP threshold for the current cap level. The cap starts at 15 and increases daily based on rolling_level_cap_start_timestamp.")),
                 ("rolling_xp_modifier_enabled", new Property<bool>(false, "When true, RollingLevelCapManager automatically adjusts xp_modifier each day using a quadratic curve tied to season progression. Starts at 0.25 on day 0, reaches 1.0 at ~36% through the season (day ~44, level cap ~101), and climbs to rolling_xp_modifier_max at 80% (day 96). Requires rolling_level_cap_enabled.")),
                 ("hot_dungeon_enabled", new Property<bool>(false, "Enables the Hot Dungeons system on Infiltration servers. When enabled, up to 3 dungeons are periodically selected to offer bonus XP and loot.")),
+                ("dungeon_boss_enabled", new Property<bool>(false, "Enables random Dungeon Bosses. When enabled, normal monster spawns in an active Hot Dungeon or the Abandoned Mine have a small chance to be replaced by a scaled boss. Requires the Infiltration ruleset.")),
                 ("turnto_use_heading_stealth", new Property<bool>(false, "If true, TurnTo motions between two PK players use an absolute heading instead of a target ID, to prevent War Detect style plugins from revealing the target.")),
 
                 // Bounty Hunter system
@@ -753,6 +754,13 @@ namespace ACE.Server.Managers
                 ("rolling_xp_cap_timestamp", new Property<long>(0, "Unix timestamp of the last time rolling_xp_cap was recalculated. Managed automatically by RollingLevelCapManager.")),
                 ("pvp_dmg_mod_preset_applied_level", new Property<long>(-1, "Level threshold of the last pvp_dmg_mod preset applied by RollingLevelCapManager. -1 means no preset has been applied yet. Managed automatically — do not set manually.")),
                 ("season_max_xp", new Property<long>(80_000_000_000, "Total XP ceiling at the end of the season (day 120). Should be high enough that every player template can max all skills and attributes. Level 126 is reached at day 60; days 60-120 grow linearly from level-126 XP to this value.")),
+
+                // Random Dungeon Bosses
+                ("dungeon_boss_min_seconds_between", new Property<long>(1800, "Global minimum number of seconds between any two Dungeon Boss spawns. A boss cannot spawn anywhere until this many seconds have elapsed since the last boss spawned. Default 1800 (30 min).")),
+                ("dungeon_boss_max_age_hours", new Property<long>(4, "Safety cap: if a Dungeon Boss has been tracked as active for longer than this many hours (e.g. its landblock unloaded without a death event), the manager releases its slot so the landblock and weenie can host another. Default 4.")),
+                ("dungeon_boss_trophy_count", new Property<long>(10, "Number of PK Trophies scattered on the ground around a Dungeon Boss when it is slain. 0 disables.")),
+                ("dungeon_boss_box_count", new Property<long>(3, "Number of A Box rewards scattered on the ground around a Dungeon Boss when it is slain. 0 disables.")),
+                ("dungeon_boss_phial_count", new Property<long>(3, "Number of Phials of Bloody Tears scattered on the ground around a Dungeon Boss when it is slain. 0 disables.")),
                 ("movement_packet_rate_limit", new Property<long>(75, "script detection: maximum movement packets per second before enforce_player_packet_rate triggers; measured over a 2-second rolling window. Default 75: legitimate clients reach ~35/s on fast machines and during glitch-running; 75 leaves a safe margin without catching scripts (which flood at 100+/s). Do NOT set at or below ~40 — confirmed legitimate players have logged 32-34/s")),
                 ("movement_avg_sustained_kick_windows", new Property<long>(3, "anti-cheat: number of CONSECUTIVE 15-second average-speed windows over the ceiling before a decisive kick, independent of the suspicion score. 3 = ~45 s of sustained over-ceiling speed (not achievable legitimately — glitch-runners never trip the ceiling). Blatant overages (>= 50% over) kick one window sooner. Lower = faster kick / marginally higher false-positive risk; do not set below 2")),
 
@@ -830,6 +838,12 @@ namespace ACE.Server.Managers
                 ("vitae_penalty_max", new Property<double>(0.40, "the maximum vitae penalty a player can have")),
                 ("void_pvp_modifier", new Property<double>(0.5, "Scales the amount of damage players take from Void Magic. Defaults to 0.5, as per retail. For earlier content where DRR isn't as readily available, this can be adjusted for balance.")),
                 ("rolling_xp_modifier_max", new Property<double>(3.0, "The maximum xp_modifier value applied when rolling_xp_modifier_enabled is true. The quadratic curve is re-anchored to this value, so the season still hits 1.0 at ~36% and this maximum at 80%. Default: 3.0.")),
+
+                // Random Dungeon Bosses
+                ("dungeon_boss_spawn_chance", new Property<double>(0.0005, "Per-eligible-monster-spawn probability (0.0-1.0) that a normal monster in an active Hot Dungeon or the Abandoned Mine is replaced by a Dungeon Boss. Default 0.0005 (~1 boss per 2000 monster spawns).")),
+                ("dungeon_boss_difficulty_mult", new Property<double>(1.0, "Global multiplier applied on top of the level-cap scaling for Dungeon Bosses. Affects health, damage, skills and armor together. 1.0 = as authored/scaled; raise to make all bosses tougher.")),
+                ("dungeon_boss_health_exponent", new Property<double>(1.4, "Exponent for Dungeon Boss health scaling vs the level cap: health = base * (cap / referenceLevel) ^ exponent. Higher = spongier bosses at high level. Default 1.4.")),
+                ("dungeon_boss_damage_mult", new Property<double>(1.0, "Additional multiplier applied to Dungeon Boss melee (body-part) damage after level-cap scaling. Default 1.0.")),
                 ("xp_modifier", new Property<double>(1.0, "Globally scales the amount of xp received by players, note that this multiplies the other xp_modifier options.")),
                 ("xp_modifier_kill_tier1", new Property<double>(1.0, "Scales the amount of xp received by players for killing tier 1 creatures or unspecified tier creatures below level 28.")),
                 ("xp_modifier_kill_tier2", new Property<double>(1.0, "Scales the amount of xp received by players for killing tier 2 creatures or unspecified tier creatures between level 28 and level 65.")),
@@ -1118,6 +1132,7 @@ namespace ACE.Server.Managers
                 // Discord webhooks — per-channel
                 ("pk_kill_webhook",    new Property<string>("", "Discord webhook URL for PK and PKL kill broadcast messages")),
                 ("hot_dungeon_webhook", new Property<string>("", "Discord webhook URL for Hot Dungeon announcements")),
+                ("dungeon_boss_webhook", new Property<string>("", "Discord webhook URL for Dungeon Boss spawn/slain announcements")),
                 ("hometown_webhook", new Property<string>("", "Discord webhook URL for Allegiance Hometown global broadcasts (captures, defenses, phase changes)")),
 
                 ("movement_violation_webhook", new Property<string>("", "Discord webhook URL for movement anti-cheat violation alerts (all violation types: speed, geometry, jump, door ghost, script detection, etc.)"))

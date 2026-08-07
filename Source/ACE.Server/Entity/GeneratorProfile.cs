@@ -257,17 +257,25 @@ namespace ACE.Server.Entity
                     return null;
                 }
 
-                if (Biota.PaletteId.HasValue && Biota.PaletteId > 0)
-                    wo.PaletteTemplate = (int)Biota.PaletteId;
+                // Random Dungeon Bosses: in eligible landblocks a normal monster spawn may be
+                // replaced by a scaled boss. When promoted, skip the profile's palette/shade/stack
+                // overrides (those are for the normal monster) and take the boss as-is.
+                var promotedToBoss = DungeonBossManager.TryPromoteToBoss(Generator, ref wo);
 
-                if (Biota.Shade.HasValue && Biota.Shade > 0)
-                    wo.Shade = Biota.Shade;
+                if (!promotedToBoss)
+                {
+                    if (Biota.PaletteId.HasValue && Biota.PaletteId > 0)
+                        wo.PaletteTemplate = (int)Biota.PaletteId;
 
-                if ((Biota.Shade.HasValue && Biota.Shade > 0) || (Biota.PaletteId.HasValue && Biota.PaletteId > 0))
-                    wo.CalculateObjDesc(); // to update icon
+                    if (Biota.Shade.HasValue && Biota.Shade > 0)
+                        wo.Shade = Biota.Shade;
 
-                if (Biota.StackSize.HasValue && Biota.StackSize > 0)
-                    wo.SetStackSize(Biota.StackSize);
+                    if ((Biota.Shade.HasValue && Biota.Shade > 0) || (Biota.PaletteId.HasValue && Biota.PaletteId > 0))
+                        wo.CalculateObjDesc(); // to update icon
+
+                    if (Biota.StackSize.HasValue && Biota.StackSize > 0)
+                        wo.SetStackSize(Biota.StackSize);
+                }
 
                 objects.Add(wo);
             }

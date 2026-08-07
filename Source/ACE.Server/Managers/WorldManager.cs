@@ -548,6 +548,16 @@ namespace ACE.Server.Managers
                 log.Error($"Exception executing RollingLevelCapManager Tick. ex: {ex}");
             }
 
+            //Dungeon Boss safety sweep
+            try
+            {
+                DungeonBossManager.Tick();
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception executing DungeonBossManager Tick. ex: {ex}");
+            }
+
             ServerPerformanceMonitor.RegisterEventEnd(ServerPerformanceMonitor.MonitorType.UpdateGameWorld_Entire);
             ServerPerformanceMonitor.RegisterCumulativeEvents();
 

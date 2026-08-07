@@ -145,6 +145,20 @@ namespace ACE.Server.Managers
             _ = SendAsync(url, SanitiseMessage(message));
         }
 
+        /// <summary>
+        /// Sends a Dungeon Boss spawn/slain announcement to the configured Dungeon Boss webhook.
+        /// PropertyManager key: <c>dungeon_boss_webhook</c>
+        /// </summary>
+        public static void SendDungeonBoss(string message)
+        {
+            if (string.IsNullOrWhiteSpace(message)) return;
+
+            var url = PropertyManager.GetString("dungeon_boss_webhook").Item;
+            if (string.IsNullOrWhiteSpace(url)) return;
+
+            _ = SendAsync(url, SanitiseMessage(message));
+        }
+
         // -----------------------------------------------------------------------
         // Internal helpers
         // -----------------------------------------------------------------------
