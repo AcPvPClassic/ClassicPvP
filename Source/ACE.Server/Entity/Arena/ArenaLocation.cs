@@ -827,10 +827,15 @@ namespace ACE.Server.Entity
                     }
 
                     //Handle PK quests for winners
+                    // Arena participation/win quests only require a legit cross-allegiance match
+                    // (an opponent whose monarch differs from yours), not membership in a
+                    // whitelisted allegiance. The whitelist gate is for open-world PK kill quests
+                    // (see Player_Death.cs); applying it here silently denied 2v2/group/ffa/tugak
+                    // credit to every unsworn or non-whitelisted player. Unsworn players carry their
+                    // own character id as MonarchId, so this still blocks same-allegiance staged fights.
                     var winnerMonarchId = winner.MonarchId;
-                    var hasWhitelistedOpponent = losers.FirstOrDefault(x => x.MonarchId != winnerMonarchId && WhitelistedAllegiances.IsAllowedAllegiance((int)x.MonarchId)) != null
-                                                && WhitelistedAllegiances.IsAllowedAllegiance((int)winnerMonarchId);
-                    if (hasWhitelistedOpponent || ActiveEvent.EventType.ToLower().Equals("1v1"))
+                    var hasDifferentAllegianceOpponent = losers.FirstOrDefault(x => x.MonarchId != winnerMonarchId) != null;
+                    if (hasDifferentAllegianceOpponent || ActiveEvent.EventType.ToLower().Equals("1v1"))
                     {
                         player.CompletePkQuestTasks(PKQuestDefs.PKQuests_ParticipateAnyArena);
                         player.CompletePkQuestTasks(PKQuestDefs.PKQuests_WinAnyArena);
@@ -1054,10 +1059,11 @@ namespace ACE.Server.Entity
                     }
 
                     //Handle PK quests for losers
+                    // See winner block above: arena quest credit only requires a cross-allegiance
+                    // opponent, not a whitelisted allegiance.
                     var loserMonarchId = loser.MonarchId;
-                    var hasWhitelistedWinner = winners.FirstOrDefault(x => x.MonarchId != loserMonarchId && WhitelistedAllegiances.IsAllowedAllegiance((int)x.MonarchId)) != null
-                                              && WhitelistedAllegiances.IsAllowedAllegiance((int)loserMonarchId);
-                    if (hasWhitelistedWinner || ActiveEvent.EventType.ToLower().Equals("1v1"))
+                    var hasDifferentAllegianceWinner = winners.FirstOrDefault(x => x.MonarchId != loserMonarchId) != null;
+                    if (hasDifferentAllegianceWinner || ActiveEvent.EventType.ToLower().Equals("1v1"))
                     {
                         player.CompletePkQuestTasks(PKQuestDefs.PKQuests_ParticipateAnyArena);
                         player.CompletePkQuestTask("ARENA_DMG20K", (int)loser.TotalDmgDealt);
@@ -1269,10 +1275,11 @@ namespace ACE.Server.Entity
                     }
 
                     //Handle PK quests for draw participants
+                    // See EndEventWithWinner: arena quest credit only requires a cross-allegiance
+                    // opponent on the other team, not a whitelisted allegiance.
                     var drawPlayerMonarchId = arenaPlayer.MonarchId;
-                    var hasWhitelistedDrawOpponent = ActiveEvent.Players.FirstOrDefault(x => x.TeamGuid != arenaPlayer.TeamGuid && x.MonarchId != drawPlayerMonarchId && WhitelistedAllegiances.IsAllowedAllegiance((int)x.MonarchId)) != null
-                                                    && WhitelistedAllegiances.IsAllowedAllegiance((int)drawPlayerMonarchId);
-                    if (hasWhitelistedDrawOpponent || ActiveEvent.EventType.ToLower().Equals("1v1"))
+                    var hasDifferentAllegianceDrawOpponent = ActiveEvent.Players.FirstOrDefault(x => x.TeamGuid != arenaPlayer.TeamGuid && x.MonarchId != drawPlayerMonarchId) != null;
+                    if (hasDifferentAllegianceDrawOpponent || ActiveEvent.EventType.ToLower().Equals("1v1"))
                     {
                         player.CompletePkQuestTasks(PKQuestDefs.PKQuests_ParticipateAnyArena);
                         player.CompletePkQuestTask("ARENA_DMG20K", (int)arenaPlayer.TotalDmgDealt);

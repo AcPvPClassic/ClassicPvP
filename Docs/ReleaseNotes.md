@@ -9,6 +9,12 @@
 
 ## 🩹 v1.15 (in development)
 
+### 🏟️ Arena PK Quests Now Count for Every Match Type
+
+Daily arena PK quests were only crediting **1v1** matches for most players. Progress on the **2v2, Group, FFA, and Tugak War** quests — participation, wins, top-3 placement, damage dealt, and low-damage wins — silently failed to count unless *both* you and an opponent happened to belong to an admin-curated "whitelisted" allegiance. In practice that meant the vast majority of players saw **zero** progress on those quests no matter how many matches they played, while 1v1 kept working.
+
+Arena quest credit no longer depends on the allegiance whitelist at all. Every arena format now advances its quests after any legitimate match — the only requirement is that you actually faced an opponent from a **different allegiance** (matches staged entirely within one allegiance still don't count). If you've been grinding 2v2 or group matches and watching the counter stay at zero, it will move now.
+
 ### 🚪 Abandoned Mine — PK Only, No Recall/Summon, Zerg-Controlled
 
 The portal to the Abandoned Mine now requires **Player Killer (PK)** status to use, and can no longer be reached via **recall** or **summoning** — you must walk through it directly.
