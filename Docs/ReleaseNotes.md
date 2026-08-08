@@ -9,6 +9,10 @@
 
 ## 🩹 v1.15 (in development)
 
+### 🌱 Fixed Monster & Loot Respawns Not Triggering
+
+A global change to the generator system had broken automatic respawning under the Infiltration ruleset — cleared monster and loot spawns in some areas could fail to regenerate. This has been fixed; spawns regenerate normally again.
+
 ### 👹 Dungeon Bosses Stalk the Hot Dungeons and the Abandoned Mine
 
 Powerful named bosses now roam at random. Any monster spawning in an active Hot Dungeon or the Abandoned Mine has a small chance to be a **Dungeon Boss** instead — one of five: **The Gravewalker**, **Vaeth'ren the Emberlord**, **Rendmaw**, **Aggregate Prime**, and **Nharim Dul, the Whispering Death**.
