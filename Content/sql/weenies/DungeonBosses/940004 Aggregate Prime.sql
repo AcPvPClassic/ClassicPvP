@@ -12,6 +12,7 @@ VALUES (940004, 'dungeonbossaggregateprime', 10, '2026-08-07 00:00:00') /* Creat
 INSERT INTO `weenie_properties_int` (`object_Id`, `type`, `value`)
 VALUES (940004,   1,         16) /* ItemType - Creature */
      , (940004,   2,         13) /* CreatureType - Golem (matches Basalt Golem) */
+     , (940004,   3,          4) /* PaletteTemplate - Brown (matches Basalt Golem) */
      , (940004,   6,         -1) /* ItemsCapacity */
      , (940004,   7,         -1) /* ContainersCapacity */
      , (940004,  16,          1) /* ItemUseable - No */
@@ -39,7 +40,7 @@ VALUES (940004,   1,      5) /* HeartbeatInterval */
      , (940004,   4,    100) /* StaminaRate */
      , (940004,   5,     20) /* ManaRate */
      , (940004,  31,     40) /* VisualAwarenessRange */
-     , (940004,  39,      1) /* DefaultScale (natural - do not increase) */
+     , (940004,  39,      1) /* DefaultScale - Basalt Golem's natural size (it has no scale override) */
      , (940004,  54,      5) /* UseRadius */
      , (940004,  55,     70) /* HomeRadius */
      , (940004, 104,     40) /* ObviousRadarRange */;

@@ -12,6 +12,7 @@ VALUES (940005, 'dungeonbossnharimdul', 10, '2026-08-07 00:00:00') /* Creature *
 INSERT INTO `weenie_properties_int` (`object_Id`, `type`, `value`)
 VALUES (940005,   1,         16) /* ItemType - Creature */
      , (940005,   2,         22) /* CreatureType - Shadow (matches Shadowy Warrior) */
+     , (940005,   3,         39) /* PaletteTemplate - Black (matches Shadowy Warrior; ClothingBase needs this or the model renders as bare skin) */
      , (940005,   6,         -1) /* ItemsCapacity */
      , (940005,   7,         -1) /* ContainersCapacity */
      , (940005,  16,          1) /* ItemUseable - No */

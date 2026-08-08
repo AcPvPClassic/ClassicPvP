@@ -2,7 +2,7 @@
    Model/movement/sound mirrored from Phantasm (wcid 24325). Combat stats are authored at the reference
    level (DungeonBosses.ReferenceLevel = 275) and scaled DOWN to the current season
    level cap at spawn time by DungeonBossManager.ScaleBossToCap. Radar is hidden so
-   players must hunt for it. DefaultScale is left at natural (1.0) on purpose.
+   players must hunt for it. DefaultScale is the reference creature's own natural size.
 
    Rewards: scattered currency + big XP are handled in code (DungeonBossManager).
    For "normal generated loot", set a DeathTreasureType DID valid for your world DB
@@ -16,6 +16,7 @@ VALUES (940001, 'dungeonbossgravewalker', 10, '2026-08-07 00:00:00') /* Creature
 INSERT INTO `weenie_properties_int` (`object_Id`, `type`, `value`)
 VALUES (940001,   1,         16) /* ItemType - Creature */
      , (940001,   2,         14) /* CreatureType - Undead (matches Phantasm) */
+     , (940001,   3,          8) /* PaletteTemplate - Green (matches Phantasm) */
      , (940001,   6,         -1) /* ItemsCapacity */
      , (940001,   7,         -1) /* ContainersCapacity */
      , (940001,  16,          1) /* ItemUseable - No */
