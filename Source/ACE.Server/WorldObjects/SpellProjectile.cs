@@ -906,6 +906,15 @@ namespace ACE.Server.WorldObjects
 
                 if (sourcePlayer != null)
                     finalDamage *= ACE.Server.Managers.AllegianceHometownManager.GetDistanceMultiplier((float)target.Location.DistanceTo(sourcePlayer.Location));
+
+                // Defenders mend the stone instead of damaging it: heal 10% of the would-be damage, deal none.
+                if (bindstoneProxy.TryApplyDefenderHeal(source, finalDamage))
+                    return null;
+
+                // Anti-"peacing": while any non-attacker lingers near the stone, attacker damage is cut sharply
+                // (default 90%), forcing attackers to clear defenders off the stone before they can burn it down.
+                if (bindstoneProxy.SuppressDamage)
+                    finalDamage *= (float)PropertyManager.GetDouble("ah_bindstone_suppressed_dmg_mod", 0.10).Item;
             }
 
             return finalDamage;

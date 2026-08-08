@@ -27,6 +27,13 @@ namespace ACE.Server.WorldObjects
 
         public byte TownId { get; set; }
 
+        /// <summary>
+        /// Anti-"peacing" flag: while any non-attacker player lingers within 100m of the stone, attacker
+        /// damage is heavily reduced (see DamageEvent / SpellProjectile). Recomputed each Phase 2 landblock
+        /// tick. Written and read only on the landblock thread, so no synchronization is needed.
+        /// </summary>
+        public bool SuppressDamage { get; set; }
+
         private DateTime _lastPhase2Broadcast = DateTime.MinValue;
 
         public BindstoneCreatureProxy(Weenie weenie, ObjectGuid guid) : base(weenie, guid)
@@ -72,6 +79,52 @@ namespace ACE.Server.WorldObjects
             catch (Exception ex)
             {
                 log.Error($"[AllegianceHometown] Exception reflecting attack from {attacker.Name} ({attacker.Guid}) on town {TownId} bindstone proxy. Ex: {ex}");
+            }
+
+            return true;
+        }
+
+        // -----------------------------------------------------------------------
+        // Defender mending — defenders repair the stone instead of damaging it
+        // -----------------------------------------------------------------------
+
+        /// <summary>
+        /// If the attacking player belongs to the defending (owner) allegiance, their attack mends the
+        /// Bind Stone instead of harming it: it heals by 10% of the damage they would have dealt and takes
+        /// none. Returns true when the source is a defender, in which case the caller must apply 0 damage.
+        /// Non-defenders (attackers, third parties) return false and are handled normally.
+        /// </summary>
+        public bool TryApplyDefenderHeal(WorldObject source, float wouldBeDamage)
+        {
+            var attacker = source as Creature ?? source?.ProjectileSource as Creature;
+            if (attacker is not Player player)
+                return false;
+
+            if (!AllegianceHometownManager.IsTownDefender(TownId, player))
+                return false;
+
+            // It's a defender — their hit never damages the stone, alive or not.
+            if (IsDead)
+                return true;
+
+            try
+            {
+                var healPct = (float)PropertyManager.GetDouble("ah_bindstone_defender_heal_mod", 0.10).Item;
+                var heal    = (uint)Math.Max(0, Math.Round(wouldBeDamage * healPct));
+                if (heal > 0)
+                {
+                    var newHp = (uint)Math.Min(Health.MaxValue, Health.Current + heal);
+                    UpdateVital(Health, newHp);
+                    BroadcastStatus();
+                }
+
+                player.Session?.Network.EnqueueSend(new GameMessageSystemChat(
+                    $"Your attack mends the Bind Stone for {heal:N0} points.",
+                    ChatMessageType.Combat));
+            }
+            catch (Exception ex)
+            {
+                log.Error($"[AllegianceHometown] Exception applying defender heal from {player.Name} ({player.Guid}) on town {TownId} bindstone proxy. Ex: {ex}");
             }
 
             return true;
@@ -154,6 +207,33 @@ namespace ACE.Server.WorldObjects
             catch (Exception ex)
             {
                 log.Error($"[AllegianceHometown] Exception resolving Phase 2 for town {TownId} (attackerVictory={attackerVictory}); forcing the conflict closed. Ex: {ex}");
+                AllegianceHometownManager.ForceEndConflict(TownId);
+            }
+            finally
+            {
+                AllegianceHometownManager.UnregisterPhase2Proxy(TownId);
+                Destroy();
+            }
+        }
+
+        /// <summary>
+        /// Ends Phase 2 early as a repelled attack (defenders held the area). Driven by the Phase 2 landblock
+        /// tick, which shares the proxy's landblock thread. Mirrors <see cref="ResolvePhase2"/>'s cleanup so
+        /// the proxy and cloaked bindstone can never be stranded, and shares the same <c>_resolved</c> guard
+        /// so it can't race the Phase 2 timeout or death handoff.
+        /// </summary>
+        public void ResolveRepel()
+        {
+            if (_resolved) return;
+            _resolved = true;
+
+            try
+            {
+                AllegianceHometownManager.HandleDefenderRepel(TownId);
+            }
+            catch (Exception ex)
+            {
+                log.Error($"[AllegianceHometown] Exception resolving repel for town {TownId}; forcing the conflict closed. Ex: {ex}");
                 AllegianceHometownManager.ForceEndConflict(TownId);
             }
             finally

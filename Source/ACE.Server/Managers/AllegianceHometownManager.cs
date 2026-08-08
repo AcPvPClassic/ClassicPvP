@@ -63,6 +63,11 @@ namespace ACE.Server.Managers
         // town_id → active Phase 2 creature proxy world object
         private static readonly Dictionary<byte, BindstoneCreatureProxy> _phase2Proxies = new();
 
+        // player_guid → next UTC time that player is eligible for a periodic Phase 2 participation trophy.
+        // Guarded by _lock. Stale entries for players no longer in a conflict are harmless (they just
+        // mean the next award is already due) and are overwritten the next time that player participates.
+        private static readonly Dictionary<uint, DateTime> _phase2NextTrophy = new();
+
         // town_id → real Bindstone WO cloaked during Phase 2
         private static readonly Dictionary<byte, WorldObjects.Bindstone> _phase2CloakedBindstones = new();
 
@@ -85,6 +90,13 @@ namespace ACE.Server.Managers
         /// </summary>
         public static TimeSpan Phase2Duration =>
             TimeSpan.FromMinutes(PropertyManager.GetLong("ah_phase2_minutes", 30).Item);
+
+        /// <summary>
+        /// How long defenders must hold the Bind Stone area (2+ defenders, 0 attackers within 50m) before
+        /// Phase 2 auto-resolves as a repelled attack. Configurable via "ah_phase2_repel_minutes" (default 10).
+        /// </summary>
+        public static double Phase2RepelSeconds =>
+            PropertyManager.GetLong("ah_phase2_repel_minutes", 10).Item * 60.0;
 
         /// <summary>
         /// How long a hometown landblock is held loaded once Phase 2 starts. Derived from
@@ -644,6 +656,52 @@ namespace ACE.Server.Managers
             GlobalBroadcast($"{defenderName} has defended {townName}! {attackerName} failed to capture the town.");
         }
 
+        /// <summary>
+        /// Called when defenders have cleared and held the Bind Stone area long enough to end Phase 2 early —
+        /// the attack is repelled and the defenders win. Mirrors <see cref="HandleDefenderVictory"/> (attacker
+        /// cooldown, defense rewards, smite) but with a "repelled" announcement, and is driven by the landblock
+        /// Phase 2 tick rather than the Phase 2 timeout.
+        /// </summary>
+        public static void HandleDefenderRepel(byte townId)
+        {
+            AllegianceHometownTown town;
+            uint   attackerMonarchId;
+            uint?  defenderMonarchId;
+            string attackerName, defenderName, townName;
+
+            lock (_lock)
+            {
+                if (!_towns.TryGetValue(townId, out town)) return;
+
+                if (town.ConflictPhase != 2 || !town.ConflictAttackerMonarchId.HasValue)
+                {
+                    log.Warn($"[AllegianceHometown] HandleDefenderRepel({townId}) with ConflictPhase={town.ConflictPhase} and attacker={town.ConflictAttackerMonarchId?.ToString() ?? "none"}; ignoring.");
+                    return;
+                }
+
+                attackerMonarchId = town.ConflictAttackerMonarchId.Value;
+                attackerName      = town.ConflictAttackerName;
+                defenderName      = town.OwnerAllegianceName;
+                defenderMonarchId = town.OwnerMonarchId;
+                townName          = town.TownName;
+
+                // Same 6-hour attacker cooldown as a timed-out Phase 2 defense.
+                _attackerCooldowns[(attackerMonarchId, town.TownId)] = DateTime.UtcNow.AddHours(6);
+
+                ClearConflictState(town);
+            }
+
+            SaveTownDb(town);
+            CloseLatestEvent(townId, outcome: 1);
+
+            UncloakPhase2Bindstone(townId);
+
+            // Defense rewards: defenders win, attackers smited
+            DistributeRewards(townId, defenderMonarchId ?? 0, attackerMonarchId, isDefense: true);
+
+            GlobalBroadcast($"{defenderName} has repelled {attackerName}'s attack on {townName}! The attackers were driven off.");
+        }
+
         // -----------------------------------------------------------------------
         // Free claim (unowned town)
         // -----------------------------------------------------------------------
@@ -815,6 +873,111 @@ namespace ACE.Server.Managers
                 wo.Location = new ACE.Entity.Position(player.Location);
                 player.CurrentLandblock?.AddWorldObject(wo);
             }
+        }
+
+        // -----------------------------------------------------------------------
+        // Phase 2 participation rewards
+        // -----------------------------------------------------------------------
+
+        /// <summary>
+        /// One-time award of PK Trophies to attacking-allegiance members near the Bind Stone at the moment
+        /// Phase 2 begins. Default 5 each, configurable via "ah_phase2_start_trophies". Scans the town
+        /// landblock and its neighbours (bind stones can sit on a boundary) within 100m of the stone.
+        /// </summary>
+        public static void AwardPhase2StartTrophies(byte townId)
+        {
+            uint attackerMonarchId;
+            lock (_lock)
+            {
+                if (!_towns.TryGetValue(townId, out var town) || !town.ConflictAttackerMonarchId.HasValue) return;
+                attackerMonarchId = town.ConflictAttackerMonarchId.Value;
+            }
+
+            var entry = AllegianceHometownRegistry.GetById(townId);
+            if (entry == null) return;
+
+            var mainLb = LandblockManager.GetLandblock(entry.BindstonePosition.LandblockId, false);
+            if (mainLb == null) return;
+
+            var allLbs = new List<Entity.Landblock> { mainLb };
+            foreach (var adjId in LandblockManager.GetAdjacentIDs(mainLb))
+            {
+                var adjLb = LandblockManager.GetLandblock(adjId, false);
+                if (adjLb != null) allLbs.Add(adjLb);
+            }
+
+            var count        = (int)PropertyManager.GetLong("ah_phase2_start_trophies", 5).Item;
+            if (count <= 0) return;
+            var bindstonePos = entry.BindstonePosition;
+
+            foreach (var lb in allLbs)
+            {
+                foreach (var p in lb.GetPlayers())
+                {
+                    if (!p.IsPK) continue;
+                    var monarchId = AllegianceManager.GetVerifiedMonarchId(p) ?? p.Guid.Full;
+                    if (monarchId == attackerMonarchId && p.Location.DistanceTo(bindstonePos) <= 100f)
+                    {
+                        GiveStacked(p, CustomWeenieId.PkTrophy, count);
+                        p.Session?.Network.EnqueueSend(new GameMessageSystemChat(
+                            $"[Hometown] You received {count} PK Trophies for breaching Phase 2!",
+                            ChatMessageType.Magic));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Periodic participation trophies for attackers and defenders holding the Bind Stone area during
+        /// Phase 2. Each player earns one PK Trophy at most once per "ah_phase2_trophy_interval_seconds"
+        /// (default 60). Called from the Phase 2 landblock tick with the players currently in range.
+        /// </summary>
+        public static void AwardPhase2PeriodicTrophies(byte townId, List<Player> participants)
+        {
+            if (participants == null || participants.Count == 0) return;
+
+            var interval = TimeSpan.FromSeconds(Math.Max(1, PropertyManager.GetLong("ah_phase2_trophy_interval_seconds", 60).Item));
+            var now      = DateTime.UtcNow;
+
+            var toAward = new List<Player>();
+            lock (_lock)
+            {
+                foreach (var p in participants)
+                {
+                    if (!_phase2NextTrophy.TryGetValue(p.Guid.Full, out var next) || now >= next)
+                    {
+                        _phase2NextTrophy[p.Guid.Full] = now + interval;
+                        toAward.Add(p);
+                    }
+                }
+            }
+
+            foreach (var p in toAward)
+            {
+                GiveStacked(p, CustomWeenieId.PkTrophy, 1);
+                p.Session?.Network.EnqueueSend(new GameMessageSystemChat(
+                    "[Hometown] You received a PK Trophy for holding the line.",
+                    ChatMessageType.Broadcast));
+            }
+        }
+
+        /// <summary>
+        /// True if the given player belongs to the allegiance that currently owns the town (a defender).
+        /// Ownership only transfers on attacker victory, so during Phase 2 the owner is still the defender.
+        /// </summary>
+        public static bool IsTownDefender(byte townId, Player player)
+        {
+            if (player == null) return false;
+
+            uint ownerId;
+            lock (_lock)
+            {
+                if (!_towns.TryGetValue(townId, out var t) || !t.OwnerMonarchId.HasValue) return false;
+                ownerId = t.OwnerMonarchId.Value;
+            }
+
+            var monarchId = AllegianceManager.GetVerifiedMonarchId(player) ?? player.Guid.Full;
+            return monarchId == ownerId;
         }
 
         // -----------------------------------------------------------------------

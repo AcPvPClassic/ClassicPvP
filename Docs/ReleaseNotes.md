@@ -9,6 +9,16 @@
 
 ## 🩹 v1.15 (in development)
 
+### 🏰 Hometown Phase 2 — Trophies, Repels, and No More "Peacing"
+
+Phase 2 of a hometown assault gets a big overhaul:
+
+- **Breach bonus** — every attacking-allegiance member near the Bind Stone gets **5 PK Trophies** the moment Phase 2 begins.
+- **Hold-the-line trophies** — while within **50 meters** of the Bind Stone during Phase 2, both attackers and defenders earn **1 PK Trophy per minute** of participation.
+- **Repelled attacks** — defenders can now end a siege early. If they hold the Bind Stone with **at least 2 defenders and no attackers within 50 meters for 10 straight minutes**, the attack is repelled: the defenders win and take the full defense rewards. Any attacker coming back within 50 meters resets the timer.
+- **No more "peacing" the stone** — while **any player who isn't in the attacking allegiance** is within **100 meters** of the Bind Stone, attacker damage to it is **cut by 90%**. You have to actually drive the defenders out of the area before you can burn it down.
+- **Defenders mend the stone** — if a defender attacks their own Bind Stone, it no longer takes damage. Instead it **heals by 10%** of the damage that hit would have dealt.
+
 ### 🏟️ Arena PK Quests Now Count for Every Match Type
 
 Daily arena PK quests were only crediting **1v1** matches for most players. Progress on the **2v2, Group, FFA, and Tugak War** quests — participation, wins, top-3 placement, damage dealt, and low-damage wins — silently failed to count unless *both* you and an opponent happened to belong to an admin-curated "whitelisted" allegiance. In practice that meant the vast majority of players saw **zero** progress on those quests no matter how many matches they played, while 1v1 kept working.

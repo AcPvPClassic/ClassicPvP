@@ -958,6 +958,15 @@ namespace ACE.Server.Entity
                 var dmgModProp = isMissile ? "ah_bindstone_missile_dmg_mod" : "ah_bindstone_melee_dmg_mod";
                 Damage *= (float)PropertyManager.GetDouble(dmgModProp, 0.35).Item;
                 Damage *= AllegianceHometownManager.GetDistanceMultiplier((float)defender.Location.DistanceTo(attacker.Location));
+
+                // Defenders mend the stone instead of damaging it: heal 10% of the would-be damage, deal none.
+                if (bindstoneProxy.TryApplyDefenderHeal(attacker, Damage))
+                    return 0.0f;
+
+                // Anti-"peacing": while any non-attacker lingers near the stone, attacker damage is cut sharply
+                // (default 90%), forcing attackers to clear defenders off the stone before they can burn it down.
+                if (bindstoneProxy.SuppressDamage)
+                    Damage *= (float)PropertyManager.GetDouble("ah_bindstone_suppressed_dmg_mod", 0.10).Item;
             }
 
             return Damage;

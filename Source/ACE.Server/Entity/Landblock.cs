@@ -193,6 +193,12 @@ namespace ACE.Server.Entity
         private double _phase1EnemyPresenceSeconds = 0; // accumulates while an enemy is within 50m
         private const double Phase1EnemyGraceSeconds = 30;
 
+        // Phase 2 repel accumulator: seconds defenders have held the stone (2+ defenders, 0 attackers within 50m)
+        private double _phase2RepelSeconds = 0;
+        private DateTime _lastPhase2RepelBroadcast = DateTime.MinValue;
+        private const float Phase2RepelDefenderRadius = 50f;   // defenders/attackers counted for the repel
+        private const float Phase2SuppressionRadius   = 100f;  // non-attacker presence that suppresses stone damage
+
         private bool? _isAllegianceHometownLandblock;
         public bool IsAllegianceHometownLandblock
         {
@@ -350,7 +356,7 @@ namespace ACE.Server.Entity
             }));
         }
 
-        private void HandleAllegianceHometownPhase1Tick()
+        private void HandleAllegianceHometownTick()
         {
             var registry = ACE.Server.Entity.AllegianceHometown.AllegianceHometownRegistry.GetByLandblock(Id.Landblock);
             if (registry == null) return;
@@ -361,6 +367,17 @@ namespace ACE.Server.Entity
             // Auto-start Phase 1 when an eligible allegiance gathers near the bindstone
             if (town.ConflictPhase == 0 && town.OwnerMonarchId.HasValue)
                 TryAutoStartPhase1(registry, town);
+
+            // Phase 2: participation trophies, anti-"peacing" suppression, and defender repel auto-resolution.
+            if (town.ConflictPhase == 2)
+            {
+                HandleAllegianceHometownPhase2Tick(registry, town);
+                return;
+            }
+
+            // Not in Phase 2 — clear the repel accumulator so a future Phase 2 starts fresh.
+            _phase2RepelSeconds = 0;
+            _lastPhase2RepelBroadcast = DateTime.MinValue;
 
             if (town.ConflictPhase != 1) return;
 
@@ -421,8 +438,12 @@ namespace ACE.Server.Entity
                     _ahPhase1AccumulatedSeconds = 0;
                     _phase1Interrupted = false;
                     _phase1EnemyPresenceSeconds = 0;
+                    _phase2RepelSeconds = 0;
+                    _lastPhase2RepelBroadcast = DateTime.MinValue;
                     Managers.AllegianceHometownManager.StartPhase2(registry.TownId);
                     SpawnPhase2Proxy(registry);
+                    // Reward the attacking allegiance for breaching Phase 2 (5 PK Trophies each, default).
+                    Managers.AllegianceHometownManager.AwardPhase2StartTrophies(registry.TownId);
                     break;
 
                 case Managers.Phase1TickResult.TimedOut:
@@ -482,6 +503,103 @@ namespace ACE.Server.Entity
             else
             {
                 _lastAhPhase1Broadcast = DateTime.MinValue;
+            }
+        }
+
+        /// <summary>
+        /// Phase 2 landblock tick (every 5 s): awards participation trophies, updates the anti-"peacing"
+        /// damage-suppression flag on the proxy, and auto-resolves the conflict as a repelled attack once
+        /// the defenders hold the Bind Stone area (2+ defenders, 0 attackers within 50 m) long enough.
+        /// </summary>
+        private void HandleAllegianceHometownPhase2Tick(
+            ACE.Server.Entity.AllegianceHometown.AllegianceHometownRegistry.TownEntry registry,
+            ACE.Database.Models.Log.AllegianceHometownTown town)
+        {
+            var bindstonePos      = registry.BindstonePosition;
+            var attackerMonarchId = town.ConflictAttackerMonarchId;
+            var ownerMonarchId    = town.OwnerMonarchId;
+
+            int defendersNear = 0;              // owner-allegiance PKs within the repel radius
+            int attackersNear = 0;              // attacker-allegiance PKs within the repel radius
+            bool nonAttackerNearStone = false;  // any non-attacker PK within the suppression radius
+            var participants = new List<Player>(); // attackers + defenders in range, for periodic trophies
+
+            foreach (var player in GetPlayersNearBindstone(bindstonePos, Phase2SuppressionRadius))
+            {
+                if (!player.IsPK) continue;
+
+                var monarchId  = Managers.AllegianceManager.GetVerifiedMonarchId(player) ?? player.Guid.Full;
+                var dist       = player.Location.DistanceTo(bindstonePos);
+                bool isAttacker = attackerMonarchId.HasValue && monarchId == attackerMonarchId.Value;
+                bool isDefender = ownerMonarchId.HasValue    && monarchId == ownerMonarchId.Value;
+
+                if (!isAttacker && dist <= Phase2SuppressionRadius)
+                    nonAttackerNearStone = true;
+
+                if (dist <= Phase2RepelDefenderRadius)
+                {
+                    if (isAttacker)      { attackersNear++; participants.Add(player); }
+                    else if (isDefender) { defendersNear++; participants.Add(player); }
+                }
+            }
+
+            // Anti-"peacing": suppress bindstone damage while any non-attacker lingers near the stone.
+            var proxy = Managers.AllegianceHometownManager.GetPhase2Proxy(registry.TownId);
+            if (proxy != null)
+                proxy.SuppressDamage = nonAttackerNearStone;
+
+            // Periodic participation trophies for attackers and defenders holding the area.
+            Managers.AllegianceHometownManager.AwardPhase2PeriodicTrophies(registry.TownId, participants);
+
+            // Repel: 2+ defenders and 0 attackers within the repel radius, sustained for the repel window.
+            var repelTarget = Managers.AllegianceHometownManager.Phase2RepelSeconds;
+            var now = DateTime.UtcNow;
+
+            if (defendersNear >= 2 && attackersNear == 0)
+            {
+                bool justStarted = _phase2RepelSeconds <= 0;
+                _phase2RepelSeconds += 5;
+
+                if (justStarted)
+                {
+                    _lastPhase2RepelBroadcast = now;
+                    EnqueueBroadcast(null, false, null, null,
+                        new Network.GameMessages.Messages.GameMessageSystemChat(
+                            $"[{registry.TownName}] The defenders have cleared the Bind Stone! Hold for {repelTarget / 60.0:0.#} minute(s) to repel the attack.",
+                            ACE.Entity.Enum.ChatMessageType.WorldBroadcast));
+                }
+
+                if (_phase2RepelSeconds >= repelTarget)
+                {
+                    _phase2RepelSeconds = 0;
+                    _lastPhase2RepelBroadcast = DateTime.MinValue;
+                    if (proxy != null)
+                        proxy.ResolveRepel();
+                    else
+                        Managers.AllegianceHometownManager.HandleDefenderRepel(registry.TownId);
+                    return;
+                }
+
+                if ((now - _lastPhase2RepelBroadcast).TotalSeconds >= 60)
+                {
+                    _lastPhase2RepelBroadcast = now;
+                    var remaining = Math.Max(0, repelTarget - _phase2RepelSeconds);
+                    EnqueueBroadcast(null, false, null, null,
+                        new Network.GameMessages.Messages.GameMessageSystemChat(
+                            $"[{registry.TownName}] Repelling the attack — {remaining:0}s until {town.ConflictAttackerName} is driven off. Attackers returning to the stone will interrupt.",
+                            ACE.Entity.Enum.ChatMessageType.WorldBroadcast));
+                }
+            }
+            else
+            {
+                if (_phase2RepelSeconds > 0)
+                    EnqueueBroadcast(null, false, null, null,
+                        new Network.GameMessages.Messages.GameMessageSystemChat(
+                            $"[{registry.TownName}] Repel interrupted — the attackers are back at the Bind Stone.",
+                            ACE.Entity.Enum.ChatMessageType.WorldBroadcast));
+
+                _phase2RepelSeconds = 0;
+                _lastPhase2RepelBroadcast = DateTime.MinValue;
             }
         }
 
@@ -1357,18 +1475,18 @@ namespace ACE.Server.Entity
             }
             ServerPerformanceMonitor.AddToCumulativeEvent(ServerPerformanceMonitor.CumulativeEventHistoryType.Landblock_Tick_Heartbeat, stopwatch.Elapsed.TotalSeconds);
 
-            // Allegiance Hometown Phase 1 tick — runs every 5 s on capturable-town landblocks
+            // Allegiance Hometown tick — runs every 5 s on capturable-town landblocks (Phase 1 and Phase 2)
             if (IsAllegianceHometownLandblock && lastAhPhase1Tick + ahPhase1TickInterval <= DateTime.UtcNow)
             {
                 lastAhPhase1Tick = DateTime.UtcNow;
                 try
                 {
-                    HandleAllegianceHometownPhase1Tick();
+                    HandleAllegianceHometownTick();
                 }
                 catch (Exception ex)
                 {
                     // Custom ClassicPvP capture logic runs on landblock-group worker threads; a bug here must not crash the tick.
-                    log.Error($"[TICK_EXCEPTION] HandleAllegianceHometownPhase1Tick aborted for landblock {Id}. ex: {ex}");
+                    log.Error($"[TICK_EXCEPTION] HandleAllegianceHometownTick aborted for landblock {Id}. ex: {ex}");
                 }
             }
 

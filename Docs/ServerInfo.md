@@ -725,12 +725,17 @@ To take a town owned by a rival allegiance, use the Bind Stone to begin the assa
 
 **Phase 2 — Destroy the Bind Stone (30 minutes)**
 - The Bind Stone becomes attackable — chip down its HP with melee, missile, or war magic
+- Breaching Phase 2 immediately awards each attacking-allegiance member near the stone **5 PK Trophies**
 - **All damage types are equal** — no element (slashing, fire, cold, etc.) is more or less effective than another, for both physical and magic
 - **Melee and missile damage is reduced** so that a weapon user's DPS stays in line with a mage's, rather than vastly outpacing it. War magic is unaffected
 - **Damage falls off with distance** — attacks deal full damage within **15 meters** of the Bind Stone, taper off beyond that, and deal **nothing past 20 meters**. You must fight up close to bring it down
+- **You must clear the defenders off the stone to damage it.** While **any player who is not in the attacking allegiance** is within **100 meters** of the Bind Stone, all attacker damage to it is **reduced by 90%**. Standing next to defenders and burning the stone anyway ("peacing" past them) doesn't work — you have to drive them out of the area first
+- **Defenders can mend the stone.** A defending-allegiance member who attacks their own Bind Stone doesn't damage it — instead they **heal it by 10%** of the damage they would have dealt
 - Bind Stone HP scales with the current rolling level cap
 - Each kill on the defending allegiance in the combat zone deals **5% max HP** bonus damage to the Bind Stone
 - Each kill on the attacking allegiance in the combat zone **heals the Bind Stone** by 5% max HP
+- **Both sides earn PK Trophies for holding the area.** While within **50 meters** of the Bind Stone during Phase 2, attackers and defenders each receive **1 PK Trophy per minute** of participation
+- **Repelled attack** — if the defenders hold the Bind Stone with **at least 2 defenders and no attackers within 50 meters for 10 continuous minutes**, Phase 2 ends early as a repelled attack: **Defenders win** and receive the defense rewards. Any attacker returning to within 50 meters resets the repel timer
 - Destroy the Bind Stone within 30 minutes → **Attackers win**
 - Survive 30 minutes with the Bind Stone intact → **Defenders win**; the Bind Stone heals and becomes unattackable again
 
@@ -767,7 +772,7 @@ Clicking (using) the Bind Stone at any time gives you a status message:
 - **Enemy town, Phase 2 active** — informs you that the Bind Stone creature is under attack
 - **Enemy town, no active assault** — shows any cooldown or blacklist block reason, or tells you the gather requirements to trigger Phase 1
 
-During **Phase 2**, the real Bind Stone becomes invisible (cloaked) and an attackable **Bind Stone creature** appears in its place. Destroying the creature ends Phase 2 and awards the town to the attackers. If the creature survives the 30-minute timer the town remains with the defenders.
+During **Phase 2**, the real Bind Stone becomes invisible (cloaked) and an attackable **Bind Stone creature** appears in its place. Destroying the creature ends Phase 2 and awards the town to the attackers. If the creature survives the 30-minute timer — or the defenders hold the area long enough to repel the attack — the town remains with the defenders.
 
 ### Allegiance Blacklist
 
