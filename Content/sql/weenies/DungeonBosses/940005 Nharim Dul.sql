@@ -83,11 +83,16 @@ VALUES (940005,  6, 0, 3, 0, 300, 0, 0) /* MeleeDefense        Specialized */
      , (940005, 33, 0, 3, 0, 300, 0, 0) /* LifeMagic           Specialized */
      , (940005, 34, 0, 3, 0, 300, 0, 0) /* WarMagic            Specialized */;
 
+/* Probability convention (Monster_Magic.GetProbabilityAny): a value > 2.0 is cast
+   chance (value - 2.0), so 2.10 = 10% per attack. Every spell id below is verified
+   present in the `spell` table - a missing row makes Spell._spell null and throws
+   a NullReferenceException on every Monster_Tick. */
 INSERT INTO `weenie_properties_spell_book` (`object_Id`, `spell`, `probability`)
-VALUES (940005, 6181, 2.10)  /* Electric Discharge */
-     , (940005, 4426, 2.10)  /* Incantation of Lightning Arc */
-     , (940005, 4188, 2.05)  /* Shadowed Flame */
-     , (940005, 4483, 2.10)  /* Incantation of Lightning Vulnerability Other */;
+VALUES (940005,   80, 2.10)  /* Lightning Bolt VI */
+     , (940005,  106, 2.05)  /* Shock Blast VI */
+     , (940005, 2738, 2.05)  /* Lightning Arc VII */
+     , (940005, 1242, 2.05)  /* Drain Health Other VI */
+     , (940005, 1089, 2.10)  /* Lightning Vulnerability Other VI */;
 
 INSERT INTO `weenie_properties_body_part` (`object_Id`, `key`, `d_Type`, `d_Val`, `d_Var`, `base_Armor`, `armor_Vs_Slash`, `armor_Vs_Pierce`, `armor_Vs_Bludgeon`, `armor_Vs_Cold`, `armor_Vs_Fire`, `armor_Vs_Acid`, `armor_Vs_Electric`, `armor_Vs_Nether`, `b_h`, `h_l_f`, `m_l_f`, `l_l_f`, `h_r_f`, `m_r_f`, `l_r_f`, `h_l_b`, `m_l_b`, `l_l_b`, `h_r_b`, `m_r_b`, `l_r_b`)
 VALUES (940005,  0,  4,   0,    0,  700, 700, 700, 700, 700, 700, 700, 700, 700, 1, 0.33,    0,    0, 0.33,    0,    0, 0.33,    0,    0, 0.33,    0,    0) /* Head */

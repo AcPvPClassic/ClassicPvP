@@ -225,6 +225,8 @@ namespace ACE.Server.Managers
             if (levelCap <= 0)
                 levelCap = DungeonBosses.ReferenceLevel;
 
+            StripUnresolvableSpells(boss, def);
+
             var difficulty = (float)PropertyManager.GetDouble("dungeon_boss_difficulty_mult").Item;
             var healthExp  = (float)PropertyManager.GetDouble("dungeon_boss_health_exponent").Item;
             var dmgMult    = (float)PropertyManager.GetDouble("dungeon_boss_damage_mult").Item;
@@ -520,6 +522,37 @@ namespace ACE.Server.Managers
         public static IReadOnlyCollection<ActiveDungeonBoss> GetActiveBosses() => _activeBosses.Values.ToList();
 
         // ── Admin API (/dungeonboss) ────────────────────────────────────────────────
+
+        /// <summary>
+        /// Removes any spellbook entry whose spell id does not resolve to both a DAT SpellBase and
+        /// a row in the world `spell` table. Monster_Magic does not guard against this outside the
+        /// CustomDM ruleset: it constructs the Spell and dereferences it, so a single bad id throws
+        /// a NullReferenceException on every Monster_Tick and the boss stops acting entirely.
+        /// Dropping the entry keeps the boss functional and logs the bad data loudly.
+        /// </summary>
+        private static void StripUnresolvableSpells(Creature boss, DungeonBossDef def)
+        {
+            var spellBook = boss.Biota?.PropertiesSpellBook;
+            if (spellBook == null || spellBook.Count == 0)
+                return;
+
+            List<int> bad = null;
+            foreach (var entry in spellBook)
+            {
+                if (new Spell(entry.Key).NotFound)
+                    (bad ??= new List<int>()).Add(entry.Key);
+            }
+
+            if (bad == null)
+                return;
+
+            foreach (var spellId in bad)
+                spellBook.Remove(spellId);
+
+            log.Error($"DungeonBossManager: {def.Name} (wcid {def.WeenieId}) has unresolvable spell id(s) " +
+                      $"{string.Join(", ", bad)} in its spellbook - removed so the monster tick does not throw. " +
+                      $"Fix the spellbook in Content/sql/weenies/DungeonBosses/.");
+        }
 
         /// <summary>Comma-separated list of roster boss names, for admin usage/help.</summary>
         public static string RosterNames() => string.Join(", ", DungeonBosses.Roster.Select(b => b.Name));
