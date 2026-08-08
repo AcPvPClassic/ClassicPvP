@@ -9,6 +9,23 @@
 
 ## 🩹 v1.15 (in development)
 
+### ⚔️ PK XP Zerg Penalty — Thresholds Raised
+
+The **PK XP zerg penalty** (introduced in v1.14) now allows more allegiance members online before the reduction kicks in. Full XP now holds up to **10 online** (was 5), and the curve shifts up to match:
+
+| Allegiance members online | PK XP earned |
+|---|---|
+| 10 or fewer | 100% |
+| 11 | 95% |
+| 12 | 90% |
+| 13 | 80% |
+| 14 | 70% |
+| 15 | 50% |
+| 16 | 30% |
+| 17 or more | 10% |
+
+Everything else about the penalty is unchanged — see v1.14 below for the full mechanics.
+
 ### 🌱 Fixed Monster & Loot Respawns Not Triggering
 
 A global change to the generator system had broken automatic respawning under the Infiltration ruleset — cleared monster and loot spawns in some areas could fail to regenerate. This has been fixed; spawns regenerate normally again.
@@ -80,14 +97,14 @@ To keep PvP rewarding for small, tight-knit allegiances — and to discourage ev
 
 | Allegiance members online | PK XP earned |
 |---|---|
-| 10 or fewer | 100% |
-| 11 | 95% |
-| 12 | 90% |
-| 13 | 80% |
-| 14 | 70% |
-| 15 | 50% |
-| 16 | 30% |
-| 17 or more | 10% |
+| 5 or fewer | 100% |
+| 6 | 95% |
+| 7 | 90% |
+| 8 | 80% |
+| 9 | 70% |
+| 10 | 50% |
+| 11 | 30% |
+| 12 or more | 10% |
 
 This applies to **every source of PK XP** — open-world kills, arena rewards, PK quests, hometown captures, and the XP you drain from a victim's **Ancient Bottle** when you kill them (that drain is a kill reward, so it's cut like everything else). Solo players and small allegiances feel nothing; large ones take a steep cut. The only exemption is **drinking your own Ancient Bottle** to release stored XP — that experience was already earned, so it's never reduced.
 
