@@ -12,6 +12,7 @@ VALUES (940005, 'dungeonbossnharimdul', 10, '2026-08-07 00:00:00') /* Creature *
 INSERT INTO `weenie_properties_int` (`object_Id`, `type`, `value`)
 VALUES (940005,   1,         16) /* ItemType - Creature */
      , (940005,   2,         52) /* CreatureType - Shadow */
+     , (940005,   3,         29) /* PaletteTemplate - Grey */
      , (940005,   6,         -1) /* ItemsCapacity */
      , (940005,   7,         -1) /* ContainersCapacity */
      , (940005,  16,          1) /* ItemUseable - No */
@@ -50,15 +51,15 @@ VALUES (940005,   1, 'Nharim Dul, the Whispering Death') /* Name */
      , (940005,   5, 'Dungeon Boss') /* Template */;
 
 INSERT INTO `weenie_properties_d_i_d` (`object_Id`, `type`, `value`)
-VALUES (940005,   1, 0x0200099E) /* Setup */
-     , (940005,   2, 0x090000A4) /* MotionTable */
-     , (940005,   3, 0x2000001E) /* SoundTable */
+VALUES (940005,   1, 0x02000D41) /* Setup - Martine caster frame (BZ setup absent in Infiltration dat) */
+     , (940005,   2, 0x090000FE) /* MotionTable */
+     , (940005,   3, 0x20000090) /* SoundTable */
      , (940005,   4, 0x3000002F) /* CombatTable */
-     , (940005,   6, 0x04001071) /* PaletteBase */
-     , (940005,   7, 0x1000027A) /* ClothingBase */
-     , (940005,   8, 0x060016C2) /* Icon */
-     , (940005,  22, 0x34000028) /* PhysicsEffectTable */
-/*   , (940005,  35, <your_treasure_death_id>) *//* DeathTreasureType - set for normal loot */;
+     , (940005,   6, 0x0400007E) /* PaletteBase */
+     , (940005,   7, 0x100003AD) /* ClothingBase */
+     , (940005,   8, 0x06001036) /* Icon */
+     , (940005,  22, 0x34000004) /* PhysicsEffectTable */
+     , (940005,  35,     940000) /* DeathTreasureType - Dungeon Boss Loot Profile */;
 
 INSERT INTO `weenie_properties_attribute` (`object_Id`, `type`, `init_Level`, `level_From_C_P`, `c_P_Spent`)
 VALUES (940005,   1, 380, 0, 0) /* Strength */

@@ -238,6 +238,9 @@ namespace ACE.Server.Entity
         {
             var objects = new List<WorldObject>();
 
+            // Set true if this spawn was promoted to a Dungeon Boss (see DungeonBossManager).
+            var promotedToBoss = false;
+
             if (RegenLocationType.HasFlag(RegenLocationType.Treasure))
             {
                 objects = TreasureGenerator();
@@ -260,7 +263,7 @@ namespace ACE.Server.Entity
                 // Random Dungeon Bosses: in eligible landblocks a normal monster spawn may be
                 // replaced by a scaled boss. When promoted, skip the profile's palette/shade/stack
                 // overrides (those are for the normal monster) and take the boss as-is.
-                var promotedToBoss = DungeonBossManager.TryPromoteToBoss(Generator, ref wo);
+                promotedToBoss = DungeonBossManager.TryPromoteToBoss(Generator, ref wo);
 
                 if (!promotedToBoss)
                 {
@@ -305,6 +308,12 @@ namespace ACE.Server.Entity
 
                 else
                     success = Spawn_Default(obj);
+
+                // Random Dungeon Bosses: confirm the promoted boss entered the world. On
+                // success this starts the global cooldown and broadcasts; on failure it
+                // releases the landblock slot without a phantom broadcast.
+                if (promotedToBoss)
+                    DungeonBossManager.ConfirmBossSpawn(obj, success);
 
                 // if first spawn fails, don't continually attempt to retry
                 if (success || FirstSpawn)

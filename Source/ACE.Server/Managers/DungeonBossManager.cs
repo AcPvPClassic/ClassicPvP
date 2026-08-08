@@ -28,6 +28,9 @@ namespace ACE.Server.Managers
         public string Name { get; set; }
         public Creature Boss { get; set; }
         public DateTime SpawnTime { get; set; }
+
+        /// <summary>True until the boss has successfully entered the world (see ConfirmBossSpawn).</summary>
+        public bool Pending { get; set; }
     }
 
     /// <summary>
@@ -140,14 +143,14 @@ namespace ACE.Server.Managers
                         Name      = def.Name,
                         Boss      = boss,
                         SpawnTime = DateTime.UtcNow,
+                        Pending   = true,   // cooldown + broadcast happen on ConfirmBossSpawn
                     };
-                    _lastBossSpawnTimeUnix = now;
 
                     // Hand the boss back to the generator in place of the normal monster.
+                    // The caller positions and EnterWorld()s it, then calls ConfirmBossSpawn.
                     wo = boss;
 
-                    Broadcast(def.SpawnMessage);
-                    log.Info($"DungeonBossManager: promoting spawn to {def.Name} (wcid {def.WeenieId}) on landblock 0x{landblock:X4} at level cap {levelCap}.");
+                    log.Info($"DungeonBossManager: promoted spawn to {def.Name} (wcid {def.WeenieId}) on landblock 0x{landblock:X4} at level cap {levelCap} (pending EnterWorld).");
                     return true;
                 }
             }
@@ -164,6 +167,45 @@ namespace ACE.Server.Managers
                 return true;
 
             return HotDungeonManager.IsHotDungeon(landblock, out _);
+        }
+
+        /// <summary>
+        /// Called from GeneratorProfile.Spawn() after a promoted boss has been positioned
+        /// and EnterWorld()'d. On success: starts the global cooldown and sends the spawn
+        /// broadcast. On failure (e.g. the model/setup isn't in the dat): releases the slot
+        /// immediately without consuming the cooldown or announcing a phantom boss, and logs
+        /// it so bad model data is visible.
+        /// </summary>
+        public static void ConfirmBossSpawn(WorldObject wo, bool success)
+        {
+            try
+            {
+                var entry = _activeBosses.Values.FirstOrDefault(b => ReferenceEquals(b.Boss, wo));
+                if (entry == null)
+                    return;
+
+                if (success)
+                {
+                    entry.Pending = false;
+                    _lastBossSpawnTimeUnix = Time.GetUnixTime();
+
+                    var def = DungeonBosses.Get(entry.WeenieId);
+                    if (def != null)
+                        Broadcast(def.SpawnMessage);
+
+                    log.Info($"DungeonBossManager: {entry.Name} (wcid {entry.WeenieId}) entered the world on 0x{entry.Landblock:X4}.");
+                }
+                else
+                {
+                    _activeBosses.TryRemove(entry.Landblock, out _);
+                    log.Warn($"DungeonBossManager: {entry.Name} (wcid {entry.WeenieId}) FAILED to enter the world on 0x{entry.Landblock:X4} " +
+                             $"(likely its model/setup is not present in this dat). Slot released; no cooldown consumed.");
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"DungeonBossManager.ConfirmBossSpawn exception: {ex}");
+            }
         }
 
         // ── Scaling ────────────────────────────────────────────────────────────────
@@ -201,18 +243,30 @@ namespace ACE.Server.Managers
             ScaleVital(boss, PropertyAttribute2nd.MaxStamina, capRatio * difficulty);
             ScaleVital(boss, PropertyAttribute2nd.MaxMana,    capRatio * difficulty);
 
-            // ── Skills: anchored to player power at this cap, split offense/defense ──
-            // Overwrites the authored values so hit/evade tracks the current cap rather
-            // than the reference weenie.
-            uint offense = (uint)Math.Max(1, (50 + levelCap * 3.2) * def.OffenseMult * difficulty);
-            uint defense = (uint)Math.Max(1, (40 + levelCap * 3.0) * def.DefenseMult * difficulty);
+            // ── Skills: set effective TOTAL skill levels, split offense/defense ──
+            // A creature's skill Base = attribute-derived portion + InitLevel (+ Ranks=0).
+            // We compute a TARGET total (what actually governs hit chance and magic-resist
+            // frequency) and then subtract the attribute contribution, so the final level
+            // tracks the target regardless of the boss's scaled attributes. Defenses are
+            // kept deliberately below a near-maxed player's offense so bosses resist/evade
+            // sometimes but not constantly; tune live with dungeon_boss_defense_mult.
+            var defenseMult = (float)PropertyManager.GetDouble("dungeon_boss_defense_mult").Item;
+            if (defenseMult <= 0) defenseMult = 1.0f;
+
+            uint targetOffense = (uint)Math.Max(1, (100 + levelCap * 1.7)  * def.OffenseMult * difficulty);
+            uint targetDefense = (uint)Math.Max(1, ( 90 + levelCap * 1.15) * def.DefenseMult * defenseMult);
             foreach (var skill in boss.Skills.Values)
             {
+                uint target;
                 if (DefenseSkills.Contains(skill.Skill))
-                    skill.InitLevel = defense;
+                    target = targetDefense;
                 else if (OffenseSkills.Contains(skill.Skill))
-                    skill.InitLevel = offense;
-                // non-combat skills (Run, Jump, etc.) are left untouched
+                    target = targetOffense;
+                else
+                    continue;   // leave non-combat skills (Run, Jump, etc.) untouched
+
+                var attrPart = AttributeFormula.GetFormula(boss, skill.Skill, false);
+                skill.InitLevel = (uint)Math.Max(0, (int)target - (int)attrPart);
             }
 
             // ── Body parts: melee damage + natural armor ──
@@ -311,7 +365,7 @@ namespace ACE.Server.Managers
                 Broadcast($"{entry.Name} has been slain by {killerName}! The threat has passed... for now.");
                 log.Info($"DungeonBossManager: {entry.Name} (wcid {entry.WeenieId}) slain on 0x{entry.Landblock:X4} by {killerName}.");
 
-                ScatterRewards(boss);
+                GrantRewards(boss, entry.Name);
             }
             catch (Exception ex)
             {
@@ -319,14 +373,50 @@ namespace ACE.Server.Managers
             }
         }
 
-        private static void ScatterRewards(Creature boss)
+        private static void GrantRewards(Creature boss, string bossName)
         {
             if (boss?.Location == null)
                 return;
 
-            ScatterItem(boss.Location, CustomWeenieId.PkTrophy,           (int)PropertyManager.GetLong("dungeon_boss_trophy_count").Item);
-            ScatterItem(boss.Location, CustomWeenieId.ABox,               (int)PropertyManager.GetLong("dungeon_boss_box_count").Item);
-            ScatterItem(boss.Location, CustomWeenieId.PhialOfBloodyTears, (int)PropertyManager.GetLong("dungeon_boss_phial_count").Item);
+            // A Box is not bonded — scatter it on the ground around the corpse (contestable).
+            ScatterItem(boss.Location, CustomWeenieId.ABox, (int)PropertyManager.GetLong("dungeon_boss_box_count").Item);
+
+            // PK Trophies (Bonded) and Phials (Bonded + Attuned) cannot be placed on the
+            // ground, so award them directly to the inventory of each player who damaged
+            // the boss.
+            var trophyCount = (int)PropertyManager.GetLong("dungeon_boss_trophy_count").Item;
+            var phialCount  = (int)PropertyManager.GetLong("dungeon_boss_phial_count").Item;
+            if (trophyCount <= 0 && phialCount <= 0)
+                return;
+
+            foreach (var info in boss.DamageHistory.Damagers)
+            {
+                if (info == null || !info.IsPlayer)
+                    continue;
+                if (!(info.TryGetAttacker() is Player player))
+                    continue;
+
+                AwardCurrency(player, CustomWeenieId.PkTrophy,           trophyCount, bossName);
+                AwardCurrency(player, CustomWeenieId.PhialOfBloodyTears, phialCount,  bossName);
+            }
+        }
+
+        private static void AwardCurrency(Player player, uint wcid, int count, string bossName)
+        {
+            if (count <= 0 || player == null)
+                return;
+
+            var item = WorldObjectFactory.CreateNewWorldObject(wcid);
+            if (item == null)
+                return;
+
+            if (count > 1)
+                item.SetStackSize(count);
+
+            if (player.TryCreateInInventoryWithNetworking(item))
+                player.Session?.Network?.EnqueueSend(new GameMessageSystemChat($"You receive {count}x {item.Name} for your part in slaying {bossName}!", ChatMessageType.Broadcast));
+            else
+                item.Destroy();   // inventory full — Bonded items can't be dropped to the ground
         }
 
         private static void ScatterItem(Position deathLoc, uint wcid, int count)
@@ -384,6 +474,12 @@ namespace ACE.Server.Managers
                     var boss  = entry.Boss;
 
                     var ageSeconds = (now - entry.SpawnTime).TotalSeconds;
+
+                    // A pending boss hasn't entered the world yet (CurrentLandblock is null by
+                    // design); ConfirmBossSpawn resolves it synchronously, so don't reap it early.
+                    if (entry.Pending && ageSeconds < 30)
+                        continue;
+
                     var stale  = boss == null || boss.IsDestroyed || boss.CurrentLandblock == null;
                     var tooOld = ageSeconds > maxAgeHours * 3600.0;
 

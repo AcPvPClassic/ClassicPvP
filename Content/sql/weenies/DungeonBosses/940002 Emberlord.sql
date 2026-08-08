@@ -52,15 +52,15 @@ VALUES (940002,   1, 'Vaeth''ren the Emberlord') /* Name */
      , (940002,   5, 'Dungeon Boss') /* Template */;
 
 INSERT INTO `weenie_properties_d_i_d` (`object_Id`, `type`, `value`)
-VALUES (940002,   1, 0x0200099E) /* Setup */
-     , (940002,   2, 0x090000A4) /* MotionTable */
-     , (940002,   3, 0x2000001E) /* SoundTable */
+VALUES (940002,   1, 0x02000D41) /* Setup - Martine caster frame (BZ setup absent in Infiltration dat) */
+     , (940002,   2, 0x090000FE) /* MotionTable */
+     , (940002,   3, 0x20000090) /* SoundTable */
      , (940002,   4, 0x3000002F) /* CombatTable */
-     , (940002,   6, 0x04001071) /* PaletteBase */
-     , (940002,   7, 0x1000027A) /* ClothingBase */
-     , (940002,   8, 0x060016C2) /* Icon */
-     , (940002,  22, 0x34000028) /* PhysicsEffectTable */
-/*   , (940002,  35, <your_treasure_death_id>) *//* DeathTreasureType - set for normal loot */;
+     , (940002,   6, 0x0400007E) /* PaletteBase */
+     , (940002,   7, 0x100003AD) /* ClothingBase */
+     , (940002,   8, 0x06001036) /* Icon */
+     , (940002,  22, 0x34000004) /* PhysicsEffectTable */
+     , (940002,  35,     940000) /* DeathTreasureType - Dungeon Boss Loot Profile */;
 
 INSERT INTO `weenie_properties_attribute` (`object_Id`, `type`, `init_Level`, `level_From_C_P`, `c_P_Spent`)
 VALUES (940002,   1, 340, 0, 0) /* Strength */

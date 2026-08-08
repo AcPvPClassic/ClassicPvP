@@ -11,7 +11,8 @@ VALUES (940004, 'dungeonbossaggregateprime', 10, '2026-08-07 00:00:00') /* Creat
 
 INSERT INTO `weenie_properties_int` (`object_Id`, `type`, `value`)
 VALUES (940004,   1,         16) /* ItemType - Creature */
-     , (940004,   2,          1) /* CreatureType - Olthoi */
+     , (940004,   2,         12) /* CreatureType - Cow (Tusker frame) */
+     , (940004,   3,         29) /* PaletteTemplate - Grey */
      , (940004,   6,         -1) /* ItemsCapacity */
      , (940004,   7,         -1) /* ContainersCapacity */
      , (940004,  16,          1) /* ItemUseable - No */
@@ -49,15 +50,15 @@ VALUES (940004,   1, 'Aggregate Prime') /* Name */
      , (940004,   5, 'Dungeon Boss') /* Template */;
 
 INSERT INTO `weenie_properties_d_i_d` (`object_Id`, `type`, `value`)
-VALUES (940004,   1, 0x0200170D) /* Setup */
-     , (940004,   2, 0x090001D3) /* MotionTable */
-     , (940004,   3, 0x2000007D) /* SoundTable */
-     , (940004,   4, 0x30000033) /* CombatTable */
-     , (940004,   6, 0x04001148) /* PaletteBase */
-     , (940004,   7, 0x100006DA) /* ClothingBase */
-     , (940004,   8, 0x060010E7) /* Icon */
-     , (940004,  22, 0x34000093) /* PhysicsEffectTable */
-/*   , (940004,  35, <your_treasure_death_id>) *//* DeathTreasureType - set for normal loot */;
+VALUES (940004,   1, 0x02000964) /* Setup - Tusker frame (Olthoi King setup absent in Infiltration dat) */
+     , (940004,   2, 0x0900000C) /* MotionTable */
+     , (940004,   3, 0x20000011) /* SoundTable */
+     , (940004,   4, 0x3000000B) /* CombatTable */
+     , (940004,   6, 0x0400102F) /* PaletteBase */
+     , (940004,   7, 0x10000262) /* ClothingBase */
+     , (940004,   8, 0x06001033) /* Icon */
+     , (940004,  22, 0x34000027) /* PhysicsEffectTable */
+     , (940004,  35,     940000) /* DeathTreasureType - Dungeon Boss Loot Profile */;
 
 INSERT INTO `weenie_properties_attribute` (`object_Id`, `type`, `init_Level`, `level_From_C_P`, `c_P_Spent`)
 VALUES (940004,   1, 460, 0, 0) /* Strength */

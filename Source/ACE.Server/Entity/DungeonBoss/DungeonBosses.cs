@@ -71,7 +71,7 @@ namespace ACE.Server.Entity.DungeonBoss
                             DamageMult   = 1.05f,
                             ArmorMult    = 1.20f,
                             OffenseMult  = 1.00f,
-                            DefenseMult  = 0.90f,
+                            DefenseMult  = 0.90f,   // evasion/resist frequency
                         },
                         new DungeonBossDef
                         {
@@ -93,7 +93,7 @@ namespace ACE.Server.Entity.DungeonBoss
                             DamageMult   = 1.15f,
                             ArmorMult    = 0.90f,
                             OffenseMult  = 1.10f,
-                            DefenseMult  = 1.30f,
+                            DefenseMult  = 1.10f,   // the evasive one, but not oppressive
                         },
                         new DungeonBossDef
                         {
@@ -115,7 +115,7 @@ namespace ACE.Server.Entity.DungeonBoss
                             DamageMult   = 1.00f,
                             ArmorMult    = 1.00f,
                             OffenseMult  = 1.15f,
-                            DefenseMult  = 1.05f,
+                            DefenseMult  = 1.00f,
                         },
                     };
                 }

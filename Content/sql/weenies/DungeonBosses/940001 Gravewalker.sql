@@ -61,7 +61,7 @@ VALUES (940001,   1, 0x02000D41) /* Setup */
      , (940001,   7, 0x100003AD) /* ClothingBase */
      , (940001,   8, 0x06001036) /* Icon */
      , (940001,  22, 0x34000004) /* PhysicsEffectTable */
-/*   , (940001,  35, <your_treasure_death_id>) *//* DeathTreasureType - set for normal loot */;
+     , (940001,  35,     940000) /* DeathTreasureType - Dungeon Boss Loot Profile */;
 
 INSERT INTO `weenie_properties_attribute` (`object_Id`, `type`, `init_Level`, `level_From_C_P`, `c_P_Spent`)
 VALUES (940001,   1, 440, 0, 0) /* Strength */
