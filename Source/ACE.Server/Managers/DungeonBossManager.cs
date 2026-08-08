@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 using log4net;
 
@@ -517,5 +518,154 @@ namespace ACE.Server.Managers
 
         /// <summary>Read-only snapshot of currently active bosses (for admin/status display).</summary>
         public static IReadOnlyCollection<ActiveDungeonBoss> GetActiveBosses() => _activeBosses.Values.ToList();
+
+        // ── Admin API (/dungeonboss) ────────────────────────────────────────────────
+
+        /// <summary>Comma-separated list of roster boss names, for admin usage/help.</summary>
+        public static string RosterNames() => string.Join(", ", DungeonBosses.Roster.Select(b => b.Name));
+
+        private static DungeonBossDef FindDef(string search)
+        {
+            if (string.IsNullOrWhiteSpace(search))
+                return null;
+
+            if (uint.TryParse(search, out var id))
+            {
+                var byId = DungeonBosses.Get(id);
+                if (byId != null)
+                    return byId;
+            }
+
+            return DungeonBosses.Roster.FirstOrDefault(b => b.Name.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0);
+        }
+
+        /// <summary>
+        /// Admin: force-spawn a boss at the given location, bypassing the roll/cooldown gates
+        /// (still enforces one boss per landblock and no duplicate weenie). Does not send the
+        /// global spawn broadcast, to avoid spamming players while testing. Returns a status
+        /// string for the admin.
+        /// </summary>
+        public static string AdminSpawn(Position location, string bossName)
+        {
+            if (location == null)
+                return "You must be in the world to spawn a dungeon boss.";
+
+            DungeonBossDef def;
+            if (string.IsNullOrWhiteSpace(bossName))
+            {
+                var activeWeenieIds = _activeBosses.Values.Select(b => b.WeenieId).ToHashSet();
+                def = DungeonBosses.RollAvailableBoss(activeWeenieIds);
+                if (def == null)
+                    return "Every roster boss is already active. Remove one first, or name a specific boss.";
+            }
+            else
+            {
+                def = FindDef(bossName);
+                if (def == null)
+                    return $"No boss matching '{bossName}'. Options: {RosterNames()}.";
+            }
+
+            var landblock = (ushort)location.Landblock;
+            if (_activeBosses.ContainsKey(landblock))
+                return $"A dungeon boss is already active on landblock 0x{landblock:X4}. Use '/dungeonboss remove' first.";
+            if (_activeBosses.Values.Any(b => b.WeenieId == def.WeenieId))
+                return $"{def.Name} is already active elsewhere.";
+
+            var bossWeenie = DatabaseManager.World.GetCachedWeenie(def.WeenieId);
+            if (bossWeenie == null)
+                return $"Boss weenie {def.WeenieId} ({def.Name}) not found in the world database. Did the SQL deploy?";
+
+            if (!(WorldObjectFactory.CreateNewWorldObject(bossWeenie) is Creature boss))
+                return $"Failed to create boss creature for {def.Name} (wcid {def.WeenieId}).";
+
+            var levelCap = GetCurrentLevelCap();
+            ScaleBossToCap(boss, levelCap, def);
+
+            var lb = LandblockManager.GetLandblock(location.LandblockId, false);
+            boss.Location = new Position(location);
+            boss.CurrentLandblock = lb;
+
+            if (!boss.EnterWorld())
+            {
+                boss.Destroy();
+                return $"{def.Name} FAILED to enter the world at {location.ToLOCString()} — its model/setup is likely not present in this dat.";
+            }
+
+            _activeBosses[landblock] = new ActiveDungeonBoss
+            {
+                Landblock = landblock,
+                WeenieId  = def.WeenieId,
+                Name      = def.Name,
+                Boss      = boss,
+                SpawnTime = DateTime.UtcNow,
+                Pending   = false,
+            };
+            _lastBossSpawnTimeUnix = Time.GetUnixTime();
+
+            log.Info($"DungeonBossManager: admin force-spawned {def.Name} (wcid {def.WeenieId}) at {location.ToLOCString()} (cap {levelCap}).");
+            return $"Spawned {def.Name} (wcid {def.WeenieId}) at level cap {levelCap}, HP {boss.Health.MaxValue:N0}. No global broadcast sent.";
+        }
+
+        /// <summary>Admin: multi-line summary of active bosses with their exact locations.</summary>
+        public static string AdminList()
+        {
+            var bosses = _activeBosses.Values.ToList();
+            if (bosses.Count == 0)
+                return "No dungeon bosses are currently active.";
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"Active Dungeon Bosses ({bosses.Count}):");
+            foreach (var b in bosses)
+            {
+                var loc = b.Boss?.Location;
+                var hp  = b.Boss != null ? $"{b.Boss.Health.Current:N0}/{b.Boss.Health.MaxValue:N0}" : "?";
+                var lvl = b.Boss?.Level?.ToString() ?? "?";
+                sb.AppendLine($"  {b.Name} (0x{b.Landblock:X4}) — lvl {lvl}, HP {hp}{(b.Pending ? " [pending]" : "")} — {(loc != null ? loc.ToLOCString() : "n/a")}");
+            }
+            return sb.ToString().TrimEnd();
+        }
+
+        /// <summary>
+        /// Admin: returns a copy of the location of an active boss (matched by name/wcid, or the
+        /// first active boss if <paramref name="search"/> is empty), for teleporting to it.
+        /// </summary>
+        public static Position GetBossLocation(string search, out string bossName)
+        {
+            bossName = null;
+
+            ActiveDungeonBoss entry;
+            if (string.IsNullOrWhiteSpace(search))
+                entry = _activeBosses.Values.FirstOrDefault(b => b.Boss?.Location != null);
+            else
+                entry = _activeBosses.Values.FirstOrDefault(b =>
+                    b.Name.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0 || b.WeenieId.ToString() == search);
+
+            if (entry?.Boss?.Location == null)
+                return null;
+
+            bossName = entry.Name;
+            return new Position(entry.Boss.Location);
+        }
+
+        /// <summary>Admin: despawn active boss(es) matched by name/wcid, or all if empty. No rewards.</summary>
+        public static string AdminRemove(string search)
+        {
+            var matches = string.IsNullOrWhiteSpace(search)
+                ? _activeBosses.Values.ToList()
+                : _activeBosses.Values.Where(b =>
+                    b.Name.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0 || b.WeenieId.ToString() == search).ToList();
+
+            if (matches.Count == 0)
+                return "No matching active dungeon boss.";
+
+            foreach (var entry in matches)
+            {
+                _activeBosses.TryRemove(entry.Landblock, out _);
+                if (entry.Boss != null && !entry.Boss.IsDestroyed)
+                    entry.Boss.Destroy();
+            }
+
+            return $"Removed {matches.Count} dungeon boss(es): {string.Join(", ", matches.Select(m => m.Name))}.";
+        }
     }
 }

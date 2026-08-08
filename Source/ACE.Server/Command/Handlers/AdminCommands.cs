@@ -5156,6 +5156,57 @@ namespace ACE.Server.Command.Handlers
             CommandHandlerHelper.WriteOutputInfo(session, "Hot Dungeon durations extended by 1 hour.", ChatMessageType.Broadcast);
         }
 
+        [CommandHandler("dungeonboss", AccessLevel.Admin, CommandHandlerFlag.RequiresWorld, 0,
+            "Manage and test random Dungeon Bosses.",
+            "<list | spawn [name] | tele [name] | remove [name]>\n" +
+            "  list          - list active dungeon bosses and their locations\n" +
+            "  spawn [name]  - spawn a boss at your location (random available boss if no name; no global broadcast)\n" +
+            "  tele [name]   - teleport to an active boss (first active boss if no name)\n" +
+            "  remove [name] - despawn matching active boss(es), or all if no name")]
+        public static void HandleDungeonBoss(Session session, params string[] parameters)
+        {
+            var player = session?.Player;
+            if (player == null)
+                return;
+
+            var sub = parameters.Length > 0 ? parameters[0].ToLowerInvariant() : "list";
+            var arg = parameters.Length > 1 ? string.Join(" ", parameters.Skip(1)) : null;
+
+            switch (sub)
+            {
+                case "list":
+                    CommandHandlerHelper.WriteOutputInfo(session, DungeonBossManager.AdminList(), ChatMessageType.Broadcast);
+                    break;
+
+                case "spawn":
+                    CommandHandlerHelper.WriteOutputInfo(session, DungeonBossManager.AdminSpawn(player.Location, arg), ChatMessageType.Broadcast);
+                    break;
+
+                case "tele":
+                case "teleport":
+                case "goto":
+                    var loc = DungeonBossManager.GetBossLocation(arg, out var name);
+                    if (loc == null)
+                        CommandHandlerHelper.WriteOutputInfo(session, "No active dungeon boss to teleport to." + (string.IsNullOrWhiteSpace(arg) ? "" : $" (searched '{arg}')"), ChatMessageType.Broadcast);
+                    else
+                    {
+                        CommandHandlerHelper.WriteOutputInfo(session, $"Teleporting to {name}...", ChatMessageType.Broadcast);
+                        player.Teleport(loc);
+                    }
+                    break;
+
+                case "remove":
+                case "despawn":
+                case "kill":
+                    CommandHandlerHelper.WriteOutputInfo(session, DungeonBossManager.AdminRemove(arg), ChatMessageType.Broadcast);
+                    break;
+
+                default:
+                    CommandHandlerHelper.WriteOutputInfo(session, $"Usage: /dungeonboss <list | spawn [name] | tele [name] | remove [name]>\nBosses: {DungeonBossManager.RosterNames()}", ChatMessageType.Broadcast);
+                    break;
+            }
+        }
+
         [CommandHandler("DiscordChatStart", AccessLevel.Admin, CommandHandlerFlag.None, "")]
         public static void HandleDiscordChatStart(Session session, params string[] parameters)
         {
