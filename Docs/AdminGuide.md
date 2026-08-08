@@ -827,4 +827,16 @@ Random scaled bosses that replace a normal monster spawn in an active Hot Dungeo
 | `/dungeonboss tele [name]` | Teleport to an active boss (matched by name or wcid; first active boss if no name) |
 | `/dungeonboss remove [name]` | Despawn matching active boss(es), or all active bosses if no name. No rewards are dropped |
 
-> **Note:** Boss model frames are chosen from setups confirmed to render in the Infiltration dat (Martine / Tusker). If you want more visual variety, provide the `Setup`/`MotionTable`/`SoundTable`/`CombatTable`/`ClothingBase`/`Icon` DIDs of creatures known to render on the server and update the weenies in `Content/sql/weenies/DungeonBosses/`.
+### Boss Appearances
+
+Each boss mirrors the model, animation, sound and physics of an existing creature. Its appearance properties (`Setup`, `MotionTable`, `SoundTable`, `CombatTable`, `PaletteBase`, `ClothingBase`, `Icon`, `PhysicsEffectTable`, `CreatureType`, `DefaultScale`) are copied verbatim from the reference weenie:
+
+| Boss | Looks like | Reference wcid |
+|---|---|---|
+| The Gravewalker | Phantasm | `24325` |
+| Vaeth'ren the Emberlord | Controlled Flamma | `20024` |
+| Rendmaw | Tusker | *(unchanged)* |
+| Aggregate Prime | Basalt Golem | `11994` |
+| Nharim Dul, the Whispering Death | Shadowy Warrior | `5430` |
+
+To re-skin a boss, copy those DIDs from the new reference weenie into the boss's SQL file in `Content/sql/weenies/DungeonBosses/`. Combat stats are unaffected — they're authored at reference level 275 and scaled at spawn. After changing a model, verify it renders with `/dungeonboss spawn <name>`: if the setup is missing from the client dat the boss fails to enter the world and the failure is logged by name.

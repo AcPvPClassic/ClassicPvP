@@ -1,5 +1,5 @@
 /* Random Dungeon Boss: Aggregate Prime (armor + HP wall, slow, lower damage)
-   Model frame: Olthoi King (heavy, armored). Combat stats authored at reference level
+   Model/movement/sound mirrored from Basalt Golem (wcid 11994). Combat stats authored at reference level
    275, scaled to the season level cap at spawn (DungeonBossManager.ScaleBossToCap).
    Radar hidden. Rewards (scattered currency + XP) handled in code. For normal generated
    loot, set a valid DeathTreasureType DID (type 35) on the commented line below. */
@@ -11,14 +11,13 @@ VALUES (940004, 'dungeonbossaggregateprime', 10, '2026-08-07 00:00:00') /* Creat
 
 INSERT INTO `weenie_properties_int` (`object_Id`, `type`, `value`)
 VALUES (940004,   1,         16) /* ItemType - Creature */
-     , (940004,   2,         12) /* CreatureType - Cow (Tusker frame) */
-     , (940004,   3,         29) /* PaletteTemplate - Grey */
+     , (940004,   2,         13) /* CreatureType - Golem (matches Basalt Golem) */
      , (940004,   6,         -1) /* ItemsCapacity */
      , (940004,   7,         -1) /* ContainersCapacity */
      , (940004,  16,          1) /* ItemUseable - No */
      , (940004,  25,        275) /* Level (reference; overwritten to level cap at spawn) */
      , (940004,  27,          0) /* ArmorType - None */
-     , (940004,  40,          1) /* CombatMode - NonCombat */
+     , (940004,  40,          2) /* CombatMode - Melee (matches Basalt Golem) */
      , (940004,  68,         13) /* TargetingTactic - Random, LastDamager, TopDamager */
      , (940004,  93,       1032) /* PhysicsState - ReportCollisions, Gravity */
      , (940004, 101,        183) /* AiAllowedCombatStyle - Unarmed, OneHanded, OneHandedAndShield, Bow, Crossbow, ThrownWeapon */
@@ -50,14 +49,15 @@ VALUES (940004,   1, 'Aggregate Prime') /* Name */
      , (940004,   5, 'Dungeon Boss') /* Template */;
 
 INSERT INTO `weenie_properties_d_i_d` (`object_Id`, `type`, `value`)
-VALUES (940004,   1, 0x02000964) /* Setup - Tusker frame (Olthoi King setup absent in Infiltration dat) */
-     , (940004,   2, 0x0900000C) /* MotionTable */
-     , (940004,   3, 0x20000011) /* SoundTable */
-     , (940004,   4, 0x3000000B) /* CombatTable */
-     , (940004,   6, 0x0400102F) /* PaletteBase */
-     , (940004,   7, 0x10000262) /* ClothingBase */
-     , (940004,   8, 0x06001033) /* Icon */
-     , (940004,  22, 0x34000027) /* PhysicsEffectTable */
+/* Appearance/movement/sound mirrored from Basalt Golem (wcid 11994). */
+VALUES (940004,   1, 0x020007D8) /* Setup */
+     , (940004,   2, 0x09000081) /* MotionTable */
+     , (940004,   3, 0x20000015) /* SoundTable */
+     , (940004,   4, 0x30000008) /* CombatTable */
+     , (940004,   6, 0x04000F6A) /* PaletteBase */
+     , (940004,   7, 0x1000031F) /* ClothingBase */
+     , (940004,   8, 0x06001224) /* Icon */
+     , (940004,  22, 0x3400005F) /* PhysicsEffectTable */
      , (940004,  35,     940000) /* DeathTreasureType - Dungeon Boss Loot Profile */;
 
 INSERT INTO `weenie_properties_attribute` (`object_Id`, `type`, `init_Level`, `level_From_C_P`, `c_P_Spent`)

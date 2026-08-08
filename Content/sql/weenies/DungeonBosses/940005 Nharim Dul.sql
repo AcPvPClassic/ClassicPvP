@@ -1,5 +1,5 @@
 /* Random Dungeon Boss: Nharim Dul, the Whispering Death (hybrid war/life caster)
-   Model frame: Bael'Zharon (shadow caster). Combat stats authored at reference level
+   Model/movement/sound mirrored from Shadowy Warrior (wcid 5430). Combat stats authored at reference level
    275, scaled to the season level cap at spawn (DungeonBossManager.ScaleBossToCap).
    Radar hidden. Rewards (scattered currency + XP) handled in code. For normal
    generated loot, set a valid DeathTreasureType DID (type 35) on the commented line. */
@@ -11,8 +11,7 @@ VALUES (940005, 'dungeonbossnharimdul', 10, '2026-08-07 00:00:00') /* Creature *
 
 INSERT INTO `weenie_properties_int` (`object_Id`, `type`, `value`)
 VALUES (940005,   1,         16) /* ItemType - Creature */
-     , (940005,   2,         52) /* CreatureType - Shadow */
-     , (940005,   3,         29) /* PaletteTemplate - Grey */
+     , (940005,   2,         22) /* CreatureType - Shadow (matches Shadowy Warrior) */
      , (940005,   6,         -1) /* ItemsCapacity */
      , (940005,   7,         -1) /* ContainersCapacity */
      , (940005,  16,          1) /* ItemUseable - No */
@@ -40,7 +39,7 @@ VALUES (940005,   1,      5) /* HeartbeatInterval */
      , (940005,   4,    100) /* StaminaRate */
      , (940005,   5,     50) /* ManaRate */
      , (940005,  31,     45) /* VisualAwarenessRange */
-     , (940005,  39,      1) /* DefaultScale (natural - do not increase) */
+     , (940005,  39,    1.7) /* DefaultScale - Shadowy Warrior's natural size (not inflated) */
      , (940005,  54,      5) /* UseRadius */
      , (940005,  55,     70) /* HomeRadius */
      , (940005,  80,      2) /* AiUseMagicDelay */
@@ -51,14 +50,15 @@ VALUES (940005,   1, 'Nharim Dul, the Whispering Death') /* Name */
      , (940005,   5, 'Dungeon Boss') /* Template */;
 
 INSERT INTO `weenie_properties_d_i_d` (`object_Id`, `type`, `value`)
-VALUES (940005,   1, 0x02000D41) /* Setup - Martine caster frame (BZ setup absent in Infiltration dat) */
-     , (940005,   2, 0x090000FE) /* MotionTable */
-     , (940005,   3, 0x20000090) /* SoundTable */
-     , (940005,   4, 0x3000002F) /* CombatTable */
-     , (940005,   6, 0x0400007E) /* PaletteBase */
-     , (940005,   7, 0x100003AD) /* ClothingBase */
-     , (940005,   8, 0x06001036) /* Icon */
-     , (940005,  22, 0x34000004) /* PhysicsEffectTable */
+/* Appearance/movement/sound mirrored from Shadowy Warrior (wcid 5430). */
+VALUES (940005,   1, 0x02000001) /* Setup */
+     , (940005,   2, 0x0900008D) /* MotionTable */
+     , (940005,   3, 0x20000001) /* SoundTable */
+     , (940005,   4, 0x30000000) /* CombatTable */
+     , (940005,   6, 0x04000B75) /* PaletteBase */
+     , (940005,   7, 0x100000B0) /* ClothingBase */
+     , (940005,   8, 0x06001BBD) /* Icon */
+     , (940005,  22, 0x34000076) /* PhysicsEffectTable */
      , (940005,  35,     940000) /* DeathTreasureType - Dungeon Boss Loot Profile */;
 
 INSERT INTO `weenie_properties_attribute` (`object_Id`, `type`, `init_Level`, `level_From_C_P`, `c_P_Spent`)

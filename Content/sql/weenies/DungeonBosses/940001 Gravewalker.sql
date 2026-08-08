@@ -1,5 +1,5 @@
 /* Random Dungeon Boss: The Gravewalker (undead melee bruiser + drain flavor)
-   Model frame: Martine (undead knight). Combat stats are authored at the reference
+   Model/movement/sound mirrored from Phantasm (wcid 24325). Combat stats are authored at the reference
    level (DungeonBosses.ReferenceLevel = 275) and scaled DOWN to the current season
    level cap at spawn time by DungeonBossManager.ScaleBossToCap. Radar is hidden so
    players must hunt for it. DefaultScale is left at natural (1.0) on purpose.
@@ -15,7 +15,7 @@ VALUES (940001, 'dungeonbossgravewalker', 10, '2026-08-07 00:00:00') /* Creature
 
 INSERT INTO `weenie_properties_int` (`object_Id`, `type`, `value`)
 VALUES (940001,   1,         16) /* ItemType - Creature */
-     , (940001,   2,         65) /* CreatureType - Hopeslayer (undead) */
+     , (940001,   2,         14) /* CreatureType - Undead (matches Phantasm) */
      , (940001,   6,         -1) /* ItemsCapacity */
      , (940001,   7,         -1) /* ContainersCapacity */
      , (940001,  16,          1) /* ItemUseable - No */
@@ -43,7 +43,7 @@ VALUES (940001,   1,      5) /* HeartbeatInterval */
      , (940001,   4,    100) /* StaminaRate */
      , (940001,   5,     20) /* ManaRate */
      , (940001,  31,     40) /* VisualAwarenessRange */
-     , (940001,  39,      1) /* DefaultScale (natural - do not increase) */
+     , (940001,  39,    1.1) /* DefaultScale - Phantasm's natural size (not inflated) */
      , (940001,  54,      5) /* UseRadius */
      , (940001,  55,     70) /* HomeRadius */
      , (940001, 104,     40) /* ObviousRadarRange */;
@@ -52,15 +52,16 @@ INSERT INTO `weenie_properties_string` (`object_Id`, `type`, `value`)
 VALUES (940001,   1, 'The Gravewalker') /* Name */
      , (940001,   5, 'Dungeon Boss') /* Template */;
 
+/* Appearance/movement/sound mirrored from Phantasm (wcid 24325). */
 INSERT INTO `weenie_properties_d_i_d` (`object_Id`, `type`, `value`)
-VALUES (940001,   1, 0x02000D41) /* Setup */
-     , (940001,   2, 0x090000FE) /* MotionTable */
-     , (940001,   3, 0x20000090) /* SoundTable */
-     , (940001,   4, 0x3000002F) /* CombatTable */
-     , (940001,   6, 0x0400007E) /* PaletteBase */
-     , (940001,   7, 0x100003AD) /* ClothingBase */
-     , (940001,   8, 0x06001036) /* Icon */
-     , (940001,  22, 0x34000004) /* PhysicsEffectTable */
+VALUES (940001,   1, 0x02000197) /* Setup */
+     , (940001,   2, 0x09000017) /* MotionTable */
+     , (940001,   3, 0x20000016) /* SoundTable */
+     , (940001,   4, 0x30000000) /* CombatTable */
+     , (940001,   6, 0x04000742) /* PaletteBase */
+     , (940001,   7, 0x10000066) /* ClothingBase */
+     , (940001,   8, 0x06001226) /* Icon */
+     , (940001,  22, 0x34000028) /* PhysicsEffectTable */
      , (940001,  35,     940000) /* DeathTreasureType - Dungeon Boss Loot Profile */;
 
 INSERT INTO `weenie_properties_attribute` (`object_Id`, `type`, `init_Level`, `level_From_C_P`, `c_P_Spent`)
