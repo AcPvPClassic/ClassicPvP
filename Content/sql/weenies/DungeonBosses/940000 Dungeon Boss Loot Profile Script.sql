@@ -1,6 +1,6 @@
 /* Dungeon Boss death-loot profile (treasure_Type 940000).
    A copy of Darkbeat's Storage Locker profile (treasure_Type 10000, tier 6) with a
-   slightly higher loot_Quality_Mod (0.425 -> 0.50). Referenced by every Dungeon Boss
+   slightly higher loot_Quality_Mod (0.425 -> 0.55). Referenced by every Dungeon Boss
    weenie via DeathTreasureType (DID type 35) so the boss corpse generates normal loot
    in addition to the scattered A Box and the trophies/phials awarded on kill. */
 
@@ -29,7 +29,7 @@ VALUES
 (
   940000,
   6,
-  0.50,
+  0.55,
   19,
   0,
   0,

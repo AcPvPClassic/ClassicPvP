@@ -43,7 +43,7 @@ VALUES (940005,   1,      5) /* HeartbeatInterval */
      , (940005,  39,      1) /* DefaultScale - Shadow Captain's natural size */
      , (940005,  54,      5) /* UseRadius */
      , (940005,  55,     70) /* HomeRadius */
-     , (940005,  80,      2) /* AiUseMagicDelay */
+     , (940005,  80,    1.5) /* AiUseMagicDelay - casts more often (war DPS lever) */
      , (940005, 104,     45) /* ObviousRadarRange */;
 
 INSERT INTO `weenie_properties_string` (`object_Id`, `type`, `value`)
@@ -71,8 +71,8 @@ VALUES (940005,   1, 380, 0, 0) /* Strength */
      , (940005,   2, 420, 0, 0) /* Endurance */
      , (940005,   3, 400, 0, 0) /* Quickness */
      , (940005,   4, 400, 0, 0) /* Coordination */
-     , (940005,   5, 480, 0, 0) /* Focus */
-     , (940005,   6, 500, 0, 0) /* Self */;
+     , (940005,   5, 560, 0, 0) /* Focus */
+     , (940005,   6, 560, 0, 0) /* Self */;
 
 INSERT INTO `weenie_properties_attribute_2nd` (`object_Id`, `type`, `init_Level`, `level_From_C_P`, `c_P_Spent`, `current_Level`)
 VALUES (940005,   1, 40000, 0, 0, 40000) /* MaxHealth */
@@ -92,9 +92,9 @@ VALUES (940005,  6, 0, 3, 0, 300, 0, 0) /* MeleeDefense        Specialized */
    present in the `spell` table - a missing row makes Spell._spell null and throws
    a NullReferenceException on every Monster_Tick. */
 INSERT INTO `weenie_properties_spell_book` (`object_Id`, `spell`, `probability`)
-VALUES (940005,   80, 2.10)  /* Lightning Bolt VI */
-     , (940005,  106, 2.05)  /* Shock Blast VI */
-     , (940005, 2738, 2.05)  /* Lightning Arc VII */
+VALUES (940005,   80, 2.16)  /* Lightning Bolt VI */
+     , (940005,  106, 2.10)  /* Shock Blast VI */
+     , (940005, 2738, 2.10)  /* Lightning Arc VII */
      , (940005, 1242, 2.05)  /* Drain Health Other VI */
      , (940005, 1089, 2.10)  /* Lightning Vulnerability Other VI */;
 
@@ -104,7 +104,7 @@ VALUES (940005,  0,  4,   0,    0,  700, 700, 700, 700, 700, 700, 700, 700, 700,
      , (940005,  2,  4,   0,    0,  700, 700, 700, 700, 700, 700, 700, 700, 700, 3,    0, 0.17,    0,    0, 0.17,    0,    0, 0.17,    0,    0, 0.17,    0) /* Abdomen */
      , (940005,  3,  4,   0,    0,  700, 700, 700, 700, 700, 700, 700, 700, 700, 1, 0.23, 0.03,    0, 0.23, 0.03,    0, 0.23, 0.03,    0, 0.23, 0.03,    0) /* UpperArm */
      , (940005,  4,  4,   0,    0,  700, 700, 700, 700, 700, 700, 700, 700, 700, 2,    0,  0.3,    0,    0,  0.3,    0,    0,  0.3,    0,    0,  0.3,    0) /* LowerArm */
-     , (940005,  5,  4,  90, 0.75,  700, 700, 700, 700, 700, 700, 700, 700, 700, 2,    0,  0.2,    0,    0,  0.2,    0,    0,  0.2,    0,    0,  0.2,    0) /* Hand */
+     , (940005,  5,  4,  115, 0.75,  700, 700, 700, 700, 700, 700, 700, 700, 700, 2,    0,  0.2,    0,    0,  0.2,    0,    0,  0.2,    0,    0,  0.2,    0) /* Hand */
      , (940005,  6,  4,   0,    0,  700, 700, 700, 700, 700, 700, 700, 700, 700, 3,    0, 0.13, 0.18,    0, 0.13, 0.18,    0, 0.13, 0.18,    0, 0.13, 0.18) /* UpperLeg */
      , (940005,  7,  4,   0,    0,  700, 700, 700, 700, 700, 700, 700, 700, 700, 3,    0,    0,  0.6,    0,    0,  0.6,    0,    0,  0.6,    0,    0,  0.6) /* LowerLeg */
-     , (940005,  8,  4,  90, 0.75,  700, 700, 700, 700, 700, 700, 700, 700, 700, 3,    0,    0, 0.22,    0,    0, 0.22,    0,    0, 0.22,    0,    0, 0.22) /* Foot */;
+     , (940005,  8,  4,  115, 0.75,  700, 700, 700, 700, 700, 700, 700, 700, 700, 3,    0,    0, 0.22,    0,    0, 0.22,    0,    0, 0.22,    0,    0, 0.22) /* Foot */;
