@@ -2,6 +2,7 @@ using ACE.Common;
 using ACE.Common.Extensions;
 using ACE.Database;
 using ACE.Entity.Enum;
+using ACE.Server.Entity;
 using ACE.Server.Network.GameMessages.Messages;
 using log4net;
 using System;
@@ -48,6 +49,9 @@ namespace ACE.Server.Managers
         private const double StartupRollIntervalMin = 1800;  // 30 min — between startup rolls
         private const double StartupRollIntervalMax = 2700;  // 45 min
         private const double StartupPhaseDuration   = 7200;  //  2 h — startup window
+
+        // While a dungeon is hot it is also zerg-controlled at this per-allegiance cap.
+        private const uint   ZergControlMaxPerAllegiance = 9;
 
         private static double _startupPhaseEndsAt = 0;
 
@@ -200,6 +204,7 @@ namespace ACE.Server.Managers
                 if (d.ExpiresAt <= currentUnixTime)
                 {
                     ActiveDungeons.RemoveAt(i);
+                    ZergControlLandblocks.RemoveDynamicLandblock(d.Landblock);
                     Broadcast($"{d.Name} is no longer a Hot Dungeon.");
                     log.Info($"HotDungeonManager: {d.Name} (0x{d.Landblock:X4}) expired.");
                     continue;
@@ -250,6 +255,7 @@ namespace ACE.Server.Managers
             };
 
             ActiveDungeons.Add(active);
+            ZergControlLandblocks.AddDynamicLandblock(entry.Landblock, ZergControlMaxPerAllegiance);
             ScheduleNextRoll(currentUnixTime);
 
             var durationStr = TimeSpan.FromSeconds(duration).GetFriendlyString();
@@ -335,6 +341,7 @@ namespace ACE.Server.Managers
             };
 
             ActiveDungeons.Add(active);
+            ZergControlLandblocks.AddDynamicLandblock(landblock, ZergControlMaxPerAllegiance);
             var durationStr = TimeSpan.FromSeconds(duration).GetFriendlyString();
             Broadcast($"{name} is now a Hot Dungeon! {xpMul:0.##}x XP for the next {durationStr}!");
             log.Info($"HotDungeonManager: admin forced {name} (0x{landblock:X4}) hot for {durationStr}.");

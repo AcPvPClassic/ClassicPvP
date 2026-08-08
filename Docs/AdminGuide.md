@@ -23,6 +23,7 @@ All server properties are stored in `shard_config` and are readable/writable at 
 15. [Admin Command Quick Reference](#15-admin-command-quick-reference)
 16. [Loot-to-Weenie Export](#16-loot-to-weenie-export)
 17. [Spell Management](#17-spell-management)
+18. [Dungeon Bosses](#18-dungeon-bosses)
 
 ---
 
@@ -352,6 +353,10 @@ Defined in `HotDungeonManager.cs` (`PossibleDungeons` list). Each entry has:
 - Initializes with a random first-roll delay of 30 min–3 hours after server start (so players don't wait 12+ hours on a fresh boot).
 - Active dungeons expire independently; each tracks its own `ExpiresAt` timestamp.
 - Hourly re-announcements fire for each active dungeon until it expires.
+
+### Zerg Control
+
+While a dungeon is hot it is automatically added to the zerg-control list with a cap of **9 players per allegiance** (same mechanic as the Abandoned Mine), and removed from the list when it stops being hot. This is wired in `HotDungeonManager` (`ZergControlMaxPerAllegiance`) via `ZergControlLandblocks.AddDynamicLandblock` / `RemoveDynamicLandblock`.
 
 ---
 
@@ -762,3 +767,64 @@ Changes take effect on the next cast — already-active enchantments are not ret
 | Command | Summary |
 |---|---|
 | `/loot-to-weenie` | Capture the last ID'd loot item as a weenie SQL file in the content folder |
+
+### Dungeon Bosses
+
+| Command | Summary |
+|---|---|
+| `/dungeonboss list` | List active dungeon bosses with level, HP and exact location |
+| `/dungeonboss spawn [name]` | Force-spawn a boss at your location (random available if unnamed); no global broadcast |
+| `/dungeonboss tele [name]` | Teleport to an active boss (first active boss if unnamed) |
+| `/dungeonboss remove [name]` | Despawn matching active boss(es), or all if unnamed |
+
+---
+
+## 18. Dungeon Bosses
+
+Random scaled bosses that replace a normal monster spawn in an active Hot Dungeon or the Abandoned Mine (Subway). A normal monster spawn from a generator in an eligible landblock has a small chance to be promoted to a boss whose combat stats are scaled to the current season level cap. A location-free flavor message is broadcast globally on spawn (players have to hunt for it); on death the boss scatters currency and grants XP + normal loot.
+
+### How It Works
+
+- **Trigger:** hooks the generator spawn path (`GeneratorProfile.Spawn`) and rolls per eligible monster spawn.
+- **Eligible landblocks:** any active Hot Dungeon, plus the Abandoned Mine (`0x01C9`).
+- **Gates (in order):** feature enabled → hostile monster → eligible landblock → global cooldown since the last boss → one boss per landblock → no duplicate boss weenie active → roll chance.
+- **Scaling:** continuous (no bands). Health, damage, armor, attributes, skills and XP scale smoothly with the level cap, then by per-archetype multipliers and the global difficulty/defense knobs. Defensive skills are deliberately kept below a near-maxed character's offense so bosses resist/evade sometimes, not constantly — tune with `dungeon_boss_defense_mult`.
+- **Roster (5):** The Gravewalker, Vaeth'ren the Emberlord, Rendmaw, Aggregate Prime, Nharim Dul the Whispering Death. Defined in `Entity/DungeonBoss/DungeonBosses.cs`; weenies `940001`–`940005` in `Content/sql/weenies/DungeonBosses/`.
+
+### Rewards on Kill
+
+| Reward | Delivery |
+|---|---|
+| A Box | Scattered on the ground around the corpse (contestable). Count = `dungeon_boss_box_count` |
+| PK Trophies | Awarded to the inventory of **every player who damaged the boss** (Bonded — cannot be floored). Count = `dungeon_boss_trophy_count` |
+| Phials of Bloody Tears | Awarded to the inventory of **every player who damaged the boss** (Bonded + Attuned). Count = `dungeon_boss_phial_count` |
+| Normal loot | Generated on the corpse from `treasure_death` profile `940000` (set as each boss's `DeathTreasureType`) |
+| XP | Scaled `XpOverride`, flows to damagers as normal |
+
+### Properties
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `dungeon_boss_enabled` | bool | `false` | Master on/off switch. Requires Infiltration ruleset |
+| `dungeon_boss_spawn_chance` | double | `0.0005` | Per-eligible-monster-spawn probability a normal monster becomes a boss |
+| `dungeon_boss_min_seconds_between` | long | `1800` | Global minimum seconds between any two boss spawns |
+| `dungeon_boss_difficulty_mult` | double | `1.0` | Global multiplier on health/damage/skills on top of level-cap scaling |
+| `dungeon_boss_health_exponent` | double | `1.4` | Exponent for health scaling vs the level cap |
+| `dungeon_boss_damage_mult` | double | `1.0` | Extra multiplier on boss melee (body-part) damage |
+| `dungeon_boss_defense_mult` | double | `1.0` | Multiplier on defensive skills (evade/resist frequency). Lower if bosses resist too often |
+| `dungeon_boss_trophy_count` | long | `10` | PK Trophies awarded to each participant on kill |
+| `dungeon_boss_box_count` | long | `3` | A Boxes scattered on the ground on kill |
+| `dungeon_boss_phial_count` | long | `3` | Phials awarded to each participant on kill |
+| `dungeon_boss_max_age_hours` | long | `4` | Safety cap: release a boss's slot if it has been tracked this long (e.g. its landblock unloaded) |
+| `dungeon_boss_webhook` | string | `""` | Discord webhook for boss spawn/slain announcements |
+
+### Admin Commands
+
+| Command | Description |
+|---|---|
+| `/dungeonboss list` | List active dungeon bosses with level, HP and exact location |
+| `/dungeonboss spawn [name]` | Force-spawn a boss at your location, bypassing the roll/cooldown gates (random available boss if no name). Does **not** send the global broadcast, so it's safe for testing |
+| `/dungeonboss tele [name]` | Teleport to an active boss (matched by name or wcid; first active boss if no name) |
+| `/dungeonboss remove [name]` | Despawn matching active boss(es), or all active bosses if no name. No rewards are dropped |
+
+> **Note:** Boss model frames are chosen from setups confirmed to render in the Infiltration dat (Martine / Tusker). If you want more visual variety, provide the `Setup`/`MotionTable`/`SoundTable`/`CombatTable`/`ClothingBase`/`Icon` DIDs of creatures known to render on the server and update the weenies in `Content/sql/weenies/DungeonBosses/`.
