@@ -519,8 +519,8 @@ namespace ACE.Server.Entity
             var attackerMonarchId = town.ConflictAttackerMonarchId;
             var ownerMonarchId    = town.OwnerMonarchId;
 
-            int defendersNear = 0;              // owner-allegiance PKs within the repel radius
-            int attackersNear = 0;              // attacker-allegiance PKs within the repel radius
+            int defendersNear    = 0;           // owner-allegiance PKs within the repel radius
+            int nonDefendersNear = 0;           // any non-defender PK within the repel radius (attackers + neutrals)
             bool nonAttackerNearStone = false;  // any non-attacker PK within the suppression radius
             var participants = new List<Player>(); // attackers + defenders in range, for periodic trophies
 
@@ -538,8 +538,17 @@ namespace ACE.Server.Entity
 
                 if (dist <= Phase2RepelDefenderRadius)
                 {
-                    if (isAttacker)      { attackersNear++; participants.Add(player); }
-                    else if (isDefender) { defendersNear++; participants.Add(player); }
+                    if (isDefender)
+                    {
+                        defendersNear++;
+                        participants.Add(player);
+                    }
+                    else
+                    {
+                        // Attackers and neutral third parties alike block the repel.
+                        nonDefendersNear++;
+                        if (isAttacker) participants.Add(player); // only attackers earn participation trophies
+                    }
                 }
             }
 
@@ -551,11 +560,12 @@ namespace ACE.Server.Entity
             // Periodic participation trophies for attackers and defenders holding the area.
             Managers.AllegianceHometownManager.AwardPhase2PeriodicTrophies(registry.TownId, participants);
 
-            // Repel: 2+ defenders and 0 attackers within the repel radius, sustained for the repel window.
+            // Repel: 2+ defenders and no non-defenders (attackers or neutrals) within the repel radius,
+            // sustained for the repel window.
             var repelTarget = Managers.AllegianceHometownManager.Phase2RepelSeconds;
             var now = DateTime.UtcNow;
 
-            if (defendersNear >= 2 && attackersNear == 0)
+            if (defendersNear >= 2 && nonDefendersNear == 0)
             {
                 bool justStarted = _phase2RepelSeconds <= 0;
                 _phase2RepelSeconds += 5;
@@ -586,7 +596,7 @@ namespace ACE.Server.Entity
                     var remaining = Math.Max(0, repelTarget - _phase2RepelSeconds);
                     EnqueueBroadcast(null, false, null, null,
                         new Network.GameMessages.Messages.GameMessageSystemChat(
-                            $"[{registry.TownName}] Repelling the attack — {remaining:0}s until {town.ConflictAttackerName} is driven off. Attackers returning to the stone will interrupt.",
+                            $"[{registry.TownName}] Repelling the attack — {remaining:0}s until {town.ConflictAttackerName} is driven off. Any enemy returning to the stone will interrupt.",
                             ACE.Entity.Enum.ChatMessageType.WorldBroadcast));
                 }
             }
@@ -595,7 +605,7 @@ namespace ACE.Server.Entity
                 if (_phase2RepelSeconds > 0)
                     EnqueueBroadcast(null, false, null, null,
                         new Network.GameMessages.Messages.GameMessageSystemChat(
-                            $"[{registry.TownName}] Repel interrupted — the attackers are back at the Bind Stone.",
+                            $"[{registry.TownName}] Repel interrupted — an enemy is back at the Bind Stone.",
                             ACE.Entity.Enum.ChatMessageType.WorldBroadcast));
 
                 _phase2RepelSeconds = 0;

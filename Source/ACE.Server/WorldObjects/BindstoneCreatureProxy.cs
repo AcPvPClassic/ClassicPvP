@@ -100,6 +100,11 @@ namespace ACE.Server.WorldObjects
             if (attacker is not Player player)
                 return false;
 
+            // Only PK defenders mend the stone. Non-PK attacks are already reflected upstream, but guard here
+            // too so a non-PK defender can never heal it regardless of how this is reached.
+            if (!player.IsPK)
+                return false;
+
             if (!AllegianceHometownManager.IsTownDefender(TownId, player))
                 return false;
 

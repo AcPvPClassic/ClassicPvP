@@ -735,7 +735,7 @@ To take a town owned by a rival allegiance, use the Bind Stone to begin the assa
 - Each kill on the defending allegiance in the combat zone deals **5% max HP** bonus damage to the Bind Stone
 - Each kill on the attacking allegiance in the combat zone **heals the Bind Stone** by 5% max HP
 - **Both sides earn PK Trophies for holding the area.** While within **50 meters** of the Bind Stone during Phase 2, attackers and defenders each receive **1 PK Trophy per minute** of participation
-- **Repelled attack** — if the defenders hold the Bind Stone with **at least 2 defenders and no attackers within 50 meters for 10 continuous minutes**, Phase 2 ends early as a repelled attack: **Defenders win** and receive the defense rewards. Any attacker returning to within 50 meters resets the repel timer
+- **Repelled attack** — if the defenders hold the Bind Stone with **at least 2 defenders and no non-defenders within 50 meters for 10 continuous minutes**, Phase 2 ends early as a repelled attack: **Defenders win** and receive the defense rewards. Any non-defender — an attacker *or* a neutral third party — within 50 meters resets the repel timer
 - Destroy the Bind Stone within 30 minutes → **Attackers win**
 - Survive 30 minutes with the Bind Stone intact → **Defenders win**; the Bind Stone heals and becomes unattackable again
 
