@@ -837,6 +837,6 @@ Each boss mirrors the model, animation, sound and physics of an existing creatur
 | Vaeth'ren the Emberlord | Controlled Flamma | `20024` |
 | Rendmaw | Tusker | *(unchanged)* |
 | Aggregate Prime | Basalt Golem | `11994` |
-| Nharim Dul, the Whispering Death | Shadowy Warrior | `5430` |
+| Nharim Dul, the Whispering Death | Shadow Captain | `6554` |
 
-To re-skin a boss, copy those DIDs from the new reference weenie into the boss's SQL file in `Content/sql/weenies/DungeonBosses/`. Combat stats are unaffected — they're authored at reference level 275 and scaled at spawn. After changing a model, verify it renders with `/dungeonboss spawn <name>`: if the setup is missing from the client dat the boss fails to enter the world and the failure is logged by name.
+To re-skin a boss, copy those DIDs from the new reference weenie into the boss's SQL file in `Content/sql/weenies/DungeonBosses/`. **Pick a reference with its own dedicated creature `Setup`.** Creatures built on the generic human setup (`0x02000001`) carry no geometry of their own — their whole appearance comes from the clothing table, and if the client dat has no clothing entry for that setup the boss renders as an untextured naked human. Don't forget `PaletteTemplate` (int type 3) alongside `PaletteBase`/`ClothingBase`; without it the colour set is never applied. Combat stats are unaffected — they're authored at reference level 275 and scaled at spawn. After changing a model, verify it renders with `/dungeonboss spawn <name>`: if the setup is missing from the client dat the boss fails to enter the world and the failure is logged by name.
