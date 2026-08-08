@@ -9,6 +9,14 @@
 
 ## 🩹 v1.15 (in development)
 
+### 👹 Dungeon Bosses Stalk the Hot Dungeons and the Abandoned Mine
+
+Powerful named bosses now roam at random. Any monster spawning in an active Hot Dungeon or the Abandoned Mine has a small chance to be a **Dungeon Boss** instead — one of five: **The Gravewalker**, **Vaeth'ren the Emberlord**, **Rendmaw**, **Aggregate Prime**, and **Nharim Dul, the Whispering Death**.
+
+- **Hunt for them.** When one appears, a message goes out to the whole world — but it never says *where*. The bosses don't show on radar, so you'll have to go looking.
+- **Always a fair fight.** Their strength scales to the current season level cap, so they're a real challenge whether the season is young or maxed.
+- **Rewards worth the hunt.** Every player who lands a hit shares in the spoils: PK Trophies and Phials of Bloody Tears go straight to your pack, a scatter of A Boxes drops on the ground to fight over, and the corpse carries a rich haul of loot on top of a hefty XP payout.
+
 ### 🏰 Hometown Phase 2 — Trophies, Repels, and No More "Peacing"
 
 Phase 2 of a hometown assault gets a big overhaul:
