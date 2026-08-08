@@ -15,7 +15,12 @@ Powerful named bosses now roam at random. Any monster spawning in an active Hot 
 
 - **Hunt for them.** When one appears, a message goes out to the whole world — but it never says *where*. The bosses don't show on radar, so you'll have to go looking.
 - **Always a fair fight.** Their strength scales to the current season level cap, so they're a real challenge whether the season is young or maxed.
-- **Rewards worth the hunt.** Every player who lands a hit shares in the spoils: PK Trophies and Phials of Bloody Tears go straight to your pack, a scatter of A Boxes drops on the ground to fight over, and the corpse carries a rich haul of loot on top of a hefty XP payout.
+- **Rewards worth the hunt.** Every player who lands a hit shares in the spoils: PK Trophies and Phials of Bloody Tears go straight to your pack, a scatter of Boxes drops on the ground to fight over, and the corpse carries a rich haul of loot on top of a hefty XP payout.
+
+### 🔥 Hot Dungeons Now Zerg-Controlled (Capped at 9 per Allegiance)
+
+Active Hot Dungeons now enforce the same **zerg-control limit as the Abandoned Mine** — each allegiance can have a **maximum of 9 players** inside at the same time. If a 10th member of your allegiance tries to enter, they are blocked. If a 10th already slipped in, the most recently teleported players are booted to their lifestone.
+
 
 ### 🏰 Hometown Phase 2 — Trophies, Repels, and No More "Peacing"
 
@@ -29,9 +34,7 @@ Phase 2 of a hometown assault gets a big overhaul:
 
 ### 🏟️ Arena PK Quests Now Count for Every Match Type
 
-Daily arena PK quests were only crediting **1v1** matches for most players. Progress on the **2v2, Group, FFA, and Tugak War** quests — participation, wins, top-3 placement, damage dealt, and low-damage wins — silently failed to count unless *both* you and an opponent happened to belong to an admin-curated "whitelisted" allegiance. In practice that meant the vast majority of players saw **zero** progress on those quests no matter how many matches they played, while 1v1 kept working.
-
-Arena quest credit no longer depends on the allegiance whitelist at all. Every arena format now advances its quests after any legitimate match — the only requirement is that you actually faced an opponent from a **different allegiance** (matches staged entirely within one allegiance still don't count). If you've been grinding 2v2 or group matches and watching the counter stay at zero, it will move now.
+Some Daily arena PK quests were not crediting correctly.  This has been fixed.
 
 ### 🚪 Abandoned Mine — PK Only, No Recall/Summon, Zerg-Controlled
 
