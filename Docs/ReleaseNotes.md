@@ -7,7 +7,11 @@
 
 ---
 
-## 🩹 v1.15 (in development)
+## 🩹 v1.16 (in development)
+
+---
+
+## 🩹 v1.15 — August 7, 2026
 
 ### ⚔️ PK XP Zerg Penalty — Thresholds Raised
 
