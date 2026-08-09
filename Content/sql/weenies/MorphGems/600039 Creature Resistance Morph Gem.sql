@@ -15,7 +15,7 @@ VALUES (600039,   1,       2048) /* ItemType - Gem */
      , (600039,  19,        100) /* Value - costs 100 PK Trophies at Anti Parazi */
      , (600039,  65,        101) /* Placement - Resting */
      , (600039,  93,       1044) /* PhysicsState - Ethereal, IgnoreCollisions, Gravity */
-     , (600039,  94,          33025) /* TargetType - Vestements */;
+     , (600039,  94,          35215) /* TargetType - Vestements */;
 
 INSERT INTO `weenie_properties_bool` (`object_Id`, `type`, `value`)
 VALUES (600039,   1, False) /* Stuck */
