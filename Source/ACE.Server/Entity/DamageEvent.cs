@@ -950,8 +950,13 @@ namespace ACE.Server.Entity
                 // Only PK players may harm the stone; everyone else takes their own hit back.
                 // Checked here rather than up front so the reflected amount is a real damage
                 // number, and before the mods below so the attacker eats the undiminished hit.
+                // Callers read the Damage field (the method's return value is discarded), so we must
+                // zero the field — not just return 0 — to actually deal no damage to the stone.
                 if (bindstoneProxy.TryReflectNonPkAttack(attacker, DamageType, Damage))
+                {
+                    Damage = 0.0f;
                     return 0.0f;
+                }
 
                 var isMissile = Weapon != null &&
                     (Weapon.WeaponSkill == Skill.Bow || Weapon.WeaponSkill == Skill.Crossbow || Weapon.WeaponSkill == Skill.ThrownWeapon);
@@ -960,8 +965,12 @@ namespace ACE.Server.Entity
                 Damage *= AllegianceHometownManager.GetDistanceMultiplier((float)defender.Location.DistanceTo(attacker.Location));
 
                 // Defenders mend the stone instead of damaging it: heal 10% of the would-be damage, deal none.
+                // Zero the Damage field (not just the return) so the mended hit lands no damage on the stone.
                 if (bindstoneProxy.TryApplyDefenderHeal(attacker, Damage))
+                {
+                    Damage = 0.0f;
                     return 0.0f;
+                }
 
                 // Anti-"peacing": while any non-attacker lingers near the stone, attacker damage is cut sharply
                 // (default 90%), forcing attackers to clear defenders off the stone before they can burn it down.
