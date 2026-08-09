@@ -230,6 +230,7 @@ namespace ACE.Server.Managers
             var difficulty = (float)PropertyManager.GetDouble("dungeon_boss_difficulty_mult").Item;
             var healthExp  = (float)PropertyManager.GetDouble("dungeon_boss_health_exponent").Item;
             var dmgMult    = (float)PropertyManager.GetDouble("dungeon_boss_damage_mult").Item;
+            var armorMult  = (float)PropertyManager.GetDouble("dungeon_boss_armor_mult").Item;
             if (difficulty <= 0) difficulty = 1.0f;
 
             // 1.0 at the reference level; floored so early-season bosses don't round to nothing.
@@ -273,8 +274,12 @@ namespace ACE.Server.Managers
             }
 
             // ── Body parts: melee damage + natural armor ──
+            // BaseArmor mitigates melee/missile only — CreatureBodyPart.GetEffectiveArmorVsType
+            // feeds it through SkillFormula.CalcArmorMod, while spell damage goes through
+            // GetResistanceMod and never touches armor. So armor_mult tunes weapon tankiness
+            // in isolation, whereas difficulty_mult moves health/damage/skills with it.
             float bodyDmgFactor = capRatio * def.DamageMult * dmgMult * difficulty;
-            float armorFactor   = (float)Math.Sqrt(capRatio) * def.ArmorMult * difficulty;
+            float armorFactor   = (float)Math.Sqrt(capRatio) * def.ArmorMult * difficulty * armorMult;
             if (boss.Biota.PropertiesBodyPart != null)
             {
                 foreach (var bp in boss.Biota.PropertiesBodyPart.Values)

@@ -812,6 +812,7 @@ Random scaled bosses that replace a normal monster spawn in an active Hot Dungeo
 | `dungeon_boss_health_exponent` | double | `1.4` | Exponent for health scaling vs the level cap |
 | `dungeon_boss_damage_mult` | double | `1.0` | Extra multiplier on boss melee (body-part) damage |
 | `dungeon_boss_defense_mult` | double | `1.0` | Multiplier on defensive skills (evade/resist frequency). Lower if bosses resist too often |
+| `dungeon_boss_armor_mult` | double | `1.0` | Multiplier on natural armor, which mitigates **melee and missile only** — spell damage ignores armor entirely. Lower if weapons hit bosses for too little; raise to make bosses tankier against weapons without touching health, damage or magic |
 | `dungeon_boss_trophy_count` | long | `10` | PK Trophies awarded to each participant on kill |
 | `dungeon_boss_box_count` | long | `3` | A Boxes scattered on the ground on kill |
 | `dungeon_boss_phial_count` | long | `3` | Phials awarded to each participant on kill |
