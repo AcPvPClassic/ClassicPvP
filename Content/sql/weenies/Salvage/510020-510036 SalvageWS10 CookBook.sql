@@ -101,8 +101,18 @@ INSERT INTO `cook_book` (`recipe_Id`, `source_W_C_I_D`, `target_W_C_I_D`, `last_
 SELECT `recipe_Id`, 510034, `target_W_C_I_D`, `last_Modified`
 FROM `cook_book` WHERE `source_W_C_I_D` = 21079;
 
+
+
 -- 510035: White Sapphire  (base 21086)
 DELETE FROM `cook_book` WHERE `source_W_C_I_D` = 510035;
 INSERT INTO `cook_book` (`recipe_Id`, `source_W_C_I_D`, `target_W_C_I_D`, `last_Modified`)
 SELECT `recipe_Id`, 510035, `target_W_C_I_D`, `last_Modified`
 FROM `cook_book` WHERE `source_W_C_I_D` = 21086;
+
+
+
+-- 510036: Mahogany  (base 20988)
+DELETE FROM `cook_book` WHERE `source_W_C_I_D` = 510036;
+INSERT INTO `cook_book` (`recipe_Id`, `source_W_C_I_D`, `target_W_C_I_D`, `last_Modified`)
+SELECT `recipe_Id`, 510036, `target_W_C_I_D`, `last_Modified`
+FROM `cook_book` WHERE `source_W_C_I_D` = 20988;
