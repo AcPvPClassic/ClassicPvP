@@ -37,6 +37,18 @@ namespace ACE.Server.Managers
             if (cookbook != null)
                 return cookbook.Recipe;
 
+            // Items exported via @loot-to-weenie carry WeenieSwapClassId, a reference to the
+            // live template WCID they were originally rolled from. If the item's own custom
+            // WCID has no direct cook_book entries, fall back to the template's -- it's the
+            // same weapon/tool as far as tinkering eligibility is concerned, it just has its
+            // own frozen instance stats instead of a fresh roll.
+            if (target.WeenieSwapClassId.HasValue)
+            {
+                var swapCookbook = DatabaseManager.World.GetCachedCookbook(source.WeenieClassId, (uint)target.WeenieSwapClassId.Value);
+                if (swapCookbook != null)
+                    return swapCookbook.Recipe;
+            }
+
             // if none exists, try finding new recipe
             return GetNewRecipe(player, source, target);
         }
