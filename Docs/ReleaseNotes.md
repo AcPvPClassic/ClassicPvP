@@ -11,7 +11,7 @@
 
 ### 🔥 Hot Dungeons — Logout Delay
 
-The extra rewards inside a Hot Dungeon now come with extra risk. While you're standing in an active Hot Dungeon, **logging out is delayed** just like it is for Player Killers — your character stays frozen in the world for a short time (**20 seconds** by default) before actually leaving. No more instantly quitting to escape a bad spot.
+The extra rewards inside a Hot Dungeon now come with extra risk. While you're standing in an active Hot Dungeon, **logging out is delayed** just like it is for Player Killers — your character stays frozen in the world for a short time before actually leaving. No more instantly quitting to escape a bad spot.
 
 **Recalls still work normally** — portal recall, lifestone recall spells, and commands like `/lifestone` are unaffected. This only delays a straight logout.
 
