@@ -207,6 +207,29 @@ For **every hometown your allegiance owns**, all experience you earn is boosted 
 
 This applies to **all XP sources**: monster kills, quest turn-ins, exploration, and open-world PK kills. The bonus is shared by the entire allegiance — every member benefits from the allegiance's combined holdings, regardless of who captured each town. Own more towns, level faster.
 
+### 🚀 Catch-Up XP Boost
+
+Falling behind the season cap — because you started late, rolled a new character, or simply had a quiet couple of weeks — comes with a built-in correction. While your **total XP is below 70% of the current season XP cap**, all the XP you earn is multiplied, and the size of the multiplier depends on how far behind you are.
+
+| Your total XP vs. the cap | XP boost |
+|---|---|
+| 0% (brand new character) | **5.00×** |
+| 17.5% | 4.25× |
+| 35% | 3.50× |
+| 52.5% | 2.75× |
+| Just under 70% | **2.00×** |
+| 70% or above | 1.00× (no boost) |
+
+The multiplier is a straight line between those two endpoints, recalculated from your exact position, so it tapers naturally as you close the gap rather than dropping in steps. At 70% of the cap the boost switches off entirely — at that point you've caught up.
+
+Because the cap itself climbs every day, the threshold moves with it. Standing still while the cap advances will eventually put you back under 70% and re-enable the boost.
+
+**It stacks multiplicatively** with the rolling XP rate and the hometown ownership bonus. A brand-new character grinding late in the season, when the rate is at 3×, earns at 15×.
+
+**It does not raise your ceiling.** Boosted XP still counts against the global cap and against your Monster / Quest / PK budgets — the boost gets you to those limits faster, it doesn't lift them.
+
+**Fellowship note:** XP shared through a fellowship is boosted by the **earner's** catch-up multiplier before it is split, not each member's own. Fellowship with someone who is also behind and you both benefit; fellowship with a maxed player and their kills come to you unboosted.
+
 ---
 
 ## ⏱️ XP Cap Categories
@@ -249,6 +272,7 @@ Use `/season status` to see a live snapshot of the current season:
 - **Level cap** — the current maximum level (or "post-cap XP grind" once level 126 is reached)
 - **XP cap** — the exact total-XP ceiling in effect right now
 - **Next advance** — hours and minutes until the cap ticks up again
+- **Catch-Up** — your current catch-up XP multiplier, or `none` once you're at or above 70% of the cap
 - **XP budgets** — your Monster, Quest, and PK XP earned vs. your budget for this window, with a percentage and a `[FULL]` indicator when a bucket is exhausted
 
 ---

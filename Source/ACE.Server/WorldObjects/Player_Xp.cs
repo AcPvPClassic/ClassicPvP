@@ -261,7 +261,12 @@ namespace ACE.Server.WorldObjects
                     hometownMultiplier = 1.0 + hometownCount * 0.05;
             }
 
-            var m_amount = (long)Math.Round(amount * enchantment * modifier * hometownMultiplier);
+            // Catch-up boost: characters whose lifetime total XP is well below the current season
+            // XP cap earn multiplied XP, scaled by how far behind the cap they are. Returns 1.0
+            // when disabled, when no season cap is active, or once the player has caught up.
+            var catchUpMultiplier = RollingLevelCapManager.GetCatchUpXpMultiplier(TotalExperience ?? 0);
+
+            var m_amount = (long)Math.Round(amount * enchantment * modifier * hometownMultiplier * catchUpMultiplier);
 
             var m_amount_before_extra = m_amount;
 

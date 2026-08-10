@@ -701,6 +701,7 @@ namespace ACE.Server.Managers
                 ("tinker_lotto_enabled", new Property<bool>(false, "enables the tinkering lotto feature")),
                 ("rolling_level_cap_enabled", new Property<bool>(false, "Enables the server-wide rolling level cap. When enabled, players cannot exceed the XP threshold for the current cap level. The cap starts at 15 and increases daily based on rolling_level_cap_start_timestamp.")),
                 ("rolling_xp_modifier_enabled", new Property<bool>(false, "When true, RollingLevelCapManager automatically adjusts xp_modifier each day using a quadratic curve tied to season progression. Starts at 0.25 on day 0, reaches 1.0 at ~36% through the season (day ~44, level cap ~101), and climbs to rolling_xp_modifier_max at 80% (day 96). Requires rolling_level_cap_enabled.")),
+                ("catchup_xp_enabled", new Property<bool>(true, "Enables the catch-up XP boost. Characters whose lifetime total XP is below catchup_xp_threshold of the current season XP cap earn boosted XP, scaled by how far behind the cap they are. Requires an active rolling level cap.")),
                 ("hot_dungeon_enabled", new Property<bool>(false, "Enables the Hot Dungeons system on Infiltration servers. When enabled, up to 3 dungeons are periodically selected to offer bonus XP and loot.")),
                 ("dungeon_boss_enabled", new Property<bool>(false, "Enables random Dungeon Bosses. When enabled, normal monster spawns in an active Hot Dungeon or the Abandoned Mine have a small chance to be replaced by a scaled boss. Requires the Infiltration ruleset.")),
                 ("turnto_use_heading_stealth", new Property<bool>(false, "If true, TurnTo motions between two PK players use an absolute heading instead of a target ID, to prevent War Detect style plugins from revealing the target.")),
@@ -1079,6 +1080,11 @@ namespace ACE.Server.Managers
                 ("daily_quest_xp_category_ratio",   new Property<double>(0.60, "Rolling cap: maximum fraction of a player's remaining cap XP that the Quest category (quests, emotes, exploration) can absorb in one cap period.")),
                 ("daily_monster_xp_category_ratio",  new Property<double>(0.60, "Rolling cap: maximum fraction of a player's remaining cap XP that the Monster category (kills, fellowship, allegiance, proficiency) can absorb in one cap period.")),
                 ("daily_pvp_xp_category_ratio",      new Property<double>(1.00, "Rolling cap: maximum fraction of a player's remaining cap XP that the PvP category (player kills, arenas, PvP custom content) can absorb in one cap period.")),
+                // Catch-up XP boost — scales earned XP for characters behind the season cap
+                ("catchup_xp_threshold",             new Property<double>(0.70, "Catch-up XP: fraction of the current season XP cap below which a character earns boosted XP. A character whose total XP is at or above this fraction of the cap gets no boost. Default 0.70 (70%).")),
+                ("catchup_xp_max_multiplier",        new Property<double>(5.00, "Catch-up XP: multiplier applied to earned XP for a character with 0 total XP (furthest behind the cap). Default 5.0 (500%).")),
+                ("catchup_xp_min_multiplier",        new Property<double>(2.00, "Catch-up XP: multiplier applied to earned XP for a character right at catchup_xp_threshold of the cap (least far behind). Default 2.0 (200%). The multiplier ramps linearly between this and catchup_xp_max_multiplier.")),
+
                 ("ancient_bottle_fill_ratio",        new Property<double>(0.25, "Fraction of overflow PvP XP (beyond the daily PvP or global cap) that is stored into Ancient Bottles. The remainder is lost to the cap. e.g. 0.25 means only 25% of post-cap PK XP is captured.")),
 
                 // PK kill XP rewards

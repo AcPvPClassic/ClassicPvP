@@ -2974,6 +2974,18 @@ namespace ACE.Server.Command.Handlers
             var xpModifier = PropertyManager.GetDouble("xp_modifier").Item;
             sb.AppendLine($"  XP Rate:     {xpModifier:F2}x");
 
+            // Catch-up boost — extra XP for characters sitting below the cap threshold.
+            if (PropertyManager.GetBool("catchup_xp_enabled").Item && xpCap > 0)
+            {
+                var catchUp   = RollingLevelCapManager.GetCatchUpXpMultiplier(totalXp);
+                var threshold = Math.Min(1.0, PropertyManager.GetDouble("catchup_xp_threshold").Item);
+
+                if (catchUp > 1.0)
+                    sb.AppendLine($"  Catch-Up:    {catchUp:F2}x  (all XP you earn, while below {threshold * 100:F0}% of cap)");
+                else
+                    sb.AppendLine($"  Catch-Up:    none  (only below {threshold * 100:F0}% of cap)");
+            }
+
             // Per-category XP budgets.
             // If the rolling cap has advanced since the player's last XP award the lazy
             // reset inside UpdateXpAndLevel hasn't fired yet — the stored bucket values

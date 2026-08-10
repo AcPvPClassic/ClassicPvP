@@ -302,6 +302,38 @@ Buckets reset when the rolling cap advances, not on a daily timer. Players furth
 
 **PvP overflow** goes into Ancient Bottles (WCID 490071). A bottle holds up to 100 million XP. Players consume it manually when their PvP budget has room.
 
+### Catch-Up XP Boost
+
+Characters whose lifetime total XP sits below `catchup_xp_threshold` of the current season XP cap earn a multiplier on **all** XP earned through `EarnXP` (kills, quests, exploration, fellowship shares). The multiplier scales linearly with how far behind the cap the character is — the furthest behind get the largest boost:
+
+```
+progress    = totalXp / rolling_xp_cap
+band        = progress / catchup_xp_threshold          (0.0 at zero XP → 1.0 at the threshold)
+multiplier  = max − band × (max − min)
+```
+
+| Player's total XP vs. cap | Multiplier (defaults) |
+|---|---|
+| 0 % | 5.00× |
+| 17.5 % | 4.25× |
+| 35 % | 3.50× |
+| 52.5 % | 2.75× |
+| just under 70 % | ~2.00× |
+| 70 % or above | 1.00× (no boost) |
+
+The step from 2.00× down to 1.00× at the threshold is deliberate: this is a catch-up mechanic for players who are behind, not a taper for players who have already caught up.
+
+The boost multiplies alongside `xp_modifier`, so a 3.0× season rate and a 5.0× catch-up boost stack to 15×. Boosted XP is still subject to the global cap and the per-category budgets above — the boost lets a player reach their ceiling faster, it does not raise it. Requires an active rolling level cap (`GetCurrentXpCap() > 0`); with no season running the multiplier is always 1.0.
+
+Players see their current boost on the `Catch-Up` line of `/season status`.
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `catchup_xp_enabled` | bool | `true` | Master on/off switch for the catch-up boost |
+| `catchup_xp_threshold` | double | `0.70` | Fraction of the season cap below which the boost applies |
+| `catchup_xp_max_multiplier` | double | `5.00` | Boost for a character with 0 total XP (furthest behind) |
+| `catchup_xp_min_multiplier` | double | `2.00` | Boost for a character right at the threshold (least far behind) |
+
 ---
 
 ## 7. Hot Dungeons

@@ -9,6 +9,26 @@
 
 ## 🩹 v1.16 (in development)
 
+### 🚀 Catch-Up XP — Start Late, Catch Up Fast
+
+Rolling a new character mid-season, or joining the server weeks after launch, no longer means grinding from behind forever. If your **total XP is under 70% of the current season XP cap**, every point of XP you earn is **multiplied** — and the further behind you are, the bigger the multiplier.
+
+| Your total XP vs. the season cap | XP boost |
+|---|---|
+| Just starting out (0%) | **5×** |
+| 35% of cap | **3.5×** |
+| Halfway there (52.5%) | **2.75×** |
+| Just under 70% | **2×** |
+| 70% of cap or above | no boost |
+
+The boost slides smoothly between those points — it isn't a set of tiers, it recalculates from exactly how far behind the cap you are, and it eases off on its own as you close the gap. Once you cross 70% of the cap you're considered caught up and earn at the normal rate.
+
+**It stacks with everything else.** The catch-up boost multiplies on top of the season XP rate and your allegiance's hometown bonus. Late in the season, when the rate is running at 3×, a fresh character can be earning **15× XP**.
+
+**It doesn't raise your ceiling.** The global cap and your Monster / Quest / PK budgets are unchanged — the boost simply gets you to them a lot faster.
+
+Check your current multiplier on the **Catch-Up** line of `/season status`.
+
 ---
 
 ## 🩹 v1.15 — August 7, 2026
