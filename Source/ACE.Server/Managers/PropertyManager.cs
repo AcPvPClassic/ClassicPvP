@@ -703,6 +703,7 @@ namespace ACE.Server.Managers
                 ("rolling_xp_modifier_enabled", new Property<bool>(false, "When true, RollingLevelCapManager automatically adjusts xp_modifier each day using a quadratic curve tied to season progression. Starts at 0.25 on day 0, reaches 1.0 at ~36% through the season (day ~44, level cap ~101), and climbs to rolling_xp_modifier_max at 80% (day 96). Requires rolling_level_cap_enabled.")),
                 ("catchup_xp_enabled", new Property<bool>(true, "Enables the catch-up XP boost. Characters whose lifetime total XP is below catchup_xp_threshold of the current season XP cap earn boosted XP, scaled by how far behind the cap they are. Requires an active rolling level cap.")),
                 ("hot_dungeon_enabled", new Property<bool>(false, "Enables the Hot Dungeons system on Infiltration servers. When enabled, up to 3 dungeons are periodically selected to offer bonus XP and loot.")),
+                ("hot_dungeon_logout_timer", new Property<bool>(true, "When enabled, any player standing in an active Hot Dungeon is subject to a PK-style pending-logout timer (frozen in-game until hot_dungeon_logout_timer_seconds elapses). Recalls are not affected.")),
                 ("dungeon_boss_enabled", new Property<bool>(false, "Enables random Dungeon Bosses. When enabled, normal monster spawns in an active Hot Dungeon or the Abandoned Mine have a small chance to be replaced by a scaled boss. Requires the Infiltration ruleset.")),
                 ("turnto_use_heading_stealth", new Property<bool>(false, "If true, TurnTo motions between two PK players use an absolute heading instead of a target ID, to prevent War Detect style plugins from revealing the target.")),
 
@@ -728,6 +729,7 @@ namespace ACE.Server.Managers
                 ("mansion_min_rank", new Property<long>(6, "overrides the default allegiance rank required to own a mansion")),
                 ("max_chars_per_account", new Property<long>(11, "retail defaults to 11, client supports up to 20")),
                 ("pk_timer", new Property<long>(20, "the number of seconds where a player cannot perform certain actions (ie. teleporting) after becoming involved in a PK battle")),
+                ("hot_dungeon_logout_timer_seconds", new Property<long>(20, "the number of seconds a player is held in a frozen pending-logout state when logging out while inside an active Hot Dungeon (see hot_dungeon_logout_timer)")),
                 ("player_save_interval", new Property<long>(300, "the number of seconds between automatic player saves")),
                 ("rares_max_days_between", new Property<long>(45, "for rares_real_time_v2: the maximum number of days a player can go before a rare is generated on rare eligible creature kills")),
                 ("rares_max_seconds_between", new Property<long>(5256000, "for rares_real_time: the maximum number of seconds a player can go before a second chance at a rare is allowed on rare eligible creature kills that did not generate a rare")),

@@ -725,6 +725,12 @@ Each dungeon in the pool has a **level bracket** (minimum and maximum server lev
 | **Salvage Bonus** | Salvaging items while standing inside a Hot Dungeon yields **double the material** (2× units). Applies to whatever you salvage there, regardless of where the items were looted. |
 | **PK Rewards** | When a PK kill occurs inside a Hot Dungeon between players of **different allegiances**, the victim's corpse will contain a **Phial of Bloody Tears** and **A Box**. |
 
+### Logout Delay in Hot Dungeons
+
+The extra rewards come with extra risk. While you are standing inside an active Hot Dungeon, **logging out is delayed** — the same pending-logout timer that applies to Player Killers now applies to everyone. When you log out, your character stays frozen in the world for a short time (**20 seconds** by default) before actually leaving, so you can't instantly escape a dangerous situation by quitting.
+
+**Recalls are not affected.** Portal recall, lifestone recall spells, and recall chat commands like `/lifestone` all work normally — this only delays a straight logout.
+
 ### Zerg Control in Hot Dungeons
 
 While a dungeon is Hot, it becomes a **zerg-controlled area** — each allegiance is capped at **9 players** inside at the same time. If a 10th member of your allegiance tries to enter, they will be blocked. If you're already inside and a 10th member slips in, the most recently teleported players will be booted to their lifestone automatically.
