@@ -36,7 +36,7 @@ namespace ACE.Server.Entity
             // Abandoned Mine (Subway) — permanent, capped at 9 per allegiance.
             map[0x01C9] = new ZergControlArea
             {
-                MaxPlayersPerAllegiance = 9,
+                MaxPlayersPerAllegiance = 5,
                 AreaLandblockIds = new uint[] { 0x01C9 },
             };
 
