@@ -19,7 +19,7 @@ Dungeon Bosses were mitigating far more physical damage than intended — some w
 
 ### 🛡️ Anti-Cheat — Closed a Door/Wall Jump-Clip Exploit
 
-Fixed a movement exploit that allowed a player to bypass a closed door or wall by jumping through it under specific timing. No action needed on your part.
+Fixed a movement exploit that allowed a player to bypass a closed door or wall by jumping through it under specific timing.
 
 ### 💎 Creature Slayer & Creature Resistance Morph Gems — Fixed Wrong Target Type
 
@@ -31,7 +31,7 @@ Fixed a bug where a defender mending the Bind Stone (or a non-PK's attack being 
 
 ### 📦 Steel Chest & Sturdy Steel Chest — Now Regenerate Instantly on Close
 
-These chests now re-lock and reroll their contents the moment you close them, the same way Darkbeat's Storage Locker does, instead of waiting out their normal respawn timer.
+These chests now re-lock and reroll their contents the moment you close them, the same way Darkbeat's Storage Locker does, instead of waiting out their normal respawn timer. (this was content deployed manually after v1.15 but before v1.16 was released)
 
 ### 🔧 Tinkering Trinket Now Also Grants Brilliance
 
