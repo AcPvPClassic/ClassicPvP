@@ -311,6 +311,10 @@ namespace ACE.Server.Entity
                         var isValid = false;
                         var hasFetish = target.HasImbuedEffect(ImbuedEffectType.IgnoreSomeMagicProjectileDamage);
 
+                        // Armor Rending only affects melee/missile combat and has no effect on
+                        // casters/wands, so it should never be rolled onto or off of a caster.
+                        var isCaster = target.WeenieType == WeenieType.Caster;
+
                         if (target.HasImbuedEffect(ImbuedEffectType.CripplingBlow) ||
                             target.HasImbuedEffect(ImbuedEffectType.ArmorRending) ||
                             target.HasImbuedEffect(ImbuedEffectType.CriticalStrike))
@@ -325,14 +329,39 @@ namespace ACE.Server.Entity
                         }
 
                         var origImbueEffect = target.ImbuedEffect;
-                        var roll = ThreadSafeRandom.Next(0, 1);
 
-                        if (target.HasImbuedEffect(ImbuedEffectType.CripplingBlow))
-                            target.ImbuedEffect = roll == 0 ? ImbuedEffectType.ArmorRending : ImbuedEffectType.CriticalStrike;
-                        else if (target.HasImbuedEffect(ImbuedEffectType.ArmorRending))
-                            target.ImbuedEffect = roll == 0 ? ImbuedEffectType.CripplingBlow : ImbuedEffectType.CriticalStrike;
-                        else if (target.HasImbuedEffect(ImbuedEffectType.CriticalStrike))
-                            target.ImbuedEffect = roll == 0 ? ImbuedEffectType.ArmorRending : ImbuedEffectType.CripplingBlow;
+                        if (isCaster)
+                        {
+                            // Casters can only ever end up with CripplingBlow or CriticalStrike;
+                            // ArmorRending is excluded going forward since it has no effect on them.
+                            if (target.HasImbuedEffect(ImbuedEffectType.CripplingBlow))
+                            {
+                                target.ImbuedEffect = ImbuedEffectType.CriticalStrike;
+                            }
+                            else if (target.HasImbuedEffect(ImbuedEffectType.CriticalStrike))
+                            {
+                                target.ImbuedEffect = ImbuedEffectType.CripplingBlow;
+                            }
+                            else if (target.HasImbuedEffect(ImbuedEffectType.ArmorRending))
+                            {
+                                // Stale/bugged state from before this fix (a caster should never
+                                // have been able to roll ArmorRending in the first place). Roll it
+                                // into one of the two valid caster imbues to end the bug cycle.
+                                var casterRoll = ThreadSafeRandom.Next(0, 1);
+                                target.ImbuedEffect = casterRoll == 0 ? ImbuedEffectType.CripplingBlow : ImbuedEffectType.CriticalStrike;
+                            }
+                        }
+                        else
+                        {
+                            var roll = ThreadSafeRandom.Next(0, 1);
+
+                            if (target.HasImbuedEffect(ImbuedEffectType.CripplingBlow))
+                                target.ImbuedEffect = roll == 0 ? ImbuedEffectType.ArmorRending : ImbuedEffectType.CriticalStrike;
+                            else if (target.HasImbuedEffect(ImbuedEffectType.ArmorRending))
+                                target.ImbuedEffect = roll == 0 ? ImbuedEffectType.CripplingBlow : ImbuedEffectType.CriticalStrike;
+                            else if (target.HasImbuedEffect(ImbuedEffectType.CriticalStrike))
+                                target.ImbuedEffect = roll == 0 ? ImbuedEffectType.ArmorRending : ImbuedEffectType.CripplingBlow;
+                        }
 
                         target.IconUnderlayId = RecipeManager.IconUnderlay[target.ImbuedEffect];
 
