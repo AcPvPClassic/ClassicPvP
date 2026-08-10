@@ -415,7 +415,9 @@ Arenas run under specific combat restrictions that do not apply in the open worl
 | **2v2** | 15% | 5 | 1 | 1 |
 | **FFA** | 35% | 5 | 3 | 5 |
 | **Tugak** | 35% | 5 | 3 | 5 |
-| **Group** | 30% (60% on a clean 1st-place win) | 5 per member | 1 per member | 2 per member |
+| **Group** | 30% (60% on a clean 1st-place win) | 5 per member (15 on a clean 1st-place win) | 1 per member (3 on a clean 1st-place win) | 2 per member (6 on a clean 1st-place win) |
+
+A "clean 1st-place win" means your team placed 1st **and** the match wasn't against your own allegiance — same-allegiance group matches never get the 3× bonus, even on a win.
 
 - Arena XP counts against your **PvP daily bucket**.
 - Eliminated players should stay online until the match ends to be eligible for rewards.
@@ -731,6 +733,16 @@ This mechanic prevents large allegiances from overwhelming a Hot Dungeon and ens
 
 ---
 
+## 🔩 Abandoned Mine (Subway)
+
+The Abandoned Mine — home to Darkbeat and Anti Parazi — has its own standing access restrictions, separate from the Hot Dungeon zerg-control rules above.
+
+- **PK only.** You must be **Player Killer (PK)** status to enter.
+- **No recall or summon.** The portal cannot be reached via recall or summoning — you have to walk through it directly.
+- **Permanent zerg control.** The Abandoned Mine is always a zerg-controlled area, capped at **5 players per allegiance** at the same time.
+
+---
+
 ## 🏘️ Allegiance Hometown Capture
 
 Allegiances can conquer and hold **towns across Dereth** through a two-phase PvP assault system.
@@ -910,9 +922,25 @@ Spend PK Trophies to give your character a **custom title**. Use `/BuyTitle <New
 
 ### Darkbeat's Storage Locker
 
-The Storage Locker is a locked chest that always contains one tier 6 loot item and up to three randomly selected bonus items per opening. Each opening also has an independent **~20% chance to contain a Sturdy Iron Key**.
+The Storage Locker is a locked chest that always contains one tier 6 loot item, plus three additional rolls per opening. Each opening also has an independent **~20% chance to contain a Sturdy Iron Key** on top of everything else.
 
-Each opening makes three independent rolls from the bonus table. Each roll has a 10% cumulative chance to land on a salvage bag, distributed evenly across 11 salvage types (~0.91% each):
+Each of the three rolls lands on either a **Massive Mana Stone (50% chance)** or the bonus table below (50% chance, split among its entries):
+
+| Item | Chance per roll |
+|---|---|
+| Massive Mana Stone | 50% |
+| PK Trophies ×20 | 15% |
+| Phials of Bloody Tears ×2 | 8% |
+| Trade Note ×25 (250,000 pyreals) | 6% |
+| Salvage bag (11 types, ~0.5% each) | 5.5% |
+| Foolproof tinkering gem (14 types, ~0.25% each) | 3.5% |
+| Treated Healing Kit | 2.5% |
+| Tumerok Salted Meat ×20 | 2.5% |
+| Mana Philtre ×20 | 2.5% |
+| Stamina Philtre ×20 | 2.5% |
+| A Box | 2% |
+
+The salvage bags are distributed evenly across 11 types (all full WS10, 100-unit bags):
 
 | Salvage | Use |
 |---------|-----|
@@ -927,8 +955,6 @@ Each opening makes three independent rolls from the bonus table. Each roll has a
 | Fire Opal | Crippling Blow |
 | Black Opal | Critical Strike |
 | Bloodstone | Minor Endurance (jewelry only) |
-
-All salvage bags are full WS10 (100-unit) bags. Other possible bonus items include foolproof tinkering gems, Trade Notes, PK Trophies, Phials of Bloody Tears, consumables, and Massive Mana Stones.
 
 ### Skill and Attribute Reset Gem — PK Trophy Cost
 
@@ -1052,7 +1078,7 @@ When you flag a Tinker, the character is instantly transformed:
 
 - ✅ **All eight crafting skills plus Arcane Lore are specialized and maxed** — Item Tinkering, Weapon Tinkering, Armor Tinkering, Magic Item Tinkering, Alchemy, Lockpick, Fletching, Cooking, and Arcane Lore.
 - ✅ **All attributes are maxed** (Strength, Endurance, Coordination, Quickness, Focus, Self) and your health, stamina, and mana are refreshed to full.
-- ✅ **A Tinkering Trinket** is placed in your inventory. It buffs all six attributes and every crafting skill (level-7 aptitudes) and additionally carries **Major cantrips** for all six attributes and the four tinkering skills (Item, Weapon, Armor, and Magic Item Tinkering).
+- ✅ **A Tinkering Trinket** is placed in your inventory. It buffs all six attributes and every crafting skill (level-7 aptitudes), additionally carries **Major cantrips** for all six attributes and the four tinkering skills (Item, Weapon, Armor, and Magic Item Tinkering), and also grants **Brilliance**. Re-running `/FlagTinker` patches any new trinket buffs onto a trinket you already have, so existing Tinkers don't need a fresh one to pick up additions like this.
 - ❌ **All combat skills are removed** — every weapon skill, shield, and all offensive magic (War, Void, Life, Creature Enchantment, Item Enchantment) is untrained. A Tinker is not built to fight.
 
 > 🔁 **Already a Tinker?** Re-run `/FlagTinker` on an existing Tinker to pick up the latest upgrades (Arcane Lore specialization and the trinket's Major cantrips). It's safe to run again — nothing is reset. If your trinket is equipped, re-equip it or relog to apply the new cantrips.
