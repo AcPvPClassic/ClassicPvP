@@ -9,6 +9,34 @@
 
 ## 🩹 v1.16 (in development)
 
+### 🔩 Abandoned Mine — Zerg Cap Lowered to 5
+
+The zerg-control cap on the Abandoned Mine (Subway) has been lowered from **9 players per allegiance** to **5**.
+
+### 👹 Dungeon Bosses — Take Roughly 2× Melee/Missile Damage
+
+Dungeon Bosses were mitigating far more physical damage than intended — some were letting as little as 4% of a melee or missile hit through. Their armor has been roughly halved, so weapon damage now lands noticeably harder across all five bosses. Their resistance to spell damage is unchanged.
+
+### 🛡️ Anti-Cheat — Closed a Door/Wall Jump-Clip Exploit
+
+Fixed a movement exploit that allowed a player to bypass a closed door or wall by jumping through it under specific timing. No action needed on your part.
+
+### 💎 Creature Slayer & Creature Resistance Morph Gems — Fixed Wrong Target Type
+
+These two morph gems were flagged with an incorrect target type, causing them to be rejected on some items they should have been usable on. They now work correctly.
+
+### 🏰 Hometown Control — Defenders' Mended Hits No Longer Also Damage the Bind Stone
+
+Fixed a bug where a defender mending the Bind Stone (or a non-PK's attack being reflected) still dealt its full damage to the stone at the same time as the heal — quietly undermining the "defenders mend the stone" mechanic. Mended and reflected hits now correctly deal no damage to the stone.
+
+### 📦 Steel Chest & Sturdy Steel Chest — Now Regenerate Instantly on Close
+
+These chests now re-lock and reroll their contents the moment you close them, the same way Darkbeat's Storage Locker does, instead of waiting out their normal respawn timer.
+
+### 🔧 Tinkering Trinket Now Also Grants Brilliance
+
+The **Tinkering Trinket** carries the **Brilliance** buff alongside its existing attribute and crafting buffs. Existing Tinkers can pick it up on their current trinket by re-running `/FlagTinker`, which patches new trinket buffs onto an already-flagged Tinker in place.
+
 ### 🚀 Catch-Up XP — Start Late, Catch Up Fast
 
 Rolling a new character mid-season, or joining the server weeks after launch, no longer means grinding from behind forever. If your **total XP is under 70% of the current season XP cap**, every point of XP you earn is **multiplied** — and the further behind you are, the bigger the multiplier.
