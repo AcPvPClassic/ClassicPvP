@@ -7,7 +7,17 @@
 
 ---
 
-## 🩹 v1.16 (in development)
+## 🩹 v1.17 (in development)
+
+### 🧬 New Morph Gem — Racial Requirement Removal
+
+A new **Racial Requirement Morph Gem** strips the racial restriction off armor, weapons, and casters. That breastplate that only activates its spells for a Sho? Apply the gem and it activates for anybody — the item is left with no racial requirement at all, covering both the racial activation requirement on its spells and any racial wield requirement.
+
+Sold by **Darkbeat for 30 Phials of Bloody Tears**, and it also drops from the **Mythic Mystery Box** (~10.3%). Like the other requirement-removal gems, it works on quest and rare gear as well as loot-gen items.
+
+---
+
+## 🩹 v1.16 — August 10, 2026
 
 ### 🔩 Abandoned Mine — Zerg Cap Lowered to 5
 

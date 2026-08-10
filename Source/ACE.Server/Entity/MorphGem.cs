@@ -27,6 +27,7 @@ namespace ACE.Server.Entity
         public const uint MorphGemRemoveMeleeDReq  = 480483;
         public const uint MorphGemRandomizeWeaponImbue = 480486;
         public const uint MorphGemRemovePlayerReq  = 480485;
+        public const uint MorphGemRemoveRacialReq  = 480642;
         public const uint MorphGemCreatureSlayerRandom = 480610;
         public const uint MorphGemCreatureResistRandom = 600039;
         public const uint MorphGemSlayerUpgrade    = 480639;
@@ -61,6 +62,7 @@ namespace ACE.Server.Entity
             MorphGemRemoveMeleeDReq,
             MorphGemRandomizeWeaponImbue,
             MorphGemRemovePlayerReq,
+            MorphGemRemoveRacialReq,
             MorphGemCreatureSlayerRandom,
             MorphGemCreatureResistRandom,
             MorphGemSlayerUpgrade,
@@ -101,6 +103,7 @@ namespace ACE.Server.Entity
         private static readonly HashSet<uint> morphGemsAllowedNonLootGen = new HashSet<uint>()
         {
             MorphGemRemovePlayerReq,
+            MorphGemRemoveRacialReq,
             MorphGemRemoveMissileDReq,
             MorphGemRemoveMeleeDReq,
             MorphGemJewelersSawblade,
@@ -365,6 +368,42 @@ namespace ACE.Server.Entity
                         break;
 
                     #endregion MorphGemRemovePlayerReq
+
+                    #region MorphGemRemoveRacialReq
+                    case MorphGemRemoveRacialReq:
+
+                        var hasRacialActivationReq = target.HeritageGroup != HeritageGroup.Invalid;
+                        var hasRacialWieldReq = HasHeritageWieldRequirement(target);
+
+                        if (!hasRacialActivationReq && !hasRacialWieldReq)
+                        {
+                            playerMsg = $"Your {target.NameWithMaterial} does not currently have a racial requirement to remove.";
+                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
+                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
+                            return;
+                        }
+
+                        //capture the race for the player message before either requirement is cleared
+                        var origRace = hasRacialActivationReq
+                            ? target.ItemHeritageGroupRestriction ?? target.HeritageGroup.ToString()
+                            : GetHeritageWieldRequirement(target).ToString();
+
+                        if (hasRacialActivationReq)
+                        {
+                            player.UpdateProperty(target, PropertyInt.HeritageGroup, null);
+                            player.UpdateProperty(target, PropertyString.ItemHeritageGroupRestriction, null);
+                        }
+
+                        if (hasRacialWieldReq)
+                            RemoveHeritageWieldRequirement(target);
+
+                        playerMsg = $"You apply the Morph Gem skillfully and have removed the {origRace} racial requirement from your {target.NameWithMaterial}.";
+                        AddMorphGemLog(target, MorphGemRemoveRacialReq);
+
+                        player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
+                        break;
+
+                    #endregion MorphGemRemoveRacialReq
 
                     #region MorphGemCreatureSlayerRandom
                     case MorphGemCreatureSlayerRandom:
@@ -1474,6 +1513,72 @@ namespace ACE.Server.Entity
             });
 
             return removedAny;
+        }
+
+        /// <summary>
+        /// Returns true if any of the target's four wield requirement slots is a heritage requirement.
+        /// </summary>
+        private static bool HasHeritageWieldRequirement(WorldObject target)
+        {
+            return target.WieldRequirements == WieldRequirement.HeritageType
+                || target.WieldRequirements2 == WieldRequirement.HeritageType
+                || target.WieldRequirements3 == WieldRequirement.HeritageType
+                || target.WieldRequirements4 == WieldRequirement.HeritageType;
+        }
+
+        /// <summary>
+        /// Returns the heritage required by the target's first heritage wield requirement slot,
+        /// or Invalid if it has none. The heritage is stored in the slot's WieldDifficulty.
+        /// </summary>
+        private static HeritageGroup GetHeritageWieldRequirement(WorldObject target)
+        {
+            if (target.WieldRequirements == WieldRequirement.HeritageType)
+                return (HeritageGroup)(target.WieldDifficulty ?? 0);
+
+            if (target.WieldRequirements2 == WieldRequirement.HeritageType)
+                return (HeritageGroup)(target.WieldDifficulty2 ?? 0);
+
+            if (target.WieldRequirements3 == WieldRequirement.HeritageType)
+                return (HeritageGroup)(target.WieldDifficulty3 ?? 0);
+
+            if (target.WieldRequirements4 == WieldRequirement.HeritageType)
+                return (HeritageGroup)(target.WieldDifficulty4 ?? 0);
+
+            return HeritageGroup.Invalid;
+        }
+
+        /// <summary>
+        /// Removes any heritage-based wield requirement on the target, across all four wield requirement slots.
+        /// </summary>
+        private static void RemoveHeritageWieldRequirement(WorldObject target)
+        {
+            if (target.WieldRequirements == WieldRequirement.HeritageType)
+            {
+                target.WieldRequirements = WieldRequirement.Invalid;
+                target.WieldSkillType = null;
+                target.WieldDifficulty = null;
+            }
+
+            if (target.WieldRequirements2 == WieldRequirement.HeritageType)
+            {
+                target.WieldRequirements2 = WieldRequirement.Invalid;
+                target.WieldSkillType2 = null;
+                target.WieldDifficulty2 = null;
+            }
+
+            if (target.WieldRequirements3 == WieldRequirement.HeritageType)
+            {
+                target.WieldRequirements3 = WieldRequirement.Invalid;
+                target.WieldSkillType3 = null;
+                target.WieldDifficulty3 = null;
+            }
+
+            if (target.WieldRequirements4 == WieldRequirement.HeritageType)
+            {
+                target.WieldRequirements4 = WieldRequirement.Invalid;
+                target.WieldSkillType4 = null;
+                target.WieldDifficulty4 = null;
+            }
         }
 
         #region Morph Gem Log

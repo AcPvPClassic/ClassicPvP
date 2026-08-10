@@ -881,6 +881,7 @@ The count includes you, and it is your own allegiance's online headcount that ma
 | Imbue Altering Morph Gem | 20 | Randomizes a weapon's imbue between Crippling Blow, Armor Rending, and Critical Strike. |
 | Empyrean Tuning Fork | 25 | Randomizes the legendary cantrips on armor, jewelry, or shields that already have legendaries. One use per item. |
 | Slayer Upgrade Gem | 25 | Upgrades an existing slayer damage bonus to 1.8 on weapons that rolled a slayer via the tinkering lottery. |
+| Racial Requirement Morph Gem | 30 | Strips the racial requirement off armor, a weapon, or a caster — both the racial activation requirement on its spells and any racial wield requirement. The item is left with no racial restriction at all. |
 | Ancient Bottle | 50 | Absorbs 25% of PvP XP overflow up to 100M. Bonded & Attuned. |
 | Ancient Empyrean Tool | 75 | Guarantees the next tinker will not fail. |
 | Empyrean Jeweler's Sawblade | 50 | Randomizes the slot of a ring, bracelet, or necklace between finger, wrist, and neck. |
@@ -1033,18 +1034,19 @@ All salvage bags are full WS10 bags (100 units). Ancient Bottle no longer drops 
 
 | Item | Chance |
 |------|--------|
-| Ancient Bottle (XP Bottle) | ~3.8% |
-| Impenetrability Morph Gem | ~11.5% |
-| Oil of Creature Slaying | ~11.5% |
-| Skill and Attribute Reset Gem | ~11.5% |
-| Imbue Altering Morph Gem | ~11.5% |
-| Slayer Morph Gem | ~11.5% |
-| Creature Resistance Morph Gem | ~11.5% |
-| MMDs ×20 | ~11.5% |
-| PK Trophies ×250 | ~11.5% |
-| Shimmering Skeleton Key | ~3.8% |
+| Ancient Bottle (XP Bottle) | ~3.4% |
+| Impenetrability Morph Gem | ~10.3% |
+| Oil of Creature Slaying | ~10.3% |
+| Skill and Attribute Reset Gem | ~10.3% |
+| Imbue Altering Morph Gem | ~10.3% |
+| Slayer Morph Gem | ~10.3% |
+| Creature Resistance Morph Gem | ~10.3% |
+| Racial Requirement Morph Gem | ~10.3% |
+| MMDs ×20 | ~10.3% |
+| PK Trophies ×250 | ~10.3% |
+| Shimmering Skeleton Key | ~3.4% |
 
-The Slayer Upgrade Morph Gem moved out to the Rare Mystery Box; Oil of Creature Slaying takes its slot here. The Slayer Morph Gem and Creature Resistance Morph Gem also drop here at ~11.5% each — far more likely than in the Rare box.
+The Slayer Upgrade Morph Gem moved out to the Rare Mystery Box; Oil of Creature Slaying takes its slot here. The Slayer Morph Gem and Creature Resistance Morph Gem also drop here at ~10.3% each — far more likely than in the Rare box. The Racial Requirement Morph Gem drops here as well, and is otherwise only available from Darkbeat.
 
 > **Shimmering Skeleton Key** — a single-use key that unlocks **any** locked door or chest, no matter the lock. It crumbles to dust after one use and is **slippery**, so it drops on death (into your corpse for a killer to loot). Obtainable only from the Mythic Mystery Box.
 
