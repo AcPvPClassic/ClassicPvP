@@ -892,7 +892,7 @@ The count includes you, and it is your own allegiance's online headcount that ma
 | Ancient Empyrean Tool | 75 | Guarantees the next tinker will not fail. |
 | Empyrean Jeweler's Sawblade | 50 | Randomizes the slot of a ring, bracelet, or necklace between finger, wrist, and neck. |
 | Oil of Creature Slaying | 75 | Adds a random slayer (1.8 damage bonus) to a weapon or magic caster that does not already have one. |
-| Skill and Attribute Reset Gem | 50 | Clears quest stamps for the Temple of Enlightenment and Temple of Forgetfulness. Each use costs an escalating number of PK Trophies (see below). Bonded & Attuned. |
+| Skill and Attribute Reset Gem | 20 | Clears quest stamps for the Temple of Enlightenment and Temple of Forgetfulness. Each use costs an escalating number of PK Trophies (see below). Bonded & Attuned. |
 
 ---
 
