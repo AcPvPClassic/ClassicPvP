@@ -9,6 +9,16 @@
 
 ## 🩹 v1.17 (in development)
 
+### 🏟️ New Arena — Xarabydun Lifestone
+
+A new arena location, **Xarabydun Lifestone**, has been added to the queue. It hosts **2v2**, **FFA**, **Tugak**, and **Group** matches, with ten starting positions spread around the room. When you queue for those formats you may now be matched into Xarabydun Lifestone or one of the existing arenas — the system picks an open location automatically.
+
+The dungeon's lifestone and portals have been removed, and any lifestone or portal ties players had inside it are cleared. If that lifestone was your tie, you'll need to re-tie somewhere else.
+
+### 💰 Skill and Attribute Reset Gem — Cheaper
+
+The **Skill and Attribute Reset Gem** now costs **20 Phials of Bloody Tears** from Darkbeat, down from 50. Its escalating PK Trophy cost per use is unchanged.
+
 ### 🔥 Hot Dungeons — Logout Delay
 
 The extra rewards inside a Hot Dungeon now come with extra risk. While you're standing in an active Hot Dungeon, **logging out is delayed** just like it is for Player Killers — your character stays frozen in the world for a short time before actually leaving. No more instantly quitting to escape a bad spot.
