@@ -889,6 +889,7 @@ namespace ACE.Server.Managers
                 ("arena_1v1_global_dmg_mod", new Property<double>(1.0, "a damage modifier applied across all melee, missile and war/void projectile damage during arena 1v1 events")),
                 ("arena_1v1_healkit_skill_bonus_cap", new Property<double>(150, "the maximum effective skill bonus applied from a healing kit during arena 1v1 events.")),
                 ("arena_1v1_healkit_restoration_bonus_cap", new Property<double>(1.5, "the maximum effective restoration bonus applied from a healing kit during arena 1v1 events.")),
+                ("arena_1v1_drain_health_mod", new Property<double>(1.0, "a modifier applied to the effectiveness of drain health spells during arena 1v1 events. 0.5 means drain health spells drain and transfer 50% as much health as they normally would.")),
 
                 // Doctide flat PvP damage modifiers (additive with ClassicPvP's level-interpolated system; all default 1.0)
                 // War magic
