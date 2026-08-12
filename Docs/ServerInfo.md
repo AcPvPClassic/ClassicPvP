@@ -515,7 +515,9 @@ When you're killed by another player, your corpse is initially **locked to your 
 ### Shields Stay Active Out of Combat
 An equipped shield contributes its armor level to your defense **even in peace mode** — you don't have to be in combat stance for the shield to protect you. The normal shield rules still apply: it only mitigates attacks coming from your **front** (a 180° frontal arc — anything hitting you from the side or behind ignores the shield), and it works against **both other players and monsters**. There is no shield skill on the Infiltration ruleset, so nothing needs to be trained or specialized — simply wielding a shield is enough.
 
-**Exception:** inside a **1v1 arena**, this does not apply — your shield only counts while you're actually in combat stance.
+This also applies to **magic-absorbing shields such as Aegis**: the shield's magic damage absorption is active out of combat as well (in both PvP and PvE, and in PvP the absorb is scaled to Aegis's usual effectiveness). Like a physical shield, an Aegis only absorbs attacks coming from your **front** — the same 180° frontal arc — so a caster hitting you from behind is not absorbed. This facing rule applies both in and out of combat. Aegis differs in one way: it has **no 1v1 arena exception** — it absorbs magic out of combat everywhere, arenas included.
+
+**Exception (armor level only):** inside a **1v1 arena**, your shield's **armor level** only counts while you're actually in combat stance. The magic absorption described above is unaffected and still applies out of combat.
 
 ---
 

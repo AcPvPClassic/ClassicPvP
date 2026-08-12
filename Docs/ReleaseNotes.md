@@ -208,7 +208,9 @@ The **Missile Defense Requirement Morph Gem** and **Melee Defense Requirement Mo
 
 Your equipped shield now adds its armor level to your defense **even in peace mode** — you no longer have to be in combat stance for the shield to count. As always, it only blocks attacks coming from your **front** (a 180° frontal arc), and it now does so against **both players and monsters**. No shield skill is required — just wield a shield.
 
-The one exception is the **1v1 arena**, where shields still only work while you're in combat stance.
+This also covers **magic-absorbing shields such as Aegis**: their magic damage reduction now applies out of combat too, not just while you're in combat stance — and this works everywhere, including inside a 1v1 arena. Aegis absorption now also follows the same **front-facing (180°) rule** as a physical shield — a caster striking you from behind is no longer absorbed. This facing requirement applies both in and out of combat.
+
+The one exception is the **1v1 arena**, where a shield's **armor level** still only counts while you're in combat stance. The magic absorption above is unaffected.
 
 ### 🔓 Free a Stuck Character Yourself — `/ForceLogoffStuckCharacter`
 

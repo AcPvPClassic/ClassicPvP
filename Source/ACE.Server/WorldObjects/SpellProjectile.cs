@@ -625,7 +625,8 @@ namespace ACE.Server.WorldObjects
             var absorbMod = GetAbsorbMod(this, target);
 
             //http://acpedia.org/wiki/Announcements_-_2014/01_-_Forces_of_Nature - Aegis is 72% effective in PvP
-            if (isPvP && (target.CombatMode == CombatMode.Melee || target.CombatMode == CombatMode.Missile) && Common.ConfigManager.Config.Server.WorldRuleset != Common.Ruleset.CustomDM)
+            // Applies in any combat stance; a no-op when there is no absorb (absorbMod == 1.0).
+            if (isPvP && Common.ConfigManager.Config.Server.WorldRuleset != Common.Ruleset.CustomDM)
             {
                 absorbMod = 1 - absorbMod;
                 absorbMod *= 0.72f;
@@ -932,20 +933,6 @@ namespace ACE.Server.WorldObjects
             {
                 switch (target.CombatMode)
                 {
-                    case CombatMode.Melee:
-
-                        // does target have shield equipped?
-                        var shield = target.GetEquippedShield();
-                        if (shield != null && shield.GetAbsorbMagicDamage() != null)
-                        {
-                            if (Common.ConfigManager.Config.Server.WorldRuleset != Common.Ruleset.Infiltration)
-                                return GetShieldMod(source, target, shield);
-                            else
-                                return AbsorbMagic(target, shield);
-                        }
-
-                        break;
-
                     case CombatMode.Missile:
 
                         var missileLauncherOrShield = target.GetEquippedMissileLauncher() ?? target.GetEquippedShield();
@@ -960,6 +947,23 @@ namespace ACE.Server.WorldObjects
                         if (caster != null && caster.GetAbsorbMagicDamage() != null)
                             return AbsorbMagic(target, caster);
 
+                        break;
+
+                    default:
+                        // does target have shield equipped?
+                        var shield = target.GetEquippedShield();
+                        if (shield != null && shield.GetAbsorbMagicDamage() != null)
+                        {
+                            if (Common.ConfigManager.Config.Server.WorldRuleset != Common.Ruleset.Infiltration)
+                                return GetShieldMod(source, target, shield);
+
+                            // Aegis must face the attacker — same 180-degree front arc
+                            // as a physical shield (anything past 90 degrees is behind it).
+                            if (Math.Abs(target.GetAngle(source)) > 90.0f)
+                                return 1.0f;
+
+                            return AbsorbMagic(target, shield);
+                        }
                         break;
                 }
                 return 1.0f;
