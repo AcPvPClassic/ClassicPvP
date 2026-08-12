@@ -11,6 +11,7 @@ using ACE.Database;
 using ACE.Entity;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
+using ACE.Entity.Models;
 using ACE.Server.Entity;
 using ACE.Server.Entity.DungeonBoss;
 using ACE.Server.Factories;
@@ -282,6 +283,8 @@ namespace ACE.Server.Managers
             float armorFactor   = (float)Math.Sqrt(capRatio) * def.ArmorMult * difficulty * armorMult;
             if (boss.Biota.PropertiesBodyPart != null)
             {
+                GivePrivateBodyParts(boss);
+
                 foreach (var bp in boss.Biota.PropertiesBodyPart.Values)
                 {
                     bp.DVal            = ScaleI(bp.DVal, bodyDmgFactor);
@@ -527,6 +530,32 @@ namespace ACE.Server.Managers
         public static IReadOnlyCollection<ActiveDungeonBoss> GetActiveBosses() => _activeBosses.Values.ToList();
 
         // ── Admin API (/dungeonboss) ────────────────────────────────────────────────
+
+        /// <summary>
+        /// Replaces the boss's body-part collection with a private deep copy before it is scaled.
+        ///
+        /// A spawned WorldObject does NOT get its own body parts: WorldObject's ctor calls
+        /// WeenieConverter.ConvertToBiota(weenie, guid, false, referenceWeenieCollectionsForCommonProperties: true),
+        /// and under that flag body parts alone are assigned by reference straight off the cached
+        /// Weenie (attributes, vitals, skills and the spellbook are all cloned). Scaling BaseArmor
+        /// and DVal in place therefore rewrites the CACHED WEENIE, so the next spawn scales the
+        /// already-scaled numbers and the error compounds for the lifetime of the process:
+        /// with Aggregate Prime's 1.6x armor archetype, armor is 1.6x after one spawn, 2.6x after
+        /// two, 4.1x after three — melee and missile hit for less and less, while magic is
+        /// unaffected because spell damage never reads armor.
+        /// </summary>
+        private static void GivePrivateBodyParts(Creature boss)
+        {
+            var shared = boss.Biota.PropertiesBodyPart;
+            if (shared == null)
+                return;
+
+            var copy = new Dictionary<CombatBodyPart, PropertiesBodyPart>(shared.Count);
+            foreach (var kvp in shared)
+                copy.Add(kvp.Key, kvp.Value.Clone());
+
+            boss.Biota.PropertiesBodyPart = copy;
+        }
 
         /// <summary>
         /// Removes any spellbook entry whose spell id does not resolve to both a DAT SpellBase and
