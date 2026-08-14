@@ -29,7 +29,27 @@ The extra rewards inside a Hot Dungeon now come with extra risk. While you're st
 
 A new **Racial Requirement Morph Gem** strips the racial restriction off armor, weapons, and casters. That breastplate that only activates its spells for a Sho? Apply the gem and it activates for anybody — the item is left with no racial requirement at all, covering both the racial activation requirement on its spells and any racial wield requirement.
 
-Sold by **Darkbeat for 30 Phials of Bloody Tears**, and it also drops from the **Mythic Mystery Box** (~10.3%). Like the other requirement-removal gems, it works on quest and rare gear as well as loot-gen items.
+Sold by **Darkbeat for 30 Phials of Bloody Tears**, and it also drops from the **Mythic Mystery Box** (~9.4%). Like the other requirement-removal gems, it works on quest and rare gear as well as loot-gen items.
+
+### 🎖️ New Morph Gem — Allegiance Rank Requirement Removal
+
+Its companion, the **Allegiance Rank Requirement Morph Gem**, clears the rank gate off items that spawn with *"Activation requires allegiance rank 6"* and similar. The item keeps its spells and is left with no rank requirement at all, so it works no matter where you sit in your monarchy — or whether you're in one.
+
+Silk tinkering already removed this requirement, but it burns a tinker and resets the item's Arcane Lore to its Spellcraft. The gem does neither.
+
+Sold by **Darkbeat for 30 Phials of Bloody Tears**, and it also drops from the **Mythic Mystery Box** (~9.4%). Like the other requirement-removal gems, it works on quest and rare gear as well as loot-gen items.
+
+> Adding both new gems to the Mythic Mystery Box nudged every other prize in it down slightly — the weight-3 prizes go from ~10.3% to ~9.4%, and the Ancient Bottle and Shimmering Skeleton Key from ~3.4% to ~3.1%.
+
+### 👑 Allegiance Swearing — Now Costs PK Trophies
+
+The allegiance swear **cooldown is gone**, replaced by a **PK-trophy cost** that rises the more you hop allegiances. Every character gets its **first 3 swears free**; after that each swear costs trophies from your inventory on a steep curve — **100** for the 4th, then climbing to a cap of **10,000** by the 15th swear (roughly: 4th = 100, 7th = 351, 10th = 1,232, 13th = 4,328, 15th+ = 10,000). The count is per character and never resets. Swearing to your own alt with `/OfflineSwear` costs and counts the same, so it can't be used to dodge the fee.
+
+The old re-swear cooldown, the "3 free chain re-arranges," and the timed lockout are all removed. The account-wide rule still stands: all characters on an account must be in the same allegiance (or unsworn).
+
+### 👑 Leaving an Allegiance — Vassals Released One Level
+
+When you **break** from your allegiance or are **kicked or booted**, your **direct vassals are now released** and each becomes their own monarch (keeping their own sub-vassals), and you are left unsworn. This only cascades **one level** — your vassals' vassals stay with your vassals. Previously your whole sub-tree followed you out.
 
 ---
 
@@ -208,9 +228,7 @@ The **Missile Defense Requirement Morph Gem** and **Melee Defense Requirement Mo
 
 Your equipped shield now adds its armor level to your defense **even in peace mode** — you no longer have to be in combat stance for the shield to count. As always, it only blocks attacks coming from your **front** (a 180° frontal arc), and it now does so against **both players and monsters**. No shield skill is required — just wield a shield.
 
-This also covers **magic-absorbing shields such as Aegis**: their magic damage reduction now applies out of combat too, not just while you're in combat stance — and this works everywhere, including inside a 1v1 arena. Aegis absorption now also follows the same **front-facing (180°) rule** as a physical shield — a caster striking you from behind is no longer absorbed. This facing requirement applies both in and out of combat.
-
-The one exception is the **1v1 arena**, where a shield's **armor level** still only counts while you're in combat stance. The magic absorption above is unaffected.
+The one exception is the **1v1 arena**, where shields still only work while you're in combat stance.
 
 ### 🔓 Free a Stuck Character Yourself — `/ForceLogoffStuckCharacter`
 

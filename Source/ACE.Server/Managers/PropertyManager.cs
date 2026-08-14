@@ -788,8 +788,10 @@ namespace ACE.Server.Managers
                 // Allegiance Hometown
                 ("ah_phase1_seconds",                     new Property<long>(240,        "Seconds an attacking allegiance must hold the bind stone (2+ attackers within 5m, no enemy interruption) to complete Phase 1 and start Phase 2.")),
 
-                // Allegiance swearing
-                ("allegiance_free_same_chain_reswears",   new Property<long>(3,          "Number of times a character may break and re-swear back into the SAME allegiance without starting the swear cooldown (for re-arranging chain order). Once exhausted, the cooldown applies. Resets when the character genuinely changes allegiance."))
+                // Allegiance swearing — PK-trophy cost
+                ("allegiance_free_swears",                new Property<long>(3,          "Number of times a character may swear allegiance for free before PK-trophy costs apply.")),
+                ("allegiance_swear_base_cost",            new Property<long>(100,        "PK-trophy cost of the first paid allegiance swear (the one after allegiance_free_swears).")),
+                ("allegiance_swear_max_cost",             new Property<long>(10000,      "Maximum PK-trophy cost of an allegiance swear. The cost ramps from the base to this cap over 12 paid swears (with 3 free, the cap is reached at the 15th swear)."))
                 );
 
         public static readonly ReadOnlyDictionary<string, Property<double>> DefaultDoubleProperties =
@@ -1096,9 +1098,6 @@ namespace ACE.Server.Managers
                 ("pk_kill_window_hours",              new Property<double>(1.0,  "Hours of sliding window used to count kills against the same victim before diminishing returns kick in.")),
                 ("pk_kill_diminish_threshold",        new Property<double>(3.0,  "Number of kills against the same victim within the window before rewards are suppressed.")),
                 ("pk_kill_diminish_hours",            new Property<double>(3.0,  "Hours the diminishing-returns suppression lasts once the threshold is exceeded.")),
-
-                // Allegiance swear cooldown
-                ("allegiance_swear_cooldown_days",   new Property<double>(30.0, "Days a player must wait before swearing allegiance again after a voluntary oath change. First oath is always free.")),
 
                 // Bounty Hunter system
                 ("bounty_last_location_duration",    new Property<double>(30.0,  "Seconds a hunter must wait before using the location finder on the same contract again.")),

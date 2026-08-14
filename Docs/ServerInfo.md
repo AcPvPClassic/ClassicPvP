@@ -312,9 +312,7 @@ This reflects the behavior patched into the live servers on **January 12, 2004**
 
 You can swear allegiance to another character on your own account using the `/OfflineSwear <CharacterName>` command. Because you cannot have two characters logged in simultaneously, the target must be offline.
 
-All normal allegiance rules apply — the target must be higher or equal level, must not already be your vassal, and the account-wide allegiance lock still applies (both characters must end up in the same monarch's chain).
-
-`/OfflineSwear` is **exempt from the swear cooldown**: it never starts a cooldown and is never blocked by one, so you can freely organize your own account's characters into a chain at any time.
+All normal allegiance rules apply — the target must be higher or equal level, must not already be your vassal, the account-wide allegiance lock still applies (both characters must end up in the same monarch's chain), and the **PK-trophy swear cost applies exactly as it does for a normal swear** (see below). Swearing with `/OfflineSwear` counts as one of that character's swears.
 
 ---
 
@@ -326,23 +324,36 @@ ClassicPvP enforces rules around allegiance oaths to prevent abuse and kill-trad
 
 All characters on a single account must belong to the **same monarch's allegiance**. Once any character on your account has sworn to an allegiance, your other characters can only swear to someone within that same chain. Attempting to swear into a different allegiance will be blocked.
 
-### Swear Cooldown
+### Swear Cost (PK Trophies)
 
-After swearing allegiance, a **7-day cooldown** applies before you can swear again.
+Swearing allegiance costs **PK trophies**, on a per-character count that only ever goes up:
 
-- Your **first oath ever** is free — no cooldown is set.
-- **Re-arranging your own chain is free (three times).** You may break and swear back into the **same allegiance** — for example, swearing under a different patron beneath the same monarch — up to **three times** without triggering the cooldown. Once those three are used up, the normal cooldown applies. Genuinely swearing into a **different** allegiance still costs the cooldown, and doing so refreshes your three free re-swears for the new allegiance.
-- The cooldown applies to voluntary changes only. If your patron or someone above them in the chain **breaks their oath**, causing you to be broken from your allegiance involuntarily, you can re-swear back into the **original allegiance chain** without waiting.
-- If your **monarch moves their entire allegiance** by swearing to a new patron, that is their oath change — your relationship to your own patron is unchanged and no cooldown is triggered for you.
-- Swearing to a character on your **own account** with `/OfflineSwear` never counts against the cooldown (see [above](#-swearing-allegiance-to-same-account-characters)).
+- Your **first 3 swears are free**.
+- After that, each swear costs PK trophies on a steeply rising scale — **100** for the 4th, climbing to a maximum of **10,000** by the 15th swear:
 
-### Break Cascade & Account Protection
+| Swear # | Cost |
+|--------:|-----:|
+| 1–3 | Free |
+| 4 | 100 |
+| 5 | 151 |
+| 6 | 231 |
+| 7 | 351 |
+| 8 | 533 |
+| 9 | 811 |
+| 10 | 1,232 |
+| 11 | 1,873 |
+| 12 | 2,848 |
+| 13 | 4,328 |
+| 14 | 6,579 |
+| 15+ | 10,000 |
 
-If someone above you in the chain breaks and it would leave your account with characters in two different allegiances, the server automatically breaks the affected character from their patron.
+The trophies are taken from your inventory when the oath is accepted. The count is **per character and lifetime** — it never resets, so repeatedly hopping allegiances gets expensive fast. Swearing to your own alt with `/OfflineSwear` costs the same and counts the same.
 
-When this cascade propagates downward:
-- Characters sworn to another character **on the same account** as their patron are **not broken** from that bond — the same-account relationship is preserved.
-- The cascade continues through them, severing any **different-account** vassals further down the chain.
+> **For admins:** the free-swear count and cost curve are set by `allegiance_free_swears` (default 3), `allegiance_swear_base_cost` (default 100), and `allegiance_swear_max_cost` (default 10000). The cost ramps from the base to the cap over 12 paid swears — with 3 free swears, the cap is reached at the 15th swear.
+
+### What Happens to Your Vassals When You Leave
+
+When you **break** from your allegiance or are **kicked or booted**, your **direct vassals are released** — each becomes their own monarch and keeps their own sub-vassals — and you are left with no allegiance. This only goes **one level deep**: your vassals' vassals stay sworn to your vassals and move with them into their new allegiance.
 
 ### Allegiance-Mate Alt Rewards
 
@@ -515,9 +526,7 @@ When you're killed by another player, your corpse is initially **locked to your 
 ### Shields Stay Active Out of Combat
 An equipped shield contributes its armor level to your defense **even in peace mode** — you don't have to be in combat stance for the shield to protect you. The normal shield rules still apply: it only mitigates attacks coming from your **front** (a 180° frontal arc — anything hitting you from the side or behind ignores the shield), and it works against **both other players and monsters**. There is no shield skill on the Infiltration ruleset, so nothing needs to be trained or specialized — simply wielding a shield is enough.
 
-This also applies to **magic-absorbing shields such as Aegis**: the shield's magic damage absorption is active out of combat as well (in both PvP and PvE, and in PvP the absorb is scaled to Aegis's usual effectiveness). Like a physical shield, an Aegis only absorbs attacks coming from your **front** — the same 180° frontal arc — so a caster hitting you from behind is not absorbed. This facing rule applies both in and out of combat. Aegis differs in one way: it has **no 1v1 arena exception** — it absorbs magic out of combat everywhere, arenas included.
-
-**Exception (armor level only):** inside a **1v1 arena**, your shield's **armor level** only counts while you're actually in combat stance. The magic absorption described above is unaffected and still applies out of combat.
+**Exception:** inside a **1v1 arena**, this does not apply — your shield only counts while you're actually in combat stance.
 
 ---
 
@@ -890,6 +899,7 @@ The count includes you, and it is your own allegiance's online headcount that ma
 | Empyrean Tuning Fork | 25 | Randomizes the legendary cantrips on armor, jewelry, or shields that already have legendaries. One use per item. |
 | Slayer Upgrade Gem | 25 | Upgrades an existing slayer damage bonus to 1.8 on weapons that rolled a slayer via the tinkering lottery. |
 | Racial Requirement Morph Gem | 30 | Strips the racial requirement off armor, a weapon, or a caster — both the racial activation requirement on its spells and any racial wield requirement. The item is left with no racial restriction at all. |
+| Allegiance Rank Requirement Morph Gem | 30 | Removes the allegiance rank needed to activate an item's spells ("Activation requires allegiance rank 6"), leaving it with no rank requirement. Unlike Silk tinkering, it does not consume a tinker and does not raise the item's Arcane Lore requirement. |
 | Ancient Bottle | 50 | Absorbs 25% of PvP XP overflow up to 100M. Bonded & Attuned. |
 | Ancient Empyrean Tool | 75 | Guarantees the next tinker will not fail. |
 | Empyrean Jeweler's Sawblade | 50 | Randomizes the slot of a ring, bracelet, or necklace between finger, wrist, and neck. |
@@ -1042,19 +1052,20 @@ All salvage bags are full WS10 bags (100 units). Ancient Bottle no longer drops 
 
 | Item | Chance |
 |------|--------|
-| Ancient Bottle (XP Bottle) | ~3.4% |
-| Impenetrability Morph Gem | ~10.3% |
-| Oil of Creature Slaying | ~10.3% |
-| Skill and Attribute Reset Gem | ~10.3% |
-| Imbue Altering Morph Gem | ~10.3% |
-| Slayer Morph Gem | ~10.3% |
-| Creature Resistance Morph Gem | ~10.3% |
-| Racial Requirement Morph Gem | ~10.3% |
-| MMDs ×20 | ~10.3% |
-| PK Trophies ×250 | ~10.3% |
-| Shimmering Skeleton Key | ~3.4% |
+| Ancient Bottle (XP Bottle) | ~3.1% |
+| Impenetrability Morph Gem | ~9.4% |
+| Oil of Creature Slaying | ~9.4% |
+| Skill and Attribute Reset Gem | ~9.4% |
+| Imbue Altering Morph Gem | ~9.4% |
+| Slayer Morph Gem | ~9.4% |
+| Creature Resistance Morph Gem | ~9.4% |
+| Racial Requirement Morph Gem | ~9.4% |
+| Allegiance Rank Requirement Morph Gem | ~9.4% |
+| MMDs ×20 | ~9.4% |
+| PK Trophies ×250 | ~9.4% |
+| Shimmering Skeleton Key | ~3.1% |
 
-The Slayer Upgrade Morph Gem moved out to the Rare Mystery Box; Oil of Creature Slaying takes its slot here. The Slayer Morph Gem and Creature Resistance Morph Gem also drop here at ~10.3% each — far more likely than in the Rare box. The Racial Requirement Morph Gem drops here as well, and is otherwise only available from Darkbeat.
+The Slayer Upgrade Morph Gem moved out to the Rare Mystery Box; Oil of Creature Slaying takes its slot here. The Slayer Morph Gem and Creature Resistance Morph Gem also drop here at ~9.4% each — far more likely than in the Rare box. The Racial Requirement and Allegiance Rank Requirement Morph Gems drop here as well, and are otherwise only available from Darkbeat.
 
 > **Shimmering Skeleton Key** — a single-use key that unlocks **any** locked door or chest, no matter the lock. It crumbles to dust after one use and is **slippery**, so it drops on death (into your corpse for a killer to loot). Obtainable only from the Mythic Mystery Box.
 
