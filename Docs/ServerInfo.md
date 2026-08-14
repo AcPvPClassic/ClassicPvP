@@ -1143,4 +1143,4 @@ The mana pool and mana burn prizes come off the same roll, so an item can win on
 | Creature Resistance Rating (if the item has none) | 10% |
 | Creature Slayer Rating (if the item has none) | 10% |
 
-The whole system can be switched off server-wide with the `tinker_lotto_enabled` property.
+Winning a Jackpot on the heritage and rank salvage requires both conditions — workmanship 10 salvage *and* a target item of workmanship 6 or lower.
