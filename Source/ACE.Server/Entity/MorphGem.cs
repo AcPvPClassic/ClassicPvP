@@ -28,6 +28,7 @@ namespace ACE.Server.Entity
         public const uint MorphGemRandomizeWeaponImbue = 480486;
         public const uint MorphGemRemovePlayerReq  = 480485;
         public const uint MorphGemRemoveRacialReq  = 480642;
+        public const uint MorphGemRemoveAllegianceReq = 480643;
         public const uint MorphGemCreatureSlayerRandom = 480610;
         public const uint MorphGemCreatureResistRandom = 600039;
         public const uint MorphGemSlayerUpgrade    = 480639;
@@ -63,6 +64,7 @@ namespace ACE.Server.Entity
             MorphGemRandomizeWeaponImbue,
             MorphGemRemovePlayerReq,
             MorphGemRemoveRacialReq,
+            MorphGemRemoveAllegianceReq,
             MorphGemCreatureSlayerRandom,
             MorphGemCreatureResistRandom,
             MorphGemSlayerUpgrade,
@@ -104,6 +106,7 @@ namespace ACE.Server.Entity
         {
             MorphGemRemovePlayerReq,
             MorphGemRemoveRacialReq,
+            MorphGemRemoveAllegianceReq,
             MorphGemRemoveMissileDReq,
             MorphGemRemoveMeleeDReq,
             MorphGemJewelersSawblade,
@@ -404,6 +407,30 @@ namespace ACE.Server.Entity
                         break;
 
                     #endregion MorphGemRemoveRacialReq
+
+                    #region MorphGemRemoveAllegianceReq
+                    case MorphGemRemoveAllegianceReq:
+
+                        //there is no wield side allegiance requirement to sweep - WieldRequirement.IntStat is unused in PY16
+                        var allegianceRankReq = target.ItemAllegianceRankLimit ?? 0;
+
+                        if (allegianceRankReq <= 0)
+                        {
+                            playerMsg = $"Your {target.NameWithMaterial} does not currently have an allegiance rank requirement to remove.";
+                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
+                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
+                            return;
+                        }
+
+                        player.UpdateProperty(target, PropertyInt.ItemAllegianceRankLimit, null);
+
+                        playerMsg = $"You apply the Morph Gem skillfully and have removed the allegiance rank {allegianceRankReq} requirement from your {target.NameWithMaterial}.";
+                        AddMorphGemLog(target, MorphGemRemoveAllegianceReq);
+
+                        player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
+                        break;
+
+                    #endregion MorphGemRemoveAllegianceReq
 
                     #region MorphGemCreatureSlayerRandom
                     case MorphGemCreatureSlayerRandom:

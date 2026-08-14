@@ -1113,3 +1113,34 @@ When you flag a Tinker, the character is instantly transformed:
 - 🏟️ **No arenas.** A Tinker cannot join arena events. Attempting to queue returns "Tinker characters cannot join arena events."
 
 The intent is simple: a Tinker is a maxed-out crafting workstation in character form. Flag one, park it in your allegiance, and let it handle all your tinkering, salvaging, and item work.
+
+---
+
+## 🎰 Tinkering Lottery
+
+Every **successful** tinker rolls a bonus lottery based on the **salvage type** you used. Winnings are applied on top of the tinker's normal effect and are broadcast to everyone nearby: *"<name> won the tinkering lottery!"* Losing rolls are silent, and a failed tinker never rolls at all.
+
+Most salvage types have their own reward table. The two families below are documented here in full; the rest (Steel, Iron, Granite, Green Garnet, Opal, Mahogany, Velvet, Brass, the rending gems, the imbue gems, and the defense imbue gems) each roll their own bonuses.
+
+**Minor attribute cantrip salvage** — Agate (Focus), Bloodstone (Endurance), Carnelian (Strength), Lapis Lazuli (Willpower), Smokey Quartz (Coordination), Rose Quartz (Quickness):
+
+| Prize | Chance |
+|---|---|
+| Extra maximum mana on the item | ~40% |
+| Slower mana burn rate (up to ~40 extra seconds) | ~40% |
+| Upgrade that salvage's Minor cantrip to Moderate | 5% |
+| Creature Resistance Rating (if the item has none) | 10% |
+| Creature Slayer Rating (if the item has none) | 10% |
+
+The mana pool and mana burn prizes come off the same roll, so an item can win one or the other but never both.
+
+**Heritage and rank salvage** — Ebony, Porcelain, Teak (change the racial requirement) and Silk (removes the allegiance rank requirement):
+
+| Prize | Chance |
+|---|---|
+| +10–20 Armor Level (armor only) | 50% |
+| Jackpot: a further +10–20 Armor Level | 15%, WS10 salvage on a WS≤6 item |
+| Creature Resistance Rating (if the item has none) | 10% |
+| Creature Slayer Rating (if the item has none) | 10% |
+
+The whole system can be switched off server-wide with the `tinker_lotto_enabled` property.

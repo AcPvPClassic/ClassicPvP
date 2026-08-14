@@ -25,6 +25,22 @@ The extra rewards inside a Hot Dungeon now come with extra risk. While you're st
 
 **Recalls still work normally** — portal recall, lifestone recall spells, and commands like `/lifestone` are unaffected. This only delays a straight logout.
 
+### 🎰 Tinkering Lottery — Two New Salvage Families Can Win
+
+The tinkering lottery now fires on ten more salvage types. As always, it only rolls on a **successful** tinker, and any winnings are announced to everyone nearby.
+
+**Minor attribute cantrip salvage** — Agate (Focus), Bloodstone (Endurance), Carnelian (Strength), Lapis Lazuli (Willpower), Smokey Quartz (Coordination), and Rose Quartz (Quickness) can now win:
+
+- A chunk of extra **maximum mana** on the item, or a **slower mana burn rate** — up to about 40 extra seconds per tick. One or the other, not both.
+- A **5% chance to upgrade that salvage's Minor cantrip to its Moderate version** — Minor Focus becomes Moderate Focus, and so on. The item has to already have the matching Minor.
+- A **10% chance each** at a **Creature Resistance Rating** or a **Creature Slayer Rating**, if the item doesn't already have one.
+
+**Heritage and rank salvage** — Ebony, Porcelain, and Teak (which change an item's racial requirement) and Silk (which removes its allegiance rank requirement) can now win:
+
+- A **50% chance at +10–20 Armor Level** on armor.
+- **Jackpot:** using **workmanship 10 salvage** on an item of **workmanship 6 or lower** adds a further 15% chance at another +10–20 AL on top.
+- The same **10% each** at a Creature Resistance or Creature Slayer Rating.
+
 ### 🧬 New Morph Gem — Racial Requirement Removal
 
 A new **Racial Requirement Morph Gem** strips the racial restriction off armor, weapons, and casters. That breastplate that only activates its spells for a Sho? Apply the gem and it activates for anybody — the item is left with no racial requirement at all, covering both the racial activation requirement on its spells and any racial wield requirement.
