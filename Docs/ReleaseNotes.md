@@ -9,6 +9,10 @@
 
 ## 🩹 v1.17 (in development)
 
+### 👹 Fixed Dungeon Bosses Getting Tankier the Longer the Server Ran
+
+Dungeon Boss armor and melee damage were meant to be scaled once per spawn, but a bug caused each new spawn to compound on top of the last spawn's already-scaled values instead of the original numbers — so a boss's effective armor (and the damage it hit for) quietly crept upward the longer the server stayed up, with melee and missile hits landing for less and less over time. Magic damage was unaffected, which is why bosses could feel fine to casters but increasingly spongy to weapon users. This has been fixed; bosses now scale correctly from their authored values on every spawn.
+
 ### 🏟️ New Arena — Xarabydun Lifestone
 
 A new arena location, **Xarabydun Lifestone**, has been added to the queue. It hosts **2v2**, **FFA**, **Tugak**, and **Group** matches, with ten starting positions spread around the room. When you queue for those formats you may now be matched into Xarabydun Lifestone or one of the existing arenas — the system picks an open location automatically.
