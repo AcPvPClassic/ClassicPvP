@@ -7,7 +7,11 @@
 
 ---
 
-## 🩹 v1.17 (in development)
+## 🩹 v1.18 (in development)
+
+---
+
+## 🩹 v1.17 — August 13, 2026
 
 ### 🩸 Heads Up: Drain Health Coming to 1v1 Arenas
 
