@@ -9,6 +9,10 @@
 
 ## 🩹 v1.17 (in development)
 
+### 🩸 Heads Up: Drain Health Coming to 1v1 Arenas
+
+The infrastructure is in place to tune how effective **drain health spells** are inside **1v1 arena** matches. It's a no-op for now — drains work exactly as they always have — but expect a **nerf to drain health effectiveness in arenas** once testing settles on a value.
+
 ### 👹 Fixed Dungeon Bosses Getting Tankier the Longer the Server Ran
 
 Dungeon Boss armor and melee damage were meant to be scaled once per spawn, but a bug caused each new spawn to compound on top of the last spawn's already-scaled values instead of the original numbers — so a boss's effective armor (and the damage it hit for) quietly crept upward the longer the server stayed up, with melee and missile hits landing for less and less over time. Magic damage was unaffected, which is why bosses could feel fine to casters but increasingly spongy to weapon users. This has been fixed; bosses now scale correctly from their authored values on every spawn.
