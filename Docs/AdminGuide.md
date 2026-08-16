@@ -253,6 +253,18 @@ Allows defining sets of `pvp_dmg_mod` property overrides that are automatically 
 | `/reloadpvpdmgpresets` | Hot-reloads `pvp_dmg_mod_presets.json` from disk. Does NOT re-apply — use `/applypvpdmgpreset` after if needed |
 | `/applypvpdmgpreset [threshold]` | Force-applies the preset at the given threshold. Omit argument to apply the currently active preset for the live level cap |
 
+### Arena-Only Damage Modifiers
+
+Every `pvp_dmg_mod_*` property has a `pvp_dmg_mod_arena_*` counterpart (e.g. `pvp_dmg_mod_dagger_cb` → `pvp_dmg_mod_arena_dagger_cb`). All default to `1.0`.
+
+**When the defender is standing in an arena landblock, the arena value is used *instead of* the global one.** The two sets never stack — an arena fight reads the arena set and nothing else, so a value left at the default `1.0` means "no scaling in arenas", not "fall back to the global value".
+
+The check is landblock-only: it does **not** look for a running arena event and does **not** check whether the players are in that event. Anyone taking damage on an arena landblock gets the arena values. This keeps it to a single set lookup per damage calculation.
+
+Notes:
+- Applies to melee/missile (`DamageEvent`), war/void projectiles and their variance mods (`SpellProjectile`), and void DOT ticks (`EnchantmentManager`).
+- Arena values are ordinary double properties, so they can be set with `/modifydouble` and included in `pvp_dmg_mod_presets.json` like any other key.
+
 ---
 
 ## 5. PvP XP on Player Kills

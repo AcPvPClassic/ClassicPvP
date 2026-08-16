@@ -1428,14 +1428,15 @@ namespace ACE.Server.Entity
             return locList;
         }
 
-        private static List<uint> _arenaLandblocks;
-        public static List<uint> ArenaLandblocks
+        // HashSet rather than List: IsArenaLandblock is called on every damage calculation
+        private static HashSet<uint> _arenaLandblocks;
+        public static HashSet<uint> ArenaLandblocks
         {
             get
             {
                 if (_arenaLandblocks == null)
                 {
-                    _arenaLandblocks = new List<uint>()
+                    _arenaLandblocks = new HashSet<uint>()
                     {
                         0x018B, //A Cave
                         0x01D9, //Rat Lair
