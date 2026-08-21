@@ -9,6 +9,14 @@
 
 ## 🩹 v1.18 (in development)
 
+### 🕵️ No More Peeking at Your Matchup — or Ducking It
+
+You no longer see who you've been matched against until the match actually starts.
+
+Players were queueing, getting matched, immediately running `/arena info` to see the draw, and — if it looked rough — logging off or PK-tagging themselves by attacking someone. That cancels the match before it starts, which meant **no disqualification and no penalty**. Free re-roll on your opponent.
+
+From matchmaking through the teleport-in countdown, `/arena info` now shows only a player count for a pending match, and pending matches can't be watched with `/arena watch` either. Names appear the moment the match begins, and everything after that — the match-started global, the results, the leaderboards — is unchanged.
+
 ### 🏆 Arena Ranking — Your Score Is Now Just Your ELO
 
 The 1v1 and 2v2 leaderboards no longer add **wins** and **matches played** on top of your rating. **Your score is your ELO, full stop.** The 2v2 survival bonus is gone from scoring too. All three are still tracked and still shown in `/arena stats` — they just don't inflate your rank anymore.

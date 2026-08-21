@@ -397,6 +397,8 @@ Use the `/arena` command to interact with the queue.
 - Must be **Player Killer (PK)** status
 - Must **not** be PK-tagged (no active PK timer from a recent kill)
 
+**You don't find out who you're fighting until the match starts.** From the moment you're matched through the teleport-in countdown, `/arena info` shows only how many players are in the match, not their names — and pending matches cannot be watched with `/arena watch`. The names appear once the match actually begins. This is deliberate: knowing your draw early made it possible to duck a bad one by logging off or PK-tagging yourself, which cancels the match before it starts and so never counted as a disqualification.
+
 ### Arena Types
 
 | Type | Format |

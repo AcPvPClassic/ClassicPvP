@@ -836,6 +836,15 @@ namespace ACE.Server.Managers
                 return;
             }
 
+            // An event that hasn't started yet has no saved ID, so it matches
+            // EventID 0.  Observing one would reveal the matchup to a third party
+            // who could relay it to a participant looking to dodge a bad draw.
+            if (!arenaEvent.HasStarted)
+            {
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"That arena match hasn't started yet.  You can watch it once it begins.", ChatMessageType.System));
+                return;
+            }
+
             if (arenaEvent.Observers == null)
                 arenaEvent.Observers = new List<uint>();
 
