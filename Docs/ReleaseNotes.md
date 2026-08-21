@@ -27,8 +27,8 @@ Decay used to be a flat **3% per day of your whole rating** after three quiet da
 |---|---|
 | None at all | **5%** |
 | 1 – 2 | **3%** |
-| 3 – 14 | **1%** |
-| 15 or more | **none** |
+| 3 – 9 | **1%** |
+| 10 or more | **none** |
 
 **2v2** is gentler, since it needs a partner online:
 

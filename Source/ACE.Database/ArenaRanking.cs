@@ -56,8 +56,8 @@ namespace ACE.Database
         {
             ( 1, 0.05),   // no matches at all
             ( 3, 0.03),   // 1 - 2 matches
-            (15, 0.01),   // 3 - 14 matches
-            // 15+ matches — no decay
+            (10, 0.01),   // 3 - 9 matches
+            // 10+ matches — no decay
         };
 
         /// <summary>

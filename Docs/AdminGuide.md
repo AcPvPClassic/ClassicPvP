@@ -472,8 +472,8 @@ Decay runs once per calendar day from `ArenaManager.Tick()`. The rate is set by 
 |---|---|---|
 | 0 | 5% | 3% |
 | 1 – 2 | 3% | 1% |
-| 3 – 14 | 1% | none |
-| 15+ | none | none |
+| 3 – 9 | 1% | none |
+| 10+ | none | none |
 
 Decay applies to the rating **above the 1500 baseline** only (1800 with no matches loses 5% of 300 = 15 points), and never drops a rating below 1500. Ratings already at or under 1500 are untouched.
 

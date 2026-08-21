@@ -465,8 +465,8 @@ Each arena format has its own leaderboard, all viewable with `/arena rank <type>
 |---|---|
 | None at all | **5%** |
 | 1 – 2 | **3%** |
-| 3 – 14 | **1%** |
-| 15 or more | **none** |
+| 3 – 9 | **1%** |
+| 10 or more | **none** |
 
 - Decay only touches the part of your rating **above 1500**, never the whole thing. At 1800 with no matches all week, the 5% comes off the 300 points above baseline — you lose 15, not 90. No amount of decay drops you below 1500.
 - Only **1v1** matches count toward your 1v1 tier. Playing 2v2 or FFA does not slow your 1v1 decay — each format is tracked independently.
