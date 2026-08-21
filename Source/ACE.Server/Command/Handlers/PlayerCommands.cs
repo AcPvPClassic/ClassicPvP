@@ -2732,7 +2732,7 @@ namespace ACE.Server.Command.Handlers
                         {
                             var t = topTeams[i];
                             rankReturnMsg.Append($"  Rank #{i + 1} - {t.TeamName}\n");
-                            rankReturnMsg.Append($"  Score: {t.CompositeScore.ToString("n0")}  ELO: {t.Elo.ToString("n0")}\n");
+                            rankReturnMsg.Append($"  ELO: {t.Elo.ToString("n0")}\n");
                             rankReturnMsg.Append($"  Matches: {t.TotalMatches}  Wins: {t.TotalWins}  Losses: {t.TotalLosses}  Survived: {t.TotalSurvived}\n\n");
                         }
                         rankReturnMsg.Append("**********\n");
@@ -2748,7 +2748,7 @@ namespace ACE.Server.Command.Handlers
                             var currStats = topTen[i];
                             rankReturnMsg.Append($"  Rank #{i + 1} - {currStats.CharacterName}\n");
                             if (isEloMode)
-                                rankReturnMsg.Append($"  Score: {currStats.CompositeScore.ToString("n0")}  ELO: {currStats.Elo.ToString("n0")}\n");
+                                rankReturnMsg.Append($"  ELO: {currStats.Elo.ToString("n0")}\n");
                             else
                                 rankReturnMsg.Append($"  Points: {currStats.RankPoints.ToString("n0")}\n");
                             rankReturnMsg.Append($"  Matches: {currStats.TotalMatches}  Wins: {currStats.TotalWins}  Draws: {currStats.TotalDraws}  Losses: {currStats.TotalLosses}\n\n");

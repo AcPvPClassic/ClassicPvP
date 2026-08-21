@@ -455,29 +455,41 @@ Town Control kill quests (PKKILL_TC_1/5/30) have been disabled and no longer app
 
 Each arena format has its own leaderboard, all viewable with `/arena rank <type>`.
 
-#### 1v1 — Composite Score
-1v1 uses a **composite score** rather than raw ELO, designed to reward players who stay active rather than those who grind a good rating and stop queueing to protect it.
-
-**Your score = ELO + (Wins × 8) + (Matches Played × 2)**
+#### 1v1 — ELO Rating
+**Your score is your ELO rating, nothing else.** Wins and matches played no longer add anything on top — staying active is rewarded through decay instead, which is what separates a player who defends their rating from one who grinds it up and stops queueing.
 
 - **ELO** updates after every match based on the rating difference between you and your opponent. Starting ELO is 1500.
-- **ELO decay** — if you stop playing, your ELO drops **3% per day** once you've gone **3 or more consecutive days without a 1v1 match**, floored at 1500. Decay is written directly to the database each day, so the stored ELO is always your current effective rating. Playing a 2v2 does **not** stop your 1v1 decay clock — each format is tracked independently.
-- **Win bonus (+8 per win)** and **match bonus (+2 per match played)** mean an active player with a slightly lower ELO can outrank an inactive player with a higher one.
+- **ELO decay** runs once a day, and how hard it hits depends on **how many 1v1 matches you completed in the last 7 days**:
+
+| 1v1 matches in the last 7 days | Daily decay |
+|---|---|
+| None at all | **5%** |
+| 1 – 2 | **3%** |
+| 3 – 14 | **1%** |
+| 15 or more | **none** |
+
+- Decay only touches the part of your rating **above 1500**, never the whole thing. At 1800 with no matches all week, the 5% comes off the 300 points above baseline — you lose 15, not 90. No amount of decay drops you below 1500.
+- Only **1v1** matches count toward your 1v1 tier. Playing 2v2 or FFA does not slow your 1v1 decay — each format is tracked independently.
+- Decay is written directly to the database each day, so the stored ELO is always your current effective rating.
 
 Use `/arena rank 1v1` to see the leaderboard.
 
 #### 2v2 — Individual + Team Rankings
 2v2 tracks two separate leaderboards:
 
-**Individual** — same composite formula as 1v1, plus a **survival bonus**:
-- **+30 per match where you were not eliminated** as part of the winning team
-- Score = ELO + (Wins × 8) + (Matches × 2) + (Times Survived × 30)
-- Decay rules are the same: 3% per day after a 3-day grace period, tracked separately from your 1v1 rating
+**Individual** — your score is your 2v2 ELO rating, same as 1v1. Decay works the same way but is **gentler**, because 2v2 needs a partner to be online and draws fewer players:
 
-**Team pairs** — your performance as a specific two-player combination is tracked separately. A team's score uses the same composite formula, with the team's ELO based on the average of both players' individual ELOs at match time.
+| 2v2 matches in the last 7 days | Daily decay |
+|---|---|
+| None at all | **3%** |
+| 1 – 2 | **1%** |
+| 3 or more | **none** |
+
+As in 1v1, decay applies only to the portion above 1500, and only 2v2 matches count toward your 2v2 tier.
+
+**Team pairs** — your performance as a specific two-player combination is tracked separately. A team's score is the team's ELO, based on the average of both players' individual ELOs at match time.
 - Winning teams gain ELO; losing teams lose ELO
-- Team ELO also decays if the pair goes inactive; playing with a different partner does not stop the decay clock for this pair
-- Survival bonus also applies at the team level
+- **Team ratings never decay** — a pair that stops playing together keeps its rating
 
 Use `/arena rank 2v2` for individual standings, `/arena rank 2v2team` for team pair standings.
 
@@ -624,8 +636,8 @@ ClassicPvP tracks a **Season leaderboard** across 12 categories spanning both ar
 #### Arena
 | Category | What It Ranks |
 |---|---|
-| **1v1 Arena** | Composite score (ELO + wins + matches) |
-| **2v2 Arena** | Composite score (ELO + wins + matches + survival bonus) |
+| **1v1 Arena** | 1v1 ELO rating |
+| **2v2 Arena** | 2v2 ELO rating |
 | **FFA Arena** | Lifetime placement points across all FFA events |
 | **Tugak Arena** | Lifetime placement points across all Tugak events |
 | **Group Arena** | Total Group arena wins |

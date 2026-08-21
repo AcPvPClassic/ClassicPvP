@@ -464,7 +464,22 @@ Weekly Sunday snapshots capture the top 10 players across 13 scored categories. 
 
 ### ELO Decay
 
-1v1 and 2v2 ELO decays **3% per day** after a player goes **3+ consecutive days without a match** in that format. Decay is written to the database each day so the stored ELO is always current. Playing a different arena format does not reset the decay clock for a specific format.
+The 1v1 and 2v2 leaderboard score **is** the ELO rating — wins, matches played and 2v2 survivals are tracked as stats but contribute nothing to rank.
+
+Decay runs once per calendar day from `ArenaManager.Tick()`. The rate is set by how many matches the player completed **in that same format** over the trailing 7 days, counted from `arena_player` joined to finished `arena_event` rows (status 5 or 6; cancelled events do not count):
+
+| Matches in last 7 days | 1v1 daily decay | 2v2 daily decay |
+|---|---|---|
+| 0 | 5% | 3% |
+| 1 – 2 | 3% | 1% |
+| 3 – 14 | 1% | none |
+| 15+ | none | none |
+
+Decay applies to the rating **above the 1500 baseline** only (1800 with no matches loses 5% of 300 = 15 points), and never drops a rating below 1500. Ratings already at or under 1500 are untouched.
+
+**Team ratings (`arena_team_stats`) do not decay at all.**
+
+Each row's `last_decay_datetime` is stamped every time the job examines it — and by a match result — whether or not decay was owed. The job skips any row already stamped today, so a mid-day server restart cannot apply a second day of decay. Tiers live in `ArenaRanking.DecayTiers1v1` / `DecayTiers2v2`.
 
 ---
 

@@ -9,6 +9,41 @@
 
 ## 🩹 v1.18 (in development)
 
+### 🏆 Arena Ranking — Your Score Is Now Just Your ELO
+
+The 1v1 and 2v2 leaderboards no longer add **wins** and **matches played** on top of your rating. **Your score is your ELO, full stop.** The 2v2 survival bonus is gone from scoring too. All three are still tracked and still shown in `/arena stats` — they just don't inflate your rank anymore.
+
+**Nobody's ELO changed.** Your rating is exactly what it was; only the way the leaderboard reads it has changed. In practice that means players who had climbed on volume rather than rating will drop, and a high-rated player who queues less will no longer be buried under grinders.
+
+Staying active is now enforced by decay instead, which is the part that actually got teeth.
+
+### 📉 ELO Decay Now Scales With How Much You've Played
+
+Decay used to be a flat **3% per day of your whole rating** after three quiet days. It's now tied to **how many matches you've played in the last 7 days**, checked once a day, and it only eats the part of your rating **above 1500**.
+
+**1v1:**
+
+| Matches in the last 7 days | Daily decay |
+|---|---|
+| None at all | **5%** |
+| 1 – 2 | **3%** |
+| 3 – 14 | **1%** |
+| 15 or more | **none** |
+
+**2v2** is gentler, since it needs a partner online:
+
+| Matches in the last 7 days | Daily decay |
+|---|---|
+| None at all | **3%** |
+| 1 – 2 | **1%** |
+| 3 or more | **none** |
+
+The "above 1500" part matters: at **1800 ELO** with no matches all week, the 5% comes off the **300 points above baseline** — you lose **15**, not 90. And no amount of decay can drop you below 1500.
+
+Only matches in the **same format** count toward that format's tier — a week of 2v2 does nothing for your 1v1 decay, and vice versa.
+
+**2v2 team pairs no longer decay at all.** Your rating as a specific duo now stands until you play as that duo again.
+
 ---
 
 ## 🩹 v1.17 — August 13, 2026

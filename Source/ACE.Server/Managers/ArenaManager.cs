@@ -35,8 +35,8 @@ namespace ACE.Server.Managers
                 return;
 
             // Apply ELO decay once per calendar day regardless of arena enabled/disabled state.
-            // Each event category (1v1, 2v2) decays independently; playing one does not
-            // reset the other.
+            // Each event category (1v1, 2v2) decays independently, at a rate set by how
+            // many matches the player completed in that same category over the last 7 days.
             if (DateTime.Now.Date > LastDecayTickDate.Date)
             {
                 LastDecayTickDate = DateTime.Now;
