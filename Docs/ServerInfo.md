@@ -911,9 +911,11 @@ The count includes you, and it is your own allegiance's online headcount that ma
 |------|--------------|-------------|
 | Imbue Altering Morph Gem | 20 | Randomizes a weapon's imbue between Crippling Blow, Armor Rending, and Critical Strike. |
 | Empyrean Tuning Fork | 25 | Randomizes the legendary cantrips on armor, jewelry, or shields that already have legendaries. One use per item. |
+| Fetish of the Dark Idols | 25 | Combine with a loot-generated atlatl, bow, or crossbow to add a Magic Absorbing property at the cost of a Melee Defense penalty. The weapon can be imbued before the Fetish is applied, but not after; non-imbue tinkers work either way. |
 | Slayer Upgrade Gem | 25 | Upgrades an existing slayer damage bonus to 1.8 on weapons that rolled a slayer via the tinkering lottery. |
 | Racial Requirement Morph Gem | 30 | Strips the racial requirement off armor, a weapon, or a caster — both the racial activation requirement on its spells and any racial wield requirement. The item is left with no racial restriction at all. |
 | Allegiance Rank Requirement Morph Gem | 30 | Removes the allegiance rank needed to activate an item's spells ("Activation requires allegiance rank 6"), leaving it with no rank requirement. Unlike Silk tinkering, it does not consume a tinker and does not raise the item's Arcane Lore requirement. |
+| Lesser Impenetrability Morph Gem | 30 | Adds Impenetrability to loot-gen or rare armor: 3% Major, 97% Minor. Repeatable on the same piece — on armor that already has Minor, each use is a 3% roll to upgrade it to Major. Will not apply to armor that already has Major or better. |
 | Ancient Bottle | 50 | Absorbs 25% of PvP XP overflow up to 100M. Bonded & Attuned. |
 | Ancient Empyrean Tool | 75 | Guarantees the next tinker will not fail. |
 | Empyrean Jeweler's Sawblade | 50 | Randomizes the slot of a ring, bracelet, or necklace between finger, wrist, and neck. |
@@ -935,13 +937,13 @@ The count includes you, and it is your own allegiance's online headcount that ma
 | Missile Defense Requirement Morph Gem | 400 | Removes an item's Missile Defense requirement — both the activation requirement and any Missile Defense wield requirement. |
 | Melee Defense Requirement Morph Gem | 400 | Removes an item's Melee Defense requirement — both the activation requirement and any Melee Defense wield requirement. |
 | Player Wield Requirement Morph Gem | 500 | Removes the wield restriction binding an item to a specific player. |
-| Slayer Morph Gem | 100 | Randomizes the creature-slayer type on a loot-gen weapon or caster that already has a slayer, or on loot-gen armor with a Creature Slayer Rating. |
-| Creature Resistance Morph Gem | 100 | Randomizes the creature-resistance type on loot-gen armor/jewelry that has a Creature Resist Rating. |
+| Slayer Morph Gem | 35 | Randomizes the creature-slayer type on a loot-gen weapon or caster that already has a slayer, or on loot-gen armor with a Creature Slayer Rating. |
+| Creature Resistance Morph Gem | 25 | Randomizes the creature-resistance type on loot-gen armor/jewelry that has a Creature Resist Rating. |
 | A Dick (Vitae Removal) | 1 | Eat it to remove your Vitae penalty (no XP granted). Does nothing if you have no penalty. |
 
 > **Level Requirement Removal Morph Gem** has been discontinued — no item in the Infiltration era has a level requirement, so it never had a use.
 
-> **Impenetrability Morph Gem** — not sold by either vendor. Obtainable only from **Mythic Mystery Boxes**.
+> **Impenetrability Morph Gem** — not sold by either vendor. Obtainable only from **Mythic Mystery Boxes**. It adds Impenetrability to loot-gen or rare armor at **33% Major / 67% Minor**, and will not apply to armor that already has any Impenetrability cantrip. The **Lesser Impenetrability Morph Gem** (Darkbeat, Rare Mystery Box) is the repeatable, lower-odds alternative.
 
 **Vitae Removal.** Anti Parazi also stocks **A Dick**, a consumable that costs **1 PK Trophy**. Eat it to clear your **Vitae penalty** — no XP is granted, it just removes the penalty. If you have no Vitae penalty, eating it does nothing and the item is not consumed.
 
@@ -1036,31 +1038,32 @@ Darkbeat's Lost Storage Key, Green Garnet Salvage, and the Level Requirement Rem
 
 | Item | Chance |
 |------|--------|
-| Workmanship Morph Gem | ~5.6% |
-| Missile Defense Requirement Morph Gem | ~5.6% |
-| Melee Requirement Morph Gem | ~5.6% |
-| Player Wield Requirement Morph Gem | ~5.6% |
-| Slayer Upgrade Morph Gem | ~5.6% |
-| Slayer Morph Gem | ~1.9% |
-| Creature Resistance Morph Gem | ~1.9% |
-| Sunstone Salvage WS10 — Armor Rend | ~3.7% |
-| Red Garnet Salvage WS10 — Fire Rend | ~3.7% |
-| Black Garnet Salvage WS10 — Pierce Rend | ~3.7% |
-| Imperial Topaz Salvage WS10 — Slash Rend | ~3.7% |
-| Jet Salvage WS10 — Lightning Rend | ~3.7% |
-| Aquamarine Salvage WS10 — Cold Rend | ~3.7% |
-| White Sapphire Salvage WS10 — Bludgeon Rend | ~3.7% |
-| Emerald Salvage WS10 — Acid Rend | ~3.7% |
-| Fire Opal Salvage WS10 — Crippling Blow | ~3.7% |
-| Black Opal Salvage WS10 — Critical Strike | ~3.7% |
-| Bloodstone Salvage WS10 — Minor Endurance (jewelry only) | ~3.7% |
-| Sturdy Iron Keys ×3 | ~5.6% |
-| Darkbeat's Lost Storage Key | ~5.6% |
-| Mythic Mystery Box | ~5.6% |
-| MMDs ×5 | ~5.6% |
-| PK Trophies ×30 | ~5.6% |
+| Workmanship Morph Gem | ~5.3% |
+| Missile Defense Requirement Morph Gem | ~5.3% |
+| Melee Requirement Morph Gem | ~5.3% |
+| Player Wield Requirement Morph Gem | ~5.3% |
+| Slayer Upgrade Morph Gem | ~5.3% |
+| Lesser Impenetrability Morph Gem | ~5.3% |
+| Slayer Morph Gem | ~1.8% |
+| Creature Resistance Morph Gem | ~1.8% |
+| Sunstone Salvage WS10 — Armor Rend | ~3.5% |
+| Red Garnet Salvage WS10 — Fire Rend | ~3.5% |
+| Black Garnet Salvage WS10 — Pierce Rend | ~3.5% |
+| Imperial Topaz Salvage WS10 — Slash Rend | ~3.5% |
+| Jet Salvage WS10 — Lightning Rend | ~3.5% |
+| Aquamarine Salvage WS10 — Cold Rend | ~3.5% |
+| White Sapphire Salvage WS10 — Bludgeon Rend | ~3.5% |
+| Emerald Salvage WS10 — Acid Rend | ~3.5% |
+| Fire Opal Salvage WS10 — Crippling Blow | ~3.5% |
+| Black Opal Salvage WS10 — Critical Strike | ~3.5% |
+| Bloodstone Salvage WS10 — Minor Endurance (jewelry only) | ~3.5% |
+| Sturdy Iron Keys ×3 | ~5.3% |
+| Darkbeat's Lost Storage Key | ~5.3% |
+| Mythic Mystery Box | ~5.3% |
+| MMDs ×5 | ~5.3% |
+| PK Trophies ×30 | ~5.3% |
 
-All salvage bags are full WS10 bags (100 units). Ancient Bottle no longer drops from Rare Mystery Boxes — it's Mythic-only now. The Slayer Upgrade Morph Gem moved in here from the Mythic Mystery Box, and the Level Requirement Removal Morph Gem no longer drops here at all. The Slayer Morph Gem and Creature Resistance Morph Gem appear here at their rarest (~1.9% each) — they're more common in the Mythic box.
+All salvage bags are full WS10 bags (100 units). Ancient Bottle no longer drops from Rare Mystery Boxes — it's Mythic-only now. The Slayer Upgrade Morph Gem moved in here from the Mythic Mystery Box, and the Level Requirement Removal Morph Gem no longer drops here at all. The Slayer Morph Gem and Creature Resistance Morph Gem appear here at their rarest (~1.8% each) — they're more common in the Mythic box. The Lesser Impenetrability Morph Gem was added at the standard morph-gem weight, which shifted every other slot down slightly.
 
 ### Mythic Mystery Box
 

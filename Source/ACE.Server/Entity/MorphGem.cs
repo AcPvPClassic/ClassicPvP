@@ -34,6 +34,7 @@ namespace ACE.Server.Entity
         public const uint MorphGemSlayerUpgrade    = 480639;
         //public const uint MorphGemBurningCoal      = 480638;
         public const uint MorphGemImpen            = 490025;
+        public const uint MorphGemLesserImpen      = 490050;
         //public const uint MorphGemBanditHilt       = 490026;
         //public const uint MorphGemRareUpgrade      = 490040;
         //public const uint MorphGemRareReduction    = 490270;
@@ -69,6 +70,7 @@ namespace ACE.Server.Entity
             MorphGemCreatureResistRandom,
             MorphGemSlayerUpgrade,
             MorphGemImpen,
+            MorphGemLesserImpen,
             MorphGemJewelersSawblade,
             MorphGemAddSlayer,
             MorphGemRandomCantrip,
@@ -111,6 +113,7 @@ namespace ACE.Server.Entity
             MorphGemRemoveMeleeDReq,
             MorphGemJewelersSawblade,
             MorphGemImpen,
+            MorphGemLesserImpen,
         };
 
         #endregion readonly references
@@ -609,7 +612,7 @@ namespace ACE.Server.Entity
 
                         var spellId = 0;
                         var impenLevel = ThreadSafeRandom.Next(0, 99);
-                        if (impenLevel < 97)
+                        if (impenLevel < 67)
                         {
                             spellId = 2604;
                             playerMsg = String.Format(playerMsg, "a Minor", target.Name);
@@ -627,6 +630,76 @@ namespace ACE.Server.Entity
                         break;
 
                     #endregion MorphGemImpen
+
+                    #region MorphGemLesserImpen
+                    case MorphGemLesserImpen:
+
+                        if (target.WeenieType != WeenieType.Clothing)
+                        {
+                            playerMsg = "The gem can only be applied to armor and underclothes";
+                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
+                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
+                            return;
+                        }
+
+                        if (target.ArmorLevel > 0 && target.ItemWorkmanship == null && !target.GetProperty(PropertyInt.RareId).HasValue)
+                        {
+                            playerMsg = "The gem cannot be applied quest armor, only loot gen or rare armor";
+                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
+                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
+                            return;
+                        }
+
+                        if (!target.ItemMaxMana.HasValue || targetItemSpells == null || targetItemSpells.Count == 0)
+                        {
+                            playerMsg = "The gem can only be applied to magical items";
+                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
+                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
+                            return;
+                        }
+
+                        // Major or better cannot be improved any further by this gem
+                        if (targetItemSpells.Contains(2592) ||
+                            targetItemSpells.Contains(4667) ||
+                            targetItemSpells.Contains(6095) ||
+                            targetItemSpells.Contains(3710))
+                        {
+                            playerMsg = "The gem cannot be used on an item that already has a Major Impenetrability cantrip";
+                            player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
+                            player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
+                            return;
+                        }
+
+                        var lesserImpenHasMinor = targetItemSpells.Contains(2604);
+                        var lesserImpenIsMajor = ThreadSafeRandom.Next(0, 99) >= 97;
+
+                        if (lesserImpenHasMinor)
+                        {
+                            // Rolling to upgrade the existing Minor Impenetrability into a Major Impenetrability
+                            if (lesserImpenIsMajor)
+                            {
+                                RemoveAllCantripsInProgression(target, 2592);
+                                target.Biota.GetOrAddKnownSpell(2592, target.BiotaDatabaseLock, out _);
+                                playerMsg = $"You successfully apply the morph gem and have upgraded the Minor Impenetrability cantrip on your {target.Name} to a Major Impenetrability cantrip";
+                            }
+                            else
+                            {
+                                playerMsg = $"You apply the morph gem, but it fails to strengthen the Minor Impenetrability cantrip on your {target.Name}";
+                            }
+                        }
+                        else
+                        {
+                            var lesserImpenSpellId = lesserImpenIsMajor ? 2592 : 2604;
+                            target.Biota.GetOrAddKnownSpell(lesserImpenSpellId, target.BiotaDatabaseLock, out _);
+                            playerMsg = $"You successfully apply the morph gem and have added {(lesserImpenIsMajor ? "a Major" : "a Minor")} Impenetrability cantrip to your {target.Name}";
+                        }
+
+                        player.Session.Network.EnqueueSend(new GameMessageSystemChat(playerMsg, ChatMessageType.Broadcast));
+                        AddMorphGemLog(target, MorphGemLesserImpen);
+
+                        break;
+
+                    #endregion MorphGemLesserImpen
 
                     #region MorphGemBanditHilt
 //                    case 490026: // MorphGemBanditHilt

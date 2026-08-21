@@ -9,6 +9,50 @@
 
 ## 🩹 v1.18 (in development)
 
+### 🛡️ Impenetrability Morph Gems — Reworked, Plus a New Lesser Version
+
+The **Impenetrability Morph Gem** was close to a lottery ticket: a **3%** shot at Major Impenetrability and a **97%** consolation Minor. Most people burned one and walked away with the Minor.
+
+That gem now rolls **33% Major / 67% Minor**. Everything else about it is unchanged — it's still one shot per piece, and it still refuses to apply to armor that already has *any* Impenetrability cantrip on it.
+
+The old odds didn't disappear. They moved to a new item.
+
+The **Lesser Impenetrability Morph Gem** keeps the original **3% Major / 97% Minor** roll, but with a twist that makes it worth grinding: **you can use it on the same piece over and over.**
+
+- On armor with **no Impenetrability**, it adds Minor (97%) or Major (3%).
+- On armor that already has **Minor Impenetrability**, you're rolling that same **3%** to *upgrade* it to **Major**. Miss the roll and the gem is spent — nothing comes off the armor, but you're out a gem.
+- On armor that already has **Major** (or Epic, Legendary, or Prodigal), the gem won't apply and says so.
+
+So the Mythic-box gem is now a clean one-in-three shot, and the Lesser gem is a slow grind to the same place.
+
+Both gems still only apply to loot-generated or rare armor and underclothes that already carry magic.
+
+While we were in there, the misspelled **"Impenatrability"** on the original gem was fixed. Same item — it just reads correctly now.
+
+### 🎁 Where to Get the Lesser Gem
+
+The **Lesser Impenetrability Morph Gem** turns up in two places:
+
+- **Rare Mystery Box** — a new prize slot at **5.3%**. Adding it nudged every other slot down a hair: the 5.6% prizes are now **5.3%**, salvage bags went **3.7% → 3.5%**, and the Slayer / Creature Resistance gems **1.9% → 1.8%**. Nothing was removed from the box.
+- **Darkbeat** — **30 Phials of Bloody Tears**.
+
+The full-strength Impenetrability Morph Gem still comes from the **Mythic Mystery Box** and nowhere else.
+
+### 💰 Slayer and Creature Resistance Morph Gems — Much Cheaper
+
+Both sat at **100 PK Trophies** at **Anti Parazi**, which almost nobody was paying.
+
+- **Slayer Morph Gem** → **35 PK Trophies**
+- **Creature Resistance Morph Gem** → **25 PK Trophies**
+
+The Slayer Morph Gem is also stocked by the **Shoushi**, **Holtburg**, and **Yaraq Town Treasurers**, and the new price applies there too.
+
+### 🏹 Fetish of the Dark Idols — Now Sold by Darkbeat
+
+**Darkbeat** now carries the **Fetish of the Dark Idols** for **25 Phials of Bloody Tears**.
+
+Combine it with any loot-generated atlatl, bow, or crossbow to add a **Magic Absorbing** property at the cost of a **Melee Defense** penalty. The weapon can be imbued *before* the Fetish goes on but not after; non-imbue tinkers work either way.
+
 ### 🕵️ No More Peeking at Your Matchup — or Ducking It
 
 You no longer see who you've been matched against until the match actually starts.
