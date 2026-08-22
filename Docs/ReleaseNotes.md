@@ -9,6 +9,43 @@
 
 ## 🩹 v1.19 (in development)
 
+### 🏰 Hometown Phase 2 Moves Indoors — Into the Meeting Halls
+
+Phase 2 used to be fought in the open, on top of the town's Bind Stone. Whoever brought the bigger pile of bodies to an open field usually won, and the fight sprawled across a hundred meters of terrain.
+
+**Phase 2 now happens inside the town's Meeting Hall.**
+
+When Phase 1 completes, the outdoor Bind Stone goes dark and the fight moves indoors. Take the Meeting Hall portal — that's where the attackable Bind Stone appears, and it's the only way in.
+
+- **The Meeting Hall portal ignores the PK timer while Phase 2 is running.** Neither side can be locked out of a siege by being tagged on repeat. Outside of Phase 2 the normal timer applies, so the halls are not a general escape hatch from PvP.
+- **Every distance rule became a presence rule.** Holding the hall, blocking a repel, earning participation trophies, qualifying for rewards, getting smited on a loss, and the bonus damage from kills — all of it is now simply "are you in the hall". No more counting meters.
+- **Damage falloff still works on distance.** Full damage within **15 meters** of the stone, nothing past **20**. The hall entrance sits about **36 meters** from the Bind Stone, so attackers have to push most of the way in before they can land anything. Walking through the portal is not the same as being in the fight.
+- **Kills only count inside the hall.** A kill on a defender still knocks **5% max HP** off the Bind Stone, and a kill on an attacker still heals it by the same — but only if it happens in the hall. Fighting out in the town proper is ordinary PvP now.
+
+### 👥 Meeting Halls Are Zerg Controlled — 7 Per Allegiance
+
+A Meeting Hall is a small dungeon with a single entrance, which makes it very easy to simply wall off with numbers.
+
+Every Meeting Hall is now a **permanently zerg-controlled area, capped at 7 players per allegiance** — whether or not a siege is running. An 8th member who portals in is bounced straight back to their lifestone, and if an allegiance somehow ends up over the cap anyway, the most recently teleported players are sent home until it's back to 7.
+
+Each hall has its **own independent cap**. Holding Holtburg's hall doesn't cost you any of your allowance in Arwic.
+
+### 🎯 Hometown Phase 1 — Much Tighter Contest Range
+
+Phase 1 used to sweep **50 meters** for enemies. In practice that covered most of a town square: anyone drifting through the area could stall an assault without ever committing to the fight, and a rival allegiance idling well away from the stone could block one from starting at all.
+
+**That detection range is now 10 meters.** To contest a Phase 1 you have to actually stand on the Bind Stone with the attackers, not hover at the edge of radar.
+
+The rest is unchanged — you still need **2+ members within 5 meters** to make progress, an enemy still has to hold the area for **30 continuous seconds** to reset it, and you still need **4 uninterrupted minutes** to reach Phase 2.
+
+### 🐛 Fixed: Captures Ending "Inconclusively"
+
+Destroying a Bind Stone could end the siege with **"The assault has ended inconclusively"** instead of awarding the capture — no town, no rewards, nothing for either side.
+
+The resolution smites the losing allegiance, and that smite crashed on any defender who had actually been fought during the siege. Since the crash happened partway through the payout, it took the whole result down with it. The same bug also broke the admin `@smite` command.
+
+Fixed, and the payout is now hardened: one player failing to be rewarded or smited no longer costs everyone else their rewards or voids a decided outcome.
+
 ---
 
 ## 🩹 v1.18 — August 22, 2026
