@@ -792,27 +792,30 @@ Any allegiance member can walk up to a **Bind Stone** in an unowned town and use
 
 To take a town owned by a rival allegiance, use the Bind Stone to begin the assault.
 
-**Phase 1 — Perimeter Control (up to 60 minutes)**
-- Phase 1 begins **automatically** when at least **2 members** of a single attacking allegiance are within **5 meters** of the Bind Stone and no other enemy allegiances are within **50 meters** — no player action required
-- If an enemy PK enters within 50 meters, a warning is broadcast. If they remain for **30 continuous seconds**, Phase 1 progress resets. Leaving the area before 30 seconds have passed cancels the threat with no penalty.
+**Phase 1 — Perimeter Control (up to 60 minutes), at the town Bind Stone**
+- Phase 1 begins **automatically** when at least **2 members** of a single attacking allegiance are within **5 meters** of the Bind Stone and no other enemy allegiances are within **10 meters** — no player action required
+- If an enemy PK enters within 10 meters, a warning is broadcast. If they remain for **30 continuous seconds**, Phase 1 progress resets. Leaving the area before 30 seconds have passed cancels the threat with no penalty.
 - Hold the zone for **4 uninterrupted minutes** to trigger Phase 2
 - Failing to reach Phase 2 within 60 minutes announces a global failure and applies a **3-hour cooldown** on that town for your allegiance
 
-**Phase 2 — Destroy the Bind Stone (30 minutes)**
+**Phase 2 — Destroy the Bind Stone (30 minutes), inside the town's Meeting Hall**
+- When Phase 1 completes, the outdoor Bind Stone goes dark and the fight **moves into the town's Meeting Hall**. Take the Meeting Hall portal in — that is where the attackable Bind Stone appears
+- **The Meeting Hall portal ignores the PK timer while Phase 2 is running**, so neither side can be locked out of the fight by being tagged on repeat. Outside Phase 2 the normal PK timer applies
+- **Meeting Halls are permanently zerg-controlled** — each allegiance is capped at **7 players** inside a hall at the same time, whether or not a conflict is live. An 8th member is blocked at the portal, and if one slips in, the most recently teleported players are booted to their lifestone. Each hall has its own independent cap
 - The Bind Stone becomes attackable — chip down its HP with melee, missile, or war magic
-- Breaching Phase 2 immediately awards each attacking-allegiance member near the stone **5 PK Trophies**
+- Breaching Phase 2 immediately awards each attacking-allegiance member near the outdoor stone **5 PK Trophies**
 - **All damage types are equal** — no element (slashing, fire, cold, etc.) is more or less effective than another, for both physical and magic
 - **Melee and missile damage is reduced** so that a weapon user's DPS stays in line with a mage's, rather than vastly outpacing it. War magic is unaffected
 - **Damage falls off with distance** — attacks deal full damage within **15 meters** of the Bind Stone, taper off beyond that, and deal **nothing past 20 meters**. You must fight up close to bring it down
-- **You must clear the defenders off the stone to damage it.** While **any player who is not in the attacking allegiance** is within **100 meters** of the Bind Stone, all attacker damage to it is **reduced by 90%**. Standing next to defenders and burning the stone anyway ("peacing" past them) doesn't work — you have to drive them out of the area first
+- **You must clear the defenders out of the hall to damage it.** While **any player who is not in the attacking allegiance** is anywhere inside the Meeting Hall, all attacker damage to the stone is **reduced by 90%**. Standing next to defenders and burning the stone anyway ("peacing" past them) doesn't work — you have to drive them out of the hall first
 - **Defenders can mend the stone.** A defending-allegiance member who attacks their own Bind Stone doesn't damage it — instead they **heal it by 10%** of the damage they would have dealt
 - Bind Stone HP scales with the current rolling level cap
-- Each kill on the defending allegiance in the combat zone deals **5% max HP** bonus damage to the Bind Stone
-- Each kill on the attacking allegiance in the combat zone **heals the Bind Stone** by 5% max HP
-- **Both sides earn PK Trophies for holding the area.** While within **50 meters** of the Bind Stone during Phase 2, attackers and defenders each receive **1 PK Trophy per minute** of participation
-- **Repelled attack** — if the defenders hold the Bind Stone with **at least 2 defenders and no non-defenders within 50 meters for 10 continuous minutes**, Phase 2 ends early as a repelled attack: **Defenders win** and receive the defense rewards. Any non-defender — an attacker *or* a neutral third party — within 50 meters resets the repel timer
+- Each kill on the defending allegiance **inside the Meeting Hall** deals **5% max HP** bonus damage to the Bind Stone
+- Each kill on the attacking allegiance **inside the Meeting Hall** **heals the Bind Stone** by 5% max HP
+- **Both sides earn PK Trophies for holding the hall.** While inside the Meeting Hall during Phase 2, attackers and defenders each receive **1 PK Trophy per minute** of participation
+- **Repelled attack** — if the defenders hold the hall with **at least 2 defenders and no non-defenders inside it for 10 continuous minutes**, Phase 2 ends early as a repelled attack: **Defenders win** and receive the defense rewards. Any non-defender — an attacker *or* a neutral third party — entering the hall resets the repel timer
 - Destroy the Bind Stone within 30 minutes → **Attackers win**
-- Survive 30 minutes with the Bind Stone intact → **Defenders win**; the Bind Stone heals and becomes unattackable again
+- Survive 30 minutes with the Bind Stone intact → **Defenders win**; the outdoor Bind Stone returns and becomes unattackable again
 
 Two allegiances cannot attack the same town simultaneously. An allegiance can maintain at most **2 active assaults** at once.
 
@@ -826,7 +829,7 @@ Two allegiances cannot attack the same town simultaneously. An allegiance can ma
 
 ### Rewards
 
-Winners within **100 meters of the Bind Stone** (on the town landblock or an adjacent one) at the moment of resolution share the rewards. **Defenders are rewarded more generously than attackers** — attackers already gain the town itself on a successful capture, so holding a town pays out the larger loot:
+Winners **inside the Meeting Hall** at the moment of resolution share the rewards. **Defenders are rewarded more generously than attackers** — attackers already gain the town itself on a successful capture, so holding a town pays out the larger loot:
 
 | Reward | Attackers (capture) | Defenders (hold) |
 |---|---|---|
@@ -836,7 +839,7 @@ Winners within **100 meters of the Bind Stone** (on the town landblock or an adj
 | Phials of Bloody Tears (per player) | — | 1 |
 | Darkbeat Keys (per player) | — | 2 |
 
-Losing allegiance PKs within **100 meters of the Bind Stone** at the moment of resolution are **smited**.
+Losing allegiance PKs **inside the Meeting Hall** at the moment of resolution are **smited**.
 
 ### Using the Bind Stone
 

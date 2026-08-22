@@ -301,9 +301,11 @@ namespace ACE.Server.WorldObjects
                     }
                 }
 
-                // Phase 2 hometown kill effect
+                // Phase 2 hometown kill effect. Phase 2 is fought inside the town's meeting hall, so the
+                // death only moves the stone if it happened in the hall — kills out in the town proper
+                // are ordinary PvP and no longer count.
                 var killedLandblock = Location?.LandblockId.Landblock ?? 0;
-                var ahEntry = ACE.Server.Entity.AllegianceHometown.AllegianceHometownRegistry.GetByLandblock(killedLandblock);
+                var ahEntry = ACE.Server.Entity.AllegianceHometown.AllegianceHometownRegistry.GetByHallLandblock(killedLandblock);
                 if (ahEntry != null)
                 {
                     var ahTown = ACE.Server.Managers.AllegianceHometownManager.GetTown(ahEntry.TownId);
