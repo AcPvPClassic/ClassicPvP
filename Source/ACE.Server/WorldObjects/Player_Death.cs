@@ -329,7 +329,14 @@ namespace ACE.Server.WorldObjects
                     }
                 }
 
-                var globalPKDe = $"{lastDamager.Name} has defeated {Name}!";
+                // lastDamager is null whenever a death is forced rather than dealt: Creature.Smite()
+                // calls OnDeath() with no damage info at all. Both the admin @smite command and the
+                // Allegiance Hometown resolution smite reach this path, and the victim still has real
+                // PK damage history, so the guards above pass and we land here with a null lastDamager.
+                // topDamager comes from the victim's own damage history and is already guaranteed
+                // non-null and a player by those guards, so credit the kill to them instead.
+                var killerName = lastDamager?.Name ?? topDamager.Name;
+                var globalPKDe = $"{killerName} has defeated {Name}!";
 
                 //if ((Location.Cell & 0xFFFF) < 0x100)
                 //    globalPKDe += $" The kill occured at {Location.GetMapCoordStr()}";

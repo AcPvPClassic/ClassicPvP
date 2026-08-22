@@ -773,15 +773,27 @@ namespace ACE.Server.Managers
                     winnerPlayers.Add(p);
             }
 
-            // Smite losing allegiance members present in the meeting hall
+            // Smite losing allegiance members present in the meeting hall.
+            // Each smite runs the victim's full death handling (broadcasts, corpse, PK bookkeeping),
+            // so it is isolated: a throw on one player must not skip the remaining smites or abort the
+            // winners' payout below, and must never bubble up to ResolvePhase2 — that catch force-ends
+            // the conflict, turning a won siege into an inconclusive one.
             if (loserMonarchId.HasValue)
             {
                 foreach (var p in hallLb.GetPlayers())
                 {
                     if (!p.IsPK) continue;
                     var monarchId = AllegianceManager.GetVerifiedMonarchId(p) ?? p.Guid.Full;
-                    if (monarchId == loserMonarchId.Value)
+                    if (monarchId != loserMonarchId.Value) continue;
+
+                    try
+                    {
                         p.Smite(p);
+                    }
+                    catch (Exception ex)
+                    {
+                        log.Error($"[AllegianceHometown] Exception smiting {p.Name} ({p.Guid}) on town {townId} resolution; continuing. Ex: {ex}");
+                    }
                 }
             }
 
@@ -801,38 +813,48 @@ namespace ACE.Server.Managers
 
             foreach (var winner in winnerPlayers)
             {
-                // PK Trophies (stackable)
-                GiveStacked(winner, CustomWeenieId.PkTrophy, perTrophies);
-
-                // MMDs (stackable)
-                GiveStacked(winner, 20630u, perMmds);
-
-                // Phials of Bloody Tears
-                for (int k = 0; k < phials; k++)
-                    GiveSingle(winner, CustomWeenieId.PhialOfBloodyTears);
-
-                // Darkbeat Keys
-                for (int k = 0; k < darkbeatKeys; k++)
-                    GiveSingle(winner, CustomWeenieId.DarkbeatKey);
-
-                // Bonus XP toward next level (fixed reward; GrantXP already bypasses the season xp_modifier)
-                var level = winner.Level ?? 1;
-                var xpBand = (long)winner.GetXPBetweenLevels(level, level + 1);
-                var bonusXp = (long)Math.Round(xpBand * xpPct);
-                if (bonusXp > 0)
-                    winner.GrantXP(bonusXp, XpType.PvP, ACE.Entity.Enum.ShareType.None, "hometown capture reward");
-
-                var extras = new System.Collections.Generic.List<string>
+                // Isolated per winner for the same reason as the smite loop above: one player failing to
+                // be paid (a full inventory, a session that dropped mid-resolution) must not cost every
+                // other winner their reward, nor bubble up and force-end an already-decided conflict.
+                try
                 {
-                    $"{perTrophies} PK Trophy/Trophies",
-                    $"{perMmds} MMD(s)"
-                };
-                if (phials > 0)       extras.Add($"{phials} Phial(s) of Bloody Tears");
-                if (darkbeatKeys > 0) extras.Add($"{darkbeatKeys} Darkbeat Key(s)");
+                    // PK Trophies (stackable)
+                    GiveStacked(winner, CustomWeenieId.PkTrophy, perTrophies);
 
-                winner.Session.Network.EnqueueSend(new GameMessageSystemChat(
-                    $"[Hometown] You received {string.Join(", ", extras)} for your service!",
-                    ChatMessageType.Magic));
+                    // MMDs (stackable)
+                    GiveStacked(winner, 20630u, perMmds);
+
+                    // Phials of Bloody Tears
+                    for (int k = 0; k < phials; k++)
+                        GiveSingle(winner, CustomWeenieId.PhialOfBloodyTears);
+
+                    // Darkbeat Keys
+                    for (int k = 0; k < darkbeatKeys; k++)
+                        GiveSingle(winner, CustomWeenieId.DarkbeatKey);
+
+                    // Bonus XP toward next level (fixed reward; GrantXP already bypasses the season xp_modifier)
+                    var level = winner.Level ?? 1;
+                    var xpBand = (long)winner.GetXPBetweenLevels(level, level + 1);
+                    var bonusXp = (long)Math.Round(xpBand * xpPct);
+                    if (bonusXp > 0)
+                        winner.GrantXP(bonusXp, XpType.PvP, ACE.Entity.Enum.ShareType.None, "hometown capture reward");
+
+                    var extras = new System.Collections.Generic.List<string>
+                    {
+                        $"{perTrophies} PK Trophy/Trophies",
+                        $"{perMmds} MMD(s)"
+                    };
+                    if (phials > 0)       extras.Add($"{phials} Phial(s) of Bloody Tears");
+                    if (darkbeatKeys > 0) extras.Add($"{darkbeatKeys} Darkbeat Key(s)");
+
+                    winner.Session?.Network.EnqueueSend(new GameMessageSystemChat(
+                        $"[Hometown] You received {string.Join(", ", extras)} for your service!",
+                        ChatMessageType.Magic));
+                }
+                catch (Exception ex)
+                {
+                    log.Error($"[AllegianceHometown] Exception rewarding {winner.Name} ({winner.Guid}) on town {townId} resolution; continuing. Ex: {ex}");
+                }
             }
         }
 
