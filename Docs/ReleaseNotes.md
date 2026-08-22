@@ -7,7 +7,11 @@
 
 ---
 
-## 🩹 v1.19 (in development)
+## 🩹 v1.20 (in development)
+
+---
+
+## 🩹 v1.19 — August 22, 2026
 
 ### 🏰 Hometown Phase 2 Moves Indoors — Into the Meeting Halls
 
