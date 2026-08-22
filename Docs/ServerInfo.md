@@ -903,6 +903,52 @@ The count includes you, and it is your own allegiance's online headcount that ma
 
 ---
 
+## 🔄 Respeccing Skills & Attributes
+
+Skills and attributes are changed with **gems** picked up from the **Temple of Enlightenment** (raise / specialize) and the **Temple of Forgetfulness** (lower / unspecialize). The gems themselves are free — what limits you is a **pickup timer** stamped on your character when you take one.
+
+There are now **three independent timers**. They do not share a cooldown with each other, so using one does not delay the others.
+
+| Gem group | Allowance | Timer |
+|-----------|-----------|-------|
+| **Combat skill gems** — Enlightenment & Forgetfulness | **3 gems per window** | **7 days** |
+| **Non-combat skill gems** — currently Cooking | 1 gem | 14 days |
+| **Attribute gems** — Gem of Raising / Gem of Lowering | 1 of each | 14 days |
+
+### Combat Skill Gems — 3 Every 7 Days
+
+The combat skill gems cover **Axe, Bow, Crossbow, Dagger, Mace, Spear, Staff, Sword, Thrown Weapon, Unarmed Combat, War Magic and Life Magic**, in both Enlightenment and Forgetfulness flavors.
+
+All 12 skills and both flavors draw from the **same pool of 3**. It doesn't matter how you spend them — three Forgetfulness gems, three Enlightenment gems, or any mix across any combat skills. A full unspec-and-respec of one skill costs you two of the three.
+
+**The 7-day clock starts on your first pickup, not your last.** Take one gem on Monday and you have until the following Monday to take the other two, whichever days you like. When that window closes the allowance resets to 3 and the next gem you take opens a fresh window.
+
+If you try to take a fourth gem inside the window, the game tells you how long remains before the window rolls over.
+
+### Non-Combat Skill and Attribute Gems
+
+These are unchanged: **one pickup every 14 days**, each on its own timer. The **Cooking Gem of Enlightenment** is the only non-combat skill gem currently in use.
+
+Attribute gems work in pairs — a **Gem of Raising** and a **Gem of Lowering** are combined to transfer up to **10 points** from one attribute to another. Raising and Lowering are tracked separately, so a full transfer needs one pickup from each.
+
+### Skipping the Wait
+
+The **Skill and Attribute Reset Gem**, sold by **Darkbeat** for **20 Phials of Bloody Tears**, clears **all** of your respec pickup timers at once — combat, non-combat and attribute alike — letting you go straight back to the temples.
+
+On top of the phial cost it consumes **PK Trophies**, and that price **escalates every time you use one**: 100 for your first, then 35% more each time, capped at 10,000.
+
+| Use # | PK Trophies |
+|-------|-------------|
+| 1st | 100 |
+| 2nd | 135 |
+| 3rd | 182 |
+| 4th | 246 |
+| 5th | 332 |
+
+The escalation is permanent and per character — it never decays back down.
+
+---
+
 ## 🛒 Vendors
 
 ### Darkbeat

@@ -9,6 +9,20 @@
 
 ## 🩹 v1.18 (in development)
 
+### 🔄 Combat Skill Respecs — 3 Gems Every 7 Days
+
+Respeccing a combat skill used to mean **one gem every 14 days**, shared with every other skill and sitting on the same timer. Want to unspec Sword and spec Axe? That's two gems, so that's a month.
+
+Combat skills now have **their own timer: 3 gems every 7 days.**
+
+The pool of 3 is shared across **Enlightenment and Forgetfulness** and across **every combat skill** — Axe, Bow, Crossbow, Dagger, Mace, Spear, Staff, Sword, Thrown Weapon, Unarmed Combat, War Magic and **Life Magic**. Spend them however you want: three unspecs, three specs, or any mix. That Sword-to-Axe swap is now two of your three, done inside a single week instead of a month.
+
+**The clock starts on your first gem, not your last.** Grab one on Monday and you have until the following Monday for the other two, whenever suits you. When the week is up the allowance goes back to 3. If you reach for a fourth early, the game tells you exactly how long is left.
+
+**Everything else is unchanged and now on a separate timer.** Non-combat skills (currently just Cooking) and attribute gems stay at one pickup every 14 days — and because they're separate, spending your combat gems no longer blocks an attribute transfer, or the other way around.
+
+The **Skill and Attribute Reset Gem** from Darkbeat still wipes the lot in one go, combat timer included.
+
 ### 🔥 Hot Dungeons — Better Loot, Less Junk
 
 Loot rolled inside an active **Hot Dungeon** is now weighted toward the gear people actually keep.
