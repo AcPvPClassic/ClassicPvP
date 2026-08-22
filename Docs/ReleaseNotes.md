@@ -7,7 +7,11 @@
 
 ---
 
-## 🩹 v1.18 (in development)
+## 🩹 v1.19 (in development)
+
+---
+
+## 🩹 v1.18 — August 22, 2026
 
 ### 🔄 Combat Skill Respecs — 3 Gems Every 7 Days
 
