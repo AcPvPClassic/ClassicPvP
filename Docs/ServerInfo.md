@@ -748,6 +748,8 @@ Each dungeon in the pool has a **level bracket** (minimum and maximum server lev
 | **Double Loot** | Monster corpses receive two independent loot rolls, effectively doubling item generation. |
 | **A Box** | Each monster kill has a per-dungeon configurable chance to drop **A Box** on the corpse. |
 | **Salvage Bonus** | Salvaging items while standing inside a Hot Dungeon yields **double the material** (2× units). Applies to whatever you salvage there, regardless of where the items were looted. |
+| **Loot Quality** | Weapons rolled inside a Hot Dungeon have a small chance to come out at the best value available for their wield requirement (the wield requirement itself is unchanged). Each of a weapon's damage stats is rolled separately, so a weapon may upgrade one, all, or none of them: damage and damage variance on melee and thrown, damage mod and elemental damage bonus on bows, crossbows and atlatls, and elemental damage mod and mana conversion on casters. |
+| **Loot Mix** | Armor drops lean toward single-slot pieces (helms, breastplates, girths, gauntlets, pauldrons, tassets, bracers, sollerets, shields) over multi-slot pieces. Weapons replace some low-value filler, and most mundane clutter is replaced with equipment. The number of items dropped is unchanged. |
 | **PK Rewards** | When a PK kill occurs inside a Hot Dungeon between players of **different allegiances**, the victim's corpse will contain a **Phial of Bloody Tears** and **A Box**. |
 
 ### Logout Delay in Hot Dungeons

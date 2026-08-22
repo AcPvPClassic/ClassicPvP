@@ -9,6 +9,20 @@
 
 ## 🩹 v1.18 (in development)
 
+### 🔥 Hot Dungeons — Better Loot, Less Junk
+
+Loot rolled inside an active **Hot Dungeon** is now weighted toward the gear people actually keep.
+
+**More high-end weapons.** Weapons that drop in a Hot Dungeon have a small chance to come out at the **best damage and damage variance available for their wield requirement**. This does not change what wield requirement a weapon rolls — a 250 wield weapon is still a 250 wield weapon, it just has a shot at being the best possible version of one. It's a rare roll by design, not something you'll see every trip.
+
+This applies to **every weapon type** — melee weapons, thrown, **bows, crossbows and atlatls**, and **casters including wands, orbs and sceptres**.
+
+**More single-slot armor.** Armor drops now lean toward **single-slot pieces** — helms, breastplates, girths, gauntlets, pauldrons, tassets, bracers and sollerets — instead of multi-slot pieces like coats, cuirasses, shirts, sleeves, leggings and boots. Shields are in the favored group too.
+
+**Less junk.** Weapons also turn up more often in place of low-value filler, and most of the mundane clutter — spell components, lockpicks, healing kits — is replaced with real equipment instead. **Corpses don't carry fewer items**, they just carry a better mix.
+
+All of it is tunable, so expect the exact rates to get adjusted as we watch it land.
+
 ### 🛡️ Impenetrability Morph Gems — Reworked, Plus a New Lesser Version
 
 The **Impenetrability Morph Gem** was close to a lottery ticket: a **3%** shot at Major Impenetrability and a **97%** consolation Minor. Most people burned one and walked away with the Minor.

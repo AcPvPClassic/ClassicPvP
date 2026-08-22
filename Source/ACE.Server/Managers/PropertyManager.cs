@@ -1288,7 +1288,11 @@ namespace ACE.Server.Managers
                 ("hot_dungeon_box_drop_multiplier",  new Property<double>(1.0,   "Global multiplier applied to every hot dungeon's per-kill Box drop chance (1.0 = tuned defaults, 0.25 = 75% fewer boxes).")),
 
                 // Hot Dungeon salvage bonus
-                ("hot_dungeon_salvage_multiplier",   new Property<double>(2.0,   "Multiplier applied to salvage material yield while the player is inside an active hot dungeon (1.0 = no bonus, 2.0 = double material)."))
+                ("hot_dungeon_salvage_multiplier",   new Property<double>(2.0,   "Multiplier applied to salvage material yield while the player is inside an active hot dungeon (1.0 = no bonus, 2.0 = double material).")),
+                ("hot_dungeon_weapon_quality_bias",   new Property<double>(0.02,  "Chance (0-1) for a weapon rolled in a hot dungeon to be upgraded to the best result available at the wield requirement it rolled into. Rolled independently for damage and for damage variance, so a weapon may get one, both, or neither. Melee and thrown weapons roll both; bows, crossbows, atlatls and casters have no variance mutation and roll damage only. Does not change which wield requirement the weapon rolls. 0 disables.")),
+                ("hot_dungeon_weapon_drop_bias",      new Property<double>(0.35,  "Chance (0-1) for a gem, art object or scroll rolled in a hot dungeon to be converted into a weapon instead. 0 disables.")),
+                ("hot_dungeon_single_slot_armor_bias",new Property<double>(0.50,  "Chance (0-1) for a multi-slot armor piece rolled in a hot dungeon (coat, cuirass, shirt, sleeves, leggings, boots) to be rerolled for a single-slot piece. 0 disables.")),
+                ("hot_dungeon_mundane_upgrade_chance",new Property<double>(0.60,  "Chance (0-1) for a mundane item rolled in a hot dungeon to be upgraded to a weapon or armor piece instead. The number of items dropped is unchanged. 0 disables."))
                 );
         
         public static readonly ReadOnlyDictionary<string, Property<string>> DefaultStringProperties =
