@@ -712,10 +712,13 @@ Silk - Removes rank
                 HandleTinkerLottoLog($"ManaRate+{bonusSeconds}");
             }
 
-            //Upgrade to moderate
+            //25% chance to upgrade
+            //5% chance to major
+            //95% chance to moderate
             roll = rand.NextDouble();
-            if (roll < 0.05)
+            if (roll < 0.25)
             {
+                var isMajor = rand.NextDouble() < 0.05;
                 string successMsg = "";
                 var minorCantrips = this.MinorCantrips?.Keys;
                 switch(salvageType)
@@ -730,8 +733,8 @@ Silk - Removes rank
                         if(minorCantrips.Contains((int)SpellId.CANTRIPFOCUS1))
                         {
                             this.Biota.TryRemoveKnownSpell((int)SpellId.CANTRIPFOCUS1, this.BiotaDatabaseLock);
-                            this.Biota.GetOrAddKnownSpell((int)SpellId.CANTRIPFOCUS2, this.BiotaDatabaseLock, out _);
-                            successMsg = $"Upgraded spell Minor Focus to Moderate Focus";
+                            this.Biota.GetOrAddKnownSpell(isMajor ? (int)SpellId.CANTRIPFOCUS2 : 2661, this.BiotaDatabaseLock, out _);
+                            successMsg = $"Upgraded spell Minor Focus to {(isMajor ? "Major" : "Moderate")} Focus";
                             resultMsg = string.IsNullOrEmpty(resultMsg) ? successMsg : $"{resultMsg}\n{successMsg}";
                         }
                         break;
@@ -739,8 +742,8 @@ Silk - Removes rank
                         if (minorCantrips.Contains((int)SpellId.CANTRIPENDURANCE1))
                         {
                             this.Biota.TryRemoveKnownSpell((int)SpellId.CANTRIPENDURANCE1, this.BiotaDatabaseLock);
-                            this.Biota.GetOrAddKnownSpell((int)SpellId.CANTRIPENDURANCE2, this.BiotaDatabaseLock, out _);
-                            successMsg = $"Upgraded spell Minor Endurance to Moderate Endurance";
+                            this.Biota.GetOrAddKnownSpell(isMajor ? (int)SpellId.CANTRIPENDURANCE2 : 2660, this.BiotaDatabaseLock, out _);
+                            successMsg = $"Upgraded spell Minor Endurance to {(isMajor ? "Major" : "Moderate")} Endurance";
                             resultMsg = string.IsNullOrEmpty(resultMsg) ? successMsg : $"{resultMsg}\n{successMsg}";
                         }
                         break;
@@ -748,8 +751,8 @@ Silk - Removes rank
                         if (minorCantrips.Contains((int)SpellId.CANTRIPSTRENGTH1))
                         {
                             this.Biota.TryRemoveKnownSpell((int)SpellId.CANTRIPSTRENGTH1, this.BiotaDatabaseLock);
-                            this.Biota.GetOrAddKnownSpell((int)SpellId.CANTRIPSTRENGTH2, this.BiotaDatabaseLock, out _);
-                            successMsg = $"Upgraded spell Minor Strength to Moderate Strength";
+                            this.Biota.GetOrAddKnownSpell(isMajor ? (int)SpellId.CANTRIPSTRENGTH2 : 2663, this.BiotaDatabaseLock, out _);
+                            successMsg = $"Upgraded spell Minor Strength to {(isMajor ? "Major" : "Moderate")} Strength";
                             resultMsg = string.IsNullOrEmpty(resultMsg) ? successMsg : $"{resultMsg}\n{successMsg}";
                         }
                         break;
@@ -757,8 +760,8 @@ Silk - Removes rank
                         if (minorCantrips.Contains((int)SpellId.CANTRIPWILLPOWER1))
                         {
                             this.Biota.TryRemoveKnownSpell((int)SpellId.CANTRIPWILLPOWER1, this.BiotaDatabaseLock);
-                            this.Biota.GetOrAddKnownSpell((int)SpellId.CANTRIPWILLPOWER2, this.BiotaDatabaseLock, out _);
-                            successMsg = $"Upgraded spell Minor Willpower to Moderate Willpower";
+                            this.Biota.GetOrAddKnownSpell(isMajor ? (int)SpellId.CANTRIPWILLPOWER2 : 2664, this.BiotaDatabaseLock, out _);
+                            successMsg = $"Upgraded spell Minor Willpower to {(isMajor ? "Major" : "Moderate")} Willpower";
                             resultMsg = string.IsNullOrEmpty(resultMsg) ? successMsg : $"{resultMsg}\n{successMsg}";
                         }
                         break;
@@ -766,8 +769,8 @@ Silk - Removes rank
                         if (minorCantrips.Contains((int)SpellId.CANTRIPCOORDINATION1))
                         {
                             this.Biota.TryRemoveKnownSpell((int)SpellId.CANTRIPCOORDINATION1, this.BiotaDatabaseLock);
-                            this.Biota.GetOrAddKnownSpell((int)SpellId.CANTRIPCOORDINATION2, this.BiotaDatabaseLock, out _);
-                            successMsg = $"Upgraded spell Minor Coordination to Moderate Coordination";
+                            this.Biota.GetOrAddKnownSpell(isMajor ? (int)SpellId.CANTRIPCOORDINATION2 : 2659, this.BiotaDatabaseLock, out _);
+                            successMsg = $"Upgraded spell Minor Coordination to {(isMajor ? "Major" : "Moderate")} Coordination";
                             resultMsg = string.IsNullOrEmpty(resultMsg) ? successMsg : $"{resultMsg}\n{successMsg}";
                         }
                         break;
@@ -775,8 +778,8 @@ Silk - Removes rank
                         if (minorCantrips.Contains((int)SpellId.CANTRIPQUICKNESS1))
                         {
                             this.Biota.TryRemoveKnownSpell((int)SpellId.CANTRIPQUICKNESS1, this.BiotaDatabaseLock);
-                            this.Biota.GetOrAddKnownSpell((int)SpellId.CANTRIPQUICKNESS2, this.BiotaDatabaseLock, out _);
-                            successMsg = $"Upgraded spell Minor Quickness to Moderate Quickness";
+                            this.Biota.GetOrAddKnownSpell(isMajor ? (int)SpellId.CANTRIPQUICKNESS2 : 2662, this.BiotaDatabaseLock, out _);
+                            successMsg = $"Upgraded spell Minor Quickness to {(isMajor ? "Major" : "Moderate")} Quickness";
                             resultMsg = string.IsNullOrEmpty(resultMsg) ? successMsg : $"{resultMsg}\n{successMsg}";
                         }
                         break;
