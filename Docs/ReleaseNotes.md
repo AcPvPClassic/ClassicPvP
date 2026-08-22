@@ -122,6 +122,10 @@ Only matches in the **same format** count toward that format's tier — a week o
 
 **2v2 team pairs no longer decay at all.** Your rating as a specific duo now stands until you play as that duo again.
 
+### 👹 Rendmaw Hits a Little Softer
+
+**Rendmaw**'s melee damage has been dialed back by **10%**. He was landing harder than any other Dungeon Boss by a wide margin, to the point where a bad swing could end a fight outright. He's still the heaviest hitter of the five — just not by as much.
+
 ---
 
 ## 🩹 v1.17 — August 13, 2026
