@@ -45,8 +45,6 @@ Both sat at **100 PK Trophies** at **Anti Parazi**, which almost nobody was payi
 - **Slayer Morph Gem** → **35 PK Trophies**
 - **Creature Resistance Morph Gem** → **25 PK Trophies**
 
-The Slayer Morph Gem is also stocked by the **Shoushi**, **Holtburg**, and **Yaraq Town Treasurers**, and the new price applies there too.
-
 ### 🏹 Fetish of the Dark Idols — Now Sold by Darkbeat
 
 **Darkbeat** now carries the **Fetish of the Dark Idols** for **25 Phials of Bloody Tears**.
