@@ -461,14 +461,18 @@ namespace ACE.Server.WorldObjects
             // When the target is standing in an arena landblock, the pvp_dmg_mod_* lookups below
             // resolve to the pvp_dmg_mod_arena_* set instead — the two sets never stack. Landblock
             // only: no arena event needs to be running and event membership is not checked.
-            var isArena = targetPlayer != null && ArenaLocation.IsArenaLandblock(targetPlayer.Location.Landblock);
+            var isArenaLandblock = targetPlayer != null && ArenaLocation.IsArenaLandblock(targetPlayer.Location.Landblock);
+
+            // ArenaTestTarget redirects only the damage config lookups (see Player.ArenaTestTarget);
+            // arena event gating below deliberately stays on isArenaLandblock.
+            var isArena = isArenaLandblock || (targetPlayer != null && targetPlayer.ArenaTestTarget);
 
             if (sourcePlayer != null && sourcePlayer.IsArenaObserver)
                 return null;
 
             //Arenas - If this is an arena landblock
             //don't allow any dmg except while the event is in a started status (Status == 4)
-            if (isArena)
+            if (isArenaLandblock)
             {
                 var arenaEvent = ArenaManager.GetArenaEventByLandblock(targetPlayer.Location.Landblock);
                 if (arenaEvent == null || arenaEvent.Status != 4)
@@ -863,7 +867,7 @@ namespace ACE.Server.WorldObjects
             }
 
             //Arenas - If this is an arena landblock, track dmg dealt and received
-            if (isArena)
+            if (isArenaLandblock)
             {
                 var arenaEvent = ArenaManager.GetArenaEventByLandblock(targetPlayer.Location.Landblock);
                 if (arenaEvent != null && arenaEvent.Status == 4 && sourcePlayer != null)

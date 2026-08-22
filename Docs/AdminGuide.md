@@ -265,6 +265,22 @@ Notes:
 - Applies to melee/missile (`DamageEvent`), war/void projectiles and their variance mods (`SpellProjectile`), and void DOT ticks (`EnchantmentManager`).
 - Arena values are ordinary double properties, so they can be set with `/modifydouble` and included in `pvp_dmg_mod_presets.json` like any other key.
 
+#### Testing arena values outside an arena
+
+`/arenatesttarget [on|off] [characterName]` (Admin) flags a player so that **damage dealt to them** resolves against the `pvp_dmg_mod_arena_*` configs anywhere in the world, exactly as if they were standing in an arena landblock.
+
+| Command | Effect |
+|---|---|
+| `/arenatesttarget on Testmonkey` | Flags Testmonkey |
+| `/arenatesttarget off Testmonkey` | Clears the flag |
+| `/arenatesttarget Testmonkey` | Shows the current setting |
+| `/arenatesttarget on` | Flags yourself |
+| `/arenatesttarget list` | Lists every online player currently flagged |
+
+The flag only redirects config lookups. It does **not** join the player to an arena event — event gating, observer rules, overtime and match damage tracking all still key off the real landblock, so a flagged player outside an arena takes damage normally rather than being blocked by the "no active event" checks.
+
+The target must be online (the flag is read off the live player during damage calculation). It persists on the character until cleared, including across logout, so clear it when testing is done — `/arenatesttarget list` shows what is still set.
+
 ---
 
 ## 5. PvP XP on Player Kills

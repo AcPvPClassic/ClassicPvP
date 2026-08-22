@@ -1320,8 +1320,10 @@ namespace ACE.Server.WorldObjects.Managers
             // this function produces a similar value to the original ACE function,
             // but is using the actual retail calculation method
 
-            // inside an arena landblock the arena variant of the reduction replaces the global one
-            var isArena = WorldObject is Player ratingTarget && ArenaLocation.IsArenaLandblock(ratingTarget.Location.Landblock);
+            // inside an arena landblock — or on an ArenaTestTarget — the arena variant of the
+            // reduction replaces the global one
+            var isArena = WorldObject is Player ratingTarget &&
+                (ArenaLocation.IsArenaLandblock(ratingTarget.Location.Landblock) || ratingTarget.ArenaTestTarget);
 
             var totalBaseDamage = 0.0f;
             foreach (var netherDot in netherDots)
@@ -1584,10 +1586,14 @@ namespace ACE.Server.WorldObjects.Managers
 
             // Resolved once for the whole tick: inside an arena landblock the pvp_dmg_mod_arena_*
             // values replace their global counterparts, and the two sets never stack.
-            var isArena = targetPlayer != null && ArenaLocation.IsArenaLandblock(targetPlayer.Location.Landblock);
+            var isArenaLandblock = targetPlayer != null && ArenaLocation.IsArenaLandblock(targetPlayer.Location.Landblock);
+
+            // ArenaTestTarget redirects only the damage config lookups (see Player.ArenaTestTarget);
+            // the arena event gating and overtime rules below stay on isArenaLandblock.
+            var isArena = isArenaLandblock || (targetPlayer != null && targetPlayer.ArenaTestTarget);
 
             //Arenas - If this is an arena landblock, don't allow any DoT dmg except while the event is in a started status (Status == 4)
-            if (isArena)
+            if (isArenaLandblock)
             {
                 var preMatchArenaEvent = ArenaManager.GetArenaEventByLandblock(targetPlayer.Location.Landblock);
                 if (preMatchArenaEvent == null || preMatchArenaEvent.Status != 4 || preMatchArenaEvent.EventType.Equals("tugak"))
@@ -1716,7 +1722,7 @@ namespace ACE.Server.WorldObjects.Managers
                     tickAmount *= isArena ? (float)PropertyManager.GetDouble("pvp_dmg_mod_arena_void_dot").Item : (float)PropertyManager.GetDouble("pvp_dmg_mod_void_dot").Item;
 
                 //Arena overtime reduces DoT dmg (applied after the cache lookup so it is not baked into the cached value)
-                if (isArena)
+                if (isArenaLandblock)
                 {
                     var overtimeArenaEvent = ArenaManager.GetArenaEventByLandblock(targetPlayer.Location.Landblock);
                     if (overtimeArenaEvent != null && overtimeArenaEvent.IsOvertime)

@@ -608,7 +608,12 @@ namespace ACE.Server.Entity
                         // read from the pvp_dmg_mod_arena_* set instead of the global one — the two
                         // never stack. Landblock only: no arena event needs to be running and event
                         // membership is not checked, so this stays a single set lookup per hit.
-                        var isArena = playerDefender != null && ArenaLocation.IsArenaLandblock(playerDefender.Location.Landblock);
+                        var isArenaLandblock = playerDefender != null && ArenaLocation.IsArenaLandblock(playerDefender.Location.Landblock);
+
+                        // ArenaTestTarget lets an admin exercise the arena configs outside an arena.
+                        // It only redirects the config lookups below — arena event rules keep using
+                        // isArenaLandblock so a flagged player is not treated as being in a match.
+                        var isArena = isArenaLandblock || (playerDefender != null && playerDefender.ArenaTestTarget);
 
                         // ── base per-skill mod ────────────────────────────────────────────────
                         switch (Weapon.WeaponSkill)
@@ -857,7 +862,7 @@ namespace ACE.Server.Entity
                         }
 
                         // block damage from arena observers
-                        if (isArena && playerAttacker != null && playerAttacker.IsArenaObserver)
+                        if (isArenaLandblock && playerAttacker != null && playerAttacker.IsArenaObserver)
                             config_mod = 0;
 
                         Damage = Damage * config_mod;
