@@ -1032,9 +1032,60 @@ The three fractions are tunable at runtime without a rebuild if you want to shif
 
 This one changes what the shooter **sees**, not what the server computes.
 
-Between forced broadcasts, every client dead-reckons other players from their `MoveToState`. At the stock 1.0 s the server's authoritative position for a moving player can drift noticeably from what other clients are showing, so a missile aimed correctly at the server position can visibly fly at empty space on the shooter's screen. It also governs how much other players glitch around during powerslides.
+Between forced broadcasts, every client dead-reckons other players from their `MoveToState`. Where the server's authoritative position drifts from what other clients are showing, a projectile aimed correctly at the server position can visibly fly at empty space on the shooter's screen. It also governs how much other players glitch around during powerslides.
 
-Lowering to `0.2`–`0.33` tightens PvP sync at a bandwidth cost. **Test this one separately from the other three** — it improves perception rather than hit rate, and if you change it at the same time as a targeting fix you will not be able to tell a perception improvement from a hit-rate improvement in player reports.
+> ⚠️ **This property reaches less than its name suggests — read before tuning.** It gates only the **MoveToState-derived** broadcast path. Every **AutonomousPosition** packet from the client sets `RequestedLocationBroadcast` and broadcasts *unconditionally*, regardless of this setting:
+>
+> ```csharp
+> if (RequestedLocationBroadcast || DateTime.UtcNow - LastUpdatePosition >= MoveToState_UpdatePosition_Threshold)
+>     SendUpdatePosition();                                        // broadcast to everyone in range
+> else
+>     Session.Network.EnqueueSend(new GameMessageUpdatePosition(this));   // moving player only
+> ```
+>
+> Clients send AutonomousPosition continuously while moving, so a moving player's position is already broadcast far more often than once a second. This threshold is a **backstop for the gaps between autopos packets**, not the primary broadcast rate. The real drift window is bounded by the client's autopos cadence, not by this value.
+>
+> **Measure before tuning.** If the observed broadcast rate for a moving player is already 10+/s, lowering this changes almost nothing and only adds load. Effective broadcast rate is `min(autopos arrival rate, player physics tick rate)`.
+
+Cost scales as **(moving players) × (players who can see them)** — quadratic in a zerg. `GameMessageUpdatePosition` is 68 bytes of body (retail pcap max) plus ~16 bytes of fragment header. A 30-player siege with everyone moving and in range of each other is ~900 messages/s ≈ 75 KB/s at one broadcast per player per second; the same fight at 0.2 s would be ~4500 msg/s ≈ 378 KB/s **if** the threshold were the only source — in practice autopos already dominates, so the marginal cost of lowering it is much smaller than that ceiling, and so is the marginal benefit.
+
+If you do tune it, step to `0.33` first and measure the delta before considering `0.2`.
+
+**Test this one separately from the other three** — it improves perception rather than hit rate, and if you change it at the same time as a targeting fix you will not be able to tell a perception improvement from a hit-rate improvement in player reports.
+
+### War Magic Tracking — why none of the missile fixes apply
+
+The four missile fixes above are deliberately **not** applied to spell projectiles. Spells do not have any of the same defects:
+
+| Missile defect | Spell equivalent? |
+|---|---|
+| Stale firing solution (Fix 1) | **No.** `HandleCastSpell` → `CreateSpellProjectile` → `CalculateProjectileVelocity` → `LaunchSpellProjectiles` all run synchronously, *after* the windup animation has completed. There is no animation gap between solving and spawning. The only delay path is `spell.SpellDelay != 0` (delayed metaspells), which is intentional |
+| Zero-lead fallback (Fix 2) | **No.** Spells already use `solve_ballistic_arc_lateral`, which finds a solution whenever the horizontal intercept quadratic does. At 15 m/s against a ~6 m/s runner it always does. There is also an existing zero-velocity retry and a `dir * speed` final fallback |
+| Aim point on the envelope edge (Fix 4) | **No.** `ProjHeight = 2/3` puts the aim point at 1.223 m, which is 0.127 m from the upper collision sphere center — **0.566 m lateral tolerance out of a possible 0.580 m.** Already effectively optimal |
+
+**War magic is not under-tracking — it is the slowest projectile in the game.** Standard war bolts (`flamebolt` 1499, `lightningbolt` 1635, `shockwave` 1634) have `MaximumVelocity` **15 m/s**, against 18.6 for thrown and 24.9–27.3 for bows:
+
+| distance | war bolt flight (15 m/s) | bow flight (27.3 m/s) |
+|---|---|---|
+| 20 m | 1.33 s | 0.74 s |
+| 30 m | 2.00 s | 1.12 s |
+| 40 m | 2.67 s | 1.53 s |
+
+So war magic carries roughly **1.8× the prediction horizon of a bow** — a strafe reversal at 30 m displaces the predicted point by ~10 m for a bolt versus ~6 m for an arrow. Bolts being dodgeable is inherent to that speed, not a bug. Raising it means editing `MaximumVelocity` on the bolt weenies, which is a balance change, not a fix.
+
+Streak spells (`shockwavestreak` 7267 and friends) are 45 m/s and barely leadable at all by comparison.
+
+### "The bolt hit me but looked like it missed"
+
+The direct lever for this is the existing **`spell_projectile_ethereal`** property (default `false`), not `player_update_position_threshold`.
+
+With it **off**, the *client* runs its own collision for the bolt against its own dead-reckoned copy of the target. When client and server disagree on where the target was, the client's bolt sails past while the server registers a hit — exactly this symptom.
+
+With it **on**, spell projectiles are broadcast to clients as ethereal (`WorldObject_Networking.cs:304`), so the client never runs collision on them at all. The server sends an authoritative stop-velocity plus explode script on impact, and the visual matches the server's decision.
+
+Note this checks `this is SpellProjectile`, so it affects **war magic only** — arrows, bolts and thrown weapons are unaffected by it.
+
+A partial mitigation is already applied unconditionally in `SpellProjectile.ProjectileImpact()` — velocity is zeroed and a `GameMessageVectorUpdate` broadcast on impact, which the in-code comment notes also fixes ghost projectiles sailing through the target in default mode. Enabling ethereal mode is the fuller version of the same idea.
 
 ### Suggested rollout order
 
