@@ -362,6 +362,26 @@ Players see their current boost on the `Catch-Up` line of `/season status`.
 | `catchup_xp_max_multiplier` | double | `5.00` | Boost for a character with 0 total XP (furthest behind) |
 | `catchup_xp_min_multiplier` | double | `2.00` | Boost for a character right at the threshold (least far behind) |
 
+### Bypassing the Cap for Testing
+
+`/grantxp` accepts an optional trailing `force` argument that ignores the cap system entirely, so a test character can be leveled past the current season cap without touching any server-wide property.
+
+```
+/grantxp 500000000 force
+/grantxp Nakedmoleman 500000000 force
+```
+
+`force` skips three things: the rolling season XP cap (global remaining + per-category buckets), the `season_max_xp` safety clamp, and the max-level XP gate (XP still lands at level 126 even when `allow_xp_at_max_level` is false). A normal `/grantxp` without the argument stays fully capped — `XpType.Admin` only bypasses the per-category buckets, never the global remaining.
+
+Notes:
+
+- `force` is only recognized as the **last** token, so a player actually named Force can still be targeted by name (`/grantxp Force 1000`).
+- Access is the same as `/grantxp` itself: Developer or higher on a live world, anyone on a test world.
+- Forced grants are tagged `(season XP cap bypassed)` in both the confirmation message and the audit-channel broadcast.
+- Unassigned XP is still clamped to `uint.MaxValue` (~4.29 billion). That is a client display limit, not a season cap — `TotalExperience` (which drives level) goes as high as you grant, but to spend more than 4.29 billion you must spend the pool down and grant again.
+
+This replaces the old workaround of toggling `rolling_level_cap_enabled` off and back on, which lifted the cap for every online player during the window.
+
 ---
 
 ## 7. Hot Dungeons
@@ -803,6 +823,7 @@ Changes take effect on the next cast — already-active enchantments are not ret
 | `/startrollingcap` | Start the season rolling cap from today |
 | `/forcerollingcap` | Force-recalculate rolling_xp_cap (and xp_modifier if enabled) |
 | `/rollingcapstatus` | Show cap status, season day, XP modifier state |
+| `/grantxp [name] <amount> [force]` | Grant XP; `force` bypasses the season cap and max-level gate (testing) |
 | `/pvpdmgpresets` | List pvp_dmg_mod presets and active one |
 | `/reloadpvpdmgpresets` | Hot-reload pvp_dmg_mod_presets.json |
 | `/applypvpdmgpreset [n]` | Force-apply preset at threshold n |
