@@ -9,6 +9,16 @@
 
 ## 🩹 v1.20 (in development)
 
+### 🏹 Missile Tracking — Experimental Changes, Off By Default
+
+Missile tracking for bows, crossbows and thrown weapons has been a long-standing complaint: arrows that visibly fly nowhere near the target, and twitching side to side throwing off tracking far more than it should.
+
+Digging into it turned up several genuine issues in how the server aims a projectile — the firing solution being calculated *before* the aim animation plays rather than at the moment the arrow leaves the bow, target leading silently switching itself off at longer ranges, and the aim point for high attacks sitting right on the edge of the target's hit volume instead of in the middle of it. A separate issue affects how often your client is told where other players actually are, which is why an arrow can look like it missed when the server thought it connected.
+
+**None of it is live yet.** Every change is behind its own switch and **the original behavior remains the default**. They will be enabled one at a time on the test server so each can be measured in isolation — the whole point is to be able to tell which change did what, and to catch any side effect before it reaches live PvP.
+
+Nothing about missile combat changes for you today. Expect these to start appearing in later patch notes as they are individually turned on, with details of what each one actually did.
+
 ---
 
 ## 🩹 v1.19 — August 22, 2026

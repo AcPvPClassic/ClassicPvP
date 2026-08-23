@@ -24,6 +24,7 @@ All server properties are stored in `shard_config` and are readable/writable at 
 16. [Loot-to-Weenie Export](#16-loot-to-weenie-export)
 17. [Spell Management](#17-spell-management)
 18. [Dungeon Bosses](#18-dungeon-bosses)
+19. [Missile Tracking (Experimental)](#19-missile-tracking-experimental)
 
 ---
 
@@ -937,3 +938,115 @@ Each boss mirrors the model, animation, sound and physics of an existing creatur
 | Nharim Dul, the Whispering Death | Shadow Captain | `6554` |
 
 To re-skin a boss, copy those DIDs from the new reference weenie into the boss's SQL file in `Content/sql/weenies/DungeonBosses/`. **Pick a reference with its own dedicated creature `Setup`.** Creatures built on the generic human setup (`0x02000001`) carry no geometry of their own — their whole appearance comes from the clothing table, and if the client dat has no clothing entry for that setup the boss renders as an untextured naked human. Don't forget `PaletteTemplate` (int type 3) alongside `PaletteBase`/`ClothingBase`; without it the colour set is never applied. Combat stats are unaffected — they're authored at reference level 275 and scaled at spawn. After changing a model, verify it renders with `/dungeonboss spawn <name>`: if the setup is missing from the client dat the boss fails to enter the world and the failure is logged by name.
+
+---
+
+## 19. Missile Tracking (Experimental)
+
+Four independent changes to how bow / crossbow / thrown projectiles are aimed, plus one to how often player positions are broadcast. **Every one defaults to off** — with no properties set, missile behavior is exactly what it has always been.
+
+Each is gated separately so they can be A/B tested in isolation. Turn on **one at a time**, play a session, and only add the next once you're satisfied nothing else moved.
+
+### The underlying problem
+
+Arrows do not home. One firing solution is computed at launch and the projectile is pure ballistics under gravity after that — this is correct retail behavior and none of these changes alter it. What the changes address is the **prediction horizon** (how far into the future the server has to guess where the target will be) and the **hit envelope** (how much of the target the arrow can actually touch).
+
+A player's collision volume is two spheres of radius 0.48 at z 0.475 and z 1.35, height 1.835. With an arrow radius of 0.10 that is a **0.58 m hit envelope**. Measured prediction horizons against that envelope:
+
+| weapon | 20 m | 30 m | 40 m |
+|---|---|---|---|
+| bow (27.3 m/s) | 0.81 s horizon → 4.0 m error on a strafe reversal | 1.19 s → 6.0 m | 1.59 s → 8.0 m |
+| bow + fast missiles (32.8 m/s) | 0.65 s → 3.2 m | 0.99 s → 5.0 m | 1.31 s → 6.6 m |
+| thrown (18.6 m/s) | 1.51 s → 7.6 m | 2.24 s → 11.2 m | out of range |
+
+### Properties
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `missile_fresh_solution` | bool | `false` | **Fix 1.** Recalculate the firing solution (velocity, spawn origin, orientation) at the instant the projectile spawns, instead of before the turn and aim animation |
+| `missile_lead_fallback` | bool | `false` | **Fix 2.** When the quartic intercept solver finds no solution against a moving target, fall back to the lateral solver instead of silently dropping to a zero-lead stationary aim |
+| `missile_lead_fallback_log` | bool | `false` | **Fix 2 diagnostics.** Log every quartic intercept failure with distance, target velocity and what the fallback produced. Works independently of `missile_lead_fallback` — turn this on alone first to measure how often the case fires before changing behavior. Noisy |
+| `missile_aim_center_mass` | bool | `false` | **Fix 4.** Aim at the center of a player target's collision spheres rather than at the top of the head / the gap between spheres. Player targets only |
+| `missile_aim_center_mass_high` | double | `0.75` | Fraction of target height aimed at for AttackHeight **High**. Only used when `missile_aim_center_mass` is on |
+| `missile_aim_center_mass_medium` | double | `0.62` | Fraction of target height aimed at for AttackHeight **Medium**. Only used when `missile_aim_center_mass` is on |
+| `missile_aim_center_mass_low` | double | `0.27` | Fraction of target height aimed at for AttackHeight **Low**. Only used when `missile_aim_center_mass` is on |
+| `player_update_position_threshold` | double | `1.0` | **Fix 5.** Seconds between forced position broadcasts for a moving player. `1.0` is the stock retail-estimated value; lower to `0.2`–`0.33` for tighter PvP sync at a bandwidth cost |
+
+### Fix 1 — stale firing solution (`missile_fresh_solution`)
+
+The firing solution used to be computed *before* the turn and the aim animation, then applied after them. Measured from `client_portal.dat` (motion table `0900020D`), that gap is:
+
+| stance | aim animation length |
+|---|---|
+| Bow / Crossbow, level shot | 0.033 s |
+| Bow / Crossbow, elevated (15°–45°) | 0.067 – 0.267 s |
+| Bow / Crossbow, steep (90°) | 0.567 s |
+| **Thrown / Atlatl, every aim level** | **0.378 s** |
+
+Plus rotate time on repeat attacks against a circling target. Both the intercept prediction *and* the spawn origin were stale by that much, so the arrow also left from where the shooter had been rather than where they were.
+
+With this on, the solution is re-solved at spawn time. `aimLevel` (and therefore the spawn offset) is deliberately **reused** from the earlier pass — the animation has already played, so the offset has to stay consistent with what the client rendered. If the re-solve fails because the target ran out of range mid-animation, the original solution is kept rather than misfiring; the attack was already committed at that point.
+
+Biggest effect on thrown weapons, near-free for level bow shots. Applies to monster archers too.
+
+### Fix 2 — zero-lead fallback (`missile_lead_fallback`)
+
+The quartic intercept solver returns no solution across a band that is still **well inside** the weapon's max range. Stock behavior falls through to the stationary solver, which aims at where the target is standing *right now* — a guaranteed miss after a 1–2 s flight, with no log line.
+
+Where lead silently dies against a fleeing target:
+
+| weapon | lead lost past | actual max range |
+|---|---|---|
+| thrown (18.6 m/s) | 21 – 30 m | ~35 m |
+| bow (27.3 m/s) | 51 – 61 m | ~76 m |
+
+Closest approach of the arrow to the aim point, integrated through the same math the physics engine uses (0.58 m envelope):
+
+| case | stock (zero-lead) | with fallback |
+|---|---|---|
+| thrown 26 m, target fleeing 6 m/s | 6.03 m miss | 0.05 m |
+| thrown 30 m, fleeing 6 m/s | 8.16 m | 0.25 m |
+| bow 60 m, fleeing 6 m/s | 8.97 m | 0.42 m |
+
+> **Known side effect.** No solution exists at the weapon's actual speed — that is precisely *why* the quartic failed — so the fallback velocity is necessarily faster than the weapon's `MaximumVelocity`. Measured within each weapon's real range against a target fleeing at 6 m/s: **thrown +10% at 22 m rising to +18%** at its ~35 m limit, **bows +10% at 55 m rising to +16%** at their ~76 m limit. Well under the engine's hard velocity cap of 50, but these long shots do land slightly sooner than a strict reading of the weapon's stated velocity implies. This only affects shots that currently miss 100% of the time.
+
+Note the two solvers in `Trajectory.cs` take **opposite gravity sign conventions** (`solve_ballistic_arc` wants positive-down; `solve_ballistic_arc_lateral` wants a signed acceleration). This is commented at the call site — worth knowing before touching that code.
+
+### Fix 4 — aim point (`missile_aim_center_mass`)
+
+Stock aim point is `target.Height / GetAimHeight()`, which for a player puts the **High** aim point at the exact top of the upper collision sphere and the **Medium** aim point in the gap between the two spheres. Both are low-tolerance spots:
+
+| attack height | stock aim z | stock lateral tolerance | center-mass | new tolerance |
+|---|---|---|---|---|
+| High | 1.835 m (top of head) | **0.318 m** | 0.75 × H = 1.376 m | **0.580 m** |
+| Medium | 0.918 m (waist gap) | **0.386 m** | 0.62 × H = 1.138 m | **0.540 m** |
+| Low | 0.612 m | 0.564 m | 0.27 × H = 0.495 m | 0.580 m |
+
+So stock high attacks have ~45% less lateral tolerance than low attacks for identical prediction error.
+
+**Player targets only.** The fractions are derived from the player collision model specifically. Monsters use a wide variety of setups — many are a single sphere where the existing `Height/2` is already center of mass — and reusing player-tuned fractions there would be a regression rather than a fix. Monster targets always use stock behavior regardless of this setting.
+
+The three fractions are tunable at runtime without a rebuild if you want to shift where arrows visibly land on the model.
+
+### Fix 5 — position broadcast rate (`player_update_position_threshold`)
+
+This one changes what the shooter **sees**, not what the server computes.
+
+Between forced broadcasts, every client dead-reckons other players from their `MoveToState`. At the stock 1.0 s the server's authoritative position for a moving player can drift noticeably from what other clients are showing, so a missile aimed correctly at the server position can visibly fly at empty space on the shooter's screen. It also governs how much other players glitch around during powerslides.
+
+Lowering to `0.2`–`0.33` tightens PvP sync at a bandwidth cost. **Test this one separately from the other three** — it improves perception rather than hit rate, and if you change it at the same time as a targeting fix you will not be able to tell a perception improvement from a hit-rate improvement in player reports.
+
+### Suggested rollout order
+
+1. `missile_lead_fallback_log` alone — measure how often the zero-lead case actually fires on live, changing nothing.
+2. `missile_fresh_solution` — biggest win for thrown, near-free for bows.
+3. `missile_aim_center_mass` — widest hit envelope gain, especially on high attacks.
+4. `missile_lead_fallback` — fixes the "sometimes it doesn't lead at all" cases.
+5. `player_update_position_threshold` — separately, last, and watch bandwidth.
+
+### Related existing knobs
+
+| Property | Notes |
+|---|---|
+| `fast_missile_modifier` | Default `1.2`. Only applies to players who have the **UseFastMissiles** client option enabled. Prediction horizon scales as 1/speed, so this is the bluntest available lever |
+| `trajectory_alt_solver` | Default `false`. Switches missiles *and* spell projectiles to `Trajectory2`. **Bypasses Fix 2 entirely** — the fallback lives on the primary solver path |

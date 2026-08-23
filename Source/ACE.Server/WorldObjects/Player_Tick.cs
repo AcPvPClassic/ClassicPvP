@@ -579,8 +579,15 @@ namespace ACE.Server.WorldObjects
         /// https://youtu.be/o5lp7hWhtWQ?t=112
         /// 
         /// If you wish for players to glitch around less during powerslides, lower this value
+        ///
+        /// MISSILE FIX 5: this also governs how far the server's authoritative position for a moving
+        /// player can drift from what other clients are showing. Between broadcasts, each client
+        /// dead-reckons other players from their MoveToState, so a missile aimed at the server position
+        /// can visibly fly at empty space on the shooter's screen even when the intercept math was
+        /// self-consistent. Now driven by the 'player_update_position_threshold' server property so it
+        /// can be tuned live (0.2 - 0.33 tightens pvp sync, at a bandwidth cost). Default stays 1.0.
         /// </summary>
-        public static TimeSpan MoveToState_UpdatePosition_Threshold = TimeSpan.FromSeconds(1);
+        public static TimeSpan MoveToState_UpdatePosition_Threshold => TimeSpan.FromSeconds(PropertyManager.GetDouble("player_update_position_threshold").Item);
 
         bool LastMoveToStateWasRun = false;
         bool IsFirstAutoPosPacketSinceMoveToState = false;
