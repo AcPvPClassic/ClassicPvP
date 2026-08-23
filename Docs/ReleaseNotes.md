@@ -7,7 +7,11 @@
 
 ---
 
-## 🩹 v1.20 (in development)
+## 🩹 v1.21 (in development)
+
+---
+
+## 🩹 v1.20 — August 23, 2026
 
 ### 🏹 Missile Tracking — Experimental Changes, Off By Default
 
