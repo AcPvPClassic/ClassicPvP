@@ -19,6 +19,14 @@ Digging into it turned up several genuine issues in how the server aims a projec
 
 Nothing about missile combat changes for you today. Expect these to start appearing in later patch notes as they are individually turned on, with details of what each one actually did.
 
+### 🐛 Fixed: Pack Dolls Never Rotting Off The Ground
+
+Anything you drop on the ground is supposed to clean itself up after about five minutes. A handful of items never did — pack dolls, plush toys, the Carved Tusker Statue, the Small Olthoi Grub, the Wedding Cake. Their item data carried a **never rot** flag inherited from retail, so the server skipped right past them when sweeping the landblock.
+
+On its own that's a curiosity. Dropped by the thousand in one spot it's a lag bomb — every pack doll runs full creature animations, and a dense pile of them will drag the framerate down for everyone in the area, which is exactly what was happening.
+
+**All 23 affected items now rot on the normal timer**, and the piles already sitting on the ground have been cleared out.
+
 ---
 
 ## 🩹 v1.19 — August 22, 2026
