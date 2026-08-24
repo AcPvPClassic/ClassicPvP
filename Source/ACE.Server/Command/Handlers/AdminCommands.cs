@@ -6529,6 +6529,8 @@ namespace ACE.Server.Command.Handlers
 
             Processors.DeveloperContentCommands.ExportSQLWeenie(dbWeenie, session, withFolders: true);
             Processors.DeveloperContentCommands.ImportSQLWeenie(session, newWcid.ToString(), withFolders: true);
+
+            DatabaseManager.World.ClearCookbookCache();
         }
 
         private static void DeleteExistingWeenieFiles(uint wcid)
@@ -6560,15 +6562,37 @@ namespace ACE.Server.Command.Handlers
                 LastModified = DateTime.UtcNow,
             };
 
+            // Record the original template WCID so RecipeManager.GetRecipe() can fall back to
+            // its cook_book pairings -- this exported item is functionally the same weapon/tool
+            // as the live template it was rolled from, it just has its own frozen instance stats.
+            // If wo was itself already an exported item (re-exporting an export), preserve its
+            // existing WeenieSwapClassId chain instead of overwriting it with wo's own WCID.
+            var originalTemplateWcid = wo.WeenieSwapClassId ?? (int)wo.WeenieClassId;
+            dbWeenie.WeeniePropertiesInt.Add(new ACE.Database.Models.World.WeeniePropertiesInt
+            {
+                ObjectId = wcid,
+                Type = (ushort)PropertyInt.WeenieSwapClassId,
+                Value = originalTemplateWcid,
+            });
+
+            // Read this via the live getter before acquiring the biota read lock below --
+            // calling it from inside that lock caused a LockRecursionException, since the
+            // getter internally acquires the same read lock on wo.BiotaDatabaseLock.
+            var originalIconUnderlayId = wo.IconUnderlayId;
+
             var biota = wo.Biota;
             var rwLock = wo.BiotaDatabaseLock;
 
             rwLock.EnterReadLock();
             try
             {
+                // Skip WeenieSwapClassId here -- it's already been set above (either from wo's
+                // own value if it was a re-exported item, or freshly derived from wo.WeenieClassId),
+                // and copying it again here would create a duplicate (ObjectId, Type) row.
                 if (biota.PropertiesInt != null)
                     foreach (var kvp in biota.PropertiesInt)
-                        dbWeenie.WeeniePropertiesInt.Add(new ACE.Database.Models.World.WeeniePropertiesInt { ObjectId = wcid, Type = (ushort)kvp.Key, Value = kvp.Value });
+                        if (kvp.Key != PropertyInt.WeenieSwapClassId)
+                            dbWeenie.WeeniePropertiesInt.Add(new ACE.Database.Models.World.WeeniePropertiesInt { ObjectId = wcid, Type = (ushort)kvp.Key, Value = kvp.Value });
 
                 if (biota.PropertiesBool != null)
                     foreach (var kvp in biota.PropertiesBool)
@@ -6582,9 +6606,19 @@ namespace ACE.Server.Command.Handlers
                     foreach (var kvp in biota.PropertiesString)
                         dbWeenie.WeeniePropertiesString.Add(new ACE.Database.Models.World.WeeniePropertiesString { ObjectId = wcid, Type = (ushort)kvp.Key, Value = kvp.Value });
 
+                // Skip IconUnderlay here -- confirmed by testing that the raw biota dictionary
+                // can hold a stale value for this specific property at export time (e.g. right
+                // after an imbue mutation sets it via the live property setter). We re-read it
+                // from the live getter below instead, which reflects the current, correct value.
                 if (biota.PropertiesDID != null)
                     foreach (var kvp in biota.PropertiesDID)
-                        dbWeenie.WeeniePropertiesDID.Add(new ACE.Database.Models.World.WeeniePropertiesDID { ObjectId = wcid, Type = (ushort)kvp.Key, Value = kvp.Value });
+                        if (kvp.Key != PropertyDataId.IconUnderlay)
+                            dbWeenie.WeeniePropertiesDID.Add(new ACE.Database.Models.World.WeeniePropertiesDID { ObjectId = wcid, Type = (ushort)kvp.Key, Value = kvp.Value });
+
+                // IconUnderlay: use the value captured before the lock above, rather than the
+                // raw biota dictionary snapshot -- see note on the skip condition for why.
+                if (originalIconUnderlayId.HasValue)
+                    dbWeenie.WeeniePropertiesDID.Add(new ACE.Database.Models.World.WeeniePropertiesDID { ObjectId = wcid, Type = (ushort)PropertyDataId.IconUnderlay, Value = originalIconUnderlayId.Value });
 
                 // IID properties (owner, wielder, container references) are intentionally excluded — they are live object GUIDs not valid in a weenie template.
 
