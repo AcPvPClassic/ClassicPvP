@@ -61,34 +61,38 @@ VALUES (480607,   1, 0x02000F7A) /* Setup */
    space and can never select the Sturdy Iron Key group below. The key is only
    eligible on the 2 remaining rolls — see the Sturdy Iron Key group note.
 
-   Main group (0.0000 – 0.5000, 50% of total probability space):
-     Salvage bags     0.0000 – 0.0550   (0.5% each × 11 = 5.5%)
-     Foolproof gems   0.0550 – 0.0900   (0.25% each × 14 = 3.5%)
-     A Box            0.0900 – 0.1100   (2%)
-     Trade Note ×25   0.1100 – 0.1700   (6%)
-     PK Trophy ×20    0.1700 – 0.3200   (15%)
-     Phial ×2         0.3200 – 0.4000   (8%)
-     Healing Kit      0.4000 – 0.4250   (2.5%)
-     Salted Meat ×20  0.4250 – 0.4500   (2.5%)
-     Mana Philtre ×20 0.4500 – 0.4750   (2.5%)
-     Stam Philtre ×20 0.4750 – 0.5000   (2.5%)
+   Main group (0.0000 – 0.5300, 53% of total probability space):
+     Salvage bags     0.0000 – 0.0850   (0.5% each × 17 = 8.5%)
+     Foolproof gems   0.0850 – 0.1200   (0.25% each × 14 = 3.5%)
+     A Box            0.1200 – 0.1400   (2%)
+     Trade Note ×25   0.1400 – 0.2000   (6%)
+     PK Trophy ×20    0.2000 – 0.3500   (15%)
+     Phial ×2         0.3500 – 0.4300   (8%)
+     Healing Kit      0.4300 – 0.4550   (2.5%)
+     Salted Meat ×20  0.4550 – 0.4800   (2.5%)
+     Mana Philtre ×20 0.4800 – 0.5050   (2.5%)
+     Stam Philtre ×20 0.5050 – 0.5300   (2.5%)
 
    Massive Mana Stone group — probability reset (each 10% of total):
-     Mana Stone #1    0.5000 – 0.6000   (10%)  ← reset triggers (0.10 < 0.50)
-     Mana Stone #2    0.6000 – 0.7000   (10%)
-     Mana Stone #3    0.7000 – 0.8000   (10%)
-     Mana Stone #4    0.8000 – 0.9000   (10%)
-     Mana Stone #5    0.9000 – 1.0000   (10%)
+     Mana Stone #1    0.5300 – 0.6300   (10%)  ← reset triggers (0.10 < 0.53)
+     Mana Stone #2    0.6300 – 0.7300   (10%)
+     Mana Stone #3    0.7300 – 0.8300   (10%)
+     Mana Stone #4    0.8300 – 0.9300   (10%)
+     Mana Stone #5    0.9300 – 1.0300   (10%)
 
-   Sturdy Iron Key group — probability reset (independent ~20% key roll):
-     Sturdy Iron Key  1.0000 – 1.1180   (raw prob 0.1180; reset triggers, 0.1180 < 0.5000)
+   Sturdy Iron Key group — probability reset (independent key roll):
+     Sturdy Iron Key  1.0300 – 1.1480   (raw prob 0.1180; reset triggers, 0.1180 < 0.5000)
 
-   GetTotalProbability() = 0.5000 + 0.5000 + 0.1180 = 1.1180
-   Per RNG roll the key occupies band [1.0000, 1.1180] of a [0,1.1180] roll
-   = 0.1180 / 1.1180 = 10.55%. Because the first RNG roll is locked to [0,1.0]
+   GetTotalProbability() = 0.5300 + 0.5000 + 0.1180 = 1.1480
+   Per RNG roll the key occupies band [1.0300, 1.1480] of a [0,1.1480] roll
+   = 0.1180 / 1.1480 = 10.28%. Because the first RNG roll is locked to [0,1.0]
    (see note above), the key is eligible on 2 rolls per chest:
-   1 - (1 - 0.1055)^2 ≈ 20% chance of a Sturdy Iron Key per chest open.
+   1 - (1 - 0.1028)^2 ≈ 19.5% chance of a Sturdy Iron Key per chest open.
    max_Create = 1 caps it at one key per chest.
+
+   NOTE: the salvage band grew from 11 to 17 bags (added Agate, Carnelian,
+   Lapis Lazuli, Rose Quartz, Smoky Quartz, Mahogany). Every band from the
+   Foolproof gems onward shifted +0.0300; the reset groups are unchanged.
    ----------------------------------------------------------------------- */
 
 INSERT INTO `weenie_properties_generator` (`object_Id`, `probability`, `weenie_Class_Id`, `delay`, `init_Create`, `max_Create`, `when_Create`, `where_Create`, `stack_Size`, `palette_Id`, `shade`, `obj_Cell_Id`, `origin_X`, `origin_Y`, `origin_Z`, `angles_W`, `angles_X`, `angles_Y`, `angles_Z`)
@@ -104,31 +108,37 @@ VALUES (480607,    -1, 10000, 1, 1,   1, 2, 72,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0,
      , (480607, 0.0450, 510030, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Fire Opal Salvage WS10 - Crippling Blow */
      , (480607, 0.0500, 510027, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Black Opal Salvage WS10 - Critical Strike */
      , (480607, 0.0550, 510028, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Bloodstone Salvage WS10 - Minor Endurance Imbue */
-     , (480607, 0.0575, 36619, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Aquamarine Foolproof */
-     , (480607, 0.0600, 36620, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Black Garnet Foolproof */
-     , (480607, 0.0625, 36622, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Emerald Foolproof */
-     , (480607, 0.0650, 36624, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Imperial Topaz Foolproof */
-     , (480607, 0.0675, 36625, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Jet Foolproof */
-     , (480607, 0.0700, 36634, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Peridot Foolproof */
-     , (480607, 0.0725, 36626, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Red Garnet Foolproof */
-     , (480607, 0.0750, 36628, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* White Sapphire Foolproof */
-     , (480607, 0.0775, 36635, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Yellow Topaz Foolproof */
-     , (480607, 0.0800, 36634, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Peridot Foolproof */
-     , (480607, 0.0825, 36636, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Zircon Foolproof */
-     , (480607, 0.0850, 36621, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Black Opal Foolproof */
-     , (480607, 0.0875, 36623, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Fire Opal Foolproof */
-     , (480607, 0.0900, 36627, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Sunstone Foolproof */
-     , (480607, 0.1100, 510000, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* A Box */
-     , (480607, 0.1700,  20630, 1, 1, 25, 2, 8,   25, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Trade Note (250,000) x25 */
-     , (480607, 0.3200, 1000002, 1, 1, 20, 2, 8,  20, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* PK Trophy x20 */
-     , (480607, 0.4000, 1000003, 1, 1, 2, 2,  8,   2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Phial of Bloody Tears x2 */
-     , (480607, 0.4250,   9229, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Treated Healing Kit */
-     , (480607, 0.4500,  27669, 1, 1, 20, 2, 8,   20, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Tumerok Salted Meat x20 */
-     , (480607, 0.4750,  27321, 1, 1, 20, 2, 8,   20, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Mana Philtre x20 */
-     , (480607, 0.5000,  27325, 1, 1, 20, 2, 8,   20, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Stamina Philtre x20 */
+     , (480607, 0.0600, 510036, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Agate Salvage WS10 - Minor Focus Imbue */
+     , (480607, 0.0650, 510037, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Carnelian Salvage WS10 - Minor Strength Imbue */
+     , (480607, 0.0700, 510038, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Lapis Lazuli Salvage WS10 - Minor Willpower Imbue */
+     , (480607, 0.0750, 510039, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Rose Quartz Salvage WS10 - Minor Quickness Imbue */
+     , (480607, 0.0800, 510040, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Smoky Quartz Salvage WS10 - Minor Coordination Imbue */
+     , (480607, 0.0850, 510041, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Mahogany Salvage WS10 - Missile Damage Mod */
+     , (480607, 0.0875, 36619, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Aquamarine Foolproof */
+     , (480607, 0.0900, 36620, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Black Garnet Foolproof */
+     , (480607, 0.0925, 36622, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Emerald Foolproof */
+     , (480607, 0.0950, 36624, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Imperial Topaz Foolproof */
+     , (480607, 0.0975, 36625, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Jet Foolproof */
+     , (480607, 0.1000, 36634, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Peridot Foolproof */
+     , (480607, 0.1025, 36626, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Red Garnet Foolproof */
+     , (480607, 0.1050, 36628, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* White Sapphire Foolproof */
+     , (480607, 0.1075, 36635, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Yellow Topaz Foolproof */
+     , (480607, 0.1100, 36634, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Peridot Foolproof */
+     , (480607, 0.1125, 36636, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Zircon Foolproof */
+     , (480607, 0.1150, 36621, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Black Opal Foolproof */
+     , (480607, 0.1175, 36623, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Fire Opal Foolproof */
+     , (480607, 0.1200, 36627, 1, 1,  1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Sunstone Foolproof */
+     , (480607, 0.1400, 510000, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* A Box */
+     , (480607, 0.2000,  20630, 1, 1, 25, 2, 8,   25, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Trade Note (250,000) x25 */
+     , (480607, 0.3500, 1000002, 1, 1, 20, 2, 8,  20, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* PK Trophy x20 */
+     , (480607, 0.4300, 1000003, 1, 1, 2, 2,  8,   2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Phial of Bloody Tears x2 */
+     , (480607, 0.4550,   9229, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Treated Healing Kit */
+     , (480607, 0.4800,  27669, 1, 1, 20, 2, 8,   20, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Tumerok Salted Meat x20 */
+     , (480607, 0.5050,  27321, 1, 1, 20, 2, 8,   20, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Mana Philtre x20 */
+     , (480607, 0.5300,  27325, 1, 1, 20, 2, 8,   20, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Stamina Philtre x20 */
      , (480607, 0.1000,  27329, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Massive Mana Stone #1 — reset group start */
      , (480607, 0.2000,  27329, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Massive Mana Stone #2 */
      , (480607, 0.3000,  27329, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Massive Mana Stone #3 */
      , (480607, 0.4000,  27329, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Massive Mana Stone #4 */
      , (480607, 0.5000,  27329, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Massive Mana Stone #5 */
-     , (480607, 0.1180,   6876, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Sturdy Iron Key — reset group, ~20% independent key roll */;
+     , (480607, 0.1180,   6876, 1, 1, 1, 2,  8,   -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Sturdy Iron Key — reset group, independent key roll */;

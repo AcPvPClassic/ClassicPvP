@@ -1018,7 +1018,7 @@ Each of the three rolls lands on either a **Massive Mana Stone (50% chance)** or
 | PK Trophies ×20 | 15% |
 | Phials of Bloody Tears ×2 | 8% |
 | Trade Note ×25 (250,000 pyreals) | 6% |
-| Salvage bag (11 types, ~0.5% each) | 5.5% |
+| Salvage bag (17 types, ~0.5% each) | 8.5% |
 | Foolproof tinkering gem (14 types, ~0.25% each) | 3.5% |
 | Treated Healing Kit | 2.5% |
 | Tumerok Salted Meat ×20 | 2.5% |
@@ -1026,7 +1026,7 @@ Each of the three rolls lands on either a **Massive Mana Stone (50% chance)** or
 | Stamina Philtre ×20 | 2.5% |
 | A Box | 2% |
 
-The salvage bags are distributed evenly across 11 types (all full WS10, 100-unit bags):
+The salvage bags are distributed evenly across 17 types (all full WS10, 100-unit bags):
 
 | Salvage | Use |
 |---------|-----|
@@ -1041,6 +1041,12 @@ The salvage bags are distributed evenly across 11 types (all full WS10, 100-unit
 | Fire Opal | Crippling Blow |
 | Black Opal | Critical Strike |
 | Bloodstone | Minor Endurance (jewelry only) |
+| Agate | Minor Focus (jewelry only) |
+| Carnelian | Minor Strength (jewelry only) |
+| Lapis Lazuli | Minor Willpower (jewelry only) |
+| Rose Quartz | Minor Quickness (jewelry only) |
+| Smoky Quartz | Minor Coordination (jewelry only) |
+| Mahogany | Missile Damage Mod |
 
 ### Skill and Attribute Reset Gem — PK Trophy Cost
 
@@ -1089,30 +1095,36 @@ Darkbeat's Lost Storage Key, Green Garnet Salvage, and the Level Requirement Rem
 
 | Item | Chance |
 |------|--------|
-| Workmanship Morph Gem | ~5.3% |
-| Missile Defense Requirement Morph Gem | ~5.3% |
-| Melee Requirement Morph Gem | ~5.3% |
-| Player Wield Requirement Morph Gem | ~5.3% |
-| Slayer Upgrade Morph Gem | ~5.3% |
-| Lesser Impenetrability Morph Gem | ~5.3% |
-| Slayer Morph Gem | ~1.8% |
-| Creature Resistance Morph Gem | ~1.8% |
-| Sunstone Salvage WS10 — Armor Rend | ~3.5% |
-| Red Garnet Salvage WS10 — Fire Rend | ~3.5% |
-| Black Garnet Salvage WS10 — Pierce Rend | ~3.5% |
-| Imperial Topaz Salvage WS10 — Slash Rend | ~3.5% |
-| Jet Salvage WS10 — Lightning Rend | ~3.5% |
-| Aquamarine Salvage WS10 — Cold Rend | ~3.5% |
-| White Sapphire Salvage WS10 — Bludgeon Rend | ~3.5% |
-| Emerald Salvage WS10 — Acid Rend | ~3.5% |
-| Fire Opal Salvage WS10 — Crippling Blow | ~3.5% |
-| Black Opal Salvage WS10 — Critical Strike | ~3.5% |
-| Bloodstone Salvage WS10 — Minor Endurance (jewelry only) | ~3.5% |
-| Sturdy Iron Keys ×3 | ~5.3% |
-| Darkbeat's Lost Storage Key | ~5.3% |
-| Mythic Mystery Box | ~5.3% |
-| MMDs ×5 | ~5.3% |
-| PK Trophies ×30 | ~5.3% |
+| Workmanship Morph Gem | ~4.3% |
+| Missile Defense Requirement Morph Gem | ~4.3% |
+| Melee Requirement Morph Gem | ~4.3% |
+| Player Wield Requirement Morph Gem | ~4.3% |
+| Slayer Upgrade Morph Gem | ~4.3% |
+| Lesser Impenetrability Morph Gem | ~4.3% |
+| Slayer Morph Gem | ~1.4% |
+| Creature Resistance Morph Gem | ~1.4% |
+| Sunstone Salvage WS10 — Armor Rend | ~2.9% |
+| Red Garnet Salvage WS10 — Fire Rend | ~2.9% |
+| Black Garnet Salvage WS10 — Pierce Rend | ~2.9% |
+| Imperial Topaz Salvage WS10 — Slash Rend | ~2.9% |
+| Jet Salvage WS10 — Lightning Rend | ~2.9% |
+| Aquamarine Salvage WS10 — Cold Rend | ~2.9% |
+| White Sapphire Salvage WS10 — Bludgeon Rend | ~2.9% |
+| Emerald Salvage WS10 — Acid Rend | ~2.9% |
+| Fire Opal Salvage WS10 — Crippling Blow | ~2.9% |
+| Black Opal Salvage WS10 — Critical Strike | ~2.9% |
+| Bloodstone Salvage WS10 — Minor Endurance (jewelry only) | ~2.9% |
+| Agate Salvage WS10 — Minor Focus (jewelry only) | ~2.9% |
+| Carnelian Salvage WS10 — Minor Strength (jewelry only) | ~2.9% |
+| Lapis Lazuli Salvage WS10 — Minor Willpower (jewelry only) | ~2.9% |
+| Rose Quartz Salvage WS10 — Minor Quickness (jewelry only) | ~2.9% |
+| Smoky Quartz Salvage WS10 — Minor Coordination (jewelry only) | ~2.9% |
+| Mahogany Salvage WS10 — Missile Damage Mod | ~2.9% |
+| Sturdy Iron Keys ×3 | ~4.3% |
+| Darkbeat's Lost Storage Key | ~4.3% |
+| Mythic Mystery Box | ~4.3% |
+| MMDs ×5 | ~4.3% |
+| PK Trophies ×30 | ~4.3% |
 
 All salvage bags are full WS10 bags (100 units). Ancient Bottle no longer drops from Rare Mystery Boxes — it's Mythic-only now. The Slayer Upgrade Morph Gem moved in here from the Mythic Mystery Box, and the Level Requirement Removal Morph Gem no longer drops here at all. The Slayer Morph Gem and Creature Resistance Morph Gem appear here at their rarest (~1.8% each) — they're more common in the Mythic box. The Lesser Impenetrability Morph Gem was added at the standard morph-gem weight, which shifted every other slot down slightly.
 

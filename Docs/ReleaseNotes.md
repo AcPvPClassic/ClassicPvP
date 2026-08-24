@@ -9,6 +9,21 @@
 
 ## 🩹 v1.21 (in development)
 
+### 💎 New Attribute Salvage Bags — Focus, Strength, Coordination & More
+
+Six new full **WS10 salvage bags** now drop from **Darkbeat's Storage Locker** and the **Rare Mystery Box**, alongside the existing Bloodstone bag. Applied to gear through the Tinkering Lotto, five of them give a chance to upgrade a **Minor attribute cantrip to Moderate** (or, rarely, Major) on jewelry, and one boosts missile weapons:
+
+| Salvage | Effect |
+|---|---|
+| Agate | Minor **Focus** → Moderate/Major (jewelry) |
+| Carnelian | Minor **Strength** → Moderate/Major (jewelry) |
+| Lapis Lazuli | Minor **Willpower** → Moderate/Major (jewelry) |
+| Rose Quartz | Minor **Quickness** → Moderate/Major (jewelry) |
+| Smoky Quartz | Minor **Coordination** → Moderate/Major (jewelry) |
+| Mahogany | +Missile Damage Mod (missile weapons) |
+
+Each drops at the same rate as the existing salvage bags. **Bug fix:** Smoky Quartz previously did nothing when applied — a name mismatch stopped its lotto from firing. It now works.
+
 ---
 
 ## 🩹 v1.20 — August 23, 2026

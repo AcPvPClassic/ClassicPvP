@@ -538,6 +538,8 @@ When enabled, every tinkering attempt has a chance to trigger a special bonus ou
 | Aquamarine / Black Garnet / Emerald / Imperial Topaz / Jet / Red Garnet / White Sapphire | Resistance/Cleavage imbu |
 | Sunstone / Fire Opal / Black Opal | ARC/SC/BL bonus |
 | Zircon / Peridot / Yellow Topaz | Defense imbue bonus |
+| Agate / Bloodstone / Carnelian / Lapis Lazuli / Smoky Quartz / Rose Quartz | Minor cantrip imbue upgrade (Focus / Endurance / Strength / Willpower / Coordination / Quickness) — chance to upgrade Minor → Moderate (or Major), plus mana pool / burn-rate rolls |
+| Ebony / Porcelain / Teak / Silk | Activation removal bonus (Armor Level roll) |
 
 Green Garnet lotto is currently disabled (stub code exists, commented out).
 

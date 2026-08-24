@@ -75,13 +75,13 @@ namespace ACE.Server.WorldObjects
                 case "Bloodstone":
                 case "Carnelian":
                 case "Lapis Lazuli":
-                case "Smokey Quartz":
+                case "Smoky Quartz":
                 case "Rose Quartz":
                     //Agate - Focus
                     //Bloodstone - Endurance
                     //Carnelian - Strength
                     //Lapis Lazuli - Willpower
-                    //Smokey Quartz - Coord
+                    //Smoky Quartz - Coord
                     //Rose Quartz - Quickness
                     resultMessage = TinkeringLotto_PlayMinorImbueLottery(salvageType, salvageWorkmanship, chanceMod);
                     break;
@@ -727,7 +727,7 @@ Silk - Removes rank
                     //Bloodstone - Endurance
                     //Carnelian - Strength
                     //Lapis Lazuli - Willpower
-                    //Smokey Quartz - Coord
+                    //Smoky Quartz - Coord
                     //Rose Quartz - Quickness
                     case "Agate":
                         if(minorCantrips.Contains((int)SpellId.CANTRIPFOCUS1))
@@ -765,7 +765,7 @@ Silk - Removes rank
                             resultMsg = string.IsNullOrEmpty(resultMsg) ? successMsg : $"{resultMsg}\n{successMsg}";
                         }
                         break;
-                    case "Smokey Quartz":
+                    case "Smoky Quartz":
                         if (minorCantrips.Contains((int)SpellId.CANTRIPCOORDINATION1))
                         {
                             this.Biota.TryRemoveKnownSpell((int)SpellId.CANTRIPCOORDINATION1, this.BiotaDatabaseLock);
