@@ -308,31 +308,26 @@ namespace ACE.Server.Entity
                     #region MorphGemRandomizeWeaponImbue
                     case MorphGemRandomizeWeaponImbue:
 
-                        var isValid = false;
-                        var hasFetish = target.HasImbuedEffect(ImbuedEffectType.IgnoreSomeMagicProjectileDamage);
-
-                        if (target.HasImbuedEffect(ImbuedEffectType.CripplingBlow) ||
+                        //Target must have an AR/CS/CB imbue
+                        if (!(target.HasImbuedEffect(ImbuedEffectType.CripplingBlow) ||
                             target.HasImbuedEffect(ImbuedEffectType.ArmorRending) ||
-                            target.HasImbuedEffect(ImbuedEffectType.CriticalStrike))
-                        {
-                            isValid = true;
-                        }
-
-                        if (!isValid)
+                            target.HasImbuedEffect(ImbuedEffectType.CriticalStrike)))
                         {
                             player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
                             return;
                         }
 
+                        var hasFetish = target.HasImbuedEffect(ImbuedEffectType.IgnoreSomeMagicProjectileDamage);
+
                         var origImbueEffect = target.ImbuedEffect;
                         var roll = ThreadSafeRandom.Next(0, 1);
 
                         if (target.HasImbuedEffect(ImbuedEffectType.CripplingBlow))
-                            target.ImbuedEffect = roll == 0 ? ImbuedEffectType.ArmorRending : ImbuedEffectType.CriticalStrike;
+                            target.ImbuedEffect = (roll == 0 && target.WeenieType != WeenieType.Caster) ? ImbuedEffectType.ArmorRending : ImbuedEffectType.CriticalStrike;
                         else if (target.HasImbuedEffect(ImbuedEffectType.ArmorRending))
                             target.ImbuedEffect = roll == 0 ? ImbuedEffectType.CripplingBlow : ImbuedEffectType.CriticalStrike;
                         else if (target.HasImbuedEffect(ImbuedEffectType.CriticalStrike))
-                            target.ImbuedEffect = roll == 0 ? ImbuedEffectType.ArmorRending : ImbuedEffectType.CripplingBlow;
+                            target.ImbuedEffect = (roll == 0 && target.WeenieType != WeenieType.Caster) ? ImbuedEffectType.ArmorRending : ImbuedEffectType.CripplingBlow;
 
                         target.IconUnderlayId = RecipeManager.IconUnderlay[target.ImbuedEffect];
 
