@@ -832,9 +832,13 @@ namespace ACE.Server.Managers
                     for (int k = 0; k < darkbeatKeys; k++)
                         GiveSingle(winner, CustomWeenieId.DarkbeatKey);
 
-                    // Bonus XP toward next level (fixed reward; GrantXP already bypasses the season xp_modifier)
+                    // Bonus XP toward next level (fixed reward; GrantXP already bypasses the season xp_modifier).
+                    // Scaled off the post-126 equivalent-level band so a capped character is paid against
+                    // their real level-equivalent, not the frozen 125→126 band.
                     var level = winner.Level ?? 1;
-                    var xpBand = (long)winner.GetXPBetweenLevels(level, level + 1);
+                    var xpBand = RollingLevelCapManager.GetXpToNextEquivalentLevel(winner.TotalExperience ?? 0);
+                    if (xpBand <= 0)
+                        xpBand = (long)winner.GetXPBetweenLevels(level, level + 1);
                     var bonusXp = (long)Math.Round(xpBand * xpPct);
                     if (bonusXp > 0)
                         winner.GrantXP(bonusXp, XpType.PvP, ACE.Entity.Enum.ShareType.None, "hometown capture reward");

@@ -24,6 +24,12 @@ Six new full **WS10 salvage bags** now drop from **Darkbeat's Storage Locker** a
 
 Each drops at the same rate as the existing salvage bags. **Bug fix:** Smoky Quartz previously did nothing when applied — a name mismatch stopped its lotto from firing. It now works.
 
+### ⚔️ PvP XP Rewards Now Scale Past Level 126
+
+PvP rewards that pay out "a percentage of your XP to next level" — open-world PK kills, arena wins, PK quests and hometown-capture rewards — were quietly frozen at the level-126 value. Infiltration caps your *displayed* level at 126, but your experience keeps climbing toward the retail level-275 equivalent, and the reward code was still measuring everyone against the ~161 million it costs to go from 125 to 126.
+
+Now the reward scales with the cost of your **actual level-equivalent**. If you're sitting at the level-150 equivalent, a "10% of XP to next level" reward is measured against the ~324 million it costs to go 150→151 — roughly double what it paid before. Characters at or below level 126 are unaffected.
+
 ---
 
 ## 🩹 v1.20 — August 23, 2026

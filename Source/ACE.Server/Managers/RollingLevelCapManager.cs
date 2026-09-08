@@ -524,6 +524,60 @@ namespace ACE.Server.Managers
             catch { return datLevel; }
         }
 
+        /// <summary>
+        /// Returns the total XP required to reach <paramref name="level"/> on the combined
+        /// curve: the live dat XP table for levels 1–126, and the embedded End-of-Retail
+        /// (Throne of Destiny) supplement (<see cref="RetailPostCapLevelXp"/>) for levels
+        /// 127–275.  Levels below 1 return 0; levels past 275 clamp to the level-275
+        /// threshold.  On a non-Infiltration dat (which already covers the full range) the
+        /// dat table is authoritative and the supplement is not consulted.
+        /// </summary>
+        public static long GetEquivalentLevelTotalXp(int level)
+        {
+            if (level < 1) return 0;
+
+            try
+            {
+                var xpTable     = DatManager.PortalDat.XpTable.CharacterLevelXPList;
+                var datMaxLevel = (int)xpTable.Count - 1;
+
+                if (level <= datMaxLevel)
+                    return (long)xpTable[level];
+
+                // Past the dat ceiling — only the Infiltration table (126) gets the supplement.
+                if (datMaxLevel != 126)
+                    return (long)xpTable[datMaxLevel];
+
+                int idx = level - RetailPostCapFirstLevel;
+                if (idx < 0) idx = 0;
+                if (idx >= RetailPostCapLevelXp.Length) idx = RetailPostCapLevelXp.Length - 1;
+                return RetailPostCapLevelXp[idx];
+            }
+            catch { return 0; }
+        }
+
+        /// <summary>
+        /// Returns the XP cost to advance one level from the equivalent level implied by
+        /// <paramref name="totalXp"/>, following the post-126 retail curve (see
+        /// <see cref="GetDisplayLevelCap"/>).  Below level 126 this is simply the dat-table
+        /// band for the character's current level; at or above it the retail supplement is
+        /// used, so a character sitting at the level-150 equivalent is measured against the
+        /// real 150→151 cost (~324M) rather than the frozen 125→126 cost (~161M).
+        ///
+        /// Used to size the fixed-slice PvP rewards (PK kills, PK quests, arena, hometown
+        /// conflict) that pay a percentage of "XP to next level".  Returns 0 if the dat is
+        /// unavailable so callers can fall back to <c>GetXPBetweenLevels</c>.
+        /// </summary>
+        public static long GetXpToNextEquivalentLevel(long totalXp)
+        {
+            var level = GetDisplayLevelCap(totalXp);
+            if (level < 1) level = 1;
+
+            var cur  = GetEquivalentLevelTotalXp(level);
+            var next = GetEquivalentLevelTotalXp(level + 1);
+            return Math.Max(0, next - cur);
+        }
+
         // ── Catch-up XP boost ────────────────────────────────────────────────────
         //
         // Characters whose lifetime total XP sits well below the current season cap earn

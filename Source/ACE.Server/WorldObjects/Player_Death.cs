@@ -267,7 +267,14 @@ namespace ACE.Server.WorldObjects
                         var modifier    = Math.Pow(decay, levelDiff);
 
                         var randPercent = ThreadSafeRandom.Next(0.05f, 0.10f);
-                        var baseXp      = (long)pkPlayer.GetXPBetweenLevels(killerLevel, killerLevel + 1);
+                        // Base the reward on the killer's post-126 equivalent-level band. The
+                        // dat XP table freezes at level 126, so GetXPBetweenLevels would pay a
+                        // level-150-equivalent killer the frozen 125→126 band (~161M) instead
+                        // of the real 150→151 band (~324M). Fall back to the dat band if the
+                        // retail supplement isn't available.
+                        var baseXp      = RollingLevelCapManager.GetXpToNextEquivalentLevel(pkPlayer.TotalExperience ?? 0);
+                        if (baseXp <= 0)
+                            baseXp = (long)pkPlayer.GetXPBetweenLevels(killerLevel, killerLevel + 1);
                         var pvpXp       = (long)Math.Round(baseXp * randPercent * modifier);
 
                         if (HotDungeonManager.IsHotDungeon(Location.LandblockId.Landblock, out var pkHotDungeon))

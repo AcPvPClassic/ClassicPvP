@@ -866,6 +866,8 @@ Base XP = 5–10% of your XP-to-next-level (random roll per kill)
 ```
 The random roll is re-rolled on every kill, so repeated kills against the same target vary slightly each time.
 
+"XP-to-next-level" follows the **post-126 level-equivalent curve**. Infiltration caps your displayed level at 126, but your XP keeps climbing toward the level-275 retail equivalent, and the reward scales with the cost of your *current* equivalent level — not the frozen 125→126 cost. A character at the level-150 equivalent is measured against the ~324M it costs to go 150→151, roughly double the ~161M a fresh level-126 is measured against. This applies to every fixed-slice PvP reward: open-world kills, arena payouts, PK quests, and hometown-capture rewards.
+
 **Level gap penalty:**
 If the victim is below your level, the base XP is multiplied by a decay factor for each level of difference:
 ```

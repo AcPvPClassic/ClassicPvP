@@ -1240,7 +1240,14 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public void GrantLevelProportionalXpNoModifier(double percent, long min, long max, XpType xpType = XpType.PvP)
         {
-            var nextLevelXP = GetXPBetweenLevels(Level.Value, Level.Value + 1);
+            // These rewards are a fixed slice of the player's XP-to-next-level. On the
+            // Infiltration dat the XP table freezes at level 126, so GetXPBetweenLevels
+            // would pay a level-150-equivalent character the same 125→126 band as a fresh
+            // level-126. Scale off the post-126 equivalent-level curve instead; fall back
+            // to the dat band if the retail supplement is unavailable.
+            var nextLevelXP = (long)RollingLevelCapManager.GetXpToNextEquivalentLevel(TotalExperience ?? 0);
+            if (nextLevelXP <= 0)
+                nextLevelXP = (long)GetXPBetweenLevels(Level.Value, Level.Value + 1);
 
             var scaledXP = (long)Math.Round(nextLevelXP * percent);
 
