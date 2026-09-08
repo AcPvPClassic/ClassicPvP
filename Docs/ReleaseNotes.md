@@ -30,6 +30,10 @@ PvP rewards that pay out "a percentage of your XP to next level" — open-world 
 
 Now the reward scales with the cost of your **actual level-equivalent**. If you're sitting at the level-150 equivalent, a "10% of XP to next level" reward is measured against the ~324 million it costs to go 150→151 — roughly double what it paid before. Characters at or below level 126 are unaffected.
 
+### 💎 Morph Gems Now Work on Unenchantable Gear
+
+Morph gems previously refused any **unenchantable** (magic-immune) item — covenant armor and similar — accepting only enchantable pieces, with shields and cloaks as the only exceptions. That restriction is gone. Any loot-generated item can now take a morph gem regardless of whether it holds enchantments. Non-loot-gen items (no workmanship) and attuned items are still restricted, except for the morph gems already cleared for quest and rare gear.
+
 ---
 
 ## 🩹 v1.20 — August 23, 2026
