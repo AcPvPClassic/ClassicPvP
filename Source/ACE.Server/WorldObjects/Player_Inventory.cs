@@ -730,6 +730,17 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         private bool AdjustStack(WorldObject stack, int amount, Container container, Container rootContainer, bool itemWasEquipped = false)
         {
+            // Defense in depth: Destroy() does not clear StackSize, so a stack destroyed elsewhere
+            // (e.g. fully consumed by a concurrent StackableMerge) while a caller is still holding a
+            // reference to it must never be adjusted — doing so mints/discards value against a dead
+            // object. Every legitimate caller of AdjustStack should already hold a live stack; if this
+            // fires, the caller is missing a re-validation step (see HandleActionGiveObjectRequest).
+            if (stack.IsDestroyed)
+            {
+                log.WarnFormat("Player 0x{0:X8}:{1} tried to adjust a destroyed stack 0x{2:X8}:{3} by {4}.", Guid.Full, Name, stack.Guid.Full, stack.Name, amount);
+                return false;
+            }
+
             if (stack.StackSize + amount <= 0 || stack.StackSize + amount > stack.MaxStackSize)
             {
                 log.WarnFormat("Player 0x{0:X8}:{1} tried to adjust stack by an invalid amount amount ({4}) 0x{2:X8}:{3}.", Guid.Full, Name, stack.Guid.Full, stack.Name, amount);
@@ -3699,6 +3710,10 @@ namespace ACE.Server.WorldObjects
                 return;
             }
 
+            // Captured so we can detect the item being destroyed, moved, or shrunk (e.g. via a
+            // StackableMerge that fully consumes it) while we're walking to the target below.
+            var itemOriginalContainerId = item.ContainerId;
+
             CreateMoveToChain(target, (success) =>
             {
                 if (CurrentLandblock == null) // Maybe we were teleported as we were motioning to pick up the item
@@ -3709,6 +3724,21 @@ namespace ACE.Server.WorldObjects
 
                 if (!success)
                 {
+                    Session.Network.EnqueueSend(new GameEventInventoryServerSaveFailed(Session, itemGuid, WeenieError.ActionCancelled));
+                    return;
+                }
+
+                // Re-validate the item is still the one we started with. It could have changed during
+                // our movement, mirroring the re-validation StackableSplit*/StackableMerge already do
+                // after their own movement/pickup delays. IsDestroyed must be checked explicitly:
+                // Destroy() does not clear StackSize or ContainerId, so a destroyed stack (e.g. one
+                // fully consumed by a StackableMerge while this give was in flight) would otherwise
+                // still pass a StackSize/ContainerId-only check and let RemoveItemForGive mint a new
+                // stack from a stale, dead reference.
+                if (item.IsDestroyed || itemOriginalContainerId != item.ContainerId || item.StackSize < amount)
+                {
+                    log.WarnFormat("Player 0x{0:X8}:{1} tried to give an item that's no longer valid 0x{2:X8}:{3}.", Guid.Full, Name, item.Guid.Full, item.Name);
+                    Session.Network.EnqueueSend(new GameEventCommunicationTransientString(Session, "Give failed!")); // Custom error message
                     Session.Network.EnqueueSend(new GameEventInventoryServerSaveFailed(Session, itemGuid, WeenieError.ActionCancelled));
                     return;
                 }
