@@ -123,9 +123,7 @@ namespace ACE.Server.Entity
             try
             {
                 //Only allow loot gen items to be morphed, except for gems that are allowed to be applied to quest / rare items
-                if ((target.ItemWorkmanship == null ||
-                    target.IsAttunedOrContainsAttuned ||
-                    (target.ResistMagic == 9999 && !target.IsShield && !(target.ValidLocations?.HasFlag(EquipMask.Cloak) ?? false)))
+                if ((target.ItemWorkmanship == null || target.IsAttunedOrContainsAttuned)
                     && !morphGemsAllowedNonLootGen.Contains(source.WeenieClassId))
                 {
                     player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
