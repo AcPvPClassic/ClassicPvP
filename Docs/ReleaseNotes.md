@@ -7,7 +7,11 @@
 
 ---
 
-## 🩹 v1.21 (in development)
+## 🩹 v1.22 (in development)
+
+---
+
+## 🩹 v1.21 — September 9, 2026
 
 ### 💎 New Attribute Salvage Bags — Focus, Strength, Coordination & More
 
