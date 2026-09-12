@@ -833,11 +833,13 @@ Winners **inside the Meeting Hall** at the moment of resolution share the reward
 
 | Reward | Attackers (capture) | Defenders (hold) |
 |---|---|---|
-| PK Trophies (split among players) | 40 | 80 |
-| MMDs (split among players) | 20 | 40 |
+| PK Trophies (pooled, min 1 each) | 40 | 80 |
+| MMDs (pooled, min 1 each) | 20 | 40 |
 | XP to next level (per player) | 5% | 15% |
-| Phials of Bloody Tears (per player) | — | 1 |
-| Darkbeat Keys (per player) | — | 2 |
+| Phials of Bloody Tears (pooled) | 4 | 15 |
+| Darkbeat Keys (pooled) | 3 | 10 |
+
+**Pooled vs. per-player.** PK Trophies and MMDs are pools split among the eligible winners, floored so everyone gets **at least one**. Phials and Darkbeat Keys are pools spread **as evenly as possible with no floor** — an even share where the pool divides cleanly, otherwise the remainder goes to random winners, and if there are more winners than items in the pool, some players receive none. XP is a flat amount every eligible winner gets.
 
 Losing allegiance PKs **inside the Meeting Hall** at the moment of resolution are **smited**.
 

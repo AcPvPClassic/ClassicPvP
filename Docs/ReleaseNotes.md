@@ -9,6 +9,17 @@
 
 ## 🩹 v1.22 (in development)
 
+### 🏰 Hometown Capture — Phials & Darkbeat Keys Now Pooled
+
+Phials of Bloody Tears and Darkbeat Keys from a hometown resolution are no longer a flat handout per player. They're now **pools split among the eligible winners**, with much larger totals:
+
+| Reward | Attackers (capture) | Defenders (hold) |
+|---|---|---|
+| Phials of Bloody Tears | 4 | 15 |
+| Darkbeat Keys | 3 | 10 |
+
+The pool is spread as evenly as possible: when it divides cleanly everyone gets an equal share, otherwise the leftover items go to random winners. Unlike PK Trophies and MMDs — which are also pooled but guarantee at least one each — **these have no floor**, so if a large group shows up and there are fewer items than players, some winners will walk away without a phial or key. Your reward message tells you exactly what you got.
+
 ---
 
 ## 🩹 v1.21 — September 9, 2026

@@ -802,17 +802,27 @@ namespace ACE.Server.Managers
             // Reward tiers. Attackers also gain the town itself on capture, so the loot pool is
             // weighted toward defenders to give allegiances a reason to show up and hold.
             //                     Attackers  Defenders
-            int totalTrophies = isDefense ? 80  : 40;   // PK Trophy pool (split by player count)
-            int totalMmds     = isDefense ? 40  : 20;   // MMD pool (split by player count)
+            int totalTrophies = isDefense ? 80  : 40;   // PK Trophy pool (split, min 1 each)
+            int totalMmds     = isDefense ? 40  : 20;   // MMD pool (split, min 1 each)
             double xpPct      = isDefense ? 0.15 : 0.05; // fraction of XP-to-next-level (flat per player)
-            int phials        = isDefense ? 1   : 0;    // Phial of Bloody Tears (flat per player)
-            int darkbeatKeys  = isDefense ? 2   : 0;    // Darkbeat Keys (flat per player)
+            int totalPhials   = isDefense ? 15  : 4;    // Phial of Bloody Tears pool (even-ish split, some may get none)
+            int totalKeys     = isDefense ? 10  : 3;    // Darkbeat Keys pool (even-ish split, some may get none)
 
             int perTrophies   = Math.Max(1, totalTrophies / winnerPlayers.Count);
             int perMmds       = Math.Max(1, totalMmds     / winnerPlayers.Count);
 
-            foreach (var winner in winnerPlayers)
+            // Phials and Darkbeat Keys are pooled and spread as evenly as possible across the winners.
+            // Unlike trophies/MMDs there is no floor: when a pool is smaller than the winner count some
+            // players receive none, and any remainder after the even split is handed to random winners.
+            var phialAlloc = DistributePool(totalPhials, winnerPlayers.Count);
+            var keyAlloc   = DistributePool(totalKeys,   winnerPlayers.Count);
+
+            for (int i = 0; i < winnerPlayers.Count; i++)
             {
+                var winner       = winnerPlayers[i];
+                var winnerPhials = phialAlloc[i];
+                var winnerKeys   = keyAlloc[i];
+
                 // Isolated per winner for the same reason as the smite loop above: one player failing to
                 // be paid (a full inventory, a session that dropped mid-resolution) must not cost every
                 // other winner their reward, nor bubble up and force-end an already-decided conflict.
@@ -824,12 +834,12 @@ namespace ACE.Server.Managers
                     // MMDs (stackable)
                     GiveStacked(winner, 20630u, perMmds);
 
-                    // Phials of Bloody Tears
-                    for (int k = 0; k < phials; k++)
+                    // Phials of Bloody Tears (pooled)
+                    for (int k = 0; k < winnerPhials; k++)
                         GiveSingle(winner, CustomWeenieId.PhialOfBloodyTears);
 
-                    // Darkbeat Keys
-                    for (int k = 0; k < darkbeatKeys; k++)
+                    // Darkbeat Keys (pooled)
+                    for (int k = 0; k < winnerKeys; k++)
                         GiveSingle(winner, CustomWeenieId.DarkbeatKey);
 
                     // Bonus XP toward next level (fixed reward; GrantXP already bypasses the season xp_modifier).
@@ -848,8 +858,8 @@ namespace ACE.Server.Managers
                         $"{perTrophies} PK Trophy/Trophies",
                         $"{perMmds} MMD(s)"
                     };
-                    if (phials > 0)       extras.Add($"{phials} Phial(s) of Bloody Tears");
-                    if (darkbeatKeys > 0) extras.Add($"{darkbeatKeys} Darkbeat Key(s)");
+                    if (winnerPhials > 0) extras.Add($"{winnerPhials} Phial(s) of Bloody Tears");
+                    if (winnerKeys > 0)   extras.Add($"{winnerKeys} Darkbeat Key(s)");
 
                     winner.Session?.Network.EnqueueSend(new GameMessageSystemChat(
                         $"[Hometown] You received {string.Join(", ", extras)} for your service!",
@@ -860,6 +870,36 @@ namespace ACE.Server.Managers
                     log.Error($"[AllegianceHometown] Exception rewarding {winner.Name} ({winner.Guid}) on town {townId} resolution; continuing. Ex: {ex}");
                 }
             }
+        }
+
+        /// <summary>
+        /// Splits a pool of <paramref name="total"/> single items across <paramref name="players"/> winners
+        /// as evenly as possible: everyone gets total/players, and the total%players remainder goes to that
+        /// many randomly chosen winners, one extra each. When the pool is smaller than the winner count the
+        /// base share is zero, so only <paramref name="total"/> randomly chosen winners get an item and the
+        /// rest get none. Returns a per-winner count array aligned to the winner list.
+        /// </summary>
+        private static int[] DistributePool(int total, int players)
+        {
+            var counts = new int[Math.Max(0, players)];
+            if (players <= 0 || total <= 0) return counts;
+
+            int baseEach  = total / players;
+            int remainder = total % players;
+
+            for (int i = 0; i < players; i++)
+                counts[i] = baseEach;
+
+            // Hand the remainder to `remainder` distinct random winners (never runs out: remainder < players).
+            var indices = Enumerable.Range(0, players).ToList();
+            for (int r = 0; r < remainder; r++)
+            {
+                int pick = ThreadSafeRandom.Next(0, indices.Count - 1);
+                counts[indices[pick]]++;
+                indices.RemoveAt(pick);
+            }
+
+            return counts;
         }
 
         private static void GiveStacked(Player player, uint wcid, int amount)
