@@ -21,12 +21,12 @@ VALUES (480607,   1,        512) /* ItemType - Container */
 INSERT INTO `weenie_properties_bool` (`object_Id`, `type`, `value`)
 VALUES (480607,   1, True ) /* Stuck */
      , (480607,   2, False) /* Open */
-     , (480607,   3, True ) /* Locked */
+     , (480607,   3, False ) /* Locked */
      , (480607,  12, True ) /* ReportCollisions */
      , (480607,  13, False) /* Ethereal */
      , (480607,  33, False) /* ResetMessagePending */
      , (480607,  34, False) /* DefaultOpen */
-     , (480607,  35, True ) /* DefaultLocked */
+     , (480607,  35, False ) /* DefaultLocked */
      , (480607,  86, True ) /* ChestRegenOnClose */;
 
 INSERT INTO `weenie_properties_float` (`object_Id`, `type`, `value`)
@@ -36,8 +36,7 @@ VALUES (480607,  39,       2) /* DefaultScale */
      , (480607,  54,       1) /* UseRadius */;
 
 INSERT INTO `weenie_properties_string` (`object_Id`, `type`, `value`)
-VALUES (480607,   1, 'Darkbeat''s Storage Locker') /* Name */
-     , (480607,  12, 'darkbeatkey') /* LockCode */;
+VALUES (480607,   1, 'Darkbeat''s Storage Locker') /* Name */;
 
 INSERT INTO `weenie_properties_d_i_d` (`object_Id`, `type`, `value`)
 VALUES (480607,   1, 0x02000F7A) /* Setup */
