@@ -91,8 +91,7 @@ VALUES (480480,   1, 0x02000001) /* Setup */
      , (480480,  15, 0x04001FC7) /* HairPalette */
      , (480480,  16, 0x040002BD) /* EyesPalette */
      , (480480,  17, 0x0400049F) /* SkinPalette */
-     , (480480,  18, 0x010047FB) /* HeadObject */
-     , (480480,  57,    1000003) /* AlternateCurrency - Phial of Bloody Tears */;
+     , (480480,  18, 0x010047FB) /* HeadObject */;
 
 INSERT INTO `weenie_properties_attribute` (`object_Id`, `type`, `init_Level`, `level_From_C_P`, `c_P_Spent`)
 VALUES (480480,   1, 290, 0, 0) /* Strength */

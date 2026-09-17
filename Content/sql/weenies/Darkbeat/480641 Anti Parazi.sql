@@ -79,8 +79,7 @@ VALUES (480641,   1,   33554433) /* Setup */
      , (480641,   4,  805306368) /* CombatTable */
      , (480641,   5,  234881029) /* QualityFilter */
      , (480641,   6,   67108990) /* PaletteBase */
-     , (480641,   8,  100667446) /* Icon */
-     , (480641,  57,    1000002) /* AlternateCurrency - PK Trophy */;
+     , (480641,   8,  100667446) /* Icon */;
 
 INSERT INTO `weenie_properties_attribute` (`object_Id`, `type`, `init_Level`, `level_From_C_P`, `c_P_Spent`)
 VALUES (480641,   1, 290, 0, 0) /* Strength */
