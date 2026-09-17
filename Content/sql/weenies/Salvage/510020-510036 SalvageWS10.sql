@@ -1,11 +1,11 @@
 /* -----------------------------------------------------------------------
-   Custom WS10 Salvage Bag Weenies (510020–510035)
+   Custom WS10 Salvage Bag Weenies (510020–510036)
 
    These weenies are copies of the base salvage bag weenies with
    Structure (92) = 100, ItemWorkmanship (105) = 100, and
    NumItemsInMaterial (170) = 10 baked in.
 
-   Base salvage bag weenies (20985–21086) do NOT have these three
+   Base salvage bag weenies (20985–21086, 20988) do NOT have these three
    properties set, so spawning them from a loot box emote or generator
    yields an empty bag with 0 workmanship.  These custom variants fix
    that so loot boxes and Darkbeat's Storage Locker award proper full
@@ -28,6 +28,13 @@
      510033  Red Garnet       (base 21069)
      510034  Sunstone         (base 21079)
      510035  White Sapphire   (base 21086)
+     510036  Mahogany         (base 20988)
+
+   Matching cook_book entries required for each of these WCIDs — see
+   510020-510036 SalvageWS10 CookBook.sql. Without those rows the craft
+   system rejects the bag on any target with "X cannot be used on Y."
+
+   510036 (Mahogany) added 2026-08-08.
    ----------------------------------------------------------------------- */
 
 /* ---- 510020: Salvaged Granite (WS10) ---- */
@@ -749,3 +756,49 @@ VALUES (510035,   1, 0x02000181) /* Setup */
      , (510035,   8, 0x0600102C) /* Icon */
      , (510035,  22, 0x3400002B) /* PhysicsEffectTable */
      , (510035,  50, 0x0600271E) /* IconUnderlay */;
+
+/* ---- 510036: Salvaged Mahogany (WS10) ---- */
+DELETE FROM `weenie` WHERE `class_Id` = 510036;
+INSERT INTO `weenie` (`class_Id`, `class_Name`, `type`, `last_Modified`)
+VALUES (510036, 'ace510036-salvagemahogany', 44, '2026-08-08 00:00:00') /* CraftTool */;
+
+INSERT INTO `weenie_properties_int` (`object_Id`, `type`, `value`)
+VALUES (510036,   1, 1073741824) /* ItemType - Salvage */
+     , (510036,   3,         14) /* PaletteTemplate */
+     , (510036,   5,        100) /* EncumbranceVal */
+     , (510036,   8,        100) /* Mass */
+     , (510036,   9,          0) /* ValidLocations */
+     , (510036,  11,          1) /* MaxStackSize */
+     , (510036,  12,          1) /* StackSize */
+     , (510036,  13,        100) /* StackUnitEncumbrance */
+     , (510036,  14,        100) /* StackUnitMass */
+     , (510036,  15,         10) /* StackUnitValue */
+     , (510036,  16,     524296) /* ItemUseable */
+     , (510036,  19,         10) /* Value */
+     , (510036,  33,          1) /* Bonded */
+     , (510036,  91,        100) /* MaxStructure */
+     , (510036,  92,        100) /* Structure */
+     , (510036,  93,       1044) /* PhysicsState */
+     , (510036,  94,        256) /* TargetType - MissileWeapon */
+     , (510036, 105,        100) /* ItemWorkmanship */
+     , (510036, 131,         74) /* MaterialType - Mahogany */
+     , (510036, 150,        103)
+     , (510036, 151,          9) /* HookType */
+     , (510036, 170,         10) /* NumItemsInMaterial */;
+
+INSERT INTO `weenie_properties_string` (`object_Id`, `type`, `value`)
+VALUES (510036,   1, 'Salvaged Mahogany') /* Name */
+     , (510036,  14, 'Apply this material to a treasure-generated missile weapon to increase the weapon''s damage modifier by 4%.') /* Use */
+     , (510036,  15, 'A bundle of mahogany material salvaged from old items.') /* LongDesc */
+     , (510036,  22, '')
+     , (510036,  23, '');
+
+INSERT INTO `weenie_properties_d_i_d` (`object_Id`, `type`, `value`)
+VALUES (510036,   1, 0x02000181) /* Setup */
+     , (510036,   3, 0x20000014) /* SoundTable */
+     , (510036,   6, 0x04000BEF) /* PaletteBase */
+     , (510036,   7, 0x100003CE) /* ClothingBase */
+     , (510036,   8, 0x060026C4) /* Icon */
+     , (510036,  22, 0x3400002B) /* PhysicsEffectTable */
+     , (510036,  50, 0x060026D0) /* IconOverlay */
+     , (510036,  52, 0x06020017) /* IconUnderlay */;
